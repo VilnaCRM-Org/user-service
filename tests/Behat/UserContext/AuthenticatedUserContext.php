@@ -297,13 +297,11 @@ final class AuthenticatedUserContext implements Context
     ): void {
         $this->setAuthenticatedUserToken($user, $roles);
         $this->state->currentUserEmail = $user->getEmail();
-        $this->state->storedAccessTokens =
-            ['default' => $accessToken];
+        $this->state->storeDefaultAccessToken($accessToken);
     }
 
-    private function authenticateFromAccessToken(
-        string $accessToken
-    ): void {
+    private function authenticateFromAccessToken(string $accessToken): void
+    {
         $payload = $this->decodeJwtPayload($accessToken);
         $roles = $this->extractRoles($payload);
         $subject = $payload['sub'] ?? null;
@@ -314,15 +312,14 @@ final class AuthenticatedUserContext implements Context
                 $this->state->currentUserEmail = $user->getEmail();
                 UserContext::registerUserIdByEmail($user->getEmail(), $user->getId());
             } else {
-                $this->auth->tokenStorage->setToken(
-                    new UsernamePasswordToken($subject, 'behat-bearer-token', $roles)
-                );
+                $token = new UsernamePasswordToken($subject, 'behat-bearer-token', $roles);
+                $this->auth->tokenStorage->setToken($token);
             }
         }
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
         $this->state->accessToken = $accessToken;
-        $this->state->storedAccessTokens = ['default' => $accessToken];
+        $this->state->storeDefaultAccessToken($accessToken);
     }
 
     private function resolveAuthenticationUser(

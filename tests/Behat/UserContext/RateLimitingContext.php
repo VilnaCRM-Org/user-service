@@ -134,11 +134,11 @@ final readonly class RateLimitingContext implements Context
     }
 
     /**
-     * @Given :count token exchange requests with the same client_id have been sent within 1 minute
+     * @Given :count refresh token exchange requests from the same IP have been sent within 1 minute
      */
-    public function tokenExchangeRequestsWithSameClientWithinMinute(int $count): void
+    public function refreshTokenExchangeRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->authLimiters->oauthTokenLimiter, 'client:anonymous', $count);
+        $this->consume($this->authLimiters->refreshTokenLimiter, $this->buildIpKey(), $count);
     }
 
     /**

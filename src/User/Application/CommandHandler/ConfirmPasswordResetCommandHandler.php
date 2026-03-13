@@ -9,6 +9,8 @@ use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface;
 use App\User\Application\Processor\Hasher\PasswordHasherInterface;
+use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
+use App\User\Application\Processor\Revoker\AllSessionsRevokerInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -24,6 +26,8 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private PasswordResetTokenValidatorInterface $tokenValidator,
+        private AccountLockoutServiceInterface $accountLockoutService,
+        private AllSessionsRevokerInterface $allSessionsRevoker,
         private PasswordResetConfirmationPublisherInterface $publisher,
     ) {
     }
@@ -35,6 +39,13 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
+        $this->accountLockoutService->clearFailures(
+            strtolower(trim($user->getEmail()))
+        );
+        $this->allSessionsRevoker->revokeAllSessions(
+            $user->getId(),
+            'password_reset'
+        );
         $this->publishEvent($user);
 
         $command->setResponse(

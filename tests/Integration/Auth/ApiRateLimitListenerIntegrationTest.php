@@ -132,6 +132,18 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
         $this->assertRateLimitResponse($response);
     }
 
+    public function testRefreshTokenLimiterReturns429WithRetryAfterAndProblemJson(): void
+    {
+        $this->exhaustLimiter(
+            'refresh_token',
+            'ip:127.0.0.1',
+            $this->resolveLimit('OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS', 10)
+        );
+        $content = json_encode(['refreshToken' => $this->faker->sha256()], JSON_THROW_ON_ERROR);
+        $response = $this->handleJsonRequest('/api/token', Request::METHOD_POST, $content);
+        $this->assertRateLimitResponse($response);
+    }
+
     private function savePendingTwoFactor(string $pendingSessionId, string $userId): void
     {
         $this->container->get(PendingTwoFactorRepositoryInterface::class)->save(

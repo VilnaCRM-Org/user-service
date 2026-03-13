@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
+use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
@@ -28,6 +29,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
+        private CurrentTimestampProviderInterface $currentTimestampProvider,
     ) {
     }
 
@@ -73,6 +75,6 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
         $expiresAtTimestamp = $session->getCreatedAt()->getTimestamp()
             + self::SUDO_MODE_TTL_SECONDS;
 
-        return $expiresAtTimestamp < time();
+        return $expiresAtTimestamp < $this->currentTimestampProvider->currentTimestamp();
     }
 }

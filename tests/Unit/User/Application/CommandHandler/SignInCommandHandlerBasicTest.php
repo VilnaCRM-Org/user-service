@@ -12,9 +12,8 @@ final class SignInCommandHandlerBasicTest extends SignInCommandHandlerTestCase
     {
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $this->userAuthenticator->method('authenticate')
-            ->with($email, $pw, $ip, $ua)
-            ->willReturn($user);
-        $this->signInEvents->expects($this->once())->method('publishSignedIn');
+            ->with($email, $pw, $ip, $ua)->willReturn($user);
+        $this->expectSignedInEvent($user, $ip, $ua, false);
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $this->createHandler()->__invoke($command);

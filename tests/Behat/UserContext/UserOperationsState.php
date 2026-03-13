@@ -24,6 +24,17 @@ final class UserOperationsState
         $this->state[$name] = $value;
     }
 
+    public function storeDefaultAccessToken(string $accessToken): void
+    {
+        $storedTokens = $this->state['storedAccessTokens'];
+        if (!is_array($storedTokens)) {
+            $storedTokens = [];
+        }
+
+        $storedTokens['default'] = $accessToken;
+        $this->state['storedAccessTokens'] = $storedTokens;
+    }
+
     public function reset(): void
     {
         $this->state = [

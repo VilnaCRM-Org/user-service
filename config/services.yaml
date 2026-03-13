@@ -138,6 +138,7 @@ services:
         global_api_authenticated: '@limiter.global_api_authenticated'
         registration: '@limiter.registration'
         oauth_token: '@limiter.oauth_token'
+        refresh_token: '@limiter.refresh_token'
         signin_ip: '@limiter.signin_ip'
         signin_email: '@limiter.signin_email'
         twofa_verification_user: '@limiter.twofa_verification_user'
@@ -195,6 +196,9 @@ services:
   App\Shared\Application\Observability\Factory\MetricDimensionsFactoryInterface:
     alias: App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory
 
+  App\Shared\Application\Provider\CurrentTimestampProviderInterface:
+    alias: App\Shared\Infrastructure\Provider\SystemCurrentTimestampProvider
+
   App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy:
     arguments:
       $delayMs: '%env(int:MESSENGER_RETRY_DELAY_MS)%'
@@ -224,6 +228,14 @@ services:
       $cache: '@cache.user'
     tags:
       - { name: kernel.event_listener, event: kernel.terminate }
+
+  App\User\Application\EventListener\UserResolveListener:
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: league.oauth2_server.event.user_resolve,
+          method: onUserResolve,
+        }
 
   # Cached User Repository (decorator with Redis caching)
   App\User\Infrastructure\Repository\CachedUserRepository:
@@ -310,9 +322,9 @@ services:
         - { pattern: '#^/api/reset-password#' }
         - { pattern: '#^/api/signin#' }
         - { pattern: '#^/api/token$#', methods: ['POST'] }
+        - { pattern: '#^/api/oauth/token$#', methods: ['POST'] }
         - { pattern: '#^/api/docs#' }
         - { pattern: '#^/api/health#' }
-        - { pattern: '#^/api/oauth#' }
         - { pattern: '#^/api/\\.well-known#' }
         - { pattern: '#^/healthz#' }
 
@@ -334,6 +346,7 @@ services:
   App\User\Application\Factory\Generator\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
   App\User\Application\Factory\Generator\EventIdGeneratorInterface: '@App\User\Application\Factory\Generator\EventIdGenerator'
   App\User\Application\Factory\Generator\IdGeneratorInterface: '@App\User\Infrastructure\Generator\UlidIdGenerator'
+  App\User\Application\Processor\Revoker\AllSessionsRevokerInterface: '@App\User\Application\Processor\Revoker\AllSessionsRevoker'
   App\User\Application\Processor\Revoker\PasswordChangeSessionRevokerInterface: '@App\User\Application\Processor\Revoker\PasswordChangeSessionRevoker'
   App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
   App\User\Application\Processor\EventPublisher\SessionEventsInterface: '@App\User\Application\Processor\EventPublisher\SessionEvents'

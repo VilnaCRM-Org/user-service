@@ -9,49 +9,15 @@ use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
+use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
+use League\Bundle\OAuth2ServerBundle\Model\Client;
+use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
 {
-    /**
-     * Routes that MUST be accessible without authentication.
-     * Maps route path pattern => expected HTTP method(s).
-     */
-    private const PUBLIC_ROUTES = [
-        '/api/users' => 'POST',
-        '/api/users/confirm' => 'PATCH',
-        '/api/reset-password' => 'POST',
-        '/api/reset-password/confirm' => 'POST',
-        '/api/signin' => 'POST',
-        '/api/signin/2fa' => 'POST',
-        '/api/token' => 'POST',
-        '/api/docs' => 'GET',
-        '/api/health' => 'GET',
-        '/api/oauth/authorize' => 'GET',
-        '/api/oauth/token' => 'POST',
-    ];
-
-    /**
-     * Routes where the firewall is completely disabled (oauth, well-known).
-     */
-    private const FIREWALL_DISABLED_PATTERNS = [
-        '#^/api/oauth#',
-        '#^/api/\.well-known#',
-    ];
-
-    /**
-     * Paths that are framework-internal and do not need access-control verification.
-     */
-    private const FRAMEWORK_INTERNAL_PATTERNS = [
-        '#^/api/contexts/#',
-        '#^/api/errors/#',
-        '#^/api/validation_errors/#',
-        '#^/api/\.well-known/genid/#',
-        '#^/api/\{index\}#',
-    ];
-
     #[\Override]
     protected function tearDown(): void
     {
@@ -126,6 +92,21 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
         );
     }
 
+    public function testOauthAuthorizeRouteAcceptsAuthenticatedSessionCookie(): void
+    {
+        $kernel = $this->getHttpKernel();
+        $userId = $this->createTestUser($this->faker->safeEmail());
+        $clientId = $this->createOAuthClient();
+        $request = $this->createOauthAuthorizeRequest($clientId, $userId);
+        $response = $kernel->handle($request);
+
+        $this->assertNotSame(
+            401,
+            $response->getStatusCode(),
+            'GET /api/oauth/authorize should accept a real auth cookie.'
+        );
+    }
+
     public function testBatchEndpointReturns403ForRoleUser(): void
     {
         $kernel = $this->getHttpKernel();
@@ -182,8 +163,10 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
         yield 'POST /api/signin' => ['/api/signin', 'POST'];
         yield 'POST /api/signin/2fa' => ['/api/signin/2fa', 'POST'];
         yield 'POST /api/token' => ['/api/token', 'POST'];
+        yield 'POST /api/oauth/token' => ['/api/oauth/token', 'POST'];
         yield 'GET /api/docs' => ['/api/docs', 'GET'];
         yield 'GET /api/health' => ['/api/health', 'GET'];
+        yield 'POST /api/graphql' => ['/api/graphql', 'POST'];
     }
 
     /**
@@ -209,7 +192,7 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
      */
     private static function protectedOtherRoutes(): \Generator
     {
-        yield 'POST /api/graphql' => ['/api/graphql', 'POST'];
+        yield 'GET /api/oauth/authorize' => ['/api/oauth/authorize', 'GET'];
         yield 'POST /api/2fa/setup' => ['/api/2fa/setup', 'POST'];
         yield 'POST /api/2fa/confirm' => ['/api/2fa/confirm', 'POST'];
         yield 'POST /api/2fa/disable' => ['/api/2fa/disable', 'POST'];
@@ -252,6 +235,28 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
                 'CONTENT_TYPE' => 'application/json',
             ],
             '{}'
+        );
+    }
+
+    private function createOauthAuthorizeRequest(string $clientId, string $userId): Request
+    {
+        $path = sprintf(
+            '/api/oauth/authorize?response_type=code&client_id=%s&redirect_uri=%s',
+            $clientId,
+            rawurlencode('https://example.com')
+        );
+
+        return Request::create(
+            $path,
+            'GET',
+            [],
+            ['__Host-auth_token' => $this->createBearerTokenForUser($userId)],
+            [],
+            [
+                'REMOTE_ADDR' => $this->faker->ipv4(),
+                'HTTP_ACCEPT' => 'application/json',
+                'CONTENT_TYPE' => 'application/json',
+            ]
         );
     }
 
@@ -302,5 +307,19 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
         $userRepository->save($user);
 
         return $user->getId();
+    }
+
+    private function createOAuthClient(): string
+    {
+        $clientId = strtolower($this->faker->bothify('client-????-####'));
+        $clientSecret = $this->faker->sha1();
+        $redirectUri = 'https://example.com';
+
+        $client = new Client($this->faker->company(), $clientId, $clientSecret);
+        $client->setRedirectUris(new RedirectUri($redirectUri));
+
+        $this->container->get(ClientManagerInterface::class)->save($client);
+
+        return $clientId;
     }
 }

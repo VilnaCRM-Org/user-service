@@ -65,6 +65,29 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
 
+    public function testTheftDetectedWhenOlderRotatedTokenIsReusedAfterLaterRotation(): void
+    {
+        $plainToken = 'superseded-rotation-token';
+        $token = $this->createValidRefreshToken($plainToken);
+        $token->markAsRotated(new DateTimeImmutable('-30 seconds'));
+        $session = $this->createValidSession($token->getSessionId());
+        $user = $this->createUser();
+        $laterRotatedToken = $this->createRotatedSibling($session->getId(), '-10 seconds');
+        $this->expectTokenLookup($token, $plainToken);
+        $this->expectSessionLookup($session);
+        $this->expectUserLookup($user);
+        $this->expectNeverGraceEligibilityCheck();
+        $this->expectTokenRevocationSaves(2);
+        $this->expectTheftDetectionResponse(
+            $session,
+            $user,
+            'superseded_rotation',
+            [$token, $laterRotatedToken]
+        );
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
     public function testTheftDetectionUsesOldTokenWhenSessionLookupReturnsEmpty(): void
     {
         $plainToken = 'fallback-old-token';
@@ -128,6 +151,127 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
 
+    public function testSameTokenIdIsNotConsideredLaterRotation(): void
+    {
+        $plainToken = 'same-id-not-later-token';
+        [$token, $session, $user] = $this->arrangeRotatedToken($plainToken);
+
+        $this->expectGraceEligibilityCheck(true);
+        $this->arrangeSuccessfulGraceRotation($session, $user, [$token]);
+        $this->events->expects($this->never())->method('publishTheftDetected');
+
+        $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testRevokedTokenIsNotConsideredLaterRotation(): void
+    {
+        $plainToken = 'revoked-not-later-token';
+        [$token, $session, $user] = $this->arrangeRotatedToken($plainToken);
+
+        $revokedToken = $this->createRevokedToken($session->getId());
+        $revokedToken->markAsRotated(new DateTimeImmutable('-5 seconds'));
+
+        $this->expectGraceEligibilityCheck(true);
+        $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $revokedToken]);
+        $this->events->expects($this->never())->method('publishTheftDetected');
+
+        $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testTokenRotatedEarlierIsNotConsideredLaterRotation(): void
+    {
+        $plainToken = 'earlier-rotation-token';
+        [$token, $session, $user] = $this->arrangeRotatedToken(
+            $plainToken,
+            '-10 seconds'
+        );
+        $earlierToken = $this->createRotatedSibling(
+            $session->getId(),
+            '-20 seconds'
+        );
+
+        $this->expectGraceEligibilityCheck(true);
+        $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $earlierToken]);
+        $this->events->expects($this->never())->method('publishTheftDetected');
+
+        $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    public function testNonRotatedTokenIsNotConsideredLaterRotation(): void
+    {
+        $plainToken = 'non-rotated-not-later-token';
+        [$token, $session, $user] = $this->arrangeRotatedToken($plainToken);
+        $nonRotatedToken = $this->createNonRotatedSibling($session->getId());
+
+        $this->expectGraceEligibilityCheck(true);
+        $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $nonRotatedToken]);
+        $this->events->expects($this->never())->method('publishTheftDetected');
+
+        $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
+    }
+
+    /**
+     * @return array{AuthRefreshToken, AuthSession, User}
+     */
+    private function arrangeRotatedToken(
+        string $plainToken,
+        string $rotatedAt = '-30 seconds'
+    ): array {
+        $token = $this->createValidRefreshToken($plainToken);
+        $token->markAsRotated(new DateTimeImmutable($rotatedAt));
+        $session = $this->createValidSession($token->getSessionId());
+        $user = $this->createUser();
+        $this->expectTokenLookup($token, $plainToken);
+        $this->expectSessionLookup($session);
+        $this->expectUserLookup($user);
+
+        return [$token, $session, $user];
+    }
+
+    private function createNonRotatedSibling(string $sessionId): AuthRefreshToken
+    {
+        return new AuthRefreshToken(
+            (string) new Ulid(),
+            $sessionId,
+            'non-rotated-sibling',
+            new DateTimeImmutable('+1 month')
+        );
+    }
+
+    private function createRotatedSibling(
+        string $sessionId,
+        string $rotatedAt
+    ): AuthRefreshToken {
+        $token = new AuthRefreshToken(
+            (string) new Ulid(),
+            $sessionId,
+            'rotated-sibling',
+            new DateTimeImmutable('+1 month')
+        );
+        $token->markAsRotated(new DateTimeImmutable($rotatedAt));
+
+        return $token;
+    }
+
+    /**
+     * @param array<AuthRefreshToken> $sessionTokens
+     */
+    private function arrangeSuccessfulGraceRotation(
+        AuthSession $session,
+        User $user,
+        array $sessionTokens
+    ): void {
+        $this->refreshTokenRepository->expects($this->once())
+            ->method('findBySessionId')->with($session->getId())
+            ->willReturn($sessionTokens);
+        $this->refreshTokenRepository->expects($this->once())->method('save');
+        $this->configureTokenRotationFactories();
+        $this->accessTokenGenerator->expects($this->once())
+            ->method('generate')->willReturn('test-access-token');
+        $this->events->expects($this->once())->method('publishRotated')
+            ->with($session->getId(), $user->getId());
+    }
+
     private function expectNeverGraceEligibilityCheck(): void
     {
         $this->refreshTokenRepository
@@ -149,6 +293,18 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
                 static fn (
                     AuthRefreshToken $t
                 ): bool => $t->isRevoked()
+            ));
+    }
+
+    private function expectTokenRevocationSaves(int $count): void
+    {
+        $this->refreshTokenRepository
+            ->expects($this->exactly($count))
+            ->method('save')
+            ->with($this->callback(
+                static fn (
+                    AuthRefreshToken $token
+                ): bool => $token->isRevoked()
             ));
     }
 

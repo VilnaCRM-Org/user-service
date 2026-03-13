@@ -149,22 +149,30 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<string>|null
      *
-     * @psalm-return array{name: 'oauth_token', key: string}|null
+     * @psalm-return array{name: 'oauth_token'|'refresh_token', key: string}|null
      */
     private function resolveTokenExchangeLimiter(
         Request $request,
         string $path,
         string $method
     ): ?array {
-        if (
-            $method === 'POST'
-            && in_array($path, ['/api/token', '/api/oauth/token'], true)
-        ) {
+        if ($method !== 'POST') {
+            return null;
+        }
+
+        if ($path === '/api/oauth/token') {
             return [
                 'name' => 'oauth_token',
                 'key' => $this->buildClientKey(
                     $this->clientIdentityResolver->resolveClientId($request)
                 ),
+            ];
+        }
+
+        if ($path === '/api/token') {
+            return [
+                'name' => 'refresh_token',
+                'key' => $this->buildIpKey($request),
             ];
         }
 

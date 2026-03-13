@@ -1,0 +1,129 @@
+resources:
+  App\User\Application\DTO\AuthPayload:
+    normalizationContext:
+      groups: ['auth:query']
+
+    operations: []
+
+    graphQlOperations:
+      - class: 'ApiPlatform\Metadata\GraphQl\Query'
+        nested: true
+      - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
+        nested: true
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\SignInAuthMutationResolver'
+        name: 'signIn'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+          password:
+            type: 'String!'
+          rememberMe:
+            type: 'Boolean'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\CompleteTwoFactorAuthMutationResolver'
+        name: 'completeTwoFactor'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          pendingSessionId:
+            type: 'String!'
+          twoFactorCode:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\RefreshTokenAuthMutationResolver'
+        name: 'refreshToken'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          refreshToken:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\SetupTwoFactorAuthMutationResolver'
+        name: 'setupTwoFactor'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\ConfirmTwoFactorAuthMutationResolver'
+        name: 'confirmTwoFactor'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          twoFactorCode:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\DisableTwoFactorAuthMutationResolver'
+        name: 'disableTwoFactor'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          twoFactorCode:
+            type: 'String!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\RegenerateRecoveryCodesAuthMutationResolver'
+        name: 'regenerateRecoveryCodes'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\SignOutAuthMutationResolver'
+        name: 'signOut'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\SignOutAllAuthMutationResolver'
+        name: 'signOutAll'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []

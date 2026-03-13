@@ -19,7 +19,7 @@ final readonly class AuthRateLimiterCollection
         public RateLimiterFactory $twofaSetupLimiter,
         public RateLimiterFactory $twofaConfirmLimiter,
         public RateLimiterFactory $twofaDisableLimiter,
-        public RateLimiterFactory $oauthTokenLimiter,
+        public RateLimiterFactory $refreshTokenLimiter,
         public RateLimiterFactory $passwordResetLimiter,
     ) {
     }

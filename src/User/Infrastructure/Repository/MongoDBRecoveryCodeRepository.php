@@ -59,7 +59,13 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
             ->getQuery()
             ->execute();
 
-        return $this->wasDocumentUpdated($result);
+        if (!$this->wasDocumentUpdated($result)) {
+            return false;
+        }
+
+        $this->syncManagedRecoveryCodeUsage($id, $usedAt);
+
+        return true;
     }
 
     #[\Override]
@@ -97,5 +103,15 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
         $modifiedCount = $result->getModifiedCount();
 
         return is_int($modifiedCount) && $modifiedCount > 0;
+    }
+
+    private function syncManagedRecoveryCodeUsage(string $id, DateTimeImmutable $usedAt): void
+    {
+        $recoveryCode = $this->find($id);
+        if (!$recoveryCode instanceof RecoveryCode) {
+            return;
+        }
+
+        $recoveryCode->markAsUsed($usedAt);
     }
 }

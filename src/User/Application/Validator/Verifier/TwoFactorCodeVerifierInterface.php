@@ -13,8 +13,9 @@ interface TwoFactorCodeVerifierInterface
 
     public function verifyAndConsumeOrFail(User $user, string $code): void;
 
+    public function consumeRecoveryCodeOrFail(User $user, string $code): void;
+
     /**
-     * Verifies the code and, if it is a recovery code, also consumes it.
      * Returns the verification method name on success, null on failure.
      */
     public function verifyAndResolveMethod(User $user, string $code): ?string;

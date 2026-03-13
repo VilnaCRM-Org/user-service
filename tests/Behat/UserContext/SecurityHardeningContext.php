@@ -176,6 +176,26 @@ final class SecurityHardeningContext implements Context
     }
 
     /**
+     * @Then the response should contain :mutationName mutation
+     */
+    public function theResponseShouldContainMutation(
+        string $mutationName
+    ): void {
+        $response = $this->state->response;
+        Assert::assertNotNull($response);
+
+        $content = (string) $response->getContent();
+        Assert::assertStringContainsString(
+            $mutationName,
+            $content,
+            sprintf(
+                'Response should contain "%s" mutation but it does not.',
+                $mutationName
+            )
+        );
+    }
+
+    /**
      * @Then the :header header should not be :value
      */
     public function theHeaderShouldNotBe(

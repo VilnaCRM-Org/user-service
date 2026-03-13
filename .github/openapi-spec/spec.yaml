@@ -2311,23 +2311,11 @@ components:
       properties:
         pendingSessionId:
           minLength: 1
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
         twoFactorCode:
           minLength: 1
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
     EmptyResponse.ConfirmPasswordResetDto:
       type: object
       required:
@@ -2349,13 +2337,7 @@ components:
       properties:
         twoFactorCode:
           pattern: '^(\d{6})$'
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
     EmptyResponse.DisableTwoFactorDto:
       type: object
       required:
@@ -2363,13 +2345,7 @@ components:
       properties:
         twoFactorCode:
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
     EmptyResponse.RefreshTokenDto:
       type: object
       required:
@@ -2377,13 +2353,7 @@ components:
       properties:
         refreshToken:
           minLength: 1
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
     EmptyResponse.RegenerateRecoveryCodesDto:
       type: object
     EmptyResponse.RequestPasswordResetDto:
@@ -2411,23 +2381,11 @@ components:
           maxLength: 255
           externalDocs:
             url: 'https://schema.org/email'
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
         password:
           minLength: 1
           maxLength: 255
-          anyOf:
-            -
-              type: integer
-            -
-              type: string
-            -
-              type: 'null'
+          type: string
       required:
         - email
         - password

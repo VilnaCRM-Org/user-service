@@ -68,6 +68,70 @@ final class UserGraphQLAuthenticationResponseContext implements Context
     }
 
     /**
+     * @Then the GraphQL auth response should contain issued tokens
+     */
+    public function theGraphQlAuthResponseShouldContainIssuedTokens(): void
+    {
+        $payload = $this->extractMutationUserData();
+        Assert::assertTrue($payload['success'] ?? false);
+        Assert::assertIsString($payload['accessToken'] ?? null);
+        Assert::assertNotSame('', $payload['accessToken']);
+        Assert::assertIsString($payload['refreshToken'] ?? null);
+        Assert::assertNotSame('', $payload['refreshToken']);
+    }
+
+    /**
+     * @Then the GraphQL auth response should contain a pending two-factor session
+     */
+    public function theGraphQlAuthResponseShouldContainPendingTwoFactorSession(): void
+    {
+        $payload = $this->extractMutationUserData();
+        $hasAccessToken = isset($payload['accessToken'])
+            && is_string($payload['accessToken'])
+            && $payload['accessToken'] !== '';
+
+        Assert::assertTrue($payload['success'] ?? false);
+        Assert::assertTrue($payload['twoFactorEnabled'] ?? false);
+        Assert::assertIsString($payload['pendingSessionId'] ?? null);
+        Assert::assertNotSame('', $payload['pendingSessionId']);
+        Assert::assertFalse($hasAccessToken);
+    }
+
+    /**
+     * @Then the GraphQL auth response should contain setup details
+     */
+    public function theGraphQlAuthResponseShouldContainSetupDetails(): void
+    {
+        $payload = $this->extractMutationUserData();
+        Assert::assertTrue($payload['success'] ?? false);
+        Assert::assertIsString($payload['otpauthUri'] ?? null);
+        Assert::assertNotSame('', $payload['otpauthUri']);
+        Assert::assertIsString($payload['secret'] ?? null);
+        Assert::assertNotSame('', $payload['secret']);
+    }
+
+    /**
+     * @Then the GraphQL auth response should contain recovery codes
+     */
+    public function theGraphQlAuthResponseShouldContainRecoveryCodes(): void
+    {
+        $payload = $this->extractMutationUserData();
+        Assert::assertTrue($payload['success'] ?? false);
+        Assert::assertArrayHasKey('recoveryCodes', $payload);
+        Assert::assertIsArray($payload['recoveryCodes']);
+        Assert::assertNotSame([], $payload['recoveryCodes']);
+    }
+
+    /**
+     * @Then the GraphQL auth response should indicate success
+     */
+    public function theGraphQlAuthResponseShouldIndicateSuccess(): void
+    {
+        $payload = $this->extractMutationUserData();
+        Assert::assertTrue($payload['success'] ?? false);
+    }
+
+    /**
      * @Then /^the GraphQL response should contain "([^"]*)"$/
      */
     public function theGraphQlResponseShouldContainKey(

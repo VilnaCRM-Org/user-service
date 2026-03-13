@@ -142,8 +142,8 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
-	@if grep -q "FAILURES!" /tmp/phpunit_output.txt; then \
-		echo "❌ TEST FAILURE: Some tests failed"; \
+	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
+		echo "❌ TEST FAILURE: Some unit tests failed"; \
 		exit 1; \
 	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
@@ -229,7 +229,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --configuration=infection-ci.json5 --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'

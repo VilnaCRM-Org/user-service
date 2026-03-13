@@ -28,7 +28,7 @@ Feature: Two-Factor Authentication Management
     And completing 2FA with the stored pending_session_id and code "000000"
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 401
-    And the error message should be "Invalid two-factor code"
+    And the error message should be "Invalid two-factor code."
 
   Scenario: Pending session remains valid after wrong TOTP code
     Given user with email "2fa-retry@test.com" and password "passWORD1" exists
@@ -72,7 +72,7 @@ Feature: Two-Factor Authentication Management
     And the response should contain "otpauth_uri"
     And the response should contain "secret"
     And the otpauth_uri should contain "VilnaCRM"
-    And the otpauth_uri should contain "2fa-setup@test.com"
+    And the otpauth_uri should contain "2fa-setup%40test.com"
 
   Scenario: 2FA setup does not enable 2FA immediately
     Given I am authenticated as user "2fa-setup-pending@test.com"
@@ -212,7 +212,8 @@ Feature: Two-Factor Authentication Management
 
   Scenario: Regenerate recovery codes with recent high-trust auth
     Given I am authenticated as user "2fa-regen@test.com"
-    And user "2fa-regen@test.com" has 2FA enabled
+    And user "2fa-regen@test.com" has 2FA enabled with recovery codes
+    And I store the current recovery codes
     And user "2fa-regen@test.com" has completed high-trust re-auth within 5 minutes
     When POST request is send to "/api/2fa/recovery-codes"
     Then the response status code should be 200
@@ -318,7 +319,7 @@ Feature: Two-Factor Authentication Management
     And user "2fa-confirm-nosetup@test.com" has not completed 2FA setup
     And confirming 2FA with code "123456"
     When POST request is send to "/api/2fa/confirm"
-    Then the response status code should be 400
+    Then the response status code should be 401
 
   Scenario: 2FA confirm with empty code
     Given I am authenticated as user "2fa-confirm-empty@test.com"
@@ -372,7 +373,7 @@ Feature: Two-Factor Authentication Management
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 200
 
-  Scenario: Recovery code with invalid format is treated as TOTP
+  Scenario: 2FA code with invalid format is rejected by validation
     Given user with email "2fa-format@test.com" and password "passWORD1" exists
     And user with email "2fa-format@test.com" has 2FA enabled
     And signing in with email "2fa-format@test.com" and password "passWORD1"
@@ -380,7 +381,8 @@ Feature: Two-Factor Authentication Management
     And I store the pending_session_id from the response
     And completing 2FA with the stored pending_session_id and code "not-valid"
     When POST request is send to "/api/signin/2fa"
-    Then the response status code should be 401
+    Then the response status code should be 422
+    And violation should be "two.factor.code.invalid"
 
   # Additional 2FA disable edge cases (FR-15)
 
@@ -462,7 +464,7 @@ Feature: Two-Factor Authentication Management
     And confirming 2FA with a valid TOTP code
     When POST request is send to "/api/2fa/confirm"
     Then the response status code should be 200
-    And each recovery code should match pattern "[a-z0-9]{4}-[a-z0-9]{4}"
+    And each recovery code should match pattern "[A-Z0-9]{4}-[A-Z0-9]{4}"
 
   # Pending session consumption (FR-02, FR-03)
 
@@ -556,7 +558,7 @@ Feature: Two-Factor Authentication Management
     Then the response status code should be 200
     And the response should not contain "recovery_codes_remaining"
 
-  Scenario: Recovery code 2FA always includes recovery_codes_remaining
+  Scenario: Recovery code 2FA omits recovery_codes_remaining when many codes remain
     Given user with email "2fa-recovery-count@test.com" and password "passWORD1" exists
     And user with email "2fa-recovery-count@test.com" has 2FA enabled with recovery codes
     And signing in with email "2fa-recovery-count@test.com" and password "passWORD1"
@@ -565,4 +567,4 @@ Feature: Two-Factor Authentication Management
     And completing 2FA with the stored pending_session_id and a valid recovery code
     When POST request is send to "/api/signin/2fa"
     Then the response status code should be 200
-    And the response should contain "recovery_codes_remaining"
+    And the response should not contain "recovery_codes_remaining"

@@ -40,12 +40,18 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
         }
 
         if ($this->isRecoveryCode($code)) {
-            $this->consumeRecoveryCodeOrFail($user->getId(), $code);
+            $this->consumeRecoveryCodeOrFail($user, $code);
 
             return;
         }
 
         throw new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.');
+    }
+
+    #[\Override]
+    public function consumeRecoveryCodeOrFail(User $user, string $code): void
+    {
+        $this->consumeRecoveryCodeOrFailByUserId($user->getId(), $code);
     }
 
     #[\Override]
@@ -59,7 +65,7 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
             return null;
         }
 
-        return $this->tryConsumeRecoveryCode($user->getId(), $code)
+        return $this->hasUnusedRecoveryCode($user->getId(), $code)
             ? self::METHOD_RECOVERY_CODE
             : null;
     }
@@ -89,11 +95,22 @@ final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInter
             : null;
     }
 
-    private function consumeRecoveryCodeOrFail(string $userId, string $code): void
+    private function consumeRecoveryCodeOrFailByUserId(string $userId, string $code): void
     {
         if (!$this->tryConsumeRecoveryCode($userId, $code)) {
             throw new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.');
         }
+    }
+
+    private function hasUnusedRecoveryCode(string $userId, string $plainCode): bool
+    {
+        foreach ($this->recoveryCodeRepository->findByUserId($userId) as $code) {
+            if (!$code->isUsed() && $code->matchesCode($plainCode)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function tryConsumeRecoveryCode(string $userId, string $plainCode): bool

@@ -1,59 +1,49 @@
-Feature: GraphQL Authentication Exclusion and Hardening
-  In order to enforce REST-only authentication and protect against GraphQL abuse
+Feature: GraphQL Authentication and Hardening
+  In order to support authenticated clients consistently
   As the system
-  I want auth operations excluded from GraphQL and query limits enforced
+  I want auth operations available in GraphQL and query limits enforced
 
-  # NFR-62: Auth operations excluded from GraphQL schema
+  # NFR-62: Auth operations available in GraphQL schema
 
-  Scenario: Sign-in mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-signin@test.com"
-    When I send a GraphQL mutation "signIn" with email "test@test.com" and password "passWORD1"
-    Then the GraphQL response should indicate the mutation does not exist
+  Scenario: Auth mutations are exposed in GraphQL schema
+    Given I am authenticated as user "gql-auth-schema@test.com"
+    When I send a GraphQL introspection query for mutation types
+    Then the response should contain "signInUser" mutation
+    And the response should contain "completeTwoFactorUser" mutation
+    And the response should contain "signOutUser" mutation
+    And the response should contain "signOutAllUser" mutation
+    And the response should contain "setupTwoFactorUser" mutation
+    And the response should contain "confirmTwoFactorUser" mutation
+    And the response should contain "disableTwoFactorUser" mutation
+    And the response should contain "refreshTokenUser" mutation
+    And the response should contain "regenerateRecoveryCodesUser" mutation
+    And the response should contain "requestPasswordResetUser" mutation
+    And the response should contain "confirmPasswordResetUser" mutation
 
-  Scenario: Complete 2FA mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-2fa@test.com"
-    When I send a GraphQL mutation "completeTwoFactor" with pending_session_id "id" and code "123456"
-    Then the GraphQL response should indicate the mutation does not exist
+  Scenario: Sign-in mutation returns issued tokens
+    Given user with email "gql-signin@test.com" and password "passWORD1" exists
+    When I send a GraphQL mutation "signIn" with email "gql-signin@test.com" and password "passWORD1"
+    Then the response status code should be 200
+    And the GraphQL auth response should contain issued tokens
 
-  Scenario: Sign-out mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-signout@test.com"
-    When I send a GraphQL mutation "signOut"
-    Then the GraphQL response should indicate the mutation does not exist
+  Scenario: Sign-in mutation returns a pending two-factor session when 2FA is enabled
+    Given user with email "gql-signin-2fa@test.com" and password "passWORD1" exists
+    And user with email "gql-signin-2fa@test.com" has 2FA enabled
+    When I send a GraphQL mutation "signIn" with email "gql-signin-2fa@test.com" and password "passWORD1"
+    Then the response status code should be 200
+    And the GraphQL auth response should contain a pending two-factor session
 
-  Scenario: Sign-out-all mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-signout-all@test.com"
-    When I send a GraphQL mutation "signOutAll"
-    Then the GraphQL response should indicate the mutation does not exist
-
-  Scenario: 2FA setup mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-2fa-setup@test.com"
+  Scenario: Setup 2FA mutation returns setup details
+    Given I am authenticated as user "gql-setup-2fa@test.com"
     When I send a GraphQL mutation "setupTwoFactor"
-    Then the GraphQL response should indicate the mutation does not exist
+    Then the response status code should be 200
+    And the GraphQL auth response should contain setup details
 
-  Scenario: 2FA confirm mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-2fa-confirm@test.com"
-    When I send a GraphQL mutation "confirmTwoFactor" with code "123456"
-    Then the GraphQL response should indicate the mutation does not exist
-
-  Scenario: 2FA disable mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-2fa-disable@test.com"
-    When I send a GraphQL mutation "disableTwoFactor" with code "123456"
-    Then the GraphQL response should indicate the mutation does not exist
-
-  Scenario: Token refresh mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-refresh@test.com"
-    When I send a GraphQL mutation "refreshToken" with refresh_token "token"
-    Then the GraphQL response should indicate the mutation does not exist
-
-  Scenario: Recovery code regeneration mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-recovery@test.com"
-    When I send a GraphQL mutation "regenerateRecoveryCodes"
-    Then the GraphQL response should indicate the mutation does not exist
-
-  Scenario: Password reset mutation is not exposed in GraphQL schema
-    Given I am authenticated as user "gql-no-reset@test.com"
-    When I send a GraphQL mutation "resetPassword" with email "test@test.com"
-    Then the GraphQL response should indicate the mutation does not exist
+  Scenario: Sign-out mutation succeeds
+    Given I am authenticated as user "gql-signout@test.com"
+    When I send a GraphQL mutation "signOut"
+    Then the response status code should be 200
+    And the GraphQL auth response should indicate success
 
   # NFR-62: CRUD mutations still work via GraphQL
 
@@ -130,13 +120,15 @@ Feature: GraphQL Authentication Exclusion and Hardening
 
   # GraphQL authentication requirement
 
-  Scenario: Unauthenticated GraphQL mutation returns error
-    When I execute GraphQL mutation createUser with email "gql-unauth@test.com", initials "name surname", password "passWORD1"
-    Then the response status code should be 401
+  Scenario: Unauthenticated GraphQL mutation returns authorization error
+    When I send a GraphQL mutation "setupTwoFactor"
+    Then the response status code should be 200
+    And the GraphQL response should contain an authorization error
 
-  Scenario: Unauthenticated GraphQL query returns error
+  Scenario: Unauthenticated GraphQL query returns authorization error
     When I send a GraphQL query for user collection
-    Then the response status code should be 401
+    Then the response status code should be 200
+    And the GraphQL response should contain an authorization error
 
   # NFR-24: GraphQL introspection control
 

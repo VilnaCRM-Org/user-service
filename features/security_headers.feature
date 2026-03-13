@@ -79,19 +79,19 @@ Feature: Security Headers and Hardening
     When I send a GraphQL batch request as JSON array
     Then the response status code should be 400
 
-  # Story 5.8: Auth operations excluded from GraphQL (NFR-62)
+  # Story 5.8: Auth operations available in GraphQL (NFR-62)
 
-  Scenario: Sign-in mutation not exposed in GraphQL
+  Scenario: Auth mutations exposed in GraphQL
     Given I am authenticated as user "gql-nosignin@test.com"
     When I send a GraphQL introspection query for mutation types
-    Then the response should not contain "signIn" mutation
-    And the response should not contain "completeTwoFactor" mutation
-    And the response should not contain "signOut" mutation
-    And the response should not contain "signOutAll" mutation
-    And the response should not contain "setupTwoFactor" mutation
-    And the response should not contain "confirmTwoFactor" mutation
-    And the response should not contain "disableTwoFactor" mutation
-    And the response should not contain "refreshToken" mutation
+    Then the response should contain "signInUser" mutation
+    And the response should contain "completeTwoFactorUser" mutation
+    And the response should contain "signOutUser" mutation
+    And the response should contain "signOutAllUser" mutation
+    And the response should contain "setupTwoFactorUser" mutation
+    And the response should contain "confirmTwoFactorUser" mutation
+    And the response should contain "disableTwoFactorUser" mutation
+    And the response should contain "refreshTokenUser" mutation
 
   # Story 5.7: Request body size limit (NFR-39)
 
@@ -198,10 +198,10 @@ Feature: Security Headers and Hardening
     When I send a single GraphQL query for user collection
     Then the response status code should be 200
 
-  Scenario: Token exchange mutation not exposed in GraphQL
+  Scenario: Token exchange mutation uses refreshTokenUser in GraphQL
     Given I am authenticated as user "gql-notoken@test.com"
     When I send a GraphQL introspection query for mutation types
-    Then the response should not contain "refreshToken" mutation
+    Then the response should contain "refreshTokenUser" mutation
     And the response should not contain "tokenExchange" mutation
 
   # Security headers on all response types

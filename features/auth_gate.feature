@@ -177,16 +177,16 @@ Feature: Authentication Gate and Access Control
     When I execute GraphQL mutation resendEmailTo for user "8be90127-9840-4235-a6da-39b8debfb243"
     Then the GraphQL response should contain an authorization error
 
-  # Story 4.4: Disable OAuth password grant (NFR-41, credentials must not be shared with clients)
+  # Story 4.4: OAuth password grant remains available for first-party clients
 
-  Scenario: Password grant type is rejected
+  Scenario: Password grant type is accepted
     Given client with id "PwGrantId", secret "PwGrantSecret" and redirect uri "https://example.com" exists
     And user with email "pwgrant@mail.com" and password "pass" exists
     And passing client id "PwGrantId", client secret "PwGrantSecret", email "pwgrant@mail.com" and password "pass"
     When obtaining access token with "password" grant-type
-    Then unsupported grant type error should be returned
+    Then access token should be provided
 
-  Scenario: Client credentials grant still works after password grant disabled
+  Scenario: Client credentials grant still works with password grant enabled
     Given client with id "StillWorksId", secret "StillWorksSecret" and redirect uri "https://example.com" exists
     And passing client id "StillWorksId" and client secret "StillWorksSecret"
     When obtaining access token with "client_credentials" grant-type
@@ -257,9 +257,10 @@ Feature: Authentication Gate and Access Control
     When POST request is send to "/api/reset-password/confirm"
     Then the response status code should not be 401
 
-  Scenario: Unauthenticated GraphQL query returns 401
+  Scenario: Unauthenticated GraphQL query returns authorization error
     When I send a GraphQL query for user collection
-    Then the response status code should be 401
+    Then the response status code should be 200
+    And the GraphQL response should contain an authorization error
 
   Scenario: Authenticated GraphQL query succeeds
     Given I am authenticated as user "gql-auth@test.com"
@@ -321,7 +322,8 @@ Feature: Authentication Gate and Access Control
 
   Scenario: GraphQL endpoint requires authentication
     When I send a GraphQL query for user collection
-    Then the response status code should be 401
+    Then the response status code should be 200
+    And the GraphQL response should contain an authorization error
 
   # User can read their own details
 

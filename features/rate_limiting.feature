@@ -57,8 +57,8 @@ Feature: Rate Limiting
     When POST request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb262/resend-confirmation-email"
     Then the response status code should be 429
 
-  Scenario: Token exchange rate limit enforced at 10/min per client
-    Given 10 token exchange requests with the same client_id have been sent within 1 minute
+  Scenario: Refresh token exchange rate limit enforced at 10/min per IP
+    Given 10 refresh token exchange requests from the same IP have been sent within 1 minute
     And submitting refresh token "some-token"
     When POST request is send to "/api/token"
     Then the response status code should be 429
@@ -169,8 +169,8 @@ Feature: Rate Limiting
     And the response should contain "status"
     And the response should contain "detail"
 
-  Scenario: Rate limit rejection on token exchange uses RFC 7807 format
-    Given 10 token exchange requests with the same client_id have been sent within 1 minute
+  Scenario: Rate limit rejection on refresh token exchange uses RFC 7807 format
+    Given 10 refresh token exchange requests from the same IP have been sent within 1 minute
     And submitting refresh token "some-token"
     When POST request is send to "/api/token"
     Then the response status code should be 429

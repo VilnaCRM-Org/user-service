@@ -111,6 +111,11 @@ final class UserPasswordResetRequestContext implements Context
             return $email;
         }
 
+        $tokenUserEmail = UserContext::getCurrentTokenUserEmail();
+        if ($tokenUserEmail !== '') {
+            return $tokenUserEmail;
+        }
+
         throw new \RuntimeException(
             'Current user email is missing for password reset flow.'
         );

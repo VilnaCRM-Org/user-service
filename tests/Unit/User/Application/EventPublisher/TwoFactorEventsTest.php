@@ -204,6 +204,7 @@ final class TwoFactorEventsTest extends UnitTestCase
         $this->assertInstanceOf(TwoFactorCompletedEvent::class, $events[0]);
         $this->assertTrue($v($events[0]));
         $this->assertInstanceOf(UserSignedInEvent::class, $events[1]);
+        $this->assertTrue($events[1]->twoFactorUsed);
     }
 
     private function callCompleted(

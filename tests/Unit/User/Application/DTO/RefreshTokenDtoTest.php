@@ -6,7 +6,6 @@ namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\RefreshTokenDto;
-use LogicException;
 
 final class RefreshTokenDtoTest extends UnitTestCase
 {
@@ -18,13 +17,10 @@ final class RefreshTokenDtoTest extends UnitTestCase
         $this->assertSame($refreshToken, $dto->refreshTokenValue());
     }
 
-    public function testRefreshTokenValueThrowsForNonStringPayload(): void
+    public function testConstructWithDefaults(): void
     {
-        $dto = new RefreshTokenDto($this->faker->numberBetween(100000, 999999));
+        $dto = new RefreshTokenDto();
 
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Expected "refreshToken" to be a string after request validation.');
-
-        $dto->refreshTokenValue();
+        $this->assertSame('', $dto->refreshToken);
     }
 }

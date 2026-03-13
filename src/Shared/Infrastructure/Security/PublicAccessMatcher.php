@@ -19,7 +19,7 @@ final readonly class PublicAccessMatcher
      * @param array<int, array{pattern: string, methods?: list<string>}> $rules
      */
     public function __construct(
-        private array $rules
+        private array $rules,
     ) {
     }
 

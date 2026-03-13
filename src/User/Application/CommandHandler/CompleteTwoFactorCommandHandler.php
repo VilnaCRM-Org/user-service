@@ -50,6 +50,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         assert(is_string($method));
         $rememberMe = $pendingSession->isRememberMe();
         $this->consumePendingSessionOrFail($pendingSession->getId());
+        $this->consumeRecoveryCodeIfNeeded($user, $command, $method);
         $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
     }
 
@@ -152,6 +153,25 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         }
 
         return sprintf('Only %d recovery code(s) remaining. Regenerate soon.', $remainingCodes);
+    }
+
+    private function consumeRecoveryCodeIfNeeded(
+        User $user,
+        CompleteTwoFactorCommand $command,
+        string $method
+    ): void {
+        if ($method !== TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE) {
+            return;
+        }
+
+        try {
+            $this->twoFactorCodeVerifier->consumeRecoveryCodeOrFail(
+                $user,
+                $command->twoFactorCode
+            );
+        } catch (UnauthorizedHttpException) {
+            $this->handleTwoFactorFailure($command);
+        }
     }
 
     private function resolvePendingSession(string $pendingSessionId): PendingTwoFactor

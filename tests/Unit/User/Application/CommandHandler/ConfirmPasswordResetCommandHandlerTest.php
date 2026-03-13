@@ -10,6 +10,8 @@ use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface;
 use App\User\Application\Processor\Hasher\PasswordHasherInterface;
+use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
+use App\User\Application\Processor\Revoker\AllSessionsRevokerInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
@@ -27,6 +29,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
+    private AccountLockoutServiceInterface&MockObject $accountLockoutService;
+    private AllSessionsRevokerInterface&MockObject $allSessionsRevoker;
     private PasswordResetConfirmationPublisherInterface&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
 
@@ -39,6 +43,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
+        $this->accountLockoutService = $this->createMock(AccountLockoutServiceInterface::class);
+        $this->allSessionsRevoker = $this->createMock(AllSessionsRevokerInterface::class);
         $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
@@ -46,6 +52,8 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             $this->userRepository,
             $this->passwordHasher,
             $this->tokenValidator,
+            $this->accountLockoutService,
+            $this->allSessionsRevoker,
             $this->publisher,
         );
     }
@@ -71,6 +79,30 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $mocks = $this->createConfirmPasswordResetMocks($testData);
 
         $this->setupConfirmPasswordResetExpectations($testData, $mocks);
+
+        $this->handler->__invoke($command);
+    }
+
+    public function testInvokeClearsFailuresWithLowercasedEmail(): void
+    {
+        $testData = $this->createConfirmPasswordResetTestData();
+        $testData['userEmail'] = '  Test.User@Example.COM  ';
+        $command = new ConfirmPasswordResetCommand(
+            $testData['token'],
+            $testData['newPassword']
+        );
+        $mocks = $this->createConfirmPasswordResetMocks($testData);
+
+        $this->setupTokenValidationExpectations(
+            $testData['token'],
+            $mocks['passwordResetToken']
+        );
+        $this->setupUserUpdateExpectations($testData, $mocks['user']);
+        $this->expectLockoutClearAndRevoke(
+            $testData,
+            $mocks,
+            'test.user@example.com'
+        );
 
         $this->handler->__invoke($command);
     }
@@ -214,7 +246,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @return array<string>
      *
-     * @psalm-return array{token: string, newPassword: string, userId: string, hashedPassword: string}
+     * @psalm-return array{token: string, newPassword: string, userId: string, userEmail: string, hashedPassword: string}
      */
     private function createConfirmPasswordResetTestData(): array
     {
@@ -222,6 +254,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             'token' => $this->faker->lexify('??????????'),
             'newPassword' => $this->faker->password(12),
             'userId' => $this->faker->uuid(),
+            'userEmail' => '  ' . $this->faker->email() . '  ',
             'hashedPassword' => $this->faker->sha256(),
         ];
     }
@@ -243,6 +276,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn($testData['userId']);
+        $user->method('getEmail')->willReturn($testData['userEmail']);
 
         return [
             'passwordResetToken' => $passwordResetToken,
@@ -298,11 +332,44 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
      * @param array<string, string> $testData
      * @param array<string, PasswordResetTokenInterface|User> $mocks
      */
+    private function expectLockoutClearAndRevoke(
+        array $testData,
+        array $mocks,
+        string $expectedEmail
+    ): void {
+        $this->tokenRepository->expects($this->once())
+            ->method('save')
+            ->with($mocks['passwordResetToken']);
+        $this->accountLockoutService->expects($this->once())
+            ->method('clearFailures')
+            ->with($expectedEmail);
+        $this->allSessionsRevoker->expects($this->once())
+            ->method('revokeAllSessions')
+            ->with($testData['userId'], 'password_reset')
+            ->willReturn(3);
+        $this->publisher->expects($this->once())
+            ->method('publish')
+            ->with($mocks['user']);
+    }
+
+    /**
+     * @param array<string, string> $testData
+     * @param array<string, PasswordResetTokenInterface|User> $mocks
+     */
     private function setupEventPublishingExpectations(array $testData, array $mocks): void
     {
         $this->tokenRepository->expects($this->once())
             ->method('save')
             ->with($mocks['passwordResetToken']);
+
+        $this->accountLockoutService->expects($this->once())
+            ->method('clearFailures')
+            ->with(strtolower(trim($testData['userEmail'])));
+
+        $this->allSessionsRevoker->expects($this->once())
+            ->method('revokeAllSessions')
+            ->with($testData['userId'], 'password_reset')
+            ->willReturn(3);
 
         $this->publisher->expects($this->once())
             ->method('publish')

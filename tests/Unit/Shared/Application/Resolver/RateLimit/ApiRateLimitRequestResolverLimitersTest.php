@@ -84,18 +84,27 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
 
     public function testResolveEndpointLimitersForOauthTokenPath(): void
     {
-        $request = Request::create('/api/token', 'POST');
+        $request = Request::create('/api/token', 'POST', [], [], [], [
+            'REMOTE_ADDR' => '127.0.0.1',
+        ]);
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $byName = array_column($limiters, 'key', 'name');
 
-        self::assertArrayHasKey('oauth_token', $byName);
-        self::assertSame('client:anonymous', $byName['oauth_token']);
+        self::assertArrayHasKey('refresh_token', $byName);
+        self::assertSame('ip:127.0.0.1', $byName['refresh_token']);
     }
 
     public function testResolveEndpointLimitersForOauthAlternatePath(): void
     {
-        $request = Request::create('/api/oauth/token', 'POST');
+        $request = Request::create(
+            '/api/oauth/token',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '127.0.0.1']
+        );
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $names = array_column($limiters, 'name');
@@ -106,7 +115,28 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
     public function testResolveEndpointLimitersOauthTokenUsesClientIdFromBasicAuth(): void
     {
         $clientId = $this->faker->lexify('client???');
-        $request = Request::create('/api/token', 'POST');
+        $request = Request::create('/api/token', 'POST', [], [], [], [
+            'REMOTE_ADDR' => '127.0.0.1',
+        ]);
+        $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertSame('ip:127.0.0.1', $byName['refresh_token']);
+    }
+
+    public function testResolveEndpointLimitersOauthAlternatePathUsesClientIdFromBasicAuth(): void
+    {
+        $clientId = $this->faker->lexify('client???');
+        $request = Request::create(
+            '/api/oauth/token',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '127.0.0.1']
+        );
         $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);

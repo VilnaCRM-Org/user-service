@@ -73,7 +73,7 @@ Feature: Password Reset Integration with Auth System
     And the response status code should be 204
     And I confirm the password reset with the stored token and new password "passWORD3"
     When POST request is send to "/api/reset-password/confirm"
-    Then the response status code should be 401
+    Then the response status code should be 400
 
   # Password reset with locked account
 

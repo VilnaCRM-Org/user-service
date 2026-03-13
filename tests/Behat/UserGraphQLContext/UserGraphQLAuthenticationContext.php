@@ -37,7 +37,7 @@ final class UserGraphQLAuthenticationContext implements Context
         $this->sendAuthMutationWithArgs(
             'completeTwoFactor',
             sprintf(
-                'pending_session_id: "%s", code: "%s"',
+                'pendingSessionId: "%s", twoFactorCode: "%s"',
                 $sessionId,
                 $code
             )
@@ -51,7 +51,7 @@ final class UserGraphQLAuthenticationContext implements Context
     {
         $this->sendAuthMutationWithArgs(
             'refreshToken',
-            sprintf('refresh_token: "%s"', $token)
+            sprintf('refreshToken: "%s"', $token)
         );
     }
 
@@ -71,7 +71,7 @@ final class UserGraphQLAuthenticationContext implements Context
     ): void {
         $this->sendAuthMutationWithArgs(
             'confirmTwoFactor',
-            sprintf('code: "%s"', $code)
+            sprintf('twoFactorCode: "%s"', $code)
         );
     }
 
@@ -83,7 +83,7 @@ final class UserGraphQLAuthenticationContext implements Context
     ): void {
         $this->sendAuthMutationWithArgs(
             'disableTwoFactor',
-            sprintf('code: "%s"', $code)
+            sprintf('twoFactorCode: "%s"', $code)
         );
     }
 
@@ -126,22 +126,67 @@ final class UserGraphQLAuthenticationContext implements Context
         string $name,
         string $args
     ): void {
-        $this->state->setQueryName($name);
+        $mutationName = $this->resolveMutationName($name);
+        $this->state->setQueryName($mutationName);
         $this->state->setQuery(sprintf(
-            'mutation { %s(input: { %s }) { success } }',
-            $name,
-            $args
+            'mutation { %s(input: { %s }) { user { %s } } }',
+            $mutationName,
+            $args,
+            $this->resolveSelectionSet($name)
         ));
         $this->requestExecutor->sendCurrentQuery();
     }
 
     private function sendAuthMutationNoArgs(string $name): void
     {
-        $this->state->setQueryName($name);
+        $mutationName = $this->resolveMutationName($name);
+        $this->state->setQueryName($mutationName);
         $this->state->setQuery(sprintf(
-            'mutation { %s { success } }',
-            $name
+            'mutation { %s(input: {}) { user { %s } } }',
+            $mutationName,
+            $this->resolveSelectionSet($name)
         ));
         $this->requestExecutor->sendCurrentQuery();
+    }
+
+    private function resolveMutationName(string $name): string
+    {
+        return match ($name) {
+            'signIn' => 'signInUser',
+            'completeTwoFactor' => 'completeTwoFactorUser',
+            'refreshToken' => 'refreshTokenUser',
+            'setupTwoFactor' => 'setupTwoFactorUser',
+            'confirmTwoFactor' => 'confirmTwoFactorUser',
+            'disableTwoFactor' => 'disableTwoFactorUser',
+            'signOut' => 'signOutUser',
+            'signOutAll' => 'signOutAllUser',
+            'regenerateRecoveryCodes' => 'regenerateRecoveryCodesUser',
+            'resetPassword' => 'requestPasswordResetUser',
+            default => $name,
+        };
+    }
+
+    private function resolveSelectionSet(string $name): string
+    {
+        return match ($name) {
+            'signIn' => 'success twoFactorEnabled accessToken refreshToken pendingSessionId',
+            'completeTwoFactor' => implode(
+                ' ',
+                [
+                    'success',
+                    'twoFactorEnabled',
+                    'accessToken',
+                    'refreshToken',
+                    'recoveryCodesRemaining',
+                    'warning',
+                ]
+            ),
+            'refreshToken' => 'success accessToken refreshToken',
+            'setupTwoFactor' => 'success otpauthUri secret',
+            'confirmTwoFactor' => 'success recoveryCodes',
+            'disableTwoFactor', 'signOut', 'signOutAll', 'resetPassword' => 'success',
+            'regenerateRecoveryCodes' => 'success recoveryCodes',
+            default => 'success',
+        };
     }
 }

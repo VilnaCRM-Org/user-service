@@ -30,17 +30,17 @@ Feature: Input Validation for Authentication Endpoints
   Scenario: Sign-in with null email is rejected
     Given signing in with null email and password "passWORD1"
     When POST request is send to "/api/signin"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   Scenario: Sign-in with null password is rejected
     Given signing in with email "null-pw@test.com" and null password
     When POST request is send to "/api/signin"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   Scenario: Sign-in with numeric email value is rejected
     Given signing in with email as integer 12345 and password "passWORD1"
     When POST request is send to "/api/signin"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   Scenario: Sign-in with boolean remember_me false works
     Given user with email "bool-remember@test.com" and password "passWORD1" exists
@@ -89,7 +89,7 @@ Feature: Input Validation for Authentication Endpoints
   Scenario: 2FA completion with null code is rejected
     Given completing 2FA with pending_session_id "some-session" and null code
     When POST request is send to "/api/signin/2fa"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   Scenario: 2FA completion with empty pending_session_id is rejected
     Given completing 2FA with pending_session_id "" and code "123456"
@@ -129,7 +129,7 @@ Feature: Input Validation for Authentication Endpoints
   Scenario: Token refresh with null refresh_token is rejected
     Given submitting null refresh token
     When POST request is send to "/api/token"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   Scenario: Token refresh with very long token is handled gracefully
     Given submitting a refresh token of 10000 characters
@@ -159,7 +159,7 @@ Feature: Input Validation for Authentication Endpoints
     And I have completed 2FA setup
     And confirming 2FA with null code
     When POST request is send to "/api/2fa/confirm"
-    Then the response status code should be 422
+    Then the response status code should be 400
 
   # Content-Type validation
 

@@ -93,77 +93,167 @@ final readonly class RefreshTokenCommandHandler implements
         RefreshTokenCommand $command,
         DateTimeImmutable $currentTime
     ): void {
-        if ($oldToken->isWithinGracePeriod(
+        if (!$oldToken->isWithinGracePeriod(
             $currentTime,
             $this->refreshTokenGraceWindowSeconds
         )) {
-            $this->handleGraceWindowReuse(
-                $oldToken,
-                $session,
-                $user,
-                $command,
-                $currentTime
-            );
-
-            return;
+            $this->handleTheftDetection($oldToken, $session, $user, 'grace_period_expired');
         }
 
-        $this->handleTheftDetection(
+        $tokens = $this->refreshTokenRepository->findBySessionId($session->getId());
+        $this->handleGraceWindowReuse(
             $oldToken,
             $session,
             $user,
-            'grace_period_expired'
+            $command,
+            $currentTime,
+            $tokens
         );
     }
 
+    /**
+     * @param list<AuthRefreshToken> $tokens
+     */
+    private function hasLaterRotation(
+        AuthRefreshToken $oldToken,
+        array $tokens
+    ): bool {
+        $oldRotatedAt = $oldToken->getRotatedAt();
+        assert($oldRotatedAt instanceof DateTimeImmutable);
+
+        foreach ($tokens as $sessionToken) {
+            if ($this->isLaterRotatedToken(
+                $sessionToken,
+                $oldToken,
+                $oldRotatedAt
+            )) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isLaterRotatedToken(
+        AuthRefreshToken $candidateToken,
+        AuthRefreshToken $oldToken,
+        DateTimeImmutable $oldRotatedAt
+    ): bool {
+        if ($candidateToken->getId() === $oldToken->getId()) {
+            return false;
+        }
+
+        if ($candidateToken->isRevoked()) {
+            return false;
+        }
+
+        $candidateRotatedAt = $candidateToken->getRotatedAt();
+        if (!$candidateRotatedAt instanceof DateTimeImmutable) {
+            return false;
+        }
+
+        return (int) $candidateRotatedAt->format('Uu')
+            > (int) $oldRotatedAt->format('Uu');
+    }
+
+    /**
+     * @param list<AuthRefreshToken> $tokens
+     */
     private function handleGraceWindowReuse(
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
         RefreshTokenCommand $command,
-        DateTimeImmutable $currentTime
+        DateTimeImmutable $currentTime,
+        array $tokens
     ): void {
-        $this->assertGraceWindowIsEligible(
-            $oldToken,
-            $session,
-            $user,
-            $currentTime
-        );
+        if ($this->hasLaterRotation($oldToken, $tokens)) {
+            $this->handleTheftDetection(
+                $oldToken,
+                $session,
+                $user,
+                'superseded_rotation',
+                $tokens
+            );
+        }
 
+        $this->assertGraceWindowIsEligible($oldToken, $session, $user, $currentTime, $tokens);
         $oldToken->markGraceUsed();
-
         $this->setResponseWithNewTokens($command, $user, $session);
         $this->publishRotatedEvent($session, $user);
     }
 
+    /**
+     * @param list<AuthRefreshToken>|null $tokens
+     */
     private function handleTheftDetection(
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        string $reason
+        string $reason,
+        ?array $tokens = null
     ): never {
-        $this->revokeSessionAndTokens($oldToken, $session);
-        $this->publishTheftDetectedEvent($session, $user, $reason);
+        $this->revokeSessionAndTokens($oldToken, $session, $tokens);
+        $this->events->publishTheftDetected(
+            $session->getId(),
+            $user->getId(),
+            $session->getIpAddress(),
+            $reason
+        );
 
         $this->throwUnauthorized();
     }
 
+    /**
+     * @param list<AuthRefreshToken>|null $tokens
+     */
     private function revokeSessionAndTokens(
         AuthRefreshToken $oldToken,
-        AuthSession $session
+        AuthSession $session,
+        ?array $tokens = null
     ): void {
         if (!$session->isRevoked()) {
             $session->revoke();
             $this->authSessionRepository->save($session);
         }
 
-        $tokens = $this->refreshTokenRepository->findBySessionId(
-            $session->getId()
+        $this->revokeRefreshTokens(
+            $this->resolveTokensForRevocation(
+                $oldToken,
+                $session,
+                $tokens
+            )
         );
-        if ($tokens === []) {
-            $tokens = [$oldToken];
+    }
+
+    /**
+     * @param list<AuthRefreshToken>|null $tokens
+     *
+     * @return list<AuthRefreshToken>
+     */
+    private function resolveTokensForRevocation(
+        AuthRefreshToken $oldToken,
+        AuthSession $session,
+        ?array $tokens
+    ): array {
+        if ($tokens === null) {
+            $tokens = $this->refreshTokenRepository->findBySessionId(
+                $session->getId()
+            );
         }
 
+        if ($tokens !== []) {
+            return $tokens;
+        }
+
+        return [$oldToken];
+    }
+
+    /**
+     * @param list<AuthRefreshToken> $tokens
+     */
+    private function revokeRefreshTokens(array $tokens): void
+    {
         foreach ($tokens as $token) {
             if ($token->isRevoked()) {
                 continue;
@@ -270,38 +360,46 @@ final readonly class RefreshTokenCommandHandler implements
         $command->setTokens($accessToken, $newRefreshPlain);
     }
 
+    /**
+     * @param list<AuthRefreshToken> $tokens
+     */
     private function assertGraceWindowIsEligible(
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        DateTimeImmutable $currentTime
+        DateTimeImmutable $currentTime,
+        array $tokens
     ): void {
+        if ($this->consumeGraceWindow($oldToken, $currentTime)) {
+            return;
+        }
+
+        $this->handleTheftDetection(
+            $oldToken,
+            $session,
+            $user,
+            'double_grace_use',
+            $tokens
+        );
+    }
+
+    private function consumeGraceWindow(
+        AuthRefreshToken $oldToken,
+        DateTimeImmutable $currentTime
+    ): bool {
         if ($oldToken->isGraceUsed()) {
-            $this->detectDoubleGraceUse($oldToken, $session, $user);
+            return false;
         }
 
         $graceWindowStartedAt = $currentTime->setTimestamp(
             $currentTime->getTimestamp() - $this->refreshTokenGraceWindowSeconds
         );
-        $wasGraceConsumed = $this->refreshTokenRepository
-            ->markGraceUsedIfEligible(
-                $oldToken->getTokenHash(),
-                $graceWindowStartedAt,
-                $currentTime
-            );
-        if ($wasGraceConsumed) {
-            return;
-        }
 
-        $this->detectDoubleGraceUse($oldToken, $session, $user);
-    }
-
-    private function detectDoubleGraceUse(
-        AuthRefreshToken $oldToken,
-        AuthSession $session,
-        User $user
-    ): never {
-        $this->handleTheftDetection($oldToken, $session, $user, 'double_grace_use');
+        return $this->refreshTokenRepository->markGraceUsedIfEligible(
+            $oldToken->getTokenHash(),
+            $graceWindowStartedAt,
+            $currentTime
+        );
     }
 
     private function resolveUser(string $userId): User
@@ -321,19 +419,6 @@ final readonly class RefreshTokenCommandHandler implements
         $this->events->publishRotated(
             $session->getId(),
             $user->getId()
-        );
-    }
-
-    private function publishTheftDetectedEvent(
-        AuthSession $session,
-        User $user,
-        string $reason
-    ): void {
-        $this->events->publishTheftDetected(
-            $session->getId(),
-            $user->getId(),
-            $session->getIpAddress(),
-            $reason
         );
     }
 

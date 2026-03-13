@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
+use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
@@ -19,7 +20,6 @@ use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Bridge\PhpUnit\ClockMock;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Ulid;
@@ -32,6 +32,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
+    private CurrentTimestampProviderInterface&MockObject $currentTimestampProvider;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -44,6 +45,11 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->recoveryCodeGenerator = $this->createMock(RecoveryCodeGeneratorInterface::class);
+        $this->currentTimestampProvider = $this->createMock(
+            CurrentTimestampProviderInterface::class
+        );
+        $this->currentTimestampProvider->method('currentTimestamp')
+            ->willReturn(self::FIXED_BOUNDARY_TIMESTAMP);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
@@ -135,14 +141,11 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 
     public function testInvokeAllowsSudoModeAtExactBoundary(): void
     {
-        ClockMock::register(RegenerateRecoveryCodesCommandHandler::class);
-        ClockMock::register(self::class);
-        ClockMock::withClockMock(self::FIXED_BOUNDARY_TIMESTAMP);
-        try {
-            $this->assertBoundarySudoSessionAllowsRegeneration();
-        } finally {
-            ClockMock::withClockMock(false);
-        }
+        $this->currentTimestampProvider->expects($this->once())
+            ->method('currentTimestamp')
+            ->willReturn(self::FIXED_BOUNDARY_TIMESTAMP);
+
+        $this->assertBoundarySudoSessionAllowsRegeneration();
     }
 
     private function createHandler(): RegenerateRecoveryCodesCommandHandler
@@ -152,6 +155,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
             $this->recoveryCodeGenerator,
+            $this->currentTimestampProvider,
         );
     }
 
@@ -178,7 +182,9 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         string $userId,
         string $sessionId
     ): AuthSession {
-        $createdAt = new DateTimeImmutable('-1 minute');
+        $createdAt = new DateTimeImmutable(
+            sprintf('@%d', self::FIXED_BOUNDARY_TIMESTAMP - 60)
+        );
 
         return new AuthSession(
             $sessionId,
@@ -195,7 +201,9 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         string $userId,
         string $sessionId
     ): AuthSession {
-        $createdAt = new DateTimeImmutable('-10 minutes');
+        $createdAt = new DateTimeImmutable(
+            sprintf('@%d', self::FIXED_BOUNDARY_TIMESTAMP - 600)
+        );
 
         return new AuthSession(
             $sessionId,
@@ -232,11 +240,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
-        $session = $this->createBoundarySudoSession(
-            $user->getId(),
-            $sessionId,
-            self::FIXED_BOUNDARY_TIMESTAMP
-        );
+        $session = $this->createFixedBoundarySudoSession($user->getId(), $sessionId);
 
         $this->userRepository->expects($this->once())->method('findByEmail')
             ->with($user->getEmail())->willReturn($user);
@@ -244,14 +248,42 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             ->with($sessionId)->willReturn($session);
         $this->recoveryCodeRepository->expects($this->once())
             ->method('deleteByUserId')->with($user->getId());
-        $generatedCodes = ['ABCD-1234', 'EFGH-5678', 'IJKL-9012', 'MNOP-3456',
-            'QRST-7890', 'UVWX-1234', 'YZAB-5678', 'CDEF-9012',
-        ];
-        $this->recoveryCodeGenerator->method('generateAndStore')->willReturn($generatedCodes);
+        $this->recoveryCodeGenerator->method('generateAndStore')
+            ->willReturn($this->generatedCodes());
 
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
         $this->createHandler()->__invoke($command);
-        $codes = $command->getResponse()->getRecoveryCodes();
-        $this->assertCount(RecoveryCode::COUNT, $codes);
+        $this->assertCount(
+            RecoveryCode::COUNT,
+            $command->getResponse()->getRecoveryCodes()
+        );
+    }
+
+    private function createFixedBoundarySudoSession(
+        string $userId,
+        string $sessionId
+    ): AuthSession {
+        return $this->createBoundarySudoSession(
+            $userId,
+            $sessionId,
+            self::FIXED_BOUNDARY_TIMESTAMP
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function generatedCodes(): array
+    {
+        return [
+            'ABCD-1234',
+            'EFGH-5678',
+            'IJKL-9012',
+            'MNOP-3456',
+            'QRST-7890',
+            'UVWX-1234',
+            'YZAB-5678',
+            'CDEF-9012',
+        ];
     }
 }

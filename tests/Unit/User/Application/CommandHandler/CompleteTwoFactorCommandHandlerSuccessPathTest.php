@@ -116,23 +116,10 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $pending = $this->createPendingSession($user->getId(), '+5 minutes');
-
         $this->configureLookupsOnce($pending, $user);
-
-        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')
-            ->with($user, 'CC33-DD44')
-            ->willReturn('recovery_code');
-
-        $this->twoFactorCodeVerifier->method('countRemainingCodes')
-            ->with($user->getId())
-            ->willReturn(4);
-
-        $issued = new IssuedSession((string) new Ulid(), 'test-access-token', 'test-refresh-token');
-        $this->sessionIssuer->method('issue')->willReturn($issued);
-
-        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
-        $this->events->method('publishCompleted');
-
+        $this->expectRecoveryCodeVerification($user, 'CC33-DD44', 4);
+        $this->expectIssuedSession('test-access-token', 'test-refresh-token');
+        $this->expectPendingConsumeAndCompletion($pending);
         $command = $this->invokeHandlerWith(
             $pending->getId(),
             'CC33-DD44',
@@ -146,30 +133,22 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $pending = $this->createPendingSession($user->getId(), '+5 minutes');
-
         $this->configureLookupsOnce($pending, $user);
-
-        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')
-            ->with($user, 'AB12-CD34')
-            ->willReturn('recovery_code');
-
-        $this->twoFactorCodeVerifier->method('countRemainingCodes')
-            ->with($user->getId())
-            ->willReturn(2);
-
-        $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
-        $this->sessionIssuer->method('issue')->willReturn($issued);
-
-        $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
-        $this->events->method('publishRecoveryCodeUsed');
-        $this->events->method('publishCompleted');
-
-        $ip = $this->faker->ipv4();
-        $ua = $this->faker->userAgent();
-        $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
+        $this->expectRecoveryCodeVerification($user, 'AB12-CD34', 2);
+        $this->expectIssuedSession('access-token', 'refresh-token');
+        $this->expectPendingConsumeAndCompletion($pending);
+        $this->events->expects($this->once())->method('publishRecoveryCodeUsed');
+        $command = $this->invokeHandlerWith(
+            $pending->getId(),
+            'AB12-CD34',
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
         $this->assertSame(2, $command->getResponse()->getRecoveryCodesRemaining());
-        $warning = (string) $command->getResponse()->getWarningMessage();
-        $this->assertStringContainsString('2', $warning);
+        $this->assertStringContainsString(
+            '2',
+            (string) $command->getResponse()->getWarningMessage()
+        );
     }
 
     public function testRecoveryCodeSignInWithoutWarningWhenManyCodesRemain(): void
@@ -205,9 +184,9 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
             ->willReturn('totp');
 
         $this->twoFactorCodeVerifier->expects($this->never())->method('countRemainingCodes');
+        $this->twoFactorCodeVerifier->expects($this->never())->method('consumeRecoveryCodeOrFail');
 
-        $issued = new IssuedSession((string) new Ulid(), 'access-token', 'refresh-token');
-        $this->sessionIssuer->method('issue')->willReturn($issued);
+        $this->expectIssuedSession('access-token', 'refresh-token');
 
         $this->events->expects($this->once())->method('publishCompleted');
         $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
@@ -253,6 +232,9 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
             ->method('verifyAndResolveMethod')
             ->with($user, $code)
             ->willReturn('recovery_code');
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('consumeRecoveryCodeOrFail')
+            ->with($user, $code);
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('countRemainingCodes')
             ->with($user->getId())

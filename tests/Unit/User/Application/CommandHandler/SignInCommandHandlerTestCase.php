@@ -110,4 +110,22 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
             $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
     }
+
+    protected function expectSignedInEvent(
+        User $user,
+        string $ip,
+        string $ua,
+        bool $twoFactorUsed
+    ): void {
+        $this->signInEvents->expects($this->once())
+            ->method('publishSignedIn')
+            ->with(
+                $user->getId(),
+                $user->getEmail(),
+                $this->isType('string'),
+                $ip,
+                $ua,
+                $twoFactorUsed
+            );
+    }
 }

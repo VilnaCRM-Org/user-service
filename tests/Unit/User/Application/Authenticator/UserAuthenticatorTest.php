@@ -136,6 +136,73 @@ final class UserAuthenticatorTest extends UnitTestCase
         );
     }
 
+    public function testLockedExceptionHasRetryAfterHeader(): void
+    {
+        $lockoutSeconds = $this->faker->numberBetween(60, 3600);
+        $this->arrangeLocked($lockoutSeconds);
+
+        $exception = $this->catchLockedException();
+
+        $this->assertLockedExceptionHeaders($exception, $lockoutSeconds);
+    }
+
+    public function testLockedExceptionAfterFailureHasRetryAfterHeader(): void
+    {
+        $lockoutSeconds = $this->faker->numberBetween(60, 3600);
+        $this->arrangeFailedAuth();
+        $this->lockoutService->method('recordFailure')->willReturn(true);
+        $this->arrangeLockoutDetails($lockoutSeconds);
+
+        $exception = $this->catchLockedException();
+
+        $this->assertLockedExceptionHeaders($exception, $lockoutSeconds);
+    }
+
+    public function testUnauthorizedExceptionHasCorrectStatusCode(): void
+    {
+        $this->arrangeFailedAuth();
+        $this->lockoutService->method('recordFailure')->willReturn(false);
+
+        $authenticator = $this->createAuthenticator($this->faker->sha256());
+
+        try {
+            $authenticator->authenticate(
+                $this->faker->email(),
+                $this->faker->password(),
+                $this->faker->ipv4(),
+                $this->faker->userAgent()
+            );
+            $this->fail('Expected UnauthorizedHttpException was not thrown');
+        } catch (UnauthorizedHttpException $exception) {
+            $this->assertSame(401, $exception->getStatusCode());
+        }
+    }
+
+    public function testDummyPasswordVerifiedWhenUserNotFound(): void
+    {
+        $dummyHash = $this->faker->sha256();
+        $password = $this->faker->password();
+
+        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->lockoutService->method('recordFailure')->willReturn(false);
+
+        $this->passwordHasher->expects($this->once())
+            ->method('verify')
+            ->with($dummyHash, $password)
+            ->willReturn(false);
+
+        $this->expectException(UnauthorizedHttpException::class);
+
+        $auth = $this->createAuthenticator($dummyHash);
+        $auth->authenticate(
+            $this->faker->email(),
+            $password,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+    }
+
     public function testAuthenticateThrowsUnauthorizedWhenUserNotFound(): void
     {
         $this->arrangeFailedAuth();
@@ -281,6 +348,48 @@ final class UserAuthenticatorTest extends UnitTestCase
             $this->lockoutService,
             $this->events,
             $dummyHash
+        );
+    }
+
+    private function arrangeLocked(int $lockoutSeconds): void
+    {
+        $this->lockoutService->method('isLocked')->willReturn(true);
+        $this->arrangeLockoutDetails($lockoutSeconds);
+    }
+
+    private function arrangeLockoutDetails(int $lockoutSeconds): void
+    {
+        $this->lockoutService->method('maxAttempts')->willReturn(5);
+        $this->lockoutService->method('lockoutSeconds')
+            ->willReturn($lockoutSeconds);
+    }
+
+    private function catchLockedException(): LockedHttpException
+    {
+        $authenticator = $this->createAuthenticator($this->faker->sha256());
+
+        try {
+            $authenticator->authenticate(
+                $this->faker->email(),
+                $this->faker->password(),
+                $this->faker->ipv4(),
+                $this->faker->userAgent()
+            );
+            $this->fail('Expected LockedHttpException was not thrown');
+        } catch (LockedHttpException $exception) {
+            return $exception;
+        }
+    }
+
+    private function assertLockedExceptionHeaders(
+        LockedHttpException $exception,
+        int $lockoutSeconds
+    ): void {
+        $this->assertSame(423, $exception->getStatusCode());
+        $this->assertSame(0, $exception->getCode());
+        $this->assertSame(
+            (string) $lockoutSeconds,
+            $exception->getHeaders()['Retry-After']
         );
     }
 }

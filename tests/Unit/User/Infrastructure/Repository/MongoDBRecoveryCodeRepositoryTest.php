@@ -113,6 +113,18 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         );
     }
 
+    public function testMarkAsUsedIfUnusedSynchronizesManagedRecoveryCode(): void
+    {
+        $id = $this->faker->uuid();
+        $usedAt = new DateTimeImmutable();
+        $recoveryCode = new RecoveryCode($id, $this->faker->uuid(), 'ab12-cd34');
+        $repository = $this->createRepositoryWithMarkAsUsedResult(1, $recoveryCode);
+
+        $this->assertTrue($repository->markAsUsedIfUnused($id, $usedAt));
+        $this->assertTrue($recoveryCode->isUsed());
+        $this->assertSame($usedAt, $recoveryCode->getUsedAt());
+    }
+
     public function testMarkAsUsedIfUnusedReturnsFalseWhenUpdateResultIsZero(): void
     {
         $repository = $this->createRepositoryWithMarkAsUsedResult(0);
@@ -189,11 +201,12 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     }
 
     private function createRepositoryWithMarkAsUsedResult(
-        mixed $updateResult
+        mixed $updateResult,
+        ?RecoveryCode $managedRecoveryCode = null
     ): MongoDBRecoveryCodeRepository {
         $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
             ->setConstructorArgs([$this->documentManager, $this->registry])
-            ->onlyMethods(['createQueryBuilder'])
+            ->onlyMethods(['createQueryBuilder', 'find'])
             ->getMock();
 
         $queryBuilder = $this->createMock(Builder::class);
@@ -208,6 +221,7 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $query->method('execute')->willReturn($updateResult);
 
         $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+        $repository->method('find')->willReturn($managedRecoveryCode);
 
         return $repository;
     }

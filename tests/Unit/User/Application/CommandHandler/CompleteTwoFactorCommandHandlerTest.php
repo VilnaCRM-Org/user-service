@@ -71,7 +71,10 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
         $expired = $this->createPendingSession($user->getId(), '-1 second');
-        $this->configurePendingLookupOnce($expired);
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('findById')
+            ->with($expired->getId())
+            ->willReturn($expired);
         $this->userRepository->expects($this->never())->method('findById');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired two-factor session.');
@@ -185,6 +188,25 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         ));
     }
 
+    public function testInvokeDoesNotConsumeRecoveryCodeWhenPendingSessionConsumeFails(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('verifyAndResolveMethod')
+            ->with($user, 'AB12-CD34')
+            ->willReturn(TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE);
+        $this->twoFactorCodeVerifier->expects($this->never())->method('consumeRecoveryCodeOrFail');
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('consumeIfActive')
+            ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(false);
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid or expired two-factor session.');
+        $this->createHandler()->__invoke($this->createCommand($pending->getId(), 'AB12-CD34'));
+    }
+
     public function testInvokeThrowsUnauthorizedWhenTotpVerificationFails(): void
     {
         $user = $this->createTwoFactorEnabledUser();
@@ -222,7 +244,12 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
             ->willReturn(true);
         $this->events->expects($this->once())->method('publishCompleted');
-        $command = $this->createCommand($pending->getId(), '123456');
+        $command = new CompleteTwoFactorCommand(
+            $pending->getId(),
+            '123456',
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
 
         $this->createHandler()->__invoke($command);
         $this->assertResponseTokens($command, 'access-token', 'refresh-token');
@@ -242,13 +269,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         $this->events->expects($this->never())->method('publishCompleted');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired two-factor session.');
-
-        $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
-            $pending->getId(),
-            '123456',
-            $this->faker->ipv4(),
-            $this->faker->userAgent()
-        ));
+        $this->createHandler()->__invoke($this->createCommand($pending->getId(), '123456'));
     }
 
     private function assertInvalidTwoFactorCodeRejected(string $twoFactorCode): void
@@ -271,18 +292,13 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         }
     }
 
-    private function configurePendingLookupOnce(PendingTwoFactor $pending): void
+    private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
     {
         $this->pendingTwoFactorRepository
             ->expects($this->once())
             ->method('findById')
             ->with($pending->getId())
             ->willReturn($pending);
-    }
-
-    private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
-    {
-        $this->configurePendingLookupOnce($pending);
         $this->userRepository
             ->expects($this->once())
             ->method('findById')
@@ -305,16 +321,6 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             ->willReturn($issued);
     }
 
-    private function createCommand(string $pendingId, string $code): CompleteTwoFactorCommand
-    {
-        return new CompleteTwoFactorCommand(
-            $pendingId,
-            $code,
-            $this->faker->ipv4(),
-            $this->faker->userAgent()
-        );
-    }
-
     private function assertResponseTokens(
         CompleteTwoFactorCommand $command,
         string $expectedAccessToken,
@@ -323,6 +329,16 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         $response = $command->getResponse();
         $this->assertSame($expectedAccessToken, $response->getAccessToken());
         $this->assertSame($expectedRefreshToken, $response->getRefreshToken());
+    }
+
+    private function createCommand(string $pendingId, string $code): CompleteTwoFactorCommand
+    {
+        return new CompleteTwoFactorCommand(
+            $pendingId,
+            $code,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
     }
 
     private function createHandler(): CompleteTwoFactorCommandHandler

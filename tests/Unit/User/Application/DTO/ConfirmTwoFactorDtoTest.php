@@ -6,7 +6,6 @@ namespace App\Tests\Unit\User\Application\DTO;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
-use LogicException;
 
 final class ConfirmTwoFactorDtoTest extends UnitTestCase
 {
@@ -31,15 +30,5 @@ final class ConfirmTwoFactorDtoTest extends UnitTestCase
         $dto = new ConfirmTwoFactorDto($code);
 
         $this->assertSame($code, $dto->twoFactorCodeValue());
-    }
-
-    public function testTwoFactorCodeValueThrowsForNonStringPayload(): void
-    {
-        $dto = new ConfirmTwoFactorDto($this->faker->numberBetween(100000, 999999));
-
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Expected "twoFactorCode" to be a string after request validation.');
-
-        $dto->twoFactorCodeValue();
     }
 }

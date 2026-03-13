@@ -6,13 +6,13 @@ security:
     - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
     - { path: ^/api/signin, roles: PUBLIC_ACCESS }
     - { path: ^/api/token$, methods: [POST], roles: PUBLIC_ACCESS }
+    - { path: ^/api/oauth/token$, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/docs, roles: PUBLIC_ACCESS }
     - { path: ^/api/health, roles: PUBLIC_ACCESS }
-    - { path: ^/api/oauth, roles: PUBLIC_ACCESS }
     - { path: ^/api/\.well-known, roles: PUBLIC_ACCESS }
     - { path: ^/healthz, roles: PUBLIC_ACCESS }
     - { path: ^/api/users/batch$, methods: [POST], roles: ROLE_SERVICE }
-    - { path: ^/api/graphql, roles: ROLE_USER }
+    - { path: ^/api/graphql, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/, roles: ROLE_USER }
     - { path: ^/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
 
@@ -26,7 +26,7 @@ security:
       security: false
 
     oauth:
-      pattern: ^/api/(oauth|\.well-known)
+      pattern: ^/api/\.well-known
       security: false
 
     api:

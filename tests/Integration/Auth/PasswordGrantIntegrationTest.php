@@ -16,9 +16,9 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
-final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
+final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
 {
-    public function testPasswordGrantReturnsUnsupportedGrantTypeWhenDisabled(): void
+    public function testPasswordGrantReturnsAccessTokenWhenEnabled(): void
     {
         $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
@@ -31,10 +31,10 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
             $clientId,
             $clientSecret
         );
-        $this->assertUnsupportedGrantTypeResponse($response);
+        $this->assertAccessTokenResponse($response);
     }
 
-    public function testClientCredentialsGrantStillWorksWhenPasswordGrantIsDisabled(): void
+    public function testClientCredentialsGrantStillWorksWhenPasswordGrantIsEnabled(): void
     {
         $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
@@ -44,11 +44,7 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
             $clientId,
             $clientSecret
         );
-        $responseData = json_decode((string) $response->getContent(), true);
-        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
-        $this->assertSame('Bearer', $responseData['token_type'] ?? null);
-        $this->assertIsString($responseData['access_token'] ?? null);
-        $this->assertNotSame('', $responseData['access_token'] ?? null);
+        $this->assertAccessTokenResponse($response);
     }
 
     public function testOauthClientCredentialsAccessTokenCanReachProtectedServiceRoute(): void
@@ -179,14 +175,12 @@ final class DisablePasswordGrantIntegrationTest extends AuthIntegrationTestCase
         return $kernel->handle($request);
     }
 
-    private function assertUnsupportedGrantTypeResponse(Response $response): void
+    private function assertAccessTokenResponse(Response $response): void
     {
         $responseData = json_decode((string) $response->getContent(), true);
-        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
-        $this->assertSame('unsupported_grant_type', $responseData['error'] ?? null);
-        $this->assertSame(
-            'The authorization grant type is not supported by the authorization server.',
-            $responseData['error_description'] ?? null
-        );
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSame('Bearer', $responseData['token_type'] ?? null);
+        $this->assertIsString($responseData['access_token'] ?? null);
+        $this->assertNotSame('', $responseData['access_token'] ?? null);
     }
 }

@@ -159,6 +159,10 @@ final class SessionLifecycleContext implements Context
         $this->state->accessToken = $this->trackedAccessToken;
         $this->state->useAuthCookie = false;
         $this->state->authCookieToken = '';
+        $this->sendPost(
+            '/api/users?page=1&itemsPerPage=10',
+            'GET'
+        );
     }
 
     /**
@@ -477,9 +481,10 @@ final class SessionLifecycleContext implements Context
         );
     }
 
-    private function sendPost(string $path): void
-    {
-        $requestBody = $this->bodySerializer->serialize($this->state->requestBody, 'POST');
+    private function sendPost(
+        string $path,
+        string $method = 'POST'
+    ): void {
         $headers = [
             'HTTP_ACCEPT' => 'application/json',
             'CONTENT_TYPE' => 'application/json',
@@ -490,8 +495,15 @@ final class SessionLifecycleContext implements Context
             $headers['HTTP_AUTHORIZATION'] = sprintf('Bearer %s', $accessToken);
         }
 
+        $requestBody = $method === 'POST'
+            ? $this->bodySerializer->serialize(
+                $this->state->requestBody,
+                'POST'
+            )
+            : null;
+
         $this->state->response = $this->kernel->handle(
-            Request::create($path, 'POST', [], [], [], $headers, $requestBody)
+            Request::create($path, $method, [], [], [], $headers, $requestBody)
         );
     }
 }

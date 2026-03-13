@@ -106,6 +106,27 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testConsumeRecoveryCodeOrFailWithValidRecoveryCode(): void
+    {
+        $userId = $this->faker->uuid();
+        $plainCode = 'ABCD-EF12';
+
+        $user = $this->createUserMockWithId($userId);
+
+        $recoveryCode = $this->createMock(RecoveryCode::class);
+        $recoveryCode->method('isUsed')->willReturn(false);
+        $recoveryCode->method('matchesCode')->with($plainCode)->willReturn(true);
+        $recoveryCode->method('getId')->willReturn($this->faker->uuid());
+
+        $this->recoveryCodeRepository->method('findByUserId')
+            ->with($userId)
+            ->willReturn([$recoveryCode]);
+        $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(true);
+
+        $this->verifier->consumeRecoveryCodeOrFail($user, $plainCode);
+        $this->addToAssertionCount(1);
+    }
+
     public function testVerifyAndConsumeOrFailThrowsForInvalidRecoveryCode(): void
     {
         $userId = $this->faker->uuid();
@@ -184,10 +205,11 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $recoveryCode = $this->createMock(RecoveryCode::class);
         $recoveryCode->method('isUsed')->willReturn(false);
         $recoveryCode->method('matchesCode')->willReturn(true);
-        $recoveryCode->method('getId')->willReturn($this->faker->uuid());
 
         $this->recoveryCodeRepository->method('findByUserId')->willReturn([$recoveryCode]);
-        $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(true);
+        $this->recoveryCodeRepository
+            ->expects($this->never())
+            ->method('markAsUsedIfUnused');
 
         $result = $this->verifier->verifyAndResolveMethod($user, $plainCode);
 
