@@ -11,10 +11,10 @@ use App\Tests\Unit\User\Application\CommandHandler\Fixture\RecordingPendingTwoFa
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\DTO\IssuedSession;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Processor\Authenticator\UserAuthenticatorInterface;
-use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
-use App\User\Application\Processor\Issuer\SessionIssuerInterface;
+use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
@@ -25,7 +25,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
 {
     protected UserAuthenticatorInterface&MockObject $userAuthenticator;
     protected SessionIssuerInterface&MockObject $sessionIssuer;
-    protected SignInEventsInterface&MockObject $signInEvents;
+    protected SignInPublisherInterface&MockObject $signInPublisher;
     protected RecordingPendingTwoFactorRepository $pendingTwoFactorRepository;
     protected PendingTwoFactorFactory $pendingTwoFactorFactory;
     protected IdGeneratorInterface&MockObject $idGenerator;
@@ -39,7 +39,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
 
         $this->userAuthenticator = $this->createMock(UserAuthenticatorInterface::class);
         $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
-        $this->signInEvents = $this->createMock(SignInEventsInterface::class);
+        $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->pendingTwoFactorRepository = new RecordingPendingTwoFactorRepository();
         $this->pendingTwoFactorFactory = new PendingTwoFactorFactory();
         $this->idGenerator = $this->createMock(IdGeneratorInterface::class);
@@ -64,7 +64,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
         return new SignInCommandHandler(
             $this->userAuthenticator,
             $this->sessionIssuer,
-            $this->signInEvents,
+            $this->signInPublisher,
             $this->pendingTwoFactorRepository,
             $this->pendingTwoFactorFactory,
             $this->idGenerator,
@@ -117,7 +117,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
         string $ua,
         bool $twoFactorUsed
     ): void {
-        $this->signInEvents->expects($this->once())
+        $this->signInPublisher->expects($this->once())
             ->method('publishSignedIn')
             ->with(
                 $user->getId(),

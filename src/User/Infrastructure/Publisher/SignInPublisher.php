@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\EventPublisher;
+namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
@@ -10,7 +10,7 @@ use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 
-final readonly class SignInEvents implements SignInEventsInterface
+final readonly class SignInPublisher implements SignInPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,

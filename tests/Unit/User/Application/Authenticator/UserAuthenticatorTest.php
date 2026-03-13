@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Authenticator;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Processor\Authenticator\UserAuthenticator;
-use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
+use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Application\Validator\AccountLockoutGuardInterface;
+use App\User\Application\Validator\UserAuthenticator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -19,8 +19,8 @@ final class UserAuthenticatorTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
-    private AccountLockoutServiceInterface&MockObject $lockoutService;
-    private SignInEventsInterface&MockObject $events;
+    private AccountLockoutGuardInterface&MockObject $lockoutGuard;
+    private SignInPublisherInterface&MockObject $events;
 
     #[\Override]
     protected function setUp(): void
@@ -29,8 +29,8 @@ final class UserAuthenticatorTest extends UnitTestCase
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $this->lockoutService = $this->createMock(AccountLockoutServiceInterface::class);
-        $this->events = $this->createMock(SignInEventsInterface::class);
+        $this->lockoutGuard = $this->createMock(AccountLockoutGuardInterface::class);
+        $this->events = $this->createMock(SignInPublisherInterface::class);
     }
 
     public function testAuthenticateSuccessWithoutRehash(): void
@@ -44,12 +44,12 @@ final class UserAuthenticatorTest extends UnitTestCase
 
         $user = $this->createUserMock($hashedPassword);
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->passwordHasher->method('needsRehash')->willReturn(false);
 
-        $this->lockoutService->expects($this->once())
+        $this->lockoutGuard->expects($this->once())
             ->method('clearFailures');
 
         $this->userRepository->expects($this->never())
@@ -97,7 +97,7 @@ final class UserAuthenticatorTest extends UnitTestCase
 
         $user = $this->createUserMock($hashedPassword);
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
             ->with($normalizedEmail)
@@ -115,9 +115,9 @@ final class UserAuthenticatorTest extends UnitTestCase
         $maxAttempts = $this->faker->numberBetween(3, 20);
         $lockoutSeconds = $this->faker->numberBetween(60, 3600);
 
-        $this->lockoutService->method('isLocked')->willReturn(true);
-        $this->lockoutService->method('maxAttempts')->willReturn($maxAttempts);
-        $this->lockoutService->method('lockoutSeconds')->willReturn($lockoutSeconds);
+        $this->lockoutGuard->method('isLocked')->willReturn(true);
+        $this->lockoutGuard->method('maxAttempts')->willReturn($maxAttempts);
+        $this->lockoutGuard->method('lockoutSeconds')->willReturn($lockoutSeconds);
 
         $this->events->expects($this->once())
             ->method('publishLockedOut')
@@ -150,7 +150,7 @@ final class UserAuthenticatorTest extends UnitTestCase
     {
         $lockoutSeconds = $this->faker->numberBetween(60, 3600);
         $this->arrangeFailedAuth();
-        $this->lockoutService->method('recordFailure')->willReturn(true);
+        $this->lockoutGuard->method('recordFailure')->willReturn(true);
         $this->arrangeLockoutDetails($lockoutSeconds);
 
         $exception = $this->catchLockedException();
@@ -161,7 +161,7 @@ final class UserAuthenticatorTest extends UnitTestCase
     public function testUnauthorizedExceptionHasCorrectStatusCode(): void
     {
         $this->arrangeFailedAuth();
-        $this->lockoutService->method('recordFailure')->willReturn(false);
+        $this->lockoutGuard->method('recordFailure')->willReturn(false);
 
         $authenticator = $this->createAuthenticator($this->faker->sha256());
 
@@ -183,9 +183,9 @@ final class UserAuthenticatorTest extends UnitTestCase
         $dummyHash = $this->faker->sha256();
         $password = $this->faker->password();
 
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn(null);
-        $this->lockoutService->method('recordFailure')->willReturn(false);
+        $this->lockoutGuard->method('recordFailure')->willReturn(false);
 
         $this->passwordHasher->expects($this->once())
             ->method('verify')
@@ -206,7 +206,7 @@ final class UserAuthenticatorTest extends UnitTestCase
     public function testAuthenticateThrowsUnauthorizedWhenUserNotFound(): void
     {
         $this->arrangeFailedAuth();
-        $this->lockoutService->method('recordFailure')->willReturn(false);
+        $this->lockoutGuard->method('recordFailure')->willReturn(false);
         $this->events->expects($this->once())->method('publishFailed');
 
         $this->expectException(UnauthorizedHttpException::class);
@@ -224,10 +224,10 @@ final class UserAuthenticatorTest extends UnitTestCase
     public function testAuthenticateThrowsUnauthorizedWhenPasswordWrong(): void
     {
         $user = $this->createUserMock($this->faker->sha256());
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(false);
-        $this->lockoutService->method('recordFailure')->willReturn(false);
+        $this->lockoutGuard->method('recordFailure')->willReturn(false);
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid credentials.');
@@ -245,11 +245,11 @@ final class UserAuthenticatorTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $this->arrangeFailedAuth();
-        $this->lockoutService->method('recordFailure')->willReturn(true);
+        $this->lockoutGuard->method('recordFailure')->willReturn(true);
         $max = $this->faker->numberBetween(3, 20);
         $secs = $this->faker->numberBetween(60, 3600);
-        $this->lockoutService->method('maxAttempts')->willReturn($max);
-        $this->lockoutService->method('lockoutSeconds')->willReturn($secs);
+        $this->lockoutGuard->method('maxAttempts')->willReturn($max);
+        $this->lockoutGuard->method('lockoutSeconds')->willReturn($secs);
 
         $this->events->expects($this->once())->method('publishFailed');
         $this->events->expects($this->once())
@@ -276,7 +276,7 @@ final class UserAuthenticatorTest extends UnitTestCase
         new UserAuthenticator(
             $this->userRepository,
             $this->passwordHasher,
-            $this->lockoutService,
+            $this->lockoutGuard,
             $this->events,
             null
         );
@@ -291,7 +291,7 @@ final class UserAuthenticatorTest extends UnitTestCase
         new UserAuthenticator(
             $this->userRepository,
             $this->passwordHasher,
-            $this->lockoutService,
+            $this->lockoutGuard,
             $this->events,
             ''
         );
@@ -307,7 +307,7 @@ final class UserAuthenticatorTest extends UnitTestCase
         new UserAuthenticator(
             $this->userRepository,
             $this->passwordHasher,
-            $this->lockoutService,
+            $this->lockoutGuard,
             $this->events,
             $dummyHash
         );
@@ -316,7 +316,7 @@ final class UserAuthenticatorTest extends UnitTestCase
     private function arrangeSuccessfulAuth(bool $needsRehash): User&MockObject
     {
         $user = $this->createUserMock($this->faker->sha256());
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->passwordHasher->method('needsRehash')
@@ -327,7 +327,7 @@ final class UserAuthenticatorTest extends UnitTestCase
 
     private function arrangeFailedAuth(): void
     {
-        $this->lockoutService->method('isLocked')->willReturn(false);
+        $this->lockoutGuard->method('isLocked')->willReturn(false);
         $this->userRepository->method('findByEmail')->willReturn(null);
         $this->passwordHasher->method('verify')->willReturn(false);
     }
@@ -345,7 +345,7 @@ final class UserAuthenticatorTest extends UnitTestCase
         return new UserAuthenticator(
             $this->userRepository,
             $this->passwordHasher,
-            $this->lockoutService,
+            $this->lockoutGuard,
             $this->events,
             $dummyHash
         );
@@ -353,14 +353,14 @@ final class UserAuthenticatorTest extends UnitTestCase
 
     private function arrangeLocked(int $lockoutSeconds): void
     {
-        $this->lockoutService->method('isLocked')->willReturn(true);
+        $this->lockoutGuard->method('isLocked')->willReturn(true);
         $this->arrangeLockoutDetails($lockoutSeconds);
     }
 
     private function arrangeLockoutDetails(int $lockoutSeconds): void
     {
-        $this->lockoutService->method('maxAttempts')->willReturn(5);
-        $this->lockoutService->method('lockoutSeconds')
+        $this->lockoutGuard->method('maxAttempts')->willReturn(5);
+        $this->lockoutGuard->method('lockoutSeconds')
             ->willReturn($lockoutSeconds);
     }
 

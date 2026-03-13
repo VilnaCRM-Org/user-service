@@ -9,13 +9,14 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Revoker\PasswordChangeSessionRevokerInterface;
+use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
+use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
@@ -23,7 +24,8 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
     public function __construct(
         private EventBusInterface $eventBus,
         private PasswordHasherInterface $passwordHasher,
-        private PasswordChangeSessionRevokerInterface $passwordChangeSessionRevoker,
+        private AuthSessionRepositoryInterface $authSessionRepository,
+        private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private EventIdGeneratorInterface $eventIdGenerator,
         private UserRepositoryInterface $userRepository,
         private EmailChangedEventFactoryInterface $emailChangedEventFactory,
@@ -87,7 +89,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             return $events;
         }
 
-        $revokedCount = $this->passwordChangeSessionRevoker->revokeOtherSessions(
+        $revokedCount = $this->revokeOtherSessions(
             $userId,
             $command->currentSessionId
         );
@@ -99,6 +101,34 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         );
 
         return $events;
+    }
+
+    private function revokeOtherSessions(string $userId, string $currentSessionId): int
+    {
+        $sessions = $this->authSessionRepository->findByUserId($userId);
+        $revokedCount = 0;
+
+        foreach ($sessions as $session) {
+            if ($session->isRevoked() || $session->getId() === $currentSessionId) {
+                continue;
+            }
+
+            $session->revoke();
+            $this->authSessionRepository->save($session);
+
+            foreach ($this->authRefreshTokenRepository->findBySessionId($session->getId()) as $refreshToken) {
+                if ($refreshToken->isRevoked()) {
+                    continue;
+                }
+
+                $refreshToken->revoke();
+                $this->authRefreshTokenRepository->save($refreshToken);
+            }
+
+            ++$revokedCount;
+        }
+
+        return $revokedCount;
     }
 
     private function assertPasswordIsValid(

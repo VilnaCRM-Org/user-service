@@ -7,9 +7,9 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
-use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
-use App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
@@ -27,8 +27,8 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         private AuthSessionRepositoryInterface $authSessionRepository,
         private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
         private RecoveryCodeGeneratorInterface $recoveryCodeGenerator,
-        private TwoFactorEventsInterface $events,
-        private SessionEventsInterface $sessionEvents,
+        private TwoFactorPublisherInterface $events,
+        private SessionPublisherInterface $sessionEvents,
     ) {
     }
 

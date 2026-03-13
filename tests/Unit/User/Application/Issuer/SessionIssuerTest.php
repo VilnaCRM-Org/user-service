@@ -9,7 +9,7 @@ use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
 use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Processor\Issuer\SessionIssuer;
+use App\User\Application\Factory\SessionIssuer;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;

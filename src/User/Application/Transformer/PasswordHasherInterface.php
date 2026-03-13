@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Hasher;
+namespace App\User\Application\Transformer;
 
 interface PasswordHasherInterface
 {

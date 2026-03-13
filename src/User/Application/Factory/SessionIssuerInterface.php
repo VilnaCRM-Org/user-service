@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Issuer;
+namespace App\User\Application\Factory;
 
 use App\User\Application\DTO\IssuedSession;
 use App\User\Domain\Entity\User;

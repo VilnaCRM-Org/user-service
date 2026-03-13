@@ -282,14 +282,13 @@ services:
       $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
-  App\User\Application\Processor\EventPublisher\RefreshTokenEventsInterface: '@App\User\Application\Processor\EventPublisher\RefreshTokenEvents'
   App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface: '@App\User\Application\Validator\Verifier\TwoFactorCodeVerifier'
   App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface: '@App\User\Application\Factory\Generator\RecoveryCodeGenerator'
-  App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface: '@App\User\Application\Processor\EventPublisher\TwoFactorEvents'
-  App\User\Application\Processor\Issuer\SessionIssuerInterface: '@App\User\Application\Processor\Issuer\SessionIssuer'
-  App\User\Application\Processor\EventPublisher\SignInEventsInterface: '@App\User\Application\Processor\EventPublisher\SignInEvents'
-  App\User\Application\Processor\Authenticator\UserAuthenticatorInterface: '@App\User\Application\Processor\Authenticator\UserAuthenticator'
-  App\User\Application\Processor\Provider\AuthCookieProviderInterface: '@App\User\Application\Processor\Provider\AuthCookieProvider'
+  App\User\Infrastructure\Publisher\TwoFactorPublisherInterface: '@App\User\Infrastructure\Publisher\TwoFactorPublisher'
+  App\User\Application\Factory\SessionIssuerInterface: '@App\User\Application\Factory\SessionIssuer'
+  App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
+  App\User\Application\Validator\UserAuthenticatorInterface: '@App\User\Application\Validator\UserAuthenticator'
+  App\User\Application\Factory\AuthCookieProviderInterface: '@App\User\Application\Factory\AuthCookieProvider'
   App\User\Application\Validator\Guard\OwnershipGuardInterface: '@App\User\Application\Validator\Guard\TokenOwnershipGuard'
 
   App\User\Application\Factory\AuthTokenFactory:
@@ -299,12 +298,12 @@ services:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
       $jwtAudience: '%env(string:JWT_AUDIENCE)%'
 
-  App\User\Application\Processor\Issuer\SessionIssuer:
+  App\User\Application\Factory\SessionIssuer:
     arguments:
       $standardSessionTtlSeconds: '%env(int:AUTH_STANDARD_SESSION_TTL_SECONDS)%'
       $rememberMeSessionTtlSeconds: '%env(int:AUTH_REMEMBER_ME_SESSION_TTL_SECONDS)%'
 
-  App\User\Application\Processor\Provider\AuthCookieProvider:
+  App\User\Application\Factory\AuthCookieProvider:
     arguments:
       $standardCookieMaxAge: '%env(int:AUTH_STANDARD_COOKIE_MAX_AGE)%'
       $rememberMeCookieMaxAge: '%env(int:AUTH_REMEMBER_ME_COOKIE_MAX_AGE)%'
@@ -338,18 +337,16 @@ services:
 
   App\User\Application\Factory\ClearAuthCookieResponseFactoryInterface: '@App\User\Application\Factory\ClearAuthCookieResponseFactory'
   App\User\Application\Validator\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
-  App\User\Application\Processor\Hasher\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
-  App\User\Application\Processor\Lockout\AccountLockoutServiceInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
+  App\User\Application\Transformer\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
+  App\User\Application\Validator\AccountLockoutGuardInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
   App\User\Application\Factory\Generator\AccessTokenGeneratorInterface: '@App\User\Infrastructure\Generator\LexikAccessTokenGenerator'
   App\User\Application\Validator\Verifier\TOTPVerifierInterface: '@App\User\Infrastructure\TwoFactor\TOTPVerifier'
-  App\User\Application\Processor\Encryptor\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
+  App\User\Application\Transformer\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
   App\User\Application\Factory\Generator\TOTPSecretGeneratorInterface: '@App\User\Infrastructure\Generator\TOTPSecretGenerator'
   App\User\Application\Factory\Generator\EventIdGeneratorInterface: '@App\User\Application\Factory\Generator\EventIdGenerator'
   App\User\Application\Factory\Generator\IdGeneratorInterface: '@App\User\Infrastructure\Generator\UlidIdGenerator'
-  App\User\Application\Processor\Revoker\AllSessionsRevokerInterface: '@App\User\Application\Processor\Revoker\AllSessionsRevoker'
-  App\User\Application\Processor\Revoker\PasswordChangeSessionRevokerInterface: '@App\User\Application\Processor\Revoker\PasswordChangeSessionRevoker'
-  App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
-  App\User\Application\Processor\EventPublisher\SessionEventsInterface: '@App\User\Application\Processor\EventPublisher\SessionEvents'
+  App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
+  App\User\Infrastructure\Publisher\SessionPublisherInterface: '@App\User\Infrastructure\Publisher\SessionPublisher'
   App\User\Infrastructure\TwoFactor\TOTPCreatorInterface: '@App\User\Infrastructure\TwoFactor\TOTPCreator'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 

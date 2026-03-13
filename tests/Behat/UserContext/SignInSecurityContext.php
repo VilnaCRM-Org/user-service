@@ -142,7 +142,7 @@ final class SignInSecurityContext implements Context
         $this->lastLockoutEmail = $this->normalizeEmail($email);
 
         for ($attempt = 0; $attempt < $attempts; $attempt++) {
-            $this->auth->accountLockoutService
+            $this->auth->accountLockoutGuard
                 ->recordFailure($email);
         }
     }

@@ -9,9 +9,9 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use App\User\Application\Factory\Generator\RecoveryCodeGeneratorInterface;
-use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
-use App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
@@ -30,8 +30,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
     private RecoveryCodeGeneratorInterface&MockObject $recoveryCodeGenerator;
-    private TwoFactorEventsInterface&MockObject $events;
-    private SessionEventsInterface&MockObject $sessionEvents;
+    private TwoFactorPublisherInterface&MockObject $events;
+    private SessionPublisherInterface&MockObject $sessionEvents;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -43,8 +43,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
         $this->recoveryCodeGenerator = $this->createMock(RecoveryCodeGeneratorInterface::class);
-        $this->events = $this->createMock(TwoFactorEventsInterface::class);
-        $this->sessionEvents = $this->createMock(SessionEventsInterface::class);
+        $this->events = $this->createMock(TwoFactorPublisherInterface::class);
+        $this->sessionEvents = $this->createMock(SessionPublisherInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }

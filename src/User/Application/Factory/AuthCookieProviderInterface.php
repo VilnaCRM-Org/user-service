@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Provider;
+namespace App\User\Application\Factory;
 
 use Symfony\Component\HttpFoundation\Response;
 

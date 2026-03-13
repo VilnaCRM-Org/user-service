@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Provider;
+namespace App\User\Application\Factory;
 
-use App\User\Application\Factory\AuthCookieFactoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\Response;
 

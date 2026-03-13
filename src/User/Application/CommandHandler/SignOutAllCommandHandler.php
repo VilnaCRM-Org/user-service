@@ -6,7 +6,9 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignOutAllCommand;
-use App\User\Application\Processor\Revoker\AllSessionsRevokerInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
+use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 
 /**
  * @implements CommandHandlerInterface<SignOutAllCommand, void>
@@ -14,15 +16,41 @@ use App\User\Application\Processor\Revoker\AllSessionsRevokerInterface;
 final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
-        private AllSessionsRevokerInterface $allSessionsRevoker,
+        private AuthSessionRepositoryInterface $sessionRepository,
+        private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
+        private SessionPublisherInterface $sessionEvents,
     ) {
     }
 
     public function __invoke(SignOutAllCommand $command): void
     {
-        $this->allSessionsRevoker->revokeAllSessions(
+        $this->revokeAllSessions(
             $command->userId,
             'user_initiated',
+        );
+    }
+
+    private function revokeAllSessions(string $userId, string $reason): void
+    {
+        $sessions = $this->sessionRepository->findByUserId($userId);
+        $revokedCount = 0;
+
+        foreach ($sessions as $session) {
+            $this->refreshTokenRepository->revokeBySessionId($session->getId());
+
+            if ($session->isRevoked()) {
+                continue;
+            }
+
+            $session->revoke();
+            $this->sessionRepository->save($session);
+            ++$revokedCount;
+        }
+
+        $this->sessionEvents->publishAllSessionsRevoked(
+            $userId,
+            $reason,
+            $revokedCount
         );
     }
 }

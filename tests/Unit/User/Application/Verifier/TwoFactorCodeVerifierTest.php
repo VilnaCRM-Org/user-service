@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Verifier;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Processor\Encryptor\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Validator\Verifier\TOTPVerifierInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifier;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;

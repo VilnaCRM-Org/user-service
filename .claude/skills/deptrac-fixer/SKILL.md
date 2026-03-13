@@ -226,6 +226,9 @@ Track progress: 15 violations → 10 → 5 → 0 ✅
 - Add suppression comments or ignore directives (`@SuppressWarnings`, `@psalm-suppress`, `@phpstan-ignore*`, `@infection-ignore*`, `phpcs:ignore`)
 - Create "wrapper" classes to hide dependencies
 - Move entire class to wrong layer just to satisfy Deptrac
+- Move classes into unrelated/random directories just to make Deptrac pass (for example, hiding `Generator` classes under `Factory`)
+- Brute-force Deptrac by reorganizing code around tool output instead of business responsibility
+- Create ad-hoc directory/class types; use only well-known software patterns (e.g., Strategy, Factory, Provider, Resolver, CQRS Command/Handler)
 - Use reflection or dynamic loading to bypass checks
 
 ### ALWAYS
@@ -234,6 +237,8 @@ Track progress: 15 violations → 10 → 5 → 0 ✅
 - Keep Domain layer pure (no framework imports)
 - Use interfaces for cross-layer dependencies
 - Move configuration to YAML/XML files
+- Keep "Directory X contains ONLY class type X" semantics
+- For new directories/classes, use explicit, well-known pattern names aligned with DDD/CQRS
 - Verify fixes with `make deptrac` after each change
 - Check that tests still pass after refactoring
 

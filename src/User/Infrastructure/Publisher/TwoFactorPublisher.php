@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\EventPublisher;
+namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
@@ -13,7 +13,7 @@ use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 
-final readonly class TwoFactorEvents implements TwoFactorEventsInterface
+final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,

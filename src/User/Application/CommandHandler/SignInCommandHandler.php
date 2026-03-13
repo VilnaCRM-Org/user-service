@@ -7,10 +7,10 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Processor\Authenticator\UserAuthenticatorInterface;
-use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
-use App\User\Application\Processor\Issuer\SessionIssuerInterface;
+use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
@@ -28,7 +28,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
     public function __construct(
         private readonly UserAuthenticatorInterface $userAuthenticator,
         private readonly SessionIssuerInterface $sessionIssuer,
-        private readonly SignInEventsInterface $events,
+        private readonly SignInPublisherInterface $signInPublisher,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private readonly PendingTwoFactorFactoryInterface $pendingTwoFactorFactory,
         private readonly IdGeneratorInterface $idGenerator,
@@ -89,7 +89,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
             $issued->refreshToken
         ));
 
-        $this->events->publishSignedIn(
+        $this->signInPublisher->publishSignedIn(
             $user->getId(),
             $user->getEmail(),
             $issued->sessionId,

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignOutCommand;
 use App\User\Application\CommandHandler\SignOutCommandHandler;
-use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -17,7 +17,7 @@ final class SignOutCommandHandlerTest extends UnitTestCase
 {
     private AuthSessionRepositoryInterface&MockObject $sessionRepository;
     private AuthRefreshTokenRepositoryInterface&MockObject $refreshTokenRepository;
-    private SessionEventsInterface&MockObject $sessionEvents;
+    private SessionPublisherInterface&MockObject $sessionEvents;
     private SignOutCommandHandler $handler;
 
     #[\Override]
@@ -27,7 +27,7 @@ final class SignOutCommandHandlerTest extends UnitTestCase
         $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->refreshTokenRepository =
             $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->sessionEvents = $this->createMock(SessionEventsInterface::class);
+        $this->sessionEvents = $this->createMock(SessionPublisherInterface::class);
         $this->handler = new SignOutCommandHandler(
             $this->sessionRepository,
             $this->refreshTokenRepository,

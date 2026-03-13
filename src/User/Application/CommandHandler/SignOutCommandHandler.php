@@ -6,7 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignOutCommand;
-use App\User\Application\Processor\EventPublisher\SessionEventsInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 
@@ -18,7 +18,7 @@ final readonly class SignOutCommandHandler implements CommandHandlerInterface
     public function __construct(
         private AuthSessionRepositoryInterface $sessionRepository,
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
-        private SessionEventsInterface $sessionEvents,
+        private SessionPublisherInterface $sessionEvents,
     ) {
     }
 

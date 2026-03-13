@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Application\Factory\Generator\AccessTokenGeneratorInterface;
-use App\User\Application\Processor\EventPublisher\RefreshTokenEventsInterface;
+use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Event\RefreshTokenRotatedEvent;
+use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -29,7 +32,8 @@ final readonly class RefreshTokenCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private AccessTokenGeneratorInterface $accessTokenGenerator,
         private AuthTokenFactoryInterface $authTokenFactory,
-        private RefreshTokenEventsInterface $events,
+        private EventBusInterface $eventBus,
+        private EventIdGeneratorInterface $eventIdGenerator,
         private int $refreshTokenGraceWindowSeconds = self::DEFAULT_GRACE_WINDOW_SECONDS,
     ) {
     }
@@ -194,12 +198,13 @@ final readonly class RefreshTokenCommandHandler implements
         ?array $tokens = null
     ): never {
         $this->revokeSessionAndTokens($oldToken, $session, $tokens);
-        $this->events->publishTheftDetected(
+        $this->eventBus->publish(new RefreshTokenTheftDetectedEvent(
             $session->getId(),
             $user->getId(),
             $session->getIpAddress(),
-            $reason
-        );
+            $reason,
+            $this->eventIdGenerator->generate()
+        ));
 
         $this->throwUnauthorized();
     }
@@ -416,10 +421,11 @@ final readonly class RefreshTokenCommandHandler implements
         AuthSession $session,
         User $user
     ): void {
-        $this->events->publishRotated(
+        $this->eventBus->publish(new RefreshTokenRotatedEvent(
             $session->getId(),
-            $user->getId()
-        );
+            $user->getId(),
+            $this->eventIdGenerator->generate()
+        ));
     }
 
     private function throwUnauthorized(): never

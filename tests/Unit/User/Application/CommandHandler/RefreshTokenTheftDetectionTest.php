@@ -8,6 +8,7 @@ use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Ulid;
@@ -158,7 +159,6 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
 
         $this->expectGraceEligibilityCheck(true);
         $this->arrangeSuccessfulGraceRotation($session, $user, [$token]);
-        $this->events->expects($this->never())->method('publishTheftDetected');
 
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
@@ -173,7 +173,6 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
 
         $this->expectGraceEligibilityCheck(true);
         $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $revokedToken]);
-        $this->events->expects($this->never())->method('publishTheftDetected');
 
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
@@ -192,7 +191,6 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
 
         $this->expectGraceEligibilityCheck(true);
         $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $earlierToken]);
-        $this->events->expects($this->never())->method('publishTheftDetected');
 
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
@@ -205,7 +203,6 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
 
         $this->expectGraceEligibilityCheck(true);
         $this->arrangeSuccessfulGraceRotation($session, $user, [$token, $nonRotatedToken]);
-        $this->events->expects($this->never())->method('publishTheftDetected');
 
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
@@ -268,8 +265,7 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->configureTokenRotationFactories();
         $this->accessTokenGenerator->expects($this->once())
             ->method('generate')->willReturn('test-access-token');
-        $this->events->expects($this->once())->method('publishRotated')
-            ->with($session->getId(), $user->getId());
+        $this->expectRotatedEventPublished($session, $user);
     }
 
     private function expectNeverGraceEligibilityCheck(): void
@@ -353,15 +349,23 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         User $user,
         string $reason
     ): void {
-        $this->events
+        $eventId = $this->faker->uuid();
+
+        $this->eventIdGenerator
             ->expects($this->once())
-            ->method('publishTheftDetected')
-            ->with(
-                $session->getId(),
-                $user->getId(),
-                $session->getIpAddress(),
-                $reason
-            );
+            ->method('generate')
+            ->willReturn($eventId);
+
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(
+                static fn (RefreshTokenTheftDetectedEvent $event): bool => $event->sessionId === $session->getId()
+                    && $event->userId === $user->getId()
+                    && $event->ipAddress === $session->getIpAddress()
+                    && $event->reason === $reason
+                    && $event->eventId() === $eventId
+            ));
     }
 
     private function createRevokedToken(

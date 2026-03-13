@@ -6,18 +6,18 @@ namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Publisher\SignInPublisher;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
-use App\User\Application\Processor\EventPublisher\SignInEvents;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\SignInFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class SignInEventsTest extends UnitTestCase
+final class SignInPublisherTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
     private EventIdGeneratorInterface&MockObject $eventIdGenerator;
-    private SignInEvents $publisher;
+    private SignInPublisher $publisher;
 
     #[\Override]
     protected function setUp(): void
@@ -26,7 +26,7 @@ final class SignInEventsTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->eventIdGenerator = $this->createMock(EventIdGeneratorInterface::class);
-        $this->publisher = new SignInEvents(
+        $this->publisher = new SignInPublisher(
             $this->eventBus,
             $this->eventIdGenerator
         );

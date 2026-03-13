@@ -6,8 +6,8 @@ namespace App\Tests\Unit\User\Application\EventPublisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Publisher\TwoFactorPublisher;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
-use App\User\Application\Processor\EventPublisher\TwoFactorEvents;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
 use App\User\Domain\Event\TwoFactorCompletedEvent;
 use App\User\Domain\Event\TwoFactorDisabledEvent;
@@ -16,11 +16,11 @@ use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class TwoFactorEventsTest extends UnitTestCase
+final class TwoFactorPublisherTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
     private EventIdGeneratorInterface&MockObject $eventIdGenerator;
-    private TwoFactorEvents $publisher;
+    private TwoFactorPublisher $publisher;
 
     #[\Override]
     protected function setUp(): void
@@ -29,7 +29,7 @@ final class TwoFactorEventsTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->eventIdGenerator = $this->createMock(EventIdGeneratorInterface::class);
-        $this->publisher = new TwoFactorEvents(
+        $this->publisher = new TwoFactorPublisher(
             $this->eventBus,
             $this->eventIdGenerator
         );

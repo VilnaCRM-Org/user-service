@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Lockout;
+namespace App\User\Application\Validator;
 
-interface AccountLockoutServiceInterface
+interface AccountLockoutGuardInterface
 {
     public const MAX_ATTEMPTS = 20;
     public const LOCKOUT_SECONDS = 900;

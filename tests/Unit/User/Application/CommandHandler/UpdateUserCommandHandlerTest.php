@@ -12,8 +12,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
 use App\User\Application\Factory\Generator\EventIdGeneratorInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Revoker\PasswordChangeSessionRevoker;
+use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
@@ -95,6 +95,63 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->authSessionRepository->method('save');
         $this->authRefreshTokenRepository->method('findBySessionId')->willReturn([]);
 
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+
+        $this->createHandler()->__invoke($command);
+
+        $this->assertSessionRevokedEvent($publishedEvents, $user->getId(), 'password_change', 1);
+    }
+
+    public function testInvokeSkipsCurrentAndAlreadyRevokedSessionsWhileRevokingActiveRefreshTokens(): void
+    {
+        $user = $this->createUser();
+        $currentSessionId = (string) new SymfonyUuid($this->faker->uuid());
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
+        $command = new UpdateUserCommand($user, $updateData, $currentSessionId);
+
+        $this->expectEventIdGenerator();
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocks($user);
+
+        $currentSession = $this->createOtherSession($currentSessionId, $user->getId());
+        $revokedSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+        $revokedSession->revoke();
+        $activeSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+
+        $activeRefreshToken = new AuthRefreshToken(
+            $this->faker->uuid(),
+            $activeSession->getId(),
+            $this->faker->sha256(),
+            new DateTimeImmutable('+1 month')
+        );
+        $revokedRefreshToken = new AuthRefreshToken(
+            $this->faker->uuid(),
+            $activeSession->getId(),
+            $this->faker->sha256(),
+            new DateTimeImmutable('+1 month')
+        );
+        $revokedRefreshToken->revoke();
+
+        $this->authSessionRepository->expects($this->once())
+            ->method('findByUserId')
+            ->with($user->getId())
+            ->willReturn([$currentSession, $revokedSession, $activeSession]);
+        $this->authSessionRepository->expects($this->once())
+            ->method('save')
+            ->with($activeSession);
+        $this->authRefreshTokenRepository->expects($this->once())
+            ->method('findBySessionId')
+            ->with($activeSession->getId())
+            ->willReturn([$revokedRefreshToken, $activeRefreshToken]);
+        $this->authRefreshTokenRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static fn (AuthRefreshToken $refreshToken): bool => $refreshToken->getId() === $activeRefreshToken->getId()
+                    && $refreshToken->isRevoked()
+            ));
         $this->userRepository->expects($this->once())->method('save')->with($user);
 
         $publishedEvents = [];
@@ -322,15 +379,11 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
     private function createHandler(): UpdateUserCommandHandler
     {
-        $passwordChangeSessionRevoker = new PasswordChangeSessionRevoker(
-            $this->authSessionRepository,
-            $this->authRefreshTokenRepository,
-        );
-
         return new UpdateUserCommandHandler(
             $this->eventBus,
             $this->passwordHasher,
-            $passwordChangeSessionRevoker,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
             $this->eventIdGenerator,
             $this->userRepository,
             $this->emailChangedEventFactory,

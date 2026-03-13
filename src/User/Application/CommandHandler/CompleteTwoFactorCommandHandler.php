@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface;
-use App\User\Application\Processor\Issuer\SessionIssuerInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
+use App\User\Application\Factory\SessionIssuerInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
@@ -30,7 +30,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private SessionIssuerInterface $sessionIssuer,
         private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
-        private TwoFactorEventsInterface $events,
+        private TwoFactorPublisherInterface $events,
     ) {
     }
 

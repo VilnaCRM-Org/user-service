@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Authenticator;
+namespace App\User\Application\Validator;
 
-use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
+use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
@@ -25,8 +24,8 @@ final class UserAuthenticator implements UserAuthenticatorInterface
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly PasswordHasherInterface $passwordHasher,
-        private readonly AccountLockoutServiceInterface $lockoutService,
-        private readonly SignInEventsInterface $events,
+        private readonly AccountLockoutGuardInterface $lockoutGuard,
+        private readonly SignInPublisherInterface $signInPublisher,
         ?string $dummyPasswordHash = null,
     ) {
         $this->dummyPasswordHash = is_string($dummyPasswordHash) && $dummyPasswordHash !== ''
@@ -58,21 +57,21 @@ final class UserAuthenticator implements UserAuthenticatorInterface
             $this->userRepository->save($verified);
         }
 
-        $this->lockoutService->clearFailures($normalizedEmail);
+        $this->lockoutGuard->clearFailures($normalizedEmail);
 
         return $verified;
     }
 
     private function assertNotLocked(string $email): void
     {
-        if (!$this->lockoutService->isLocked($email)) {
+        if (!$this->lockoutGuard->isLocked($email)) {
             return;
         }
 
-        $maxAttempts = $this->lockoutService->maxAttempts();
-        $lockoutSeconds = $this->lockoutService->lockoutSeconds();
+        $maxAttempts = $this->lockoutGuard->maxAttempts();
+        $lockoutSeconds = $this->lockoutGuard->lockoutSeconds();
 
-        $this->events->publishLockedOut($email, $maxAttempts, $lockoutSeconds);
+        $this->signInPublisher->publishLockedOut($email, $maxAttempts, $lockoutSeconds);
 
         throw new LockedHttpException(
             self::LOCKOUT_MESSAGE,
@@ -100,14 +99,14 @@ final class UserAuthenticator implements UserAuthenticatorInterface
         string $ipAddress,
         string $userAgent
     ): never {
-        $lockedAfterFailure = $this->lockoutService->recordFailure($email);
+        $lockedAfterFailure = $this->lockoutGuard->recordFailure($email);
 
-        $this->events->publishFailed($email, $ipAddress, $userAgent, 'invalid_credentials');
+        $this->signInPublisher->publishFailed($email, $ipAddress, $userAgent, 'invalid_credentials');
 
         if ($lockedAfterFailure) {
-            $maxAttempts = $this->lockoutService->maxAttempts();
-            $lockoutSeconds = $this->lockoutService->lockoutSeconds();
-            $this->events->publishLockedOut(
+            $maxAttempts = $this->lockoutGuard->maxAttempts();
+            $lockoutSeconds = $this->lockoutGuard->lockoutSeconds();
+            $this->signInPublisher->publishLockedOut(
                 $email,
                 $maxAttempts,
                 $lockoutSeconds

@@ -10,8 +10,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\DTO\IssuedSession;
-use App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface;
-use App\User\Application\Processor\Issuer\SessionIssuerInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
+use App\User\Application\Factory\SessionIssuerInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
@@ -29,7 +29,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
     private SessionIssuerInterface&MockObject $sessionIssuer;
     private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
-    private TwoFactorEventsInterface&MockObject $events;
+    private TwoFactorPublisherInterface&MockObject $events;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -44,7 +44,7 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         );
         $this->sessionIssuer = $this->createMock(SessionIssuerInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
-        $this->events = $this->createMock(TwoFactorEventsInterface::class);
+        $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }

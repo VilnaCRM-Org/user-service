@@ -10,7 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\CommandHandler\SetupTwoFactorCommandHandler;
 use App\User\Application\Factory\Generator\TOTPSecretGeneratorInterface;
-use App\User\Application\Processor\Encryptor\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;

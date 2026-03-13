@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\Authenticator;
+namespace App\User\Application\Validator;
 
 use App\User\Domain\Entity\User;
 

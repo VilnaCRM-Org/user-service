@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\PasswordResetConfirmedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;

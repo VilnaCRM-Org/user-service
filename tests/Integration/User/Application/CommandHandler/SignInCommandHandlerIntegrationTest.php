@@ -9,11 +9,11 @@ use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use App\User\Application\Factory\Generator\IdGeneratorInterface;
-use App\User\Application\Processor\Authenticator\UserAuthenticatorInterface;
-use App\User\Application\Processor\EventPublisher\SignInEventsInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Issuer\SessionIssuerInterface;
+use App\User\Application\Factory\SessionIssuerInterface;
+use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -34,7 +34,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private PendingTwoFactorFactoryInterface $pendingTwoFactorFactory;
     private UserAuthenticatorInterface $authService;
     private SessionIssuerInterface $sessionIssuanceService;
-    private SignInEventsInterface $signInEventPublisher;
+    private SignInPublisherInterface $signInPublisher;
     private IdGeneratorInterface $idGenerator;
 
     #[\Override]
@@ -57,7 +57,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             ->get(UserAuthenticatorInterface::class);
         $this->sessionIssuanceService = $this->container
             ->get(SessionIssuerInterface::class);
-        $this->signInEventPublisher = $this->container->get(SignInEventsInterface::class);
+        $this->signInPublisher = $this->container->get(SignInPublisherInterface::class);
         $this->idGenerator = $this->container->get(IdGeneratorInterface::class);
     }
 
@@ -100,7 +100,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
         return new SignInCommandHandler(
             $this->authService,
             $this->sessionIssuanceService,
-            $this->signInEventPublisher,
+            $this->signInPublisher,
             $this->pendingTwoFactorRepository,
             $this->pendingTwoFactorFactory,
             $this->idGenerator,

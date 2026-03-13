@@ -9,7 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\CommandHandler\DisableTwoFactorCommandHandler;
-use App\User\Application\Processor\EventPublisher\TwoFactorEventsInterface;
+use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
@@ -24,7 +24,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     private UserRepositoryInterface&MockObject $userRepository;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
-    private TwoFactorEventsInterface&MockObject $events;
+    private TwoFactorPublisherInterface&MockObject $events;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
 
@@ -36,7 +36,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
-        $this->events = $this->createMock(TwoFactorEventsInterface::class);
+        $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }

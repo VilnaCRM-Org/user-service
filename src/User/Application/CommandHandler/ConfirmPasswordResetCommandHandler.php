@@ -7,14 +7,16 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
-use App\User\Application\Processor\EventPublisher\PasswordResetConfirmationPublisherInterface;
-use App\User\Application\Processor\Hasher\PasswordHasherInterface;
-use App\User\Application\Processor\Lockout\AccountLockoutServiceInterface;
-use App\User\Application\Processor\Revoker\AllSessionsRevokerInterface;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
+use App\User\Infrastructure\Publisher\SessionPublisherInterface;
+use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
+use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
@@ -26,8 +28,10 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private AccountLockoutServiceInterface $accountLockoutService,
-        private AllSessionsRevokerInterface $allSessionsRevoker,
+        private AccountLockoutGuardInterface $accountLockoutGuard,
+        private AuthSessionRepositoryInterface $sessionRepository,
+        private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
+        private SessionPublisherInterface $sessionEvents,
         private PasswordResetConfirmationPublisherInterface $publisher,
     ) {
     }
@@ -39,10 +43,10 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
-        $this->accountLockoutService->clearFailures(
+        $this->accountLockoutGuard->clearFailures(
             strtolower(trim($user->getEmail()))
         );
-        $this->allSessionsRevoker->revokeAllSessions(
+        $this->revokeAllSessions(
             $user->getId(),
             'password_reset'
         );
@@ -94,5 +98,29 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         $hashedPassword = $this->passwordHasher->hash($newPassword);
         $user->setPassword($hashedPassword);
         $this->userRepository->save($user);
+    }
+
+    private function revokeAllSessions(string $userId, string $reason): void
+    {
+        $sessions = $this->sessionRepository->findByUserId($userId);
+        $revokedCount = 0;
+
+        foreach ($sessions as $session) {
+            $this->refreshTokenRepository->revokeBySessionId($session->getId());
+
+            if ($session->isRevoked()) {
+                continue;
+            }
+
+            $session->revoke();
+            $this->sessionRepository->save($session);
+            ++$revokedCount;
+        }
+
+        $this->sessionEvents->publishAllSessionsRevoked(
+            $userId,
+            $reason,
+            $revokedCount
+        );
     }
 }

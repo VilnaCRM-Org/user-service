@@ -22,7 +22,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         $this->idGenerator->expects($this->once())->method('generate')->willReturn($pendingSid);
 
         $this->sessionIssuer->expects($this->never())->method('issue');
-        $this->signInEvents->expects($this->never())->method('publishSignedIn');
+        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $this->createHandler()->__invoke($command);

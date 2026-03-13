@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Processor\EventPublisher;
+namespace App\User\Infrastructure\Publisher;
 
-interface TwoFactorEventsInterface
+interface TwoFactorPublisherInterface
 {
     public function publishEnabled(string $userId, string $email): void;
 
