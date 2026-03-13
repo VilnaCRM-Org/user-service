@@ -1,11 +1,7 @@
 ---
 stepsCompleted:
   [validate-prerequisites, requirements-inventory, coverage-map, epic-breakdown, story-details]
-inputDocuments:
-  [
-    specs/auth-2fa-signin/prd.md,
-    specs/auth-2fa-signin/architecture.md,
-  ]
+inputDocuments: [specs/auth-2fa-signin/prd.md, specs/auth-2fa-signin/architecture.md]
 workflowType: 'epics'
 project_name: 'VilnaCRM User Service — Auth Sign-in + 2FA'
 author: 'Valerii'
