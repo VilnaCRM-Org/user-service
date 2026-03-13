@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Application\Factory\AccessTokenFactoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 

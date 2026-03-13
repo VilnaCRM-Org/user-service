@@ -11,12 +11,12 @@ use App\Tests\Unit\User\Application\CommandHandler\Fixture\RecordingPendingTwoFa
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\DTO\IssuedSession;
+use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
-use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Ulid;

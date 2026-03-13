@@ -4,27 +4,23 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
+use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
-use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Application\Validator\AccountLockoutGuardInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
-use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
 use App\User\Domain\Exception\PasswordResetTokenExpiredException;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
-use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
-use App\User\Infrastructure\Publisher\SessionPublisherInterface;
-use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
@@ -34,9 +30,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordHasherInterface&MockObject $passwordHasher;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
     private AccountLockoutGuardInterface&MockObject $accountLockoutGuard;
-    private AuthSessionRepositoryInterface&MockObject $sessionRepository;
-    private AuthRefreshTokenRepositoryInterface&MockObject $refreshTokenRepository;
-    private SessionPublisherInterface&MockObject $sessionEvents;
+    private CommandBusInterface&MockObject $commandBus;
     private PasswordResetConfirmationPublisherInterface&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
 
@@ -50,9 +44,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
         $this->accountLockoutGuard = $this->createMock(AccountLockoutGuardInterface::class);
-        $this->sessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->refreshTokenRepository = $this->createMock(AuthRefreshTokenRepositoryInterface::class);
-        $this->sessionEvents = $this->createMock(SessionPublisherInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 
         $this->handler = new ConfirmPasswordResetCommandHandler(
@@ -61,9 +53,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
             $this->passwordHasher,
             $this->tokenValidator,
             $this->accountLockoutGuard,
-            $this->sessionRepository,
-            $this->refreshTokenRepository,
-            $this->sessionEvents,
+            $this->commandBus,
             $this->publisher,
         );
     }
@@ -78,8 +68,10 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $this->handler->__invoke($command);
 
-        $response = $command->getResponse();
-        $this->assertInstanceOf(ConfirmPasswordResetCommandResponse::class, $response);
+        $this->assertInstanceOf(
+            \App\User\Application\DTO\ConfirmPasswordResetCommandResponse::class,
+            $command->getResponse()
+        );
     }
 
     public function testInvokePublishesEventWithCorrectUserId(): void
@@ -117,13 +109,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
-    public function testInvokePublishesZeroRevokedSessionsWhenSessionIsAlreadyRevoked(): void
+    public function testInvokeDispatchesSignOutAllCommandWithPasswordResetReason(): void
     {
         $testData = $this->createConfirmPasswordResetTestData();
         $command = new ConfirmPasswordResetCommand($testData['token'], $testData['newPassword']);
         $mocks = $this->createConfirmPasswordResetMocks($testData);
-        $revokedSession = $this->createSession($this->faker->uuid(), $testData['userId']);
-        $revokedSession->revoke();
 
         $this->setupTokenValidationExpectations($testData['token'], $mocks['passwordResetToken']);
         $this->setupUserUpdateExpectations($testData, $mocks['user']);
@@ -133,18 +123,12 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->accountLockoutGuard->expects($this->once())
             ->method('clearFailures')
             ->with(strtolower(trim($testData['userEmail'])));
-        $this->sessionRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($testData['userId'])
-            ->willReturn([$revokedSession]);
-        $this->refreshTokenRepository->expects($this->once())
-            ->method('revokeBySessionId')
-            ->with($revokedSession->getId());
-        $this->sessionRepository->expects($this->never())
-            ->method('save');
-        $this->sessionEvents->expects($this->once())
-            ->method('publishAllSessionsRevoked')
-            ->with($testData['userId'], 'password_reset', 0);
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (SignOutAllCommand $cmd): bool => $cmd->userId === $testData['userId']
+                    && $cmd->reason === 'password_reset'
+            ));
         $this->publisher->expects($this->once())
             ->method('publish')
             ->with($mocks['user']);
@@ -417,38 +401,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
     private function expectSessionRevocation(string $userId): void
     {
-        $session = $this->createSession($this->faker->uuid(), $userId);
-
-        $this->sessionRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($userId)
-            ->willReturn([$session]);
-
-        $this->refreshTokenRepository->expects($this->once())
-            ->method('revokeBySessionId')
-            ->with($session->getId());
-
-        $this->sessionRepository->expects($this->once())
-            ->method('save')
-            ->with($session);
-
-        $this->sessionEvents->expects($this->once())
-            ->method('publishAllSessionsRevoked')
-            ->with($userId, 'password_reset', 1);
-    }
-
-    private function createSession(string $sessionId, string $userId): AuthSession
-    {
-        $createdAt = new DateTimeImmutable('-5 minutes');
-
-        return new AuthSession(
-            $sessionId,
-            $userId,
-            '127.0.0.1',
-            'Test Agent',
-            $createdAt,
-            $createdAt->modify('+15 minutes'),
-            false
-        );
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (SignOutAllCommand $cmd): bool => $cmd->userId === $userId
+                    && $cmd->reason === 'password_reset'
+            ));
     }
 }

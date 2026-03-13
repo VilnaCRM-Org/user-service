@@ -347,6 +347,7 @@ services:
   App\User\Application\Factory\IdFactoryInterface: '@App\User\Infrastructure\Factory\UlidIdFactory'
   App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
   App\User\Infrastructure\Publisher\SessionPublisherInterface: '@App\User\Infrastructure\Publisher\SessionPublisher'
+  App\User\Infrastructure\Publisher\RefreshTokenPublisherInterface: '@App\User\Infrastructure\Publisher\RefreshTokenPublisher'
   App\User\Infrastructure\Factory\TOTPCreatorInterface: '@App\User\Infrastructure\TwoFactor\TOTPCreator'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 

@@ -10,8 +10,6 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Application\Factory\AccessTokenFactoryInterface;
-use App\User\Application\Factory\IdFactoryInterface;
 use DateTimeImmutable;
 
 /**

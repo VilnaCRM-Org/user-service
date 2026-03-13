@@ -26,7 +26,7 @@ final readonly class SignOutAllCommandHandler implements CommandHandlerInterface
     {
         $this->revokeAllSessions(
             $command->userId,
-            'user_initiated',
+            $command->reason,
         );
     }
 

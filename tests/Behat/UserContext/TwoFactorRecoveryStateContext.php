@@ -6,10 +6,10 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\CompleteTwoFactorInput;
 use App\Tests\Behat\UserContext\Input\TwoFactorCodeInput;
+use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
-use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use Behat\Behat\Context\Context;
 use DateTimeImmutable;
 use PHPUnit\Framework\Assert;

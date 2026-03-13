@@ -8,12 +8,12 @@ use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
+use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 

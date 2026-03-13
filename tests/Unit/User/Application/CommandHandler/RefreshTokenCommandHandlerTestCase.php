@@ -4,23 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
-use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\RefreshTokenRotatedEvent;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Application\Factory\AccessTokenFactoryInterface;
+use App\User\Infrastructure\Publisher\RefreshTokenPublisherInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -32,8 +30,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     protected AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     protected UserRepositoryInterface&MockObject $userRepository;
     protected AccessTokenFactoryInterface&MockObject $accessTokenFactory;
-    protected EventBusInterface&MockObject $eventBus;
-    protected EventIdFactoryInterface&MockObject $eventIdFactory;
+    protected RefreshTokenPublisherInterface&MockObject $publisher;
     protected AuthTokenFactoryInterface&MockObject $authTokenFactory;
     protected UserFactory $userFactory;
     protected UuidTransformer $uuidTransformer;
@@ -48,8 +45,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             $this->createMock(AuthSessionRepositoryInterface::class);
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->accessTokenFactory = $this->createMock(AccessTokenFactoryInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
+        $this->publisher = $this->createMock(RefreshTokenPublisherInterface::class);
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
@@ -303,29 +299,17 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             $this->userRepository,
             $this->accessTokenFactory,
             $this->authTokenFactory,
-            $this->eventBus,
-            $this->eventIdFactory,
+            $this->publisher,
             $refreshTokenGraceWindowSeconds,
         );
     }
 
     protected function expectRotatedEventPublished(AuthSession $session, User $user): void
     {
-        $eventId = $this->faker->uuid();
-
-        $this->eventIdFactory
+        $this->publisher
             ->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenRotatedEvent $event): bool => $event->sessionId === $session->getId()
-                    && $event->userId === $user->getId()
-                    && $event->eventId() === $eventId
-            ));
+            ->method('publishTokenRotated')
+            ->with($session->getId(), $user->getId());
     }
 
     protected function createValidRefreshToken(

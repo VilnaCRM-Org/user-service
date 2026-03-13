@@ -8,7 +8,6 @@ use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Ulid;
@@ -349,23 +348,15 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         User $user,
         string $reason
     ): void {
-        $eventId = $this->faker->uuid();
-
-        $this->eventIdFactory
+        $this->publisher
             ->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus
-            ->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static fn (RefreshTokenTheftDetectedEvent $event): bool => $event->sessionId === $session->getId()
-                    && $event->userId === $user->getId()
-                    && $event->ipAddress === $session->getIpAddress()
-                    && $event->reason === $reason
-                    && $event->eventId() === $eventId
-            ));
+            ->method('publishTheftDetected')
+            ->with(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                $reason
+            );
     }
 
     private function createRevokedToken(

@@ -6,7 +6,9 @@ namespace App\Tests\Unit\User\Application\Factory;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\IssuedSession;
+use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactory;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
@@ -14,8 +16,6 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
-use App\User\Application\Factory\AccessTokenFactoryInterface;
-use App\User\Application\Factory\IdFactoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 

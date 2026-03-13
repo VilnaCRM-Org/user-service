@@ -9,6 +9,7 @@ use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
+use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Transformer\PasswordHasherInterface;
 use App\User\Application\Validator\UserAuthenticatorInterface;
@@ -19,7 +20,6 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 
 final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Fixture\Command;
 
-use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
+use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Console\Attribute\AsCommand;

@@ -7,10 +7,10 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
+use App\User\Application\Factory\TOTPSecretFactoryInterface;
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Application\Factory\TOTPSecretFactoryInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 

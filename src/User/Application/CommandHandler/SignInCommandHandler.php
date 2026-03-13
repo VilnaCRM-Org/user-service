@@ -7,13 +7,13 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
+use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\UserAuthenticatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
-use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use DateTimeImmutable;
 

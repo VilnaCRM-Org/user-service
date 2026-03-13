@@ -15,6 +15,7 @@ final readonly class SignOutAllCommand implements CommandInterface
 {
     public function __construct(
         public string $userId,
+        public string $reason = 'user_initiated',
     ) {
     }
 }

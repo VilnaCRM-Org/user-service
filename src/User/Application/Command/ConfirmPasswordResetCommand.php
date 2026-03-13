@@ -29,4 +29,9 @@ final class ConfirmPasswordResetCommand implements CommandInterface
     ): void {
         $this->response = $response;
     }
+
+    public function markCompleted(): void
+    {
+        $this->response = new ConfirmPasswordResetCommandResponse();
+    }
 }
