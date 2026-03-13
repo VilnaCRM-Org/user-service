@@ -823,18 +823,18 @@ graph TB
 
 ### OWASP API Security Top 10 2023
 
-| OWASP API 2023                               | Coverage                                                | Accepted Gaps                                  |
-| -------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
-| API1: Broken Object Level Authorization      | Ownership on REST + GraphQL                             | None                                           |
-| API2: Broken Authentication                  | Rate limiting, 2FA, lockout, GraphQL batch defense      | Distributed stuffing bounded (Growth: CAPTCHA) |
-| API3: Broken Object Property Level Auth      | User can only modify own fields                         | None                                           |
-| API4: Unrestricted Resource Consumption      | Rate limiting, body size, batch rejection               | None                                           |
-| API5: Broken Function Level Authorization    | ROLE_SERVICE for batch, ROLE_USER for auth              | None                                           |
-| API6: Unrestricted Access to Sensitive Flows | Account lockout                                         | Distributed stuffing bounded (Growth: CAPTCHA) |
-| API7: SSRF                                   | N/A                                                     | N/A                                            |
-| API8: Security Misconfiguration              | Headers, introspection, firewall, key permissions       | None                                           |
+| OWASP API 2023                               | Coverage                                                                 | Accepted Gaps                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------- |
+| API1: Broken Object Level Authorization      | Ownership on REST + GraphQL                                              | None                                           |
+| API2: Broken Authentication                  | Rate limiting, 2FA, lockout, GraphQL batch defense                       | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API3: Broken Object Property Level Auth      | User can only modify own fields                                          | None                                           |
+| API4: Unrestricted Resource Consumption      | Rate limiting, body size, batch rejection                                | None                                           |
+| API5: Broken Function Level Authorization    | ROLE_SERVICE for batch, ROLE_USER for auth                               | None                                           |
+| API6: Unrestricted Access to Sensitive Flows | Account lockout                                                          | Distributed stuffing bounded (Growth: CAPTCHA) |
+| API7: SSRF                                   | N/A                                                                      | N/A                                            |
+| API8: Security Misconfiguration              | Headers, introspection, firewall, key permissions                        | None                                           |
 | API9: Improper Inventory Management          | Auth endpoints documented, explicit GraphQL auth operation configuration | None                                           |
-| API10: Unsafe Consumption of APIs            | N/A                                                     | N/A                                            |
+| API10: Unsafe Consumption of APIs            | N/A                                                                      | N/A                                            |
 
 ### OWASP JWT Cheat Sheet
 

@@ -98,11 +98,8 @@ export default function graphQLRegenerateRecoveryCodes(data) {
     'graphQL regenerate recovery codes is status 200',
     res => res.status === 200
   );
-  utils.checkResponse(
-    regenResult.response,
-    'graphQL regenerate recovery codes returns codes',
-    () =>
-      Array.isArray(regenResult.body?.data?.regenerateRecoveryCodesUser?.user?.recoveryCodes)
+  utils.checkResponse(regenResult.response, 'graphQL regenerate recovery codes returns codes', () =>
+    Array.isArray(regenResult.body?.data?.regenerateRecoveryCodesUser?.user?.recoveryCodes)
   );
 }
 

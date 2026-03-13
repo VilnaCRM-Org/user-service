@@ -87,10 +87,8 @@ export default function graphQLConfirmTwoFactor(data) {
     'graphQL confirm 2fa is status 200',
     res => res.status === 200
   );
-  utils.checkResponse(
-    confirmResult.response,
-    'graphQL confirm 2fa returns recovery codes',
-    () => Array.isArray(confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes)
+  utils.checkResponse(confirmResult.response, 'graphQL confirm 2fa returns recovery codes', () =>
+    Array.isArray(confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes)
   );
 }
 

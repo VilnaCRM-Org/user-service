@@ -263,13 +263,13 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ### Security — GraphQL and API Protection (TEA R3)
 
-| ID     | Requirement                                                                                                                               | Measurement                                                                         |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/api/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
+| ID     | Requirement                                                                                                                                                      | Measurement                                                                                                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/api/graphql` or count each operation separately                        | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit                                                             |
 | NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must be explicitly available via GraphQL mutations with dedicated resolvers and security on protected operations | Integration test: GraphQL introspection shows sign-in/2FA/sign-out mutations are present and protected mutations reject unauthenticated callers |
-| NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                          | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
-| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                                   | Config validation + integration test                                                |
-| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                     | Behat test for header presence                                                      |
+| NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                                                 | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                                                                               |
+| NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                                                          | Config validation + integration test                                                                                                            |
+| NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                                            | Behat test for header presence                                                                                                                  |
 
 ### Security — Key Management and Token Binding (TEA R3)
 
@@ -371,29 +371,29 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 
 ## Risks
 
-| Risk                                                             | Mitigation                                                                            |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Refresh rotation edge cases causing unexpected 401s              | Grace window + comprehensive Behat scenarios for crash/retry patterns                 |
-| Allowlist mistakes exposing protected endpoints                  | Integration test that enumerates all routes and verifies auth requirement             |
-| 2FA code verification drift due to clock skew                    | Allow +/- 1 time window in TOTP validation                                            |
-| Rate limiter false positives for shared IPs (NAT/corporate)      | Configurable limits via env vars; authenticated users get higher limits               |
-| Redis failure breaking rate limiting                             | Fail-open with logging alert (rate limiting is defense-in-depth, not sole protection) |
-| Password grant used by existing clients                          | Announce deprecation; disable in same release as sign-in endpoint                     |
-| User locks themselves out of 2FA                                 | Recovery codes provided on setup; regeneration endpoint available                     |
-| Bcrypt cost increase slows sign-in                               | Cost 12 adds ~250ms; within SC-01 budget of 300ms P95                                 |
-| Enabling firewall breaks all existing tests                      | Dedicated test infrastructure story (Story 4.0) before firewall story                 |
-| Access control patterns don't match actual routes                | Route enumeration integration test verifies every route                               |
-| GraphQL mutations bypass REST-level ownership checks             | GraphQL-specific security expressions on all write mutations                          |
-| JWT remains valid after session revocation                       | 15-min TTL limits window; immediate revocation (jti denylist) is Growth item          |
-| Timing-based email enumeration                                   | Constant-time validation: always hash even for non-existent users                     |
-| Concurrent refresh token rotation creates orphan tokens          | Atomic MongoDB operations (findOneAndUpdate) with preconditions                       |
-| Account lockout false positives (attacker locks victim)          | 15-min lockout duration is short; rate limiting still primary defense                 |
-| 2FA encryption key compromise                                    | Key in env var (not code); rotation strategy is Growth item                           |
+| Risk                                                             | Mitigation                                                                                              |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Refresh rotation edge cases causing unexpected 401s              | Grace window + comprehensive Behat scenarios for crash/retry patterns                                   |
+| Allowlist mistakes exposing protected endpoints                  | Integration test that enumerates all routes and verifies auth requirement                               |
+| 2FA code verification drift due to clock skew                    | Allow +/- 1 time window in TOTP validation                                                              |
+| Rate limiter false positives for shared IPs (NAT/corporate)      | Configurable limits via env vars; authenticated users get higher limits                                 |
+| Redis failure breaking rate limiting                             | Fail-open with logging alert (rate limiting is defense-in-depth, not sole protection)                   |
+| Password grant used by existing clients                          | Announce deprecation; disable in same release as sign-in endpoint                                       |
+| User locks themselves out of 2FA                                 | Recovery codes provided on setup; regeneration endpoint available                                       |
+| Bcrypt cost increase slows sign-in                               | Cost 12 adds ~250ms; within SC-01 budget of 300ms P95                                                   |
+| Enabling firewall breaks all existing tests                      | Dedicated test infrastructure story (Story 4.0) before firewall story                                   |
+| Access control patterns don't match actual routes                | Route enumeration integration test verifies every route                                                 |
+| GraphQL mutations bypass REST-level ownership checks             | GraphQL-specific security expressions on all write mutations                                            |
+| JWT remains valid after session revocation                       | 15-min TTL limits window; immediate revocation (jti denylist) is Growth item                            |
+| Timing-based email enumeration                                   | Constant-time validation: always hash even for non-existent users                                       |
+| Concurrent refresh token rotation creates orphan tokens          | Atomic MongoDB operations (findOneAndUpdate) with preconditions                                         |
+| Account lockout false positives (attacker locks victim)          | 15-min lockout duration is short; rate limiting still primary defense                                   |
+| 2FA encryption key compromise                                    | Key in env var (not code); rotation strategy is Growth item                                             |
 | GraphQL batching bypasses rate limiting (OWASP API2:2023)        | Reject batch requests at GraphQL endpoint; auth operations explicitly configured and secured in GraphQL |
-| Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item                         |
-| Distributed credential stuffing across rotating IPs              | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item  |
-| JWT private key compromise via file permissions                  | Enforce 600 permissions; migrate to env var/secret in Growth                          |
-| User exhausts all recovery codes without regenerating            | Warning when remaining <= 2; email notification is Growth item                        |
+| Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item                                           |
+| Distributed credential stuffing across rotating IPs              | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item                    |
+| JWT private key compromise via file permissions                  | Enforce 600 permissions; migrate to env var/secret in Growth                                            |
+| User exhausts all recovery codes without regenerating            | Warning when remaining <= 2; email notification is Growth item                                          |
 
 ## Closed Questions
 
