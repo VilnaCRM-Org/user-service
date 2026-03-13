@@ -76,6 +76,18 @@ export default class AuthFlowUtils {
     );
   }
 
+  requestPasswordReset(email) {
+    const payload = JSON.stringify({ email });
+
+    return this.post('/reset-password', payload, this.utils.getJsonHeader());
+  }
+
+  confirmPasswordReset(token, newPassword) {
+    const payload = JSON.stringify({ token, newPassword });
+
+    return this.post('/reset-password/confirm', payload, this.utils.getJsonHeader());
+  }
+
   post(path, payload, params) {
     const response = http.post(`${this.utils.getBaseUrl()}${path}`, payload, params);
 

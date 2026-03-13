@@ -266,7 +266,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | ID     | Requirement                                                                                                                               | Measurement                                                                         |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | NFR-59 | GraphQL batching must not bypass rate limiting — reject batch requests (JSON arrays) at `/api/graphql` or count each operation separately | Integration test: batch of 10 sign-in mutations receives 400 or triggers rate limit |
-| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must not auto-expose via GraphQL mutations — `graphql: false` on all auth resources       | Integration test: GraphQL introspection shows no sign-in/2FA mutations              |
+| NFR-62 | Auth operations (sign-in, 2FA, token, sign-out) must be explicitly available via GraphQL mutations with dedicated resolvers and security on protected operations | Integration test: GraphQL introspection shows sign-in/2FA/sign-out mutations are present and protected mutations reject unauthenticated callers |
 | NFR-64 | Implicit OAuth grant disabled in ALL environments including test                                                                          | Config validation: `OAUTH_ENABLE_IMPLICIT_GRANT=0` in `.env.test`                   |
 | NFR-65 | CORS `allow_credentials: true` with explicit origin (no wildcard `*`) in ALL environments including dev                                   | Config validation + integration test                                                |
 | NFR-66 | `Permissions-Policy` header (`camera=(), microphone=(), geolocation=(), payment=()`) on all responses                                     | Behat test for header presence                                                      |
@@ -389,7 +389,7 @@ The VilnaCRM User Service requires a cohesive sign-in flow with optional TOTP-ba
 | Concurrent refresh token rotation creates orphan tokens          | Atomic MongoDB operations (findOneAndUpdate) with preconditions                       |
 | Account lockout false positives (attacker locks victim)          | 15-min lockout duration is short; rate limiting still primary defense                 |
 | 2FA encryption key compromise                                    | Key in env var (not code); rotation strategy is Growth item                           |
-| GraphQL batching bypasses rate limiting (OWASP API2:2023)        | Reject batch requests at GraphQL endpoint; auth operations excluded from GraphQL      |
+| GraphQL batching bypasses rate limiting (OWASP API2:2023)        | Reject batch requests at GraphQL endpoint; auth operations explicitly configured and secured in GraphQL |
 | Bearer token sidejacking (stolen JWT replayed from other device) | 15-min TTL limits window; token fingerprinting is Growth item                         |
 | Distributed credential stuffing across rotating IPs              | Per-email rate limit + account lockout bounds total attempts; CAPTCHA is Growth item  |
 | JWT private key compromise via file permissions                  | Enforce 600 permissions; migrate to env var/secret in Growth                          |

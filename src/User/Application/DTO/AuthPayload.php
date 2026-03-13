@@ -4,46 +4,31 @@ declare(strict_types=1);
 
 namespace App\User\Application\DTO;
 
-use ApiPlatform\Metadata\ApiProperty;
-use Symfony\Component\Serializer\Attribute\Groups;
-
 final class AuthPayload
 {
-    #[ApiProperty(identifier: true)]
-    #[Groups(['auth:output'])]
     private string $id = 'auth';
 
-    #[Groups(['auth:output'])]
     private bool $success = true;
 
-    #[Groups(['auth:output'])]
     private ?bool $twoFactorEnabled = null;
 
-    #[Groups(['auth:output'])]
     private ?string $accessToken = null;
 
-    #[Groups(['auth:output'])]
     private ?string $refreshToken = null;
 
-    #[Groups(['auth:output'])]
     private ?string $pendingSessionId = null;
 
-    #[Groups(['auth:output'])]
     private ?string $otpauthUri = null;
 
-    #[Groups(['auth:output'])]
     private ?string $secret = null;
 
     /**
      * @var list<string>
      */
-    #[Groups(['auth:output'])]
     private array $recoveryCodes = [];
 
-    #[Groups(['auth:output'])]
     private ?int $recoveryCodesRemaining = null;
 
-    #[Groups(['auth:output'])]
     private ?string $warning = null;
 
     public static function createSuccessPayload(): self

@@ -363,9 +363,9 @@ OWASP API2:2023 documents that GraphQL batching bypasses per-request rate limiti
 **Required defense — implement both:**
 
 1. Add `GraphQLBatchRejectListener` at `kernel.request` priority 130 (before rate limiter): if request path is `/api/graphql` and body is a JSON array (batch), reject with 400.
-2. In all auth-related API Platform resource configs, set `graphql: false` to prevent auto-exposure of sign-in, 2FA, token refresh, and sign-out operations via GraphQL mutations.
+2. In auth-related API Platform resource configs, define GraphQL operations explicitly (dedicated `graphQlOperations`, resolvers, and security on protected mutations) to avoid accidental exposure or misconfiguration.
 
-**Auth operations excluded from GraphQL (explicit):** SignIn, CompleteTwoFactor, RefreshToken, SignOut, SignOutAll, SetupTwoFactor, ConfirmTwoFactor, DisableTwoFactor, RegenerateRecoveryCodes.
+**Auth operations supported in GraphQL (explicit):** SignIn, CompleteTwoFactor, RefreshToken, SignOut, SignOutAll, SetupTwoFactor, ConfirmTwoFactor, DisableTwoFactor, RegenerateRecoveryCodes.
 
 ## ADR-12: JWT Key Security
 
@@ -797,7 +797,7 @@ graph TB
 - [ ] User deletion cleans up auth artifacts (sessions, tokens, recovery codes)
 - [ ] JWT private key permissions are 600 (not 666/world-readable)
 - [ ] GraphQL batching rejected or counted per-operation for rate limiting
-- [ ] Auth operations (sign-in, 2FA, sign-out) have `graphql: false` in resource config
+- [ ] Auth operations (sign-in, 2FA, sign-out) are explicitly configured in GraphQL with dedicated resolvers and protected-operation security
 - [ ] Implicit OAuth grant disabled in ALL environments (including test)
 - [ ] CORS `allow_credentials: true` with explicit origin in ALL environments (no wildcard)
 - [ ] `Permissions-Policy` header in Caddy config
@@ -833,7 +833,7 @@ graph TB
 | API6: Unrestricted Access to Sensitive Flows | Account lockout                                         | Distributed stuffing bounded (Growth: CAPTCHA) |
 | API7: SSRF                                   | N/A                                                     | N/A                                            |
 | API8: Security Misconfiguration              | Headers, introspection, firewall, key permissions       | None                                           |
-| API9: Improper Inventory Management          | Auth endpoints documented, `graphql: false` on auth ops | None                                           |
+| API9: Improper Inventory Management          | Auth endpoints documented, explicit GraphQL auth operation configuration | None                                           |
 | API10: Unsafe Consumption of APIs            | N/A                                                     | N/A                                            |
 
 ### OWASP JWT Cheat Sheet

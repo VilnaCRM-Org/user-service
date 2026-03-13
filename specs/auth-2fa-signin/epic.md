@@ -98,7 +98,7 @@ This document provides the complete epic and story breakdown for the Auth Sign-i
 | NFR-59    | GraphQL batching must not bypass rate limiting                            | Security        |
 | NFR-60    | Bearer token sidejack risk documented (accepted for MVP)                  | Auth            |
 | NFR-61    | JWT private key permissions 600 (owner only)                              | Security        |
-| NFR-62    | Auth operations excluded from GraphQL auto-exposure                       | Security        |
+| NFR-62    | Auth operations explicitly supported in GraphQL with dedicated resolvers and protected-operation security | Security        |
 | NFR-64    | Implicit OAuth grant disabled in ALL environments                         | Security        |
 | NFR-65    | CORS `credentials: true` + explicit origin in ALL envs                    | Auth            |
 | NFR-66    | `Permissions-Policy` header on all responses                              | Headers         |
@@ -788,7 +788,7 @@ So that key compromise and rate-limit bypass vectors are closed.
 
 **Given** auth operations are defined in API Platform resources
 **When** GraphQL schema is introspected
-**Then** sign-in/2FA/sign-out operations are not exposed via GraphQL (`graphql: false`)
+**Then** sign-in/2FA/sign-out operations are exposed via GraphQL with explicit operation definitions
 
 **Given** a batch GraphQL payload is sent as a JSON array to `/api/graphql`
 **When** the request hits the API

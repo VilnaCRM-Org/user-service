@@ -3,6 +3,10 @@ resources:
     normalizationContext:
       groups: ['auth:query']
 
+    properties:
+      id:
+        identifier: true
+
     operations: []
 
     graphQlOperations:

@@ -1022,8 +1022,8 @@ so that key compromise and rate limit bypass attacks are prevented.
 2. JWT public key has 644 permissions (AC: NFR-61)
 3. Dockerfile enforces key permissions on build (AC: NFR-61)
 4. CI check verifies private key is not world-readable (AC: NFR-61)
-5. All auth-related API Platform resources have `graphql: false` (AC: NFR-62)
-6. GraphQL introspection shows no sign-in/2FA/sign-out mutations (AC: NFR-62)
+5. Auth-related operations are explicitly configured in GraphQL (`graphQlOperations`) with dedicated resolvers and protected-operation security (AC: NFR-62)
+6. GraphQL introspection shows sign-in/2FA/sign-out mutations are present (AC: NFR-62)
 7. GraphQL batch requests (JSON arrays to /api/graphql) are rejected with 400 (AC: NFR-59)
 8. Implicit OAuth grant disabled in test environment (AC: NFR-64)
 9. CORS `allow_credentials: true` with explicit origin in all environments (AC: NFR-65)
@@ -1037,9 +1037,10 @@ so that key compromise and rate limit bypass attacks are prevented.
   - [ ] `chmod 644 config/jwt/public.pem`
   - [ ] Add to Dockerfile: `RUN chmod 600 /app/config/jwt/private.pem`
   - [ ] Add CI check: verify permissions in `make ci` or pre-commit hook
-- [ ] Task 2: Exclude auth operations from GraphQL (AC: #5, #6)
-  - [ ] Add `graphql: false` to all sign-in, 2FA, token, sign-out resource configs
-  - [ ] Integration test: GraphQL introspection shows no auth mutations
+- [ ] Task 2: Configure auth operations in GraphQL explicitly (AC: #5, #6)
+  - [ ] Define sign-in, 2FA, token, and sign-out `graphQlOperations` with dedicated resolvers
+  - [ ] Integration test: GraphQL introspection shows auth mutations
+  - [ ] Integration test: protected auth mutations require authentication
 - [ ] Task 3: Add GraphQLBatchRejectListener (AC: #7)
   - [ ] `src/Shared/Application/EventListener/GraphQLBatchRejectListener.php`
   - [ ] Register at `kernel.request` priority 130 (before rate limiter at 120)
@@ -1356,7 +1357,7 @@ Claude Opus 4.6
 - R2 updates: Stories 1.1, 2.2, 2.3, 3.1, 4.1, 5.2, 6.1, 6.3 updated with R2 findings (4 critical + 7 moderate gaps)
 - R2 key changes: JWT claims structure (NFR-50/51), constant-time validation (NFR-53), `__Host-` cookie (NFR-54), account lockout (NFR-55), `WWW-Authenticate` header (NFR-56), AES-256-GCM encryption (NFR-57), atomic refresh rotation (NFR-58), 2FA-enable session invalidation (FR-20/NFR-52)
 - R3 updates: New Story 5.8 (JWT key + GraphQL batch + transport + CORS), Story 2.5 updated (recovery code warning), Story 5.3 updated (Permissions-Policy), Story 5.4 updated (GraphQL batching)
-- R3 key changes: GraphQL batching bypass defense (NFR-59), JWT key permissions (NFR-61), auth ops excluded from GraphQL (NFR-62), CORS fix (NFR-65), recovery code exhaustion warning (NFR-68), bearer token sidejack accepted risk (NFR-60)
+- R3 key changes: GraphQL batching bypass defense (NFR-59), JWT key permissions (NFR-61), auth ops explicitly supported in GraphQL (NFR-62), CORS fix (NFR-65), recovery code exhaustion warning (NFR-68), bearer token sidejack accepted risk (NFR-60)
 - New stories added (R1): 4.0, 2.4, 2.5, 2.6, 4.4, 4.5, 5.5, 5.6, 5.7, 6.1, 6.2, 6.3
 - New story added (R3): 5.8 (JWT key security + GraphQL batch defense + transport + CORS + implicit grant)
 - Story dependency graph included for implementation ordering
