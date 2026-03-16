@@ -4,7 +4,6 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-  api_url_prefix: '%env(API_PREFIX)%'
 
 services:
   # default configuration for services in *this* file
@@ -23,164 +22,17 @@ services:
   # please note that last definitions always *replace* previous ones
 
   _instanceof:
-    # services whose classes are instances of CustomInterface will be tagged automatically
-    App\Shared\Domain\Bus\Command\CommandHandlerInterface:
-      tags: ['app.command_handler']
-
     App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface:
       tags: ['app.event_subscriber']
-
-    App\User\Application\EventSubscriber\UserCacheInvalidationSubscriberInterface:
-      bind:
-        $cache: '@cache.user'
-
-    App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface:
-      bind:
-        $apiPrefix: '%api_url_prefix%'
-      tags: ['app.openapi_endpoint_factory']
-
-    App\Shared\Application\QueryParameter\QueryParameterRule:
-      tags: ['app.query_parameter_rule']
-
+    App\Shared\Domain\Bus\Command\CommandHandlerInterface:
+      tags: ['app.command_handler']
   App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
-    arguments:
-      - '@App\Shared\Infrastructure\Bus\MessageBusFactory'
-      - !tagged_iterator 'app.command_handler'
+    arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory', !tagged app.command_handler]
     lazy: true
 
   App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus:
-    arguments:
-      - '@App\Shared\Infrastructure\Bus\MessageBusFactory'
-      - !tagged_iterator 'app.event_subscriber'
+    arguments: ['@App\Shared\Infrastructure\Bus\MessageBusFactory', !tagged app.event_subscriber]
     lazy: true
-
-  App\Shared\Infrastructure\Bus\Event\Async\ResilientAsyncEventDispatcher:
-    arguments:
-      $messageBus: '@messenger.bus.default'
-
-  App\Shared\Infrastructure\Bus\Event\Async\DomainEventMessageHandler:
-    tags: ['messenger.message_handler']
-    arguments:
-      $subscribers: !tagged_iterator 'app.event_subscriber'
-
-  App\Shared\Domain\Bus\Event\EventBusInterface:
-    alias: App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus
-
-  Ramsey\Uuid\Validator\GenericValidator: ~
-
-  App\Shared\Application\OpenApi\Factory\OpenApiFactory:
-    decorates: 'api_platform.openapi.factory'
-    arguments:
-      - '@App\Shared\Application\OpenApi\Factory\OpenApiFactory.inner'
-      - !tagged_iterator 'app.openapi_endpoint_factory'
-      - '%env(API_URL)%'
-    autoconfigure: false
-
-  App\Shared\Application\EventListener\MethodNotAllowedListener:
-    tags:
-      - { name: kernel.event_listener, event: kernel.request, priority: 120 }
-
-  App\Shared\Application\EventListener\InvalidUuidRequestListener:
-    tags:
-      - { name: kernel.event_listener, event: kernel.request, priority: 10 }
-
-  App\Shared\Application\EventListener\OAuthAuthorizationExceptionListener:
-    tags:
-      - { name: kernel.event_listener, event: kernel.exception, priority: 0 }
-
-  App\Shared\Application\QueryParameter\AllowedParametersRule:
-    arguments:
-      $allowedParameters:
-        '/api/users': ['page', 'itemsPerPage']
-
-  App\Shared\Infrastructure\Observability\Factory\EmfAwsMetadataFactory:
-    arguments:
-      $namespace: '%env(AWS_EMF_NAMESPACE)%'
-
-  App\Shared\Application\EventListener\QueryParameterValidationListener:
-    arguments:
-      $rules: !tagged_iterator app.query_parameter_rule
-    tags:
-      - { name: kernel.event_listener, event: kernel.request, priority: 5 }
-
-  App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface:
-    alias: App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter
-
-  App\Shared\Application\Observability\Factory\MetricDimensionsFactoryInterface:
-    alias: App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory
-
-  App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy:
-    arguments:
-      $delayMs: '%env(int:MESSENGER_RETRY_DELAY_MS)%'
-
-  api_platform.state.error_provider:
-    class: 'App\Shared\Application\Provider\ErrorProvider'
-    arguments:
-      - '@Symfony\Contracts\Translation\TranslatorInterface'
-      - '@request_stack'
-      - '@App\Shared\Application\Resolver\HttpExceptionHeadersResolver'
-
-  App\User\Domain\Factory\ConfirmationTokenFactory:
-    arguments:
-      $tokenLength: '%env(int:CONFIRMATION_TOKEN_LENGTH)%'
-
-  App\User\Domain\Factory\PasswordResetTokenFactory:
-    arguments:
-      $tokenLength: '%env(int:PASSWORD_RESET_TOKEN_LENGTH)%'
-      $expirationTimeInHours: '%env(int:PASSWORD_RESET_TOKEN_EXPIRATION_HOURS)%'
-
-  App\User\Infrastructure\Repository\MongoDBUserRepository:
-    arguments:
-      $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
-
-  App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
-    arguments:
-      $cache: '@cache.user'
-    tags:
-      - { name: kernel.event_listener, event: kernel.terminate }
-
-  # Cached User Repository (decorator with Redis caching)
-  App\User\Infrastructure\Repository\CachedUserRepository:
-    arguments:
-      $inner: '@App\User\Infrastructure\Repository\MongoDBUserRepository'
-      $cache: '@cache.user'
-
-  # Alias interface to cached repository
-  App\User\Domain\Repository\UserRepositoryInterface:
-    alias: App\User\Infrastructure\Repository\CachedUserRepository
-
-  App\User\Domain\Repository\PasswordResetTokenRepositoryInterface:
-    alias: App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository
-
-  App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
-    arguments:
-      $apiBaseUrl: '%env(API_BASE_URL)%'
-
-  # Event listener for OAuth2 password grant
-  App\User\Application\EventListener\UserResolveListener:
-    tags:
-      - {
-          name: kernel.event_listener,
-          event: league.oauth2_server.event.user_resolve,
-          method: onUserResolve,
-        }
-
-  App\User\Application\Validator\CompositePasswordResetTokenValidator:
-    arguments:
-      $validators:
-        - '@App\User\Application\Validator\TokenExistenceValidator'
-        - '@App\User\Application\Validator\TokenExpirationValidator'
-        - '@App\User\Application\Validator\TokenUsageValidator'
-
-  App\User\Domain\Contract\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
-  App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Service\SymfonyPasswordHasher'
-  App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
-
-  App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandler:
-    decorates: App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface
-    arguments:
-      $inner: '@.inner'
-      $rateLimiter: '@limiter.password_reset'
 
   Aws\Sqs\SqsClient:
     arguments:
@@ -190,23 +42,3 @@ services:
         credentials:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
-
-  # OAuth ODM Persistence Managers
-  App\OAuth\Infrastructure\Manager\AccessTokenManager:
-    arguments:
-      $persistAccessToken: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
-
-  League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\ClientManager
-
-  League\Bundle\OAuth2ServerBundle\Manager\AccessTokenManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\AccessTokenManager
-
-  League\Bundle\OAuth2ServerBundle\Manager\RefreshTokenManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\RefreshTokenManager
-
-  League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
-
-  League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface:
-    alias: App\OAuth\Infrastructure\Service\CredentialsRevoker

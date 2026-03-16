@@ -1,5 +1,6 @@
 ###> symfony/framework-bundle ###
 /.idea
+/.env
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -7,13 +8,6 @@
 /public/bundles/
 /var/
 /vendor/
-/metrics-report
-/coverage
-infection.log
-summary.log
-.structurizr
-/tests/Load/node_modules
-/tests/Load/users.json
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -34,9 +28,6 @@ summary.log
 /.phpcs-cache
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
-/config/keys
-/config/jwt
-supervisord.*
 
 ###> qossmic/deptrac-shim ###
 /.deptrac.cache
@@ -47,15 +38,3 @@ super-linter-output
 super-linter.log
 venv
 ###< super-linter/super-linter ###
-
-# Code coverage reports
-coverage-html/
-
-###> bats-core ###
-/tests/CLI/bats/test_helper/
-###< bats-core ###
-
-.phpunit.cache
-###> league/oauth2-server-bundle ###
-/config/jwt/*.pem
-###< league/oauth2-server-bundle ###
