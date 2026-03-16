@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Lockout;
+namespace App\User\Infrastructure\Validator;
 
-use App\User\Application\Validator\AccountLockoutGuardInterface;
+use App\User\Application\Validator\AccountLockoutValidatorInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
 final readonly class RedisAccountLockout implements
-    AccountLockoutGuardInterface
+    AccountLockoutValidatorInterface
 {
     private const ATTEMPT_WINDOW_SECONDS = 3600;
 
@@ -33,13 +33,13 @@ final readonly class RedisAccountLockout implements
         $attemptsItem->expiresAfter(self::ATTEMPT_WINDOW_SECONDS);
         $this->cachePool->save($attemptsItem);
 
-        if ($attempts < AccountLockoutGuardInterface::MAX_ATTEMPTS) {
+        if ($attempts < AccountLockoutValidatorInterface::MAX_ATTEMPTS) {
             return false;
         }
 
         $lockItem = $this->cachePool->getItem($this->lockKey($email));
         $lockItem->set(true);
-        $lockItem->expiresAfter(AccountLockoutGuardInterface::LOCKOUT_SECONDS);
+        $lockItem->expiresAfter(AccountLockoutValidatorInterface::LOCKOUT_SECONDS);
         $this->cachePool->save($lockItem);
 
         return true;

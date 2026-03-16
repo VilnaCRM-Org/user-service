@@ -10,7 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
@@ -27,7 +27,7 @@ final class CompleteTwoFactorCommandHandlerRecoveryCodeFailureTest extends UnitT
     private UserRepositoryInterface&MockObject $userRepository;
     private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
     private IssuedSessionFactoryInterface&MockObject $sessionIssuer;
-    private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
+    private TwoFactorCodeValidatorInterface&MockObject $twoFactorCodeVerifier;
     private TwoFactorPublisherInterface&MockObject $events;
     private UserFactory $userFactory;
     private UuidTransformer $uuidTransformer;
@@ -42,7 +42,7 @@ final class CompleteTwoFactorCommandHandlerRecoveryCodeFailureTest extends UnitT
             PendingTwoFactorRepositoryInterface::class
         );
         $this->sessionIssuer = $this->createMock(IssuedSessionFactoryInterface::class);
-        $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
+        $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeValidatorInterface::class);
         $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
@@ -104,7 +104,7 @@ final class CompleteTwoFactorCommandHandlerRecoveryCodeFailureTest extends UnitT
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndResolveMethod')
             ->with($user, 'AB12-CD34')
-            ->willReturn(TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE);
+            ->willReturn(TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE);
     }
 
     private function expectPendingConsumeSuccess(PendingTwoFactor $pending): void

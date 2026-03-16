@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Validator\Verifier;
+namespace App\User\Application\Validator;
 
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
@@ -11,12 +11,12 @@ use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /** @psalm-suppress UnusedClass */
-final readonly class TwoFactorCodeVerifier implements TwoFactorCodeVerifierInterface
+final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInterface
 {
     private const RECOVERY_CODE_PATTERN = '/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/';
 
     public function __construct(
-        private TOTPVerifierInterface $totpVerifier,
+        private TOTPValidatorInterface $totpVerifier,
         private TwoFactorSecretEncryptorInterface $encryptor,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
     ) {

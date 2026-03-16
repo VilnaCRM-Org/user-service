@@ -13,7 +13,7 @@ final class TOTPSecretFactory implements TOTPSecretFactoryInterface
 {
     private const OTP_ISSUER = 'VilnaCRM';
 
-    public function __construct(private readonly TOTPCreatorInterface $totpCreator)
+    public function __construct(private readonly TOTPFactoryInterface $totpCreator)
     {
     }
 

@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -25,7 +25,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
-        private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
+        private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
         private TwoFactorPublisherInterface $events,
         private SessionPublisherInterface $sessionEvents,

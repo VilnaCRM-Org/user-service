@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Validator\Guard;
+namespace App\User\Application\Validator;
 
 use App\User\Application\DTO\AuthorizationUserDto;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /** @psalm-suppress UnusedClass */
-final readonly class TokenOwnershipGuard implements OwnershipGuardInterface
+final readonly class TokenOwnershipValidator implements OwnershipValidatorInterface
 {
     public function __construct(private TokenStorageInterface $tokenStorage)
     {

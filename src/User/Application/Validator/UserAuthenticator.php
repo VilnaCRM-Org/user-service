@@ -24,7 +24,7 @@ final class UserAuthenticator implements UserAuthenticatorInterface
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly PasswordHasherInterface $passwordHasher,
-        private readonly AccountLockoutGuardInterface $lockoutGuard,
+        private readonly AccountLockoutValidatorInterface $lockoutGuard,
         private readonly SignInPublisherInterface $signInPublisher,
         ?string $dummyPasswordHash = null,
     ) {
@@ -68,17 +68,7 @@ final class UserAuthenticator implements UserAuthenticatorInterface
             return;
         }
 
-        $maxAttempts = $this->lockoutGuard->maxAttempts();
-        $lockoutSeconds = $this->lockoutGuard->lockoutSeconds();
-
-        $this->signInPublisher->publishLockedOut($email, $maxAttempts, $lockoutSeconds);
-
-        throw new LockedHttpException(
-            self::LOCKOUT_MESSAGE,
-            null,
-            0,
-            ['Retry-After' => (string) $lockoutSeconds]
-        );
+        $this->throwLockedException($email);
     }
 
     private function verifyCredentials(?User $user, string $password): ?User
@@ -101,25 +91,31 @@ final class UserAuthenticator implements UserAuthenticatorInterface
     ): never {
         $lockedAfterFailure = $this->lockoutGuard->recordFailure($email);
 
-        $this->signInPublisher->publishFailed($email, $ipAddress, $userAgent, 'invalid_credentials');
+        $this->signInPublisher->publishFailed(
+            $email,
+            $ipAddress,
+            $userAgent,
+            'invalid_credentials'
+        );
 
         if ($lockedAfterFailure) {
-            $maxAttempts = $this->lockoutGuard->maxAttempts();
-            $lockoutSeconds = $this->lockoutGuard->lockoutSeconds();
-            $this->signInPublisher->publishLockedOut(
-                $email,
-                $maxAttempts,
-                $lockoutSeconds
-            );
-
-            throw new LockedHttpException(
-                self::LOCKOUT_MESSAGE,
-                null,
-                0,
-                ['Retry-After' => (string) $lockoutSeconds]
-            );
+            $this->throwLockedException($email);
         }
 
         throw new UnauthorizedHttpException('Bearer', 'Invalid credentials.');
+    }
+
+    private function throwLockedException(string $email): never
+    {
+        $maxAttempts = $this->lockoutGuard->maxAttempts();
+        $lockoutSeconds = $this->lockoutGuard->lockoutSeconds();
+        $this->signInPublisher->publishLockedOut($email, $maxAttempts, $lockoutSeconds);
+
+        throw new LockedHttpException(
+            self::LOCKOUT_MESSAGE,
+            null,
+            0,
+            ['Retry-After' => (string) $lockoutSeconds]
+        );
     }
 }

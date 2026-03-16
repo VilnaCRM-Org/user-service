@@ -44,7 +44,9 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->recoveryCodeBatchFactory = $this->createMock(RecoveryCodeBatchFactoryInterface::class);
+        $this->recoveryCodeBatchFactory = $this->createMock(
+            RecoveryCodeBatchFactoryInterface::class
+        );
         $this->currentTimestampProvider = $this->createMock(
             CurrentTimestampProviderInterface::class
         );

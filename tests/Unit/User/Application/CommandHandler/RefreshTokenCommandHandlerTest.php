@@ -140,6 +140,61 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
 
+    public function testGraceReuseIgnoresTokenWithSameIdEvenWhenItHasLaterRotation(): void
+    {
+        $plainToken = 'rotated-token-with-duplicate-id';
+        $oldToken = $this->createValidRefreshToken($plainToken);
+        $oldToken->markAsRotated(new DateTimeImmutable('-20 seconds'));
+
+        $duplicateIdToken = new AuthRefreshToken(
+            $oldToken->getId(),
+            $oldToken->getSessionId(),
+            $this->faker->sha256(),
+            new DateTimeImmutable('+1 month')
+        );
+        $duplicateIdToken->markAsRotated(new DateTimeImmutable('-10 seconds'));
+
+        $this->assertGraceReuseWithCandidateTokens(
+            $oldToken,
+            $plainToken,
+            [$duplicateIdToken],
+            'duplicate-id-access-token'
+        );
+    }
+
+    public function testGraceReuseDoesNotTreatEqualRotationTimeAsLaterRotation(): void
+    {
+        $plainToken = 'rotated-token-equal-rotation-time';
+        $oldToken = $this->createValidRefreshToken($plainToken);
+        $rotatedAt = new DateTimeImmutable('-20 seconds');
+        $oldToken->markAsRotated($rotatedAt);
+
+        $sameTimeToken = $this->createValidRefreshToken($this->faker->sha256());
+        $sameTimeToken->markAsRotated($rotatedAt);
+
+        $this->assertGraceReuseWithCandidateTokens(
+            $oldToken,
+            $plainToken,
+            [$sameTimeToken],
+            'equal-time-access-token'
+        );
+    }
+
+    public function testGraceReuseIgnoresUnrotatedSessionToken(): void
+    {
+        $plainToken = 'rotated-token-with-unrotated-candidate';
+        $oldToken = $this->createValidRefreshToken($plainToken);
+        $oldToken->markAsRotated(new DateTimeImmutable('-20 seconds'));
+        $unrotatedToken = $this->createValidRefreshToken($this->faker->sha256());
+
+        $this->assertGraceReuseWithCandidateTokens(
+            $oldToken,
+            $plainToken,
+            [$unrotatedToken],
+            'unrotated-candidate-access-token'
+        );
+    }
+
     public function testInvokeThrows401WhenSessionNotFound(): void
     {
         $plainToken = 'valid-token';
@@ -218,6 +273,34 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->createHandler()->__invoke(
             new RefreshTokenCommand($plainToken)
         );
+    }
+
+    /**
+     * @param list<AuthRefreshToken> $candidateTokens
+     */
+    private function assertGraceReuseWithCandidateTokens(
+        AuthRefreshToken $oldToken,
+        string $plainToken,
+        array $candidateTokens,
+        string $expectedAccessToken
+    ): void {
+        $session = $this->createValidSession($oldToken->getSessionId());
+        $user = $this->createUser();
+
+        $this->expectTokenLookup($oldToken, $plainToken);
+        $this->expectSessionLookup($session);
+        $this->expectUserLookup($user);
+        $this->refreshTokenRepository->expects($this->once())
+            ->method('findBySessionId')
+            ->with($session->getId())
+            ->willReturn($candidateTokens);
+        $this->expectSuccessfulGraceReuse($session, $user, $expectedAccessToken);
+
+        $command = $this->invokeHandler($plainToken);
+
+        $this->assertSame($expectedAccessToken, $command->getResponse()->getAccessToken());
+        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $this->assertTrue($oldToken->isGraceUsed());
     }
 
     private function createExpiredRefreshToken(

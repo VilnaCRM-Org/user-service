@@ -9,7 +9,7 @@ use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
@@ -29,7 +29,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         private UserRepositoryInterface $userRepository,
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private IssuedSessionFactoryInterface $issuedSessionFactory,
-        private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
+        private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private TwoFactorPublisherInterface $events,
     ) {
     }
@@ -93,7 +93,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
      */
     private function resolveRemainingCodes(User $user, string $method): ?int
     {
-        if ($method !== TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE) {
+        if ($method !== TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE) {
             return null;
         }
 
@@ -160,7 +160,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         CompleteTwoFactorCommand $command,
         string $method
     ): void {
-        if ($method !== TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE) {
+        if ($method !== TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE) {
             return;
         }
 

@@ -10,7 +10,7 @@ use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
 use App\User\Application\Transformer\PasswordHasherInterface;
-use App\User\Application\Validator\AccountLockoutGuardInterface;
+use App\User\Application\Validator\AccountLockoutValidatorInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
@@ -29,7 +29,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
-    private AccountLockoutGuardInterface&MockObject $accountLockoutGuard;
+    private AccountLockoutValidatorInterface&MockObject $accountLockoutGuard;
     private CommandBusInterface&MockObject $commandBus;
     private PasswordResetConfirmationPublisherInterface&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
@@ -43,7 +43,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
-        $this->accountLockoutGuard = $this->createMock(AccountLockoutGuardInterface::class);
+        $this->accountLockoutGuard = $this->createMock(AccountLockoutValidatorInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 
@@ -117,21 +117,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $this->setupTokenValidationExpectations($testData['token'], $mocks['passwordResetToken']);
         $this->setupUserUpdateExpectations($testData, $mocks['user']);
-        $this->tokenRepository->expects($this->once())
-            ->method('save')
-            ->with($mocks['passwordResetToken']);
-        $this->accountLockoutGuard->expects($this->once())
-            ->method('clearFailures')
-            ->with(strtolower(trim($testData['userEmail'])));
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (SignOutAllCommand $cmd): bool => $cmd->userId === $testData['userId']
-                    && $cmd->reason === 'password_reset'
-            ));
-        $this->publisher->expects($this->once())
-            ->method('publish')
-            ->with($mocks['user']);
+        $this->expectLockoutClearAndRevoke(
+            $testData,
+            $mocks,
+            strtolower(trim($testData['userEmail']))
+        );
 
         $this->handler->__invoke($command);
     }
@@ -275,7 +265,13 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @return array<string>
      *
-     * @psalm-return array{token: string, newPassword: string, userId: string, userEmail: string, hashedPassword: string}
+     * @psalm-return array{
+     *     token: string,
+     *     newPassword: string,
+     *     userId: string,
+     *     userEmail: string,
+     *     hashedPassword: string
+     * }
      */
     private function createConfirmPasswordResetTestData(): array
     {

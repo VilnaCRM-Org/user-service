@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Authenticator;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Transformer\PasswordHasherInterface;
-use App\User\Application\Validator\AccountLockoutGuardInterface;
+use App\User\Application\Validator\AccountLockoutValidatorInterface;
 use App\User\Application\Validator\UserAuthenticator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -19,7 +19,7 @@ final class UserAuthenticatorTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
-    private AccountLockoutGuardInterface&MockObject $lockoutGuard;
+    private AccountLockoutValidatorInterface&MockObject $lockoutGuard;
     private SignInPublisherInterface&MockObject $events;
 
     #[\Override]
@@ -29,7 +29,7 @@ final class UserAuthenticatorTest extends UnitTestCase
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $this->lockoutGuard = $this->createMock(AccountLockoutGuardInterface::class);
+        $this->lockoutGuard = $this->createMock(AccountLockoutValidatorInterface::class);
         $this->events = $this->createMock(SignInPublisherInterface::class);
     }
 

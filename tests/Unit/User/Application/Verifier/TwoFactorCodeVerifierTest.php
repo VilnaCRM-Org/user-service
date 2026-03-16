@@ -6,9 +6,9 @@ namespace App\Tests\Unit\User\Application\Verifier;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
-use App\User\Application\Validator\Verifier\TOTPVerifierInterface;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifier;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TOTPValidatorInterface;
+use App\User\Application\Validator\TwoFactorCodeValidator;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
@@ -17,21 +17,21 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class TwoFactorCodeVerifierTest extends UnitTestCase
 {
-    private TOTPVerifierInterface&MockObject $totpVerifier;
+    private TOTPValidatorInterface&MockObject $totpVerifier;
     private TwoFactorSecretEncryptorInterface&MockObject $encryptor;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
-    private TwoFactorCodeVerifier $verifier;
+    private TwoFactorCodeValidator $verifier;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->totpVerifier = $this->createMock(TOTPVerifierInterface::class);
+        $this->totpVerifier = $this->createMock(TOTPValidatorInterface::class);
         $this->encryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
 
-        $this->verifier = new TwoFactorCodeVerifier(
+        $this->verifier = new TwoFactorCodeValidator(
             $this->totpVerifier,
             $this->encryptor,
             $this->recoveryCodeRepository,
@@ -169,7 +169,7 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $result = $this->verifier->verifyAndResolveMethod($user, $code);
 
-        $this->assertSame(TwoFactorCodeVerifierInterface::METHOD_TOTP, $result);
+        $this->assertSame(TwoFactorCodeValidatorInterface::METHOD_TOTP, $result);
     }
 
     public function testVerifyAndResolveMethodReturnsNullForInvalidTotpCode(): void
@@ -213,7 +213,7 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $result = $this->verifier->verifyAndResolveMethod($user, $plainCode);
 
-        $this->assertSame(TwoFactorCodeVerifierInterface::METHOD_RECOVERY_CODE, $result);
+        $this->assertSame(TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE, $result);
     }
 
     public function testVerifyAndResolveMethodReturnsNullForInvalidRecoveryCode(): void

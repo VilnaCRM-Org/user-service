@@ -17,7 +17,7 @@ use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
 use App\User\Application\Processor\ResendEmailProcessor;
 use App\User\Application\Query\GetUserQueryHandlerInterface;
-use App\User\Application\Validator\Guard\OwnershipGuardInterface;
+use App\User\Application\Validator\OwnershipValidatorInterface;
 use App\User\Domain\Aggregate\ConfirmationEmailInterface;
 use App\User\Domain\Entity\ConfirmationTokenInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -45,7 +45,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface&MockObject $tokenFactory;
     private ConfirmationEmailFactoryInterface&MockObject $confirmationEmailFactory;
     private SendConfirmationEmailCommandFactoryInterface&MockObject $emailCmdFactory;
-    private OwnershipGuardInterface&MockObject $ownershipGuard;
+    private OwnershipValidatorInterface&MockObject $ownershipGuard;
     private RequestStack $requestStack;
 
     #[\Override]
@@ -207,6 +207,29 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->processWithRequest($resourceUserId, '{}');
     }
 
+    public function testProcessCreatesNewTokenWhenNoneExists(): void
+    {
+        $userId = $this->faker->uuid();
+        $user = $this->createUser($userId);
+        $this->expectUserLookup($userId, $user);
+
+        $this->tokenRepository->method('findByUserId')->with($user->getId())->willReturn(null);
+        $newToken = $this->createMock(ConfirmationTokenInterface::class);
+        $this->tokenFactory->expects($this->once())
+            ->method('create')
+            ->with($user->getId())
+            ->willReturn($newToken);
+
+        $email = $this->createMock(ConfirmationEmailInterface::class);
+        $this->confirmationEmailFactory->method('create')
+            ->with($newToken, $user)->willReturn($email);
+        $command = new SendConfirmationEmailCommand($email);
+        $this->emailCmdFactory->method('create')->with($email)->willReturn($command);
+        $this->commandBus->expects($this->once())->method('dispatch');
+
+        $this->processWithRequest($userId, '{}');
+    }
+
     private function getProcessor(): ResendEmailProcessor
     {
         return new ResendEmailProcessor(
@@ -272,7 +295,7 @@ final class ResendEmailProcessorTest extends UnitTestCase
         $this->emailCmdFactory = $this->createMock(
             SendConfirmationEmailCommandFactoryInterface::class
         );
-        $this->ownershipGuard = $this->createMock(OwnershipGuardInterface::class);
+        $this->ownershipGuard = $this->createMock(OwnershipValidatorInterface::class);
     }
 
     private function initJsonValidator(): void

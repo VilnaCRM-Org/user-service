@@ -148,12 +148,9 @@ final readonly class RefreshTokenCommandHandler implements
         }
 
         $candidateRotatedAt = $candidateToken->getRotatedAt();
-        if (!$candidateRotatedAt instanceof DateTimeImmutable) {
-            return false;
-        }
 
-        return (int) $candidateRotatedAt->format('Uu')
-            > (int) $oldRotatedAt->format('Uu');
+        return $candidateRotatedAt instanceof DateTimeImmutable
+            && $candidateRotatedAt > $oldRotatedAt;
     }
 
     /**

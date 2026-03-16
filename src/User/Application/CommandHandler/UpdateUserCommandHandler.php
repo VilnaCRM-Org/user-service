@@ -115,20 +115,24 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 
             $session->revoke();
             $this->authSessionRepository->save($session);
-
-            foreach ($this->authRefreshTokenRepository->findBySessionId($session->getId()) as $refreshToken) {
-                if ($refreshToken->isRevoked()) {
-                    continue;
-                }
-
-                $refreshToken->revoke();
-                $this->authRefreshTokenRepository->save($refreshToken);
-            }
+            $this->revokeActiveRefreshTokens($session->getId());
 
             ++$revokedCount;
         }
 
         return $revokedCount;
+    }
+
+    private function revokeActiveRefreshTokens(string $sessionId): void
+    {
+        foreach ($this->authRefreshTokenRepository->findBySessionId($sessionId) as $refreshToken) {
+            if ($refreshToken->isRevoked()) {
+                continue;
+            }
+
+            $refreshToken->revoke();
+            $this->authRefreshTokenRepository->save($refreshToken);
+        }
     }
 
     private function assertPasswordIsValid(

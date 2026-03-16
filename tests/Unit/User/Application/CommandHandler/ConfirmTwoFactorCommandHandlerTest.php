@@ -10,7 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -28,7 +28,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
-    private TwoFactorCodeVerifierInterface&MockObject $twoFactorCodeVerifier;
+    private TwoFactorCodeValidatorInterface&MockObject $twoFactorCodeVerifier;
     private RecoveryCodeBatchFactoryInterface&MockObject $recoveryCodeBatchFactory;
     private TwoFactorPublisherInterface&MockObject $events;
     private SessionPublisherInterface&MockObject $sessionEvents;
@@ -41,8 +41,10 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         parent::setUp();
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
-        $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeVerifierInterface::class);
-        $this->recoveryCodeBatchFactory = $this->createMock(RecoveryCodeBatchFactoryInterface::class);
+        $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeValidatorInterface::class);
+        $this->recoveryCodeBatchFactory = $this->createMock(
+            RecoveryCodeBatchFactoryInterface::class
+        );
         $this->events = $this->createMock(TwoFactorPublisherInterface::class);
         $this->sessionEvents = $this->createMock(SessionPublisherInterface::class);
         $this->userFactory = new UserFactory();

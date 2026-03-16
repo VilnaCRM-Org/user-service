@@ -60,4 +60,24 @@ final class AuthCookieFactoryTest extends UnitTestCase
         $this->assertGreaterThanOrEqual(2591999, $cookie->getMaxAge());
         $this->assertLessThanOrEqual(2592000, $cookie->getMaxAge());
     }
+
+    public function testDefaultStandardCookieMaxAgeIsExpectedValue(): void
+    {
+        $this->assertSame(900, $this->readPrivateInt('standardCookieMaxAge'));
+    }
+
+    public function testDefaultRememberMeCookieMaxAgeIsExpectedValue(): void
+    {
+        $this->assertSame(2592000, $this->readPrivateInt('rememberMeCookieMaxAge'));
+    }
+
+    private function readPrivateInt(string $property): int
+    {
+        $reflectionProperty = new \ReflectionProperty(AuthCookieFactory::class, $property);
+        $value = $reflectionProperty->getValue($this->factory);
+
+        $this->assertIsInt($value);
+
+        return $value;
+    }
 }

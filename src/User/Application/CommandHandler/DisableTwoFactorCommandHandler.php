@@ -6,7 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\DisableTwoFactorCommand;
-use App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface;
+use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -22,7 +22,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
-        private TwoFactorCodeVerifierInterface $twoFactorCodeVerifier,
+        private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private TwoFactorPublisherInterface $events,
     ) {
     }

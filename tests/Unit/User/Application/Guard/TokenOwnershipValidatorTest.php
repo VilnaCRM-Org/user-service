@@ -7,16 +7,16 @@ namespace App\Tests\Unit\User\Application\Guard;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
-use App\User\Application\Validator\Guard\TokenOwnershipGuard;
+use App\User\Application\Validator\TokenOwnershipValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-final class TokenOwnershipGuardTest extends UnitTestCase
+final class TokenOwnershipValidatorTest extends UnitTestCase
 {
     private TokenStorageInterface&MockObject $tokenStorage;
-    private TokenOwnershipGuard $guard;
+    private TokenOwnershipValidator $guard;
 
     #[\Override]
     protected function setUp(): void
@@ -24,7 +24,7 @@ final class TokenOwnershipGuardTest extends UnitTestCase
         parent::setUp();
 
         $this->tokenStorage = $this->createMock(TokenStorageInterface::class);
-        $this->guard = new TokenOwnershipGuard($this->tokenStorage);
+        $this->guard = new TokenOwnershipValidator($this->tokenStorage);
     }
 
     public function testAssertOwnershipSucceedsWhenUserIdMatches(): void

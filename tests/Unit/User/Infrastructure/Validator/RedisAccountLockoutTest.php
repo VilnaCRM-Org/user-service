@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Infrastructure\Lockout;
+namespace App\Tests\Unit\User\Infrastructure\Validator;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Lockout\RedisAccountLockout;
+use App\User\Infrastructure\Validator\RedisAccountLockout;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;

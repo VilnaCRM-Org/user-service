@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Validator\Verifier;
+namespace App\User\Application\Validator;
 
-interface TOTPVerifierInterface
+interface TOTPValidatorInterface
 {
     public function verify(
         string $secret,

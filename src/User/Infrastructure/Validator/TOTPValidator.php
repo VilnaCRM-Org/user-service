@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\TwoFactor;
+namespace App\User\Infrastructure\Validator;
 
-use App\User\Application\Validator\Verifier\TOTPVerifierInterface;
+use App\User\Application\Validator\TOTPValidatorInterface;
 use OTPHP\TOTP;
 
-final class TOTPVerifier implements TOTPVerifierInterface
+final class TOTPValidator implements TOTPValidatorInterface
 {
     private const DEFAULT_PERIOD = 30;
     private const DEFAULT_DIGEST = 'sha1';

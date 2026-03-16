@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Validator\Verifier;
+namespace App\User\Application\Validator;
 
 use App\User\Domain\Entity\User;
 
-interface TwoFactorCodeVerifierInterface
+interface TwoFactorCodeValidatorInterface
 {
     public const METHOD_TOTP = 'totp';
     public const METHOD_RECOVERY_CODE = 'recovery_code';

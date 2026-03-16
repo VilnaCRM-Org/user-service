@@ -105,7 +105,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->assertSessionRevokedEvent($publishedEvents, $user->getId(), 'password_change', 1);
     }
 
-    public function testInvokeSkipsCurrentAndAlreadyRevokedSessionsWhileRevokingActiveRefreshTokens(): void
+    public function testInvokeSkipsCurrentAndRevokedSessionsAndRevokesActiveTokens(): void
     {
         $user = $this->createUser();
         $currentSessionId = (string) new SymfonyUuid($this->faker->uuid());
@@ -115,43 +115,8 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->expectEventIdFactory();
         $this->expectPasswordHasher(true);
         $this->setupUpdateMocks($user);
-
-        $currentSession = $this->createOtherSession($currentSessionId, $user->getId());
-        $revokedSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
-        $revokedSession->revoke();
-        $activeSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
-
-        $activeRefreshToken = new AuthRefreshToken(
-            $this->faker->uuid(),
-            $activeSession->getId(),
-            $this->faker->sha256(),
-            new DateTimeImmutable('+1 month')
-        );
-        $revokedRefreshToken = new AuthRefreshToken(
-            $this->faker->uuid(),
-            $activeSession->getId(),
-            $this->faker->sha256(),
-            new DateTimeImmutable('+1 month')
-        );
-        $revokedRefreshToken->revoke();
-
-        $this->authSessionRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$currentSession, $revokedSession, $activeSession]);
-        $this->authSessionRepository->expects($this->once())
-            ->method('save')
-            ->with($activeSession);
-        $this->authRefreshTokenRepository->expects($this->once())
-            ->method('findBySessionId')
-            ->with($activeSession->getId())
-            ->willReturn([$revokedRefreshToken, $activeRefreshToken]);
-        $this->authRefreshTokenRepository->expects($this->once())
-            ->method('save')
-            ->with($this->callback(
-                static fn (AuthRefreshToken $refreshToken): bool => $refreshToken->getId() === $activeRefreshToken->getId()
-                    && $refreshToken->isRevoked()
-            ));
+        $activeRefreshToken = $this->expectRevocationContext($user, $currentSessionId);
+        $this->expectActiveRefreshTokenSaved($activeRefreshToken);
         $this->userRepository->expects($this->once())->method('save')->with($user);
 
         $publishedEvents = [];
@@ -194,7 +159,9 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->expectEventPublish($publishedEvents);
         $this->createHandler()->__invoke($command);
 
-        $this->assertNotNull($this->findEventOfType($publishedEvents, UserUpdatedEvent::class));
+        $this->assertNotNull(
+            $this->findEventOfType($publishedEvents, UserUpdatedEvent::class)
+        );
         $this->assertGreaterThanOrEqual(2, count($publishedEvents));
     }
 
@@ -215,7 +182,9 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $this->expectEventPublish($publishedEvents);
         $this->createHandler()->__invoke($command);
 
-        $this->assertNotNull($this->findEventOfType($publishedEvents, UserUpdatedEvent::class));
+        $this->assertNotNull(
+            $this->findEventOfType($publishedEvents, UserUpdatedEvent::class)
+        );
     }
 
     public function testInvokeDoesNotRevokeSessionsWhenPasswordIsNotChanged(): void
@@ -237,7 +206,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $this->createHandler()->__invoke($command);
 
-        $this->assertNull($this->findAllSessionsRevokedEvent($publishedEvents));
+        $this->assertNull($this->findEventOfType($publishedEvents, AllSessionsRevokedEvent::class));
     }
 
     public function testInvokePublishesUserUpdatedEventWhenEmailChangesWithoutPasswordChange(): void
@@ -259,7 +228,65 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $userUpdatedEvent = $this->findEventOfType($publishedEvents, UserUpdatedEvent::class);
         $this->assertNotNull($userUpdatedEvent);
         $this->assertSame($previousEmail, $userUpdatedEvent->previousEmail);
-        $this->assertNull($this->findAllSessionsRevokedEvent($publishedEvents));
+        $this->assertNull($this->findEventOfType($publishedEvents, AllSessionsRevokedEvent::class));
+    }
+
+    private function expectRevocationContext(
+        UserInterface $user,
+        string $currentSessionId
+    ): AuthRefreshToken {
+        $currentSession = $this->createOtherSession($currentSessionId, $user->getId());
+        $revokedSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+        $revokedSession->revoke();
+        $activeSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+        $activeRefreshToken = $this->createRefreshToken($activeSession->getId());
+        $revokedRefreshToken = $this->createRefreshToken($activeSession->getId());
+        $revokedRefreshToken->revoke();
+        $this->authSessionRepository->expects($this->once())
+            ->method('findByUserId')
+            ->with($user->getId())
+            ->willReturn([$currentSession, $revokedSession, $activeSession]);
+        $this->expectActiveSessionSavedAsRevoked($activeSession);
+        $this->authRefreshTokenRepository->expects($this->once())
+            ->method('findBySessionId')
+            ->with($activeSession->getId())
+            ->willReturn([$revokedRefreshToken, $activeRefreshToken]);
+
+        return $activeRefreshToken;
+    }
+
+    private function expectActiveSessionSavedAsRevoked(AuthSession $activeSession): void
+    {
+        $this->authSessionRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static function (AuthSession $session) use ($activeSession): bool {
+                    return $session->getId() === $activeSession->getId()
+                        && $session->isRevoked();
+                }
+            ));
+    }
+
+    private function expectActiveRefreshTokenSaved(AuthRefreshToken $activeRefreshToken): void
+    {
+        $this->authRefreshTokenRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static function (AuthRefreshToken $refreshToken) use ($activeRefreshToken): bool {
+                    return $refreshToken->getId() === $activeRefreshToken->getId()
+                        && $refreshToken->isRevoked();
+                }
+            ));
+    }
+
+    private function createRefreshToken(string $sessionId): AuthRefreshToken
+    {
+        return new AuthRefreshToken(
+            $this->faker->uuid(),
+            $sessionId,
+            $this->faker->sha256(),
+            new DateTimeImmutable('+1 month')
+        );
     }
 
     private function createUser(): UserInterface
@@ -332,20 +359,6 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
                 null,
                 $eventId
             ));
-    }
-
-    /**
-     * @param array<int, DomainEvent> $events
-     */
-    private function findAllSessionsRevokedEvent(array $events): ?AllSessionsRevokedEvent
-    {
-        foreach ($events as $event) {
-            if ($event instanceof AllSessionsRevokedEvent) {
-                return $event;
-            }
-        }
-
-        return null;
     }
 
     private function initMocks(): void
@@ -430,7 +443,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         string $reason,
         int $revokedCount
     ): void {
-        $event = $this->findAllSessionsRevokedEvent($events);
+        $event = $this->findEventOfType($events, AllSessionsRevokedEvent::class);
         $this->assertInstanceOf(AllSessionsRevokedEvent::class, $event);
         $this->assertSame($userId, $event->userId);
         $this->assertSame($reason, $event->reason);

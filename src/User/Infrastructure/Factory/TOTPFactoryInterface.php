@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Factory;
 
-interface TOTPCreatorInterface
+interface TOTPFactoryInterface
 {
     /**
      * @return array{secret: string, otpauth_uri: string}

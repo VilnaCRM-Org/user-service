@@ -273,7 +273,7 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
-  App\User\Infrastructure\Lockout\RedisAccountLockout:
+  App\User\Infrastructure\Validator\RedisAccountLockout:
     arguments:
       $cachePool: '@cache.app'
 
@@ -283,13 +283,13 @@ services:
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Factory\AuthCookieFactoryInterface: '@App\User\Application\Factory\AuthCookieFactory'
-  App\User\Application\Validator\Verifier\TwoFactorCodeVerifierInterface: '@App\User\Application\Validator\Verifier\TwoFactorCodeVerifier'
+  App\User\Application\Validator\TwoFactorCodeValidatorInterface: '@App\User\Application\Validator\TwoFactorCodeValidator'
   App\User\Application\Factory\RecoveryCodeBatchFactoryInterface: '@App\User\Infrastructure\Factory\RecoveryCodeBatchFactory'
   App\User\Infrastructure\Publisher\TwoFactorPublisherInterface: '@App\User\Infrastructure\Publisher\TwoFactorPublisher'
   App\User\Application\Factory\IssuedSessionFactoryInterface: '@App\User\Application\Factory\IssuedSessionFactory'
   App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
   App\User\Application\Validator\UserAuthenticatorInterface: '@App\User\Application\Validator\UserAuthenticator'
-  App\User\Application\Validator\Guard\OwnershipGuardInterface: '@App\User\Application\Validator\Guard\TokenOwnershipGuard'
+  App\User\Application\Validator\OwnershipValidatorInterface: '@App\User\Application\Validator\TokenOwnershipValidator'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
@@ -338,9 +338,9 @@ services:
   App\User\Application\Factory\ClearAuthCookieResponseFactoryInterface: '@App\User\Application\Factory\ClearAuthCookieResponseFactory'
   App\User\Application\Validator\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
   App\User\Application\Transformer\PasswordHasherInterface: '@App\User\Infrastructure\Security\SymfonyPasswordHasher'
-  App\User\Application\Validator\AccountLockoutGuardInterface: '@App\User\Infrastructure\Lockout\RedisAccountLockout'
+  App\User\Application\Validator\AccountLockoutValidatorInterface: '@App\User\Infrastructure\Validator\RedisAccountLockout'
   App\User\Application\Factory\AccessTokenFactoryInterface: '@App\User\Infrastructure\Factory\LexikAccessTokenFactory'
-  App\User\Application\Validator\Verifier\TOTPVerifierInterface: '@App\User\Infrastructure\TwoFactor\TOTPVerifier'
+  App\User\Application\Validator\TOTPValidatorInterface: '@App\User\Infrastructure\Validator\TOTPValidator'
   App\User\Application\Transformer\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Security\TwoFactorSecretEncryptor'
   App\User\Application\Factory\TOTPSecretFactoryInterface: '@App\User\Infrastructure\Factory\TOTPSecretFactory'
   App\User\Application\Factory\EventIdFactoryInterface: '@App\User\Application\Factory\EventIdFactory'
@@ -348,7 +348,7 @@ services:
   App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface: '@App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher'
   App\User\Infrastructure\Publisher\SessionPublisherInterface: '@App\User\Infrastructure\Publisher\SessionPublisher'
   App\User\Infrastructure\Publisher\RefreshTokenPublisherInterface: '@App\User\Infrastructure\Publisher\RefreshTokenPublisher'
-  App\User\Infrastructure\Factory\TOTPCreatorInterface: '@App\User\Infrastructure\TwoFactor\TOTPCreator'
+  App\User\Infrastructure\Factory\TOTPFactoryInterface: '@App\User\Infrastructure\Security\TOTPFactory'
   App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface: '@App\User\Application\CommandHandler\RequestPasswordResetCommandHandler'
 
   App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandlerDecorator:

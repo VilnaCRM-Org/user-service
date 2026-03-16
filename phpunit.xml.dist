@@ -28,17 +28,12 @@
         </testsuite>
     </testsuites>
 
-    <source restrictDeprecations="false" restrictNotices="false" restrictWarnings="false">
-        <include>
-            <directory suffix=".php">src</directory>
-        </include>
-        <exclude>
-            <directory>src/DataFixtures</directory>
-            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitAuthTargetResolver.php</file>
-            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitClientIdentityResolver.php</file>
-            <file>src/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolver.php</file>
-            <file>src/Shared/Infrastructure/Security/DualAuthenticator.php</file>
-            <file>src/User/Application/Processor/ResendEmailProcessor.php</file>
-        </exclude>
-    </source>
-</phpunit>
+     <source restrictDeprecations="false" restrictNotices="false" restrictWarnings="false">
+         <include>
+             <directory suffix=".php">src</directory>
+         </include>
+         <exclude>
+             <directory>src/DataFixtures</directory>
+         </exclude>
+     </source>
+ </phpunit>

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Validator\Guard;
+namespace App\User\Application\Validator;
 
-interface OwnershipGuardInterface
+interface OwnershipValidatorInterface
 {
     public function assertOwnership(string $resourceUserId): void;
 }

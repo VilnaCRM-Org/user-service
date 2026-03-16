@@ -2,18 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\TwoFactor;
+namespace App\User\Infrastructure\Security;
 
-use App\User\Infrastructure\Factory\TOTPCreatorInterface;
+use App\User\Infrastructure\Factory\TOTPFactoryInterface;
 use OTPHP\TOTP;
 
-final class TOTPCreator implements TOTPCreatorInterface
+final class TOTPFactory implements TOTPFactoryInterface
 {
     private const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     private const SECRET_LENGTH = 32;
     private const DEFAULT_PERIOD = 30;
-    private const DEFAULT_DIGEST = 'sha1';
-    private const DEFAULT_DIGITS = 6;
     private const DEFAULT_EPOCH = 0;
 
     /**
@@ -24,8 +22,6 @@ final class TOTPCreator implements TOTPCreatorInterface
     {
         $totp = new TOTP($this->generateSecret());
         $totp->setPeriod(self::DEFAULT_PERIOD);
-        $totp->setDigest(self::DEFAULT_DIGEST);
-        $totp->setDigits(self::DEFAULT_DIGITS);
         $totp->setEpoch(self::DEFAULT_EPOCH);
         $totp->setLabel($label);
         $totp->setIssuer($issuer);

@@ -6,13 +6,13 @@ namespace App\Tests\Unit\User\Infrastructure\Factory;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Factory\TOTPSecretFactory;
-use App\User\Infrastructure\TwoFactor\TOTPCreator;
+use App\User\Infrastructure\Security\TOTPFactory;
 
 final class TOTPSecretFactoryTest extends UnitTestCase
 {
     public function testCreateReturnsSecretAndOtpauthUri(): void
     {
-        $factory = new TOTPSecretFactory(new TOTPCreator());
+        $factory = new TOTPSecretFactory(new TOTPFactory());
         $email = $this->faker->email();
 
         $result = $factory->create($email);
@@ -36,7 +36,7 @@ final class TOTPSecretFactoryTest extends UnitTestCase
 
     public function testCreateProducesUniqueSecretsPerCall(): void
     {
-        $factory = new TOTPSecretFactory(new TOTPCreator());
+        $factory = new TOTPSecretFactory(new TOTPFactory());
         $email = $this->faker->email();
 
         $first = $factory->create($email);
