@@ -86,6 +86,7 @@ resources:
         uriTemplate: '/2fa/confirm'
         input: 'App\User\Application\DTO\ConfirmTwoFactorDto'
         processor: 'App\User\Application\Processor\ConfirmTwoFactorProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
@@ -107,6 +108,7 @@ resources:
         uriTemplate: '/2fa/disable'
         input: 'App\User\Application\DTO\DisableTwoFactorDto'
         processor: 'App\User\Application\Processor\DisableTwoFactorProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
@@ -129,6 +131,7 @@ resources:
         uriTemplate: '/2fa/recovery-codes'
         input: 'App\User\Application\DTO\RegenerateRecoveryCodesDto'
         processor: 'App\User\Application\Processor\RegenerateRecoveryCodesProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
@@ -149,6 +152,7 @@ resources:
         uriTemplate: '/2fa/setup'
         input: 'App\User\Application\DTO\SetupTwoFactorDto'
         processor: 'App\User\Application\Processor\SetupTwoFactorProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
@@ -216,6 +220,7 @@ resources:
         uriTemplate: '/signout'
         input: 'App\User\Application\DTO\SignOutDto'
         processor: 'App\User\Application\Processor\SignOutProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
@@ -237,6 +242,7 @@ resources:
         uriTemplate: '/signout/all'
         input: 'App\User\Application\DTO\SignOutAllDto'
         processor: 'App\User\Application\Processor\SignOutAllProcessor'
+        security: "is_granted('ROLE_USER')"
         read: false
         output: false
         openapi:
