@@ -1,5 +1,5 @@
 FROM composer/composer:2-bin AS composer
-FROM mlocati/php-extension-installer:2 AS php_extension_installer
+FROM mlocati/php-extension-installer:2.7@sha256:0acb418ab9515740ecb7532fb39cf5c8647418326bca5b4a0682632b2b02512b AS php_extension_installer
 
 FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_base
 
