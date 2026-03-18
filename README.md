@@ -113,8 +113,8 @@ What `verify-gh-claude.sh` checks:
 - repository listing for `VilnaCRM-Org` works
 - current PR checks can be queried via `gh`
 - current branch supports `git push --dry-run`
-- `claude` can run basic and tool-calling non-interactive smoke tasks via MiniMax M2.7
-- `claude` can complete a tool-calling smoke task required for autonomous coding flows
+- `claude` can run a basic non-interactive smoke task via MiniMax M2.7
+- optional tool-calling smoke checks can be enforced when autonomous mode is explicitly enabled
 
 Claude is configured directly (no `make` wrapper) with Anthropic-compatible MiniMax settings:
 
@@ -122,26 +122,26 @@ Claude is configured directly (no `make` wrapper) with Anthropic-compatible Mini
 {
   "model": "MiniMax-M2.7",
   "permissions": {
-    "defaultMode": "bypassPermissions",
+    "defaultMode": "default",
     "ask": []
   },
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "<MINIMAX_API_KEY>",
     "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
     "ANTHROPIC_MODEL": "MiniMax-M2.7"
   }
 }
 ```
 
-Default bootstrap uses autonomous Claude settings (`CLAUDE_PERMISSION_MODE=bypassPermissions`) with model `MiniMax-M2.7`.
-If you need safer defaults in a Codespace, set overrides before bootstrap:
+Default bootstrap uses safer Claude settings (`CLAUDE_PERMISSION_MODE=default`) with model `MiniMax-M2.7`.
+If you need autonomous tool execution in a Codespace, set overrides before bootstrap:
 
 ```bash
-export CLAUDE_PERMISSION_MODE=default
-export CLAUDE_ALLOW_UNSAFE_MODE=0
+export CLAUDE_PERMISSION_MODE=bypassPermissions
+export CLAUDE_ALLOW_UNSAFE_MODE=1
+export CLAUDE_TOOL_SMOKE_MODE=enforce
 ```
 
-Use safer mode in shared or untrusted environments.
+Use autonomous mode only in trusted environments.
 
 Run Claude directly:
 
@@ -154,7 +154,8 @@ Notes:
 
 - secrets are never stored in git; keep them in Codespaces secrets
 - Codespaces secrets are provided directly by Codespaces to the container runtime
-- bootstrap persists required credentials into `~/.config/user-service/agent-secrets.env` with `chmod 600` for future shell sessions in the same Codespace
+- bootstrap does not persist plaintext credentials to disk
+- bootstrap only persists non-secret Claude defaults in `~/.claude/settings.json` and non-secret shell aliases in `~/.bashrc`
 - no token values are written to repository files
 - if you do not provide `GH_AUTOMATION_TOKEN`, run interactive login:
   `gh auth login -h github.com -w && gh auth setup-git`

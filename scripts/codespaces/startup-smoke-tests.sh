@@ -13,14 +13,9 @@ if [ -f "${SETTINGS_FILE}" ]; then
     . "${SETTINGS_FILE}"
 fi
 
-if [ -f "${HOME}/.config/user-service/agent-secrets.env" ]; then
-    # shellcheck disable=SC1091
-    . "${HOME}/.config/user-service/agent-secrets.env"
-fi
-
 : "${CLAUDE_MODEL:=MiniMax-M2.7}"
 : "${CLAUDE_BASE_URL:=https://api.minimax.io/anthropic}"
-: "${CLAUDE_PERMISSION_MODE:=bypassPermissions}"
+: "${CLAUDE_PERMISSION_MODE:=default}"
 
 cs_require_command gh
 cs_require_command claude
@@ -69,13 +64,7 @@ fi
 
 configured_model="$(jq -r '.env.ANTHROPIC_MODEL // empty' "${CLAUDE_SETTINGS_JSON}")"
 configured_base_url="$(jq -r '.env.ANTHROPIC_BASE_URL // empty' "${CLAUDE_SETTINGS_JSON}")"
-configured_token="$(jq -r '.env.ANTHROPIC_AUTH_TOKEN // empty' "${CLAUDE_SETTINGS_JSON}")"
 configured_permission_mode="$(jq -r '.permissions.defaultMode // empty' "${CLAUDE_SETTINGS_JSON}")"
-
-if [ -z "${configured_token}" ]; then
-    echo "Error: Claude settings are missing env.ANTHROPIC_AUTH_TOKEN." >&2
-    exit 1
-fi
 if [ "${configured_model}" != "${CLAUDE_MODEL}" ]; then
     echo "Error: Claude model '${CLAUDE_MODEL}' is not configured in ${CLAUDE_SETTINGS_JSON}." >&2
     exit 1

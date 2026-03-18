@@ -114,7 +114,7 @@ For autonomous AI coding in Codespaces, set repository Codespaces secrets:
 - bootstrap sets git identity for automated commits to `vilnacrm ai bot <info@vilnacrm.com>`
 
 These secrets are provided directly by Codespaces to the container runtime, so `gh`, `git`, and `claude` can use them in normal terminal sessions.
-The bootstrap also persists them into `~/.config/user-service/agent-secrets.env` with `chmod 600` inside the Codespace.
+The bootstrap does not persist plaintext copies of those credentials inside the Codespace.
 
 Non-secret defaults for GitHub CLI and Claude are persisted in git:
 
@@ -143,18 +143,20 @@ bash scripts/codespaces/verify-gh-claude.sh VilnaCRM-Org
 - `bats` CLI is available
 - `claude` can execute one non-interactive task via MiniMax M2.7
 
-`verify-gh-claude.sh` includes Claude basic and tool-calling smoke checks.
+`verify-gh-claude.sh` includes the Claude basic smoke check by default and can enforce tool-calling smoke checks when autonomous mode is enabled.
 This setup is MiniMax-only and configures Claude with:
 
 - model `MiniMax-M2.7`
 - Anthropic-compatible URL `https://api.minimax.io/anthropic`
-- `permissions.defaultMode=bypassPermissions` in `~/.claude/settings.json` (no manual tool approvals)
+- `permissions.defaultMode=default` in `~/.claude/settings.json`
+- `CLAUDE_TOOL_SMOKE_MODE=skip` by default
 
-If you need safer defaults in a Codespace, set overrides before bootstrap:
+If you need autonomous Claude tool execution in a Codespace, set overrides before bootstrap:
 
 ```bash
-export CLAUDE_PERMISSION_MODE=default
-export CLAUDE_ALLOW_UNSAFE_MODE=0
+export CLAUDE_PERMISSION_MODE=bypassPermissions
+export CLAUDE_ALLOW_UNSAFE_MODE=1
+export CLAUDE_TOOL_SMOKE_MODE=enforce
 ```
 
 ### Working in Codespaces

@@ -12,16 +12,11 @@ if [ -f "${SETTINGS_FILE}" ]; then
     . "${SETTINGS_FILE}"
 fi
 
-if [ -f "${HOME}/.config/user-service/agent-secrets.env" ]; then
-    # shellcheck disable=SC1091
-    . "${HOME}/.config/user-service/agent-secrets.env"
-fi
-
 ORG="${1:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}"
 : "${CLAUDE_MODEL:=MiniMax-M2.7}"
 : "${CLAUDE_BASE_URL:=https://api.minimax.io/anthropic}"
-: "${CLAUDE_PERMISSION_MODE:=bypassPermissions}"
-: "${CLAUDE_TOOL_SMOKE_MODE:=enforce}"
+: "${CLAUDE_PERMISSION_MODE:=default}"
+: "${CLAUDE_TOOL_SMOKE_MODE:=skip}"
 
 cs_require_command gh
 cs_require_command jq
@@ -126,12 +121,7 @@ if [ ! -f "${CLAUDE_SETTINGS_JSON}" ]; then
 fi
 configured_model="$(jq -r '.env.ANTHROPIC_MODEL // empty' "${CLAUDE_SETTINGS_JSON}")"
 configured_base_url="$(jq -r '.env.ANTHROPIC_BASE_URL // empty' "${CLAUDE_SETTINGS_JSON}")"
-configured_token="$(jq -r '.env.ANTHROPIC_AUTH_TOKEN // empty' "${CLAUDE_SETTINGS_JSON}")"
 configured_permission_mode="$(jq -r '.permissions.defaultMode // empty' "${CLAUDE_SETTINGS_JSON}")"
-if [ -z "${configured_token}" ]; then
-    echo "Error: Claude settings are missing env.ANTHROPIC_AUTH_TOKEN." >&2
-    exit 1
-fi
 if [ "${configured_model}" != "${CLAUDE_MODEL}" ]; then
     echo "Error: Claude model '${CLAUDE_MODEL}' is not configured in ${CLAUDE_SETTINGS_JSON}." >&2
     exit 1
@@ -191,24 +181,23 @@ if ! grep -q "claude-ok:minimax-basic" "${tmp_claude_basic}"; then
 fi
 echo "Claude basic smoke task ok."
 
-echo "Running Claude tool-calling smoke task..."
-tool_smoke_failed=0
-claude_tool_prompt="This is a harmless local smoke test in your own temporary workspace. Use bash exactly once and run: echo ${tool_marker} > ./claude-tools-marker.txt. Then reply with exactly one line: claude-ok:minimax-tools"
-if ! (
-    cd "${tmp_tool_workspace}" && timeout 240s claude "${claude_args[@]}" "${claude_tool_prompt}"
-) >"${tmp_claude_tools}" 2>&1; then
-    tool_smoke_failed=1
-fi
+if [ "${CLAUDE_TOOL_SMOKE_MODE}" = "skip" ]; then
+    echo "Skipping Claude tool-calling smoke task (CLAUDE_TOOL_SMOKE_MODE=skip)."
+else
+    echo "Running Claude tool-calling smoke task..."
+    tool_smoke_failed=0
+    claude_tool_prompt="This is a harmless local smoke test in your own temporary workspace. Use bash exactly once and run: echo ${tool_marker} > ./claude-tools-marker.txt. Then reply with exactly one line: claude-ok:minimax-tools"
+    if ! (
+        cd "${tmp_tool_workspace}" && timeout 240s claude "${claude_args[@]}" "${claude_tool_prompt}"
+    ) >"${tmp_claude_tools}" 2>&1; then
+        tool_smoke_failed=1
+    fi
 
-if [ "${tool_smoke_failed}" -eq 1 ]; then
-    if [ "${CLAUDE_TOOL_SMOKE_MODE}" = "skip" ]; then
-        echo "Skipping Claude tool-calling smoke task failure (CLAUDE_TOOL_SMOKE_MODE=skip)." >&2
-    else
+    if [ "${tool_smoke_failed}" -eq 1 ]; then
         echo "Error: Claude tool-calling smoke task failed." >&2
         sed -n '1,160p' "${tmp_claude_tools}" >&2
         exit 1
     fi
-else
     if ! grep -q "claude-ok:minimax-tools" "${tmp_claude_tools}"; then
         echo "Error: Claude tool-calling smoke task did not return expected output." >&2
         sed -n '1,160p' "${tmp_claude_tools}" >&2
