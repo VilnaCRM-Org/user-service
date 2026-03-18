@@ -41,9 +41,9 @@ scopes="$({
 
 if [ -n "${scopes}" ]; then
     echo "Available token scopes: ${scopes}"
-    normalized_scopes="$(echo "${scopes}" | tr -d ' ')"
+    normalized_scopes=",$(echo "${scopes}" | tr -d ' '),"
     for required_scope in repo read:org; do
-        if [[ ",${normalized_scopes}," != *",${required_scope},"* ]]; then
+        if [[ "${normalized_scopes}" != *",${required_scope},"* ]]; then
             echo "Warning: expected scope '${required_scope}' is missing." >&2
         fi
     done
@@ -164,8 +164,13 @@ tmp_tool_workspace="$(mktemp -d)"
 tmp_tool_marker_file="${tmp_tool_workspace}/claude-tools-marker.txt"
 if command -v uuidgen >/dev/null 2>&1; then
     tool_marker="$(uuidgen | tr '[:upper:]' '[:lower:]' | tr -d '-')"
+elif command -v python3 >/dev/null 2>&1; then
+    tool_marker="$(python3 -c 'import uuid; print(uuid.uuid4().hex)')"
+elif command -v openssl >/dev/null 2>&1; then
+    tool_marker="$(openssl rand -hex 16)"
 else
-    tool_marker="$(tr -d '-' < /proc/sys/kernel/random/uuid)"
+    echo "Error: unable to generate a portable tool marker; install uuidgen, python3, or openssl." >&2
+    exit 1
 fi
 
 claude_args=(

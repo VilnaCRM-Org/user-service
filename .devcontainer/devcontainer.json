@@ -20,9 +20,6 @@
     }
   },
   "remoteUser": "vscode",
-  "containerEnv": {
-    "DOCKER_API_VERSION": "1.43"
-  },
   "remoteEnv": {
     "GIT_AUTHOR_NAME": "${localEnv:GIT_AUTHOR_NAME}",
     "GIT_AUTHOR_EMAIL": "${localEnv:GIT_AUTHOR_EMAIL}"
@@ -36,7 +33,7 @@
     }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "forwardPorts": [80, 443, 6379, 8080, 3306],
+  "forwardPorts": [80, 443, 6379, 8080, 27017],
   "portsAttributes": {
     "80": {
       "label": "User Service HTTP",

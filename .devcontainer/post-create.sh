@@ -55,27 +55,19 @@ fi
 export GH_TOKEN_VAR="${GH_TOKEN_VAR:-GH_AUTOMATION_TOKEN}"
 export CODESPACE_GITHUB_ORG="${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}"
 
-agent_env_ok=true
 if ! bash scripts/codespaces/setup-secure-agent-env.sh; then
-    agent_env_ok=false
-    echo "Warning: secure agent bootstrap failed."
-    echo "Set Codespaces secrets and rerun: bash scripts/codespaces/setup-secure-agent-env.sh"
+    echo "Error: secure agent bootstrap failed." >&2
+    echo "Set Codespaces secrets and rerun: bash scripts/codespaces/setup-secure-agent-env.sh" >&2
+    exit 1
 fi
 
 if [ ! -f vendor/autoload.php ]; then
-    if ! make start; then
-        echo "Warning: initial 'make start' failed before dependency install. Retrying after install."
-    fi
     make install
 fi
 
 make start
 
-if [ "${agent_env_ok}" = true ]; then
-    bash scripts/codespaces/startup-smoke-tests.sh "${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}"
-else
-    echo "Skipping startup smoke tests (secure agent environment is not ready)."
-fi
+bash scripts/codespaces/startup-smoke-tests.sh "${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}"
 
 echo "Codespace setup complete."
 echo "Use 'make help' to list all available commands."

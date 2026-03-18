@@ -67,16 +67,6 @@ cs_warn_if_missing_command() {
     return 0
 }
 
-escape_json_string() {
-    local value="${1-}"
-    value="${value//\\/\\\\}"
-    value="${value//\"/\\\"}"
-    value="${value//$'\n'/\\n}"
-    value="${value//$'\r'/\\r}"
-    value="${value//$'\t'/\\t}"
-    printf '%s' "${value}"
-}
-
 trap cleanup_tmp_files EXIT
 
 persist_agent_secrets_file() {
@@ -151,10 +141,6 @@ EOM
 
 write_claude_settings() {
     local tmp_settings
-    local token_escaped
-    local base_url_escaped
-    local model_escaped
-    local permission_mode_escaped
 
     tmp_settings="$(mktemp)"
     track_tmp_file "${tmp_settings}"
@@ -174,7 +160,7 @@ write_claude_settings() {
             | .model = $model
             | .permissions = (.permissions // {})
             | .permissions.defaultMode = $permission_mode
-            | .permissions.ask = []' \
+            | .permissions.ask = (.permissions.ask // [])' \
             "${CLAUDE_SETTINGS_JSON}" > "${tmp_settings}"; then
             :
         else
@@ -183,25 +169,23 @@ write_claude_settings() {
     fi
 
     if [ ! -s "${tmp_settings}" ]; then
-        token_escaped="$(escape_json_string "${ANTHROPIC_AUTH_TOKEN}")"
-        base_url_escaped="$(escape_json_string "${ANTHROPIC_BASE_URL}")"
-        model_escaped="$(escape_json_string "${ANTHROPIC_MODEL}")"
-        permission_mode_escaped="$(escape_json_string "${CLAUDE_PERMISSION_MODE}")"
-
-        cat > "${tmp_settings}" <<EOM
-{
-  "model": "${model_escaped}",
-  "permissions": {
-    "defaultMode": "${permission_mode_escaped}",
-    "ask": []
-  },
-  "env": {
-    "ANTHROPIC_AUTH_TOKEN": "${token_escaped}",
-    "ANTHROPIC_BASE_URL": "${base_url_escaped}",
-    "ANTHROPIC_MODEL": "${model_escaped}"
-  }
-}
-EOM
+        jq -n \
+            --arg token "${ANTHROPIC_AUTH_TOKEN}" \
+            --arg base_url "${ANTHROPIC_BASE_URL}" \
+            --arg model "${ANTHROPIC_MODEL}" \
+            --arg permission_mode "${CLAUDE_PERMISSION_MODE}" \
+            '{
+                model: $model,
+                permissions: {
+                    defaultMode: $permission_mode,
+                    ask: []
+                },
+                env: {
+                    ANTHROPIC_AUTH_TOKEN: $token,
+                    ANTHROPIC_BASE_URL: $base_url,
+                    ANTHROPIC_MODEL: $model
+                }
+            }' > "${tmp_settings}"
     fi
 
     mkdir -p "$(dirname "${CLAUDE_SETTINGS_JSON}")"
