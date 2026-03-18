@@ -20,8 +20,10 @@ ORG="${1:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}"
 
 cs_require_command gh
 cs_require_command jq
+cs_require_command git
 cs_require_command claude
 cs_require_command bats
+cs_require_command timeout
 
 echo "Checking GitHub authentication..."
 cs_ensure_gh_auth
@@ -174,7 +176,8 @@ if ! timeout 180s claude "${claude_args[@]}" "Reply with exactly one line: claud
     sed -n '1,120p' "${tmp_claude_basic}" >&2
     exit 1
 fi
-if ! grep -q "claude-ok:minimax-basic" "${tmp_claude_basic}"; then
+basic_line_count="$(awk 'END { print NR }' "${tmp_claude_basic}")"
+if [ "${basic_line_count}" -ne 1 ] || ! grep -Fxq "claude-ok:minimax-basic" "${tmp_claude_basic}"; then
     echo "Error: Claude basic smoke task did not return expected output." >&2
     sed -n '1,120p' "${tmp_claude_basic}" >&2
     exit 1
@@ -198,7 +201,8 @@ else
         sed -n '1,160p' "${tmp_claude_tools}" >&2
         exit 1
     fi
-    if ! grep -q "claude-ok:minimax-tools" "${tmp_claude_tools}"; then
+    tools_line_count="$(awk 'END { print NR }' "${tmp_claude_tools}")"
+    if [ "${tools_line_count}" -ne 1 ] || ! grep -Fxq "claude-ok:minimax-tools" "${tmp_claude_tools}"; then
         echo "Error: Claude tool-calling smoke task did not return expected output." >&2
         sed -n '1,160p' "${tmp_claude_tools}" >&2
         exit 1

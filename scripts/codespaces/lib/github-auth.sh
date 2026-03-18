@@ -37,6 +37,22 @@ cs_detect_user_auth() {
     return 1
 }
 
+cs_setup_git_credentials() {
+    local setup_output
+    local exit_code
+
+    setup_output="$(mktemp)"
+    if gh auth setup-git >"${setup_output}" 2>&1; then
+        rm -f "${setup_output}"
+    else
+        exit_code=$?
+        echo "Error: 'gh auth setup-git' failed with exit code ${exit_code}." >&2
+        sed -n '1,40p' "${setup_output}" >&2
+        rm -f "${setup_output}"
+        return "${exit_code}"
+    fi
+}
+
 cs_ensure_gh_auth() {
     local auth_mode
 
@@ -44,13 +60,13 @@ cs_ensure_gh_auth() {
 
     if auth_mode="$(cs_detect_user_auth)"; then
         export CS_GH_AUTH_MODE="${auth_mode}"
-        gh auth setup-git >/dev/null 2>&1 || true
+        cs_setup_git_credentials
         return 0
     fi
 
     if cs_load_gh_token_from_aliases && auth_mode="$(cs_detect_user_auth)"; then
         export CS_GH_AUTH_MODE="${auth_mode}"
-        gh auth setup-git >/dev/null 2>&1 || true
+        cs_setup_git_credentials
         return 0
     fi
 

@@ -61,11 +61,11 @@ if ! bash scripts/codespaces/setup-secure-agent-env.sh; then
     exit 1
 fi
 
+make start
+
 if [ ! -f vendor/autoload.php ]; then
     make install
 fi
-
-make start
 
 bash scripts/codespaces/startup-smoke-tests.sh "${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}"
 

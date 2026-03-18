@@ -21,6 +21,7 @@ cs_require_command gh
 cs_require_command claude
 cs_require_command bats
 cs_require_command jq
+cs_require_command timeout
 
 echo "Running startup smoke tests..."
 
@@ -97,7 +98,8 @@ if ! timeout 180s claude "${claude_args[@]}" "Reply with exactly one line: claud
     exit 1
 fi
 
-if ! grep -q "claude-startup-ok" "${tmp_claude_output}"; then
+startup_line_count="$(awk 'END { print NR }' "${tmp_claude_output}")"
+if [ "${startup_line_count}" -ne 1 ] || ! grep -Fxq "claude-startup-ok" "${tmp_claude_output}"; then
     echo "Error: Claude smoke task did not return expected output." >&2
     sed -n '1,120p' "${tmp_claude_output}" >&2
     exit 1

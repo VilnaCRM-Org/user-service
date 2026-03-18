@@ -33,8 +33,6 @@ readonly AGENT_BASHRC_END="# END USER-SERVICE AGENT ENV"
 : "${CODESPACE_GIT_IDENTITY_EMAIL:=info@vilnacrm.com}"
 
 TMP_FILES=()
-CS_GIT_IDENTITY_NAME=""
-CS_GIT_IDENTITY_EMAIL=""
 DETECTED_GIT_IDENTITY_NAME=""
 DETECTED_GIT_IDENTITY_EMAIL=""
 
@@ -47,17 +45,6 @@ cleanup_tmp_files() {
 
 track_tmp_file() {
     TMP_FILES+=("$1")
-}
-
-cs_warn_if_missing_command() {
-    local command_name="$1"
-
-    if ! command -v "${command_name}" >/dev/null 2>&1; then
-        echo "Warning: optional command '${command_name}' is not installed." >&2
-        return 1
-    fi
-
-    return 0
 }
 
 trap cleanup_tmp_files EXIT
@@ -168,8 +155,6 @@ EOM
 configure_git_identity() {
     local name email configured_name configured_email var
 
-    CS_GIT_IDENTITY_NAME=""
-    CS_GIT_IDENTITY_EMAIL=""
     DETECTED_GIT_IDENTITY_NAME=""
     DETECTED_GIT_IDENTITY_EMAIL=""
 
@@ -192,8 +177,6 @@ configure_git_identity() {
     fi
 
     if [ -n "${name}" ] && [ -n "${email}" ]; then
-        CS_GIT_IDENTITY_NAME="${name}"
-        CS_GIT_IDENTITY_EMAIL="${email}"
         DETECTED_GIT_IDENTITY_NAME="${name}"
         DETECTED_GIT_IDENTITY_EMAIL="${email}"
         return 0
@@ -210,14 +193,14 @@ configure_git_identity() {
     export GIT_COMMITTER_NAME="${name}"
     export GIT_COMMITTER_EMAIL="${email}"
 
-    CS_GIT_IDENTITY_NAME="${name}"
-    CS_GIT_IDENTITY_EMAIL="${email}"
     DETECTED_GIT_IDENTITY_NAME="${name}"
     DETECTED_GIT_IDENTITY_EMAIL="${email}"
 }
 
 cs_require_command gh
-cs_warn_if_missing_command claude || true
+cs_require_command git
+cs_require_command jq
+cs_require_command claude
 cs_ensure_gh_auth
 
 if [ -z "${MINIMAX_API_KEY:-}" ] && [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
