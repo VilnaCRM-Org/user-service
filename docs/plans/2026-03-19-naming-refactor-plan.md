@@ -11,6 +11,7 @@
 ### Task 1: Finish Matcher Renames
 
 **Files:**
+
 - Modify: `src/Shared/Infrastructure/Security/DualAuthenticator.php`
 - Modify: `src/User/Infrastructure/EventListener/SchemathesisCleanupListener.php`
 - Modify: `src/User/Infrastructure/Extractor/SchemathesisEmailExtractor.php`
@@ -49,6 +50,7 @@ git commit -m "refactor: rename matcher-style classes consistently"
 ### Task 2: Fix OpenAPI Endpoint Naming
 
 **Files:**
+
 - Rename: `src/Shared/Application/OpenApi/Factory/Endpoint/OAuthAuthEndpointFactory.php`
 - Rename: `src/Shared/Application/OpenApi/Factory/Endpoint/ParamUserEndpointFactory.php`
 - Rename: `src/Shared/Application/Provider/OpenApi/ParamUserResponseProvider.php`
@@ -84,6 +86,7 @@ git commit -m "refactor: normalize openapi endpoint naming"
 ### Task 3: Normalize Symfony Constraint Validator Naming
 
 **Files:**
+
 - Modify: `src/Shared/Application/Validator/Constraint/CreateUserBatch.php`
 - Modify: `src/Shared/Application/Validator/Constraint/UniqueEmail.php`
 - Rename: `src/Shared/Application/Validator/CreateUserBatchValidator.php`
@@ -129,6 +132,7 @@ git commit -m "refactor: clarify constraint validator naming"
 ### Task 4: Resolve Directory-Type Mismatch for Account Lockout
 
 **Files:**
+
 - Rename or move: `src/User/Infrastructure/Validator/RedisAccountLockout.php`
 - Modify: `src/User/Application/Validator/AccountLockoutValidatorInterface.php`
 - Rename matching tests under `tests/Unit/User/Infrastructure/Validator/`
@@ -161,6 +165,7 @@ git commit -m "refactor: align account lockout class with validator naming"
 ### Task 5: Review Exceptions and Close the Naming Pass
 
 **Files:**
+
 - Review only: `src/OAuth/Infrastructure/Manager/*.php`
 - Review only: `src/User/Application/Validator/UserCredentialValidator.php`
 - Review only: `src/User/Infrastructure/Factory/TOTPFactory.php`
