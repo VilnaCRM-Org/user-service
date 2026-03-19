@@ -12,7 +12,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
 use App\User\Application\Factory\EventIdFactoryInterface;
-use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Application\PasswordHasherInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\UserInterface;

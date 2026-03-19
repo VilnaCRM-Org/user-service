@@ -9,7 +9,7 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
-use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthEndpointFactory;
+use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthorizeEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthAuthorizeQueryParametersFactory;
 use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
@@ -43,7 +43,7 @@ final class OAuthAuthorizeEndpointFactoryTest extends UnitTestCase
     {
         $this->setExpectations();
 
-        $factory = new OAuthAuthEndpointFactory(
+        $factory = new OAuthAuthorizeEndpointFactory(
             getenv('API_PREFIX'),
             $this->unsupportedFactory,
             $this->invalidCredsFactory,

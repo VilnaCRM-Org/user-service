@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Validator;
 
-use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
+use App\User\Application\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use DateTimeImmutable;

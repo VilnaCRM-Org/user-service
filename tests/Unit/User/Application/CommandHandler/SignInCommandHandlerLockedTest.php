@@ -15,7 +15,7 @@ final class SignInCommandHandlerLockedTest extends SignInCommandHandlerTestCase
     public function testInvokeThrowsLockedWhenAccountAlreadyLocked(): void
     {
         $command = $this->createRandomSignInCommand();
-        $this->expectAuthenticateThrowsLocked();
+        $this->expectValidateThrowsLocked();
         $this->assertLockedException($command);
     }
 
@@ -26,20 +26,20 @@ final class SignInCommandHandlerLockedTest extends SignInCommandHandlerTestCase
         $ip = $this->faker->ipv4();
         $ua = $this->faker->userAgent();
 
-        $this->expectAuthenticateThrowsLocked($email, $pw, $ip, $ua);
+        $this->expectValidateThrowsLocked($email, $pw, $ip, $ua);
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
         $exception = $this->assertLockedException($command);
         $this->assertSame(0, $exception->getCode());
     }
 
-    private function expectAuthenticateThrowsLocked(
+    private function expectValidateThrowsLocked(
         ?string $email = null,
         ?string $password = null,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): void {
-        $invocation = $this->userAuthenticator->expects($this->once())
-            ->method('authenticate');
+        $invocation = $this->credentialValidator->expects($this->once())
+            ->method('validate');
 
         if (
             is_string($email)

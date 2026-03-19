@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Security;
 
+use App\Shared\Infrastructure\Factory\AccessTokenPassportFactory;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
-use App\Shared\Infrastructure\Security\AccessTokenPassportFactory;
-use App\Shared\Infrastructure\Security\AccessTokenUserResolver;
+use App\Shared\Infrastructure\Resolver\AccessTokenUserResolver;
 use App\Shared\Infrastructure\Security\DualAuthenticator;
-use App\Shared\Infrastructure\Security\JwtAccessTokenParser;
 use App\Shared\Infrastructure\Security\PublicAccessMatcher;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\Shared\Infrastructure\Validator\AccessTokenValidator;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
@@ -63,7 +63,7 @@ abstract class DualAuthenticatorTestCase extends UnitTestCase
     protected function createPassportFactory(): AccessTokenPassportFactory
     {
         return new AccessTokenPassportFactory(
-            new JwtAccessTokenParser($this->jwtEncoder),
+            new AccessTokenValidator($this->jwtEncoder),
             new AccessTokenUserResolver(
                 $this->userRepository,
                 $this->userTransformer,

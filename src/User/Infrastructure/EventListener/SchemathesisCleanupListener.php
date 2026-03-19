@@ -9,8 +9,8 @@ use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
 use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
+use App\User\Infrastructure\Matcher\SchemathesisCleanupMatcher;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
@@ -22,7 +22,7 @@ final class SchemathesisCleanupListener
         private readonly EventBusInterface $eventBus,
         private readonly UuidFactory $uuidFactory,
         private readonly UserDeletedEventFactoryInterface $eventFactory,
-        private readonly SchemathesisCleanupEvaluator $evaluator,
+        private readonly SchemathesisCleanupMatcher $schemathesisCleanupMatcher,
         private readonly SchemathesisEmailExtractor $emailExtractor,
         private readonly TagAwareCacheInterface $cache,
         private readonly CacheKeyBuilder $cacheKeyBuilder
@@ -34,7 +34,7 @@ final class SchemathesisCleanupListener
         $request = $event->getRequest();
         $response = $event->getResponse();
 
-        if (! $this->evaluator->shouldCleanup($request, $response)) {
+        if (! $this->schemathesisCleanupMatcher->matches($request, $response)) {
             return;
         }
 

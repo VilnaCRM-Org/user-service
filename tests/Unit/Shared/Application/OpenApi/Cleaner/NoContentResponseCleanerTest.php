@@ -13,7 +13,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Cleaner\OperationNoContentCleaner;
 use App\Shared\Application\OpenApi\Cleaner\PathItemNoContentCleaner;
-use App\Shared\Application\OpenApi\Cleaner\ResponseContentCleaner;
+use App\Shared\Application\OpenApi\Transformer\ResponseContentTransformer;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
@@ -146,7 +146,7 @@ final class NoContentResponseCleanerTest extends UnitTestCase
         return new NoContentResponseCleaner(
             new PathItemNoContentCleaner(
                 new OperationNoContentCleaner(
-                    new ResponseContentCleaner()
+                    new ResponseContentTransformer()
                 )
             )
         );

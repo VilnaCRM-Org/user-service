@@ -142,7 +142,7 @@ Complex skills have multi-file structure:
 | **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                                      |
 | **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds                                   |
 | **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                                       |
-| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation                     |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, processors & validation                                |
 | **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
 | **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing                                  |
 | **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl                           |
@@ -339,7 +339,7 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 ├── openapi-development/
 │   ├── SKILL.md                # OpenAPI factories & transformers
 │   ├── examples/               # Complete real-world examples
-│   └── reference/              # Sanitizers/augmenters/cleaners patterns
+│   └── reference/              # Processor patterns
 │
 ├── structurizr-architecture-sync/
 │   ├── SKILL.md                # Core architecture sync workflow

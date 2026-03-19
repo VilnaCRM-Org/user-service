@@ -6,12 +6,13 @@ namespace App\Shared\Application\OpenApi\Cleaner;
 
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\Transformer\ResponseContentTransformer;
 use ArrayObject;
 
 final class OperationNoContentCleaner
 {
     public function __construct(
-        private readonly ResponseContentCleaner $responseCleaner
+        private readonly ResponseContentTransformer $responseContentTransformer
     ) {
     }
 
@@ -36,7 +37,7 @@ final class OperationNoContentCleaner
     private function cleanResponses(array $responses): array
     {
         foreach ($responses as $status => $response) {
-            $responses[$status] = $this->responseCleaner->clean(
+            $responses[$status] = $this->responseContentTransformer->transform(
                 $response,
                 (string) $status
             );

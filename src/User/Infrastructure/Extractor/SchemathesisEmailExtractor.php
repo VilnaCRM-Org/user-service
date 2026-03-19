@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Extractor;
 
 use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
-use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
+use App\User\Infrastructure\Matcher\SchemathesisCleanupMatcher;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class SchemathesisEmailExtractor
 {
     public function __construct(
-        private SchemathesisCleanupEvaluator $evaluator,
+        private SchemathesisCleanupMatcher $schemathesisCleanupMatcher,
         private SchemathesisPayloadDecoder $payloadDecoder,
         private SchemathesisSingleUserEmailExtractor $singleUserExtractor,
         private SchemathesisBatchUsersEmailExtractor $batchUsersExtractor
@@ -43,7 +43,7 @@ final readonly class SchemathesisEmailExtractor
         Request $request,
         array $payload
     ): array {
-        return $this->evaluator->isSingleUserPath($request)
+        return $this->schemathesisCleanupMatcher->isSingleUserPath($request)
             ? $this->singleUserExtractor->extract($payload)
             : $this->batchUsersExtractor->extract($payload);
     }

@@ -11,7 +11,7 @@ final class SignInCommandHandlerBasicTest extends SignInCommandHandlerTestCase
     public function testInvokeReturnsTokensForUserWithoutTwoFactor(): void
     {
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
-        $this->userAuthenticator->method('authenticate')
+        $this->credentialValidator->method('validate')
             ->with($email, $pw, $ip, $ua)->willReturn($user);
         $this->expectSignedInEvent($user, $ip, $ua, false);
 
@@ -28,7 +28,7 @@ final class SignInCommandHandlerBasicTest extends SignInCommandHandlerTestCase
     public function testInvokeCreatesRememberMeSessionWhenRequested(): void
     {
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
-        $this->userAuthenticator->method('authenticate')
+        $this->credentialValidator->method('validate')
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 

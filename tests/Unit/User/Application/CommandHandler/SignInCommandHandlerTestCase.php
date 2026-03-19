@@ -13,7 +13,7 @@ use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
-use App\User\Application\Validator\UserAuthenticatorInterface;
+use App\User\Application\Validator\UserCredentialValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
@@ -23,7 +23,7 @@ use Symfony\Component\Uid\Ulid;
 
 abstract class SignInCommandHandlerTestCase extends UnitTestCase
 {
-    protected UserAuthenticatorInterface&MockObject $userAuthenticator;
+    protected UserCredentialValidatorInterface&MockObject $credentialValidator;
     protected IssuedSessionFactoryInterface&MockObject $sessionIssuer;
     protected SignInPublisherInterface&MockObject $signInPublisher;
     protected RecordingPendingTwoFactorRepository $pendingTwoFactorRepository;
@@ -37,7 +37,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userAuthenticator = $this->createMock(UserAuthenticatorInterface::class);
+        $this->credentialValidator = $this->createMock(UserCredentialValidatorInterface::class);
         $this->sessionIssuer = $this->createMock(IssuedSessionFactoryInterface::class);
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->pendingTwoFactorRepository = new RecordingPendingTwoFactorRepository();
@@ -62,7 +62,7 @@ abstract class SignInCommandHandlerTestCase extends UnitTestCase
     protected function createHandler(): SignInCommandHandler
     {
         return new SignInCommandHandler(
-            $this->userAuthenticator,
+            $this->credentialValidator,
             $this->sessionIssuer,
             $this->signInPublisher,
             $this->pendingTwoFactorRepository,

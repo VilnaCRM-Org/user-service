@@ -6,10 +6,10 @@ namespace App\Tests\Unit\User\Infrastructure\Schemathesis;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
-use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
 use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisSingleUserEmailExtractor;
+use App\User\Infrastructure\Matcher\SchemathesisCleanupMatcher;
 use Symfony\Component\HttpFoundation\Request;
 
 final class SchemathesisEmailExtractorTest extends UnitTestCase
@@ -18,8 +18,8 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
     {
         $request = Request::create('/api/users');
 
-        $evaluator = $this->createMock(SchemathesisCleanupEvaluator::class);
-        $evaluator->method('isSingleUserPath')->willReturn(true);
+        $matcher = $this->createMock(SchemathesisCleanupMatcher::class);
+        $matcher->method('isSingleUserPath')->willReturn(true);
 
         $decoder = $this->createMock(SchemathesisPayloadDecoder::class);
         $decoder->method('decode')->willReturn([]);
@@ -30,7 +30,7 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
         $batch = $this->createMock(SchemathesisBatchUsersEmailExtractor::class);
         $batch->expects($this->never())->method('extract');
 
-        $extractor = new SchemathesisEmailExtractor($evaluator, $decoder, $single, $batch);
+        $extractor = new SchemathesisEmailExtractor($matcher, $decoder, $single, $batch);
 
         $this->assertSame([], $extractor->extract($request));
     }
@@ -39,8 +39,8 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
     {
         $request = Request::create('/api/users');
 
-        $evaluator = $this->createMock(SchemathesisCleanupEvaluator::class);
-        $evaluator->method('isSingleUserPath')->with($request)->willReturn(true);
+        $matcher = $this->createMock(SchemathesisCleanupMatcher::class);
+        $matcher->method('isSingleUserPath')->with($request)->willReturn(true);
 
         $payload = ['email' => 'single@example.com'];
 
@@ -56,7 +56,7 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
         $batch = $this->createMock(SchemathesisBatchUsersEmailExtractor::class);
         $batch->expects($this->never())->method('extract');
 
-        $extractor = new SchemathesisEmailExtractor($evaluator, $decoder, $single, $batch);
+        $extractor = new SchemathesisEmailExtractor($matcher, $decoder, $single, $batch);
 
         $this->assertSame(['single@example.com'], $extractor->extract($request));
     }
@@ -65,8 +65,8 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
     {
         $request = Request::create('/api/users/batch');
 
-        $evaluator = $this->createMock(SchemathesisCleanupEvaluator::class);
-        $evaluator->method('isSingleUserPath')->with($request)->willReturn(false);
+        $matcher = $this->createMock(SchemathesisCleanupMatcher::class);
+        $matcher->method('isSingleUserPath')->with($request)->willReturn(false);
 
         $payload = ['users' => [['email' => 'batch@example.com']]];
 
@@ -82,7 +82,7 @@ final class SchemathesisEmailExtractorTest extends UnitTestCase
             ->with($payload)
             ->willReturn(['batch@example.com']);
 
-        $extractor = new SchemathesisEmailExtractor($evaluator, $decoder, $single, $batch);
+        $extractor = new SchemathesisEmailExtractor($matcher, $decoder, $single, $batch);
 
         $this->assertSame(['batch@example.com'], $extractor->extract($request));
     }

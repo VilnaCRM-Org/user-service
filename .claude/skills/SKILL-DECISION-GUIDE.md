@@ -240,7 +240,7 @@ This skill guides entity modification with Doctrine ODM.
 
 **Use**: [openapi-development](openapi-development/SKILL.md)
 
-This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo's validation commands.
+This skill covers OpenAPI factories, processors, and the repo's validation commands.
 
 ---
 

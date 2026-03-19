@@ -11,8 +11,8 @@ use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
-use App\User\Application\Transformer\PasswordHasherInterface;
-use App\User\Application\Validator\UserAuthenticatorInterface;
+use App\User\Application\PasswordHasherInterface;
+use App\User\Application\Validator\UserCredentialValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -32,7 +32,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository;
     private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository;
     private PendingTwoFactorFactoryInterface $pendingTwoFactorFactory;
-    private UserAuthenticatorInterface $authService;
+    private UserCredentialValidatorInterface $authService;
     private IssuedSessionFactoryInterface $sessionIssuanceService;
     private SignInPublisherInterface $signInPublisher;
     private IdFactoryInterface $idFactory;
@@ -54,7 +54,7 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
         $this->pendingTwoFactorFactory = $this->container
             ->get(PendingTwoFactorFactoryInterface::class);
         $this->authService = $this->container
-            ->get(UserAuthenticatorInterface::class);
+            ->get(UserCredentialValidatorInterface::class);
         $this->sessionIssuanceService = $this->container
             ->get(IssuedSessionFactoryInterface::class);
         $this->signInPublisher = $this->container->get(SignInPublisherInterface::class);

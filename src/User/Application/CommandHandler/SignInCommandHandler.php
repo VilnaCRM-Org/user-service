@@ -9,7 +9,7 @@ use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
-use App\User\Application\Validator\UserAuthenticatorInterface;
+use App\User\Application\Validator\UserCredentialValidatorInterface;
 use App\User\Domain\Entity\PendingTwoFactor;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
@@ -26,7 +26,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
         PendingTwoFactor::DEFAULT_TTL_MINUTES * 60;
 
     public function __construct(
-        private readonly UserAuthenticatorInterface $userAuthenticator,
+        private readonly UserCredentialValidatorInterface $credentialValidator,
         private readonly IssuedSessionFactoryInterface $issuedSessionFactory,
         private readonly SignInPublisherInterface $signInPublisher,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
@@ -39,7 +39,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
 
     public function __invoke(SignInCommand $command): void
     {
-        $authenticated = $this->userAuthenticator->authenticate(
+        $authenticated = $this->credentialValidator->validate(
             $command->email,
             $command->password,
             $command->ipAddress,

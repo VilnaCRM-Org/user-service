@@ -11,12 +11,12 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
 use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
-use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
-use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
+use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -26,9 +26,9 @@ final class OpenApiFactoryTest extends UnitTestCase
     private MockObject $decoratedFactory;
     private MockObject $endpointFactoryOne;
     private MockObject $endpointFactoryTwo;
-    private MockObject $pathParametersSanitizer;
-    private MockObject $errorResponseAugmenter;
-    private MockObject $paginationQueryParametersSanitizer;
+    private MockObject $pathParametersTransformer;
+    private MockObject $errorResponseTransformer;
+    private MockObject $paginationQueryParametersTransformer;
     private MockObject $noContentResponseCleaner;
 
     #[\Override]
@@ -42,12 +42,12 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->createMock(EndpointFactoryInterface::class);
         $this->endpointFactoryTwo =
             $this->createMock(EndpointFactoryInterface::class);
-        $this->pathParametersSanitizer =
-            $this->createMock(PathParametersSanitizer::class);
-        $this->errorResponseAugmenter =
-            $this->createMock(ServerErrorResponseAugmenter::class);
-        $this->paginationQueryParametersSanitizer =
-            $this->createMock(PaginationQueryParametersSanitizer::class);
+        $this->pathParametersTransformer =
+            $this->createMock(PathParametersTransformer::class);
+        $this->errorResponseTransformer =
+            $this->createMock(ServerErrorResponseTransformer::class);
+        $this->paginationQueryParametersTransformer =
+            $this->createMock(PaginationQueryParametersTransformer::class);
         $this->noContentResponseCleaner =
             $this->createMock(NoContentResponseCleaner::class);
     }
@@ -102,17 +102,17 @@ final class OpenApiFactoryTest extends UnitTestCase
 
     private function setupProcessorExpectations(): void
     {
-        $this->errorResponseAugmenter->expects($this->once())
-            ->method('augment')
+        $this->errorResponseTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class));
 
-        $this->pathParametersSanitizer->expects($this->once())
-            ->method('sanitize')
+        $this->pathParametersTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
-        $this->paginationQueryParametersSanitizer->expects($this->once())
-            ->method('sanitize')
+        $this->paginationQueryParametersTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
@@ -143,9 +143,9 @@ final class OpenApiFactoryTest extends UnitTestCase
                 $this->endpointFactoryTwo,
             ],
             getenv('API_URL'),
-            $this->pathParametersSanitizer,
-            $this->errorResponseAugmenter,
-            $this->paginationQueryParametersSanitizer,
+            $this->pathParametersTransformer,
+            $this->errorResponseTransformer,
+            $this->paginationQueryParametersTransformer,
             $this->noContentResponseCleaner
         );
     }

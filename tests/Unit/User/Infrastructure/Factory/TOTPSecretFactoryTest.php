@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Factory;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Factory\TOTPFactory;
 use App\User\Infrastructure\Factory\TOTPSecretFactory;
-use App\User\Infrastructure\Security\TOTPFactory;
 
 final class TOTPSecretFactoryTest extends UnitTestCase
 {

@@ -11,11 +11,11 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
-use App\User\Infrastructure\Evaluator\SchemathesisCleanupEvaluator;
 use App\User\Infrastructure\EventListener\SchemathesisCleanupListener;
 use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
 use App\User\Infrastructure\Extractor\SchemathesisSingleUserEmailExtractor;
+use App\User\Infrastructure\Matcher\SchemathesisCleanupMatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +28,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
 {
-    protected SchemathesisCleanupEvaluator $evaluator;
+    protected SchemathesisCleanupMatcher $schemathesisCleanupMatcher;
     protected SchemathesisEmailExtractor $emailExtractor;
     protected SchemathesisCleanupListener $listener;
     protected UserRepositoryInterface $repository;
@@ -41,7 +41,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->evaluator = new SchemathesisCleanupEvaluator();
+        $this->schemathesisCleanupMatcher = new SchemathesisCleanupMatcher();
         $this->emailExtractor = $this->createEmailExtractor();
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
@@ -59,7 +59,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         $batchExtractor = new SchemathesisBatchUsersEmailExtractor();
 
         return new SchemathesisEmailExtractor(
-            $this->evaluator,
+            $this->schemathesisCleanupMatcher,
             $decoder,
             $singleExtractor,
             $batchExtractor
@@ -103,7 +103,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
             $this->eventBus,
             $this->uuidFactory,
             $this->eventFactory,
-            $this->evaluator,
+            $this->schemathesisCleanupMatcher,
             $this->emailExtractor,
             $cache,
             $cacheKeyBuilder

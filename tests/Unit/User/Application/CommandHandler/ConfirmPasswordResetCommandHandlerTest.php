@@ -9,7 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
-use App\User\Application\Transformer\PasswordHasherInterface;
+use App\User\Application\PasswordHasherInterface;
 use App\User\Application\Validator\AccountLockoutValidatorInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;

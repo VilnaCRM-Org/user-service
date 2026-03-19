@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Shared\Application\Validator\Pagination;
 
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\QueryParameter\Validator\ExplicitValueValidator;
 
 use function array_key_exists;
 
 final class PageParameterValidator
 {
     public function __construct(
-        private readonly ExplicitValueEvaluator $valueEvaluator,
+        private readonly ExplicitValueValidator $valueValidator,
         private readonly PositiveIntegerNormalizer $normalizer,
         private readonly QueryParameterViolationFactory $violationFactory
     ) {
@@ -29,7 +29,7 @@ final class PageParameterValidator
             return null;
         }
 
-        if ($this->valueEvaluator->isExplicitlyProvided($query['page'])) {
+        if ($this->valueValidator->isExplicitlyProvided($query['page'])) {
             return $this->violationForExplicit($query['page']);
         }
 
@@ -55,7 +55,7 @@ final class PageParameterValidator
     private function violationForImplicit(
         mixed $value
     ): ?QueryParameterViolation {
-        if (!$this->valueEvaluator->wasParameterSent($value)) {
+        if (!$this->valueValidator->wasParameterSent($value)) {
             return null;
         }
 

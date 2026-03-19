@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\CreateUserBatchValidator;
+use App\Shared\Application\Validator\CreateUserBatchConstraintValidator;
 use Symfony\Component\Validator\Constraint;
 
 #[\Attribute]
@@ -18,11 +18,11 @@ final class CreateUserBatch extends Constraint
     }
 
     /**
-     * @psalm-return CreateUserBatchValidator::class
+     * @psalm-return CreateUserBatchConstraintValidator::class
      */
     #[\Override]
     public function validatedBy(): string
     {
-        return CreateUserBatchValidator::class;
+        return CreateUserBatchConstraintValidator::class;
     }
 }

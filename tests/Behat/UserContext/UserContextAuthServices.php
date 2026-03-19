@@ -6,7 +6,7 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
-use App\User\Application\Transformer\TwoFactorSecretEncryptorInterface;
+use App\User\Application\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Validator\AccountLockoutValidatorInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;

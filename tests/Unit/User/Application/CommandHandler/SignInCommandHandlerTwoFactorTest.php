@@ -14,7 +14,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->userAuthenticator->method('authenticate')
+        $this->credentialValidator->method('validate')
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
@@ -39,7 +39,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->userAuthenticator->method('authenticate')
+        $this->credentialValidator->method('validate')
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
@@ -60,7 +60,7 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         [$user, $email, $pw, $ip, $ua] = $this->arrangeCredentials();
         $user->setTwoFactorEnabled(true);
 
-        $this->userAuthenticator->method('authenticate')
+        $this->credentialValidator->method('validate')
             ->with($email, $pw, $ip, $ua)
             ->willReturn($user);
 
