@@ -26,54 +26,55 @@ Prerequisite: the target branch must contain the baseline sign-in/session/2FA co
 ```mermaid
 flowchart TD
     Browser([Browser])
+    Provider([OAuth Provider])
 
-    subgraph Initiate["GET /api/auth/social/{provider}"]
-        A1[AuthController::initiateOAuth]
-        A2[InitiateOAuthCommand]
-        A3[InitiateOAuthCommandHandler]
-        A4[OAuthProviderRegistry\nresolve provider adapter]
-        A5[Generate state + PKCE\nverifier/challenge + flow binding]
-        A6[RedisOAuthStateRepository::save\nttl=10m]
-        A7[provider.getAuthorizationUrl\nstate, code_challenge]
-        A8[Set Secure/HttpOnly/SameSite=Lax\nflow cookie]
-        A9[302 Redirect to Provider]
+    subgraph Initiate["Initiate: GET /api/auth/social/provider"]
+        A1["AuthController::initiateOAuth"]
+        A2["InitiateOAuthCommand"]
+        A3["InitiateOAuthCommandHandler"]
+        A4["OAuthProviderRegistry<br/>resolve provider adapter"]
+        A5["Generate state + PKCE<br/>verifier/challenge + flow binding"]
+        A6["RedisOAuthStateRepository::save<br/>ttl=10m"]
+        A7["provider.getAuthorizationUrl<br/>state, code_challenge"]
+        A8["Set Secure/HttpOnly/SameSite=Lax<br/>flow cookie"]
     end
 
-    subgraph Callback["GET /api/auth/social/{provider}/callback"]
-        B1[AuthController::handleOAuthCallback]
-        B2[HandleOAuthCallbackCommand]
-        B3[HandleOAuthCallbackCommandHandler]
-        B4[Validate required params\n+ flow cookie]
-        B5[RedisOAuthStateRepository::validateAndConsume\nstate, provider, flow_binding]
-        B6[provider.exchangeCode\ncode, code_verifier]
-        B7[provider.fetchProfile\naccess_token]
-        B8[OAuthUserResolver::resolve]
+    subgraph Callback["Callback: GET /api/auth/social/provider/callback"]
+        B1["AuthController::handleOAuthCallback"]
+        B2["HandleOAuthCallbackCommand"]
+        B3["HandleOAuthCallbackCommandHandler"]
+        B4["Validate required params<br/>+ flow cookie"]
+        B5["RedisOAuthStateRepository::validateAndConsume<br/>state, provider, flow_binding"]
+        B6["provider.exchangeCode<br/>code, code_verifier"]
+        B7["provider.fetchProfile<br/>access_token"]
+        B8["OAuthUserResolver::resolve"]
     end
 
     subgraph Resolve["User Resolution"]
-        C1[SocialIdentityRepository::findByProviderAndProviderId]
-        C2{Identity\nfound?}
-        C3[Return linked user]
-        C4{Local user\nby email?}
-        C5[Create SocialIdentity\n+ confirm user if needed]
-        C6[Create User\n+ SocialIdentity]
+        C1["SocialIdentityRepository::<br/>findByProviderAndProviderId"]
+        C2{"Identity<br/>found?"}
+        C3["Return linked user"]
+        C4{"Local user<br/>by email?"}
+        C5["Create SocialIdentity<br/>+ confirm user if needed"]
+        C6["Create User<br/>+ SocialIdentity"]
     end
 
     subgraph TwoFA["2FA Gate"]
-        D1{User has\n2FA?}
-        D2[Create PendingTwoFactor]
-        D3[SessionIssuer::issue]
+        D1{"User has<br/>2FA?"}
+        D2["Create PendingTwoFactor"]
+        D3["SessionIssuer::issue"]
         D4["Response: twoFactorEnabled=true"]
-        D5["Response: twoFactorEnabled=false\n+ session cookies"]
+        D5["Response: twoFactorEnabled=false<br/>+ session cookies"]
     end
 
-    TwoFAComplete["POST /api/auth/2fa/complete\n(unchanged)"]
+    TwoFAComplete["POST /api/auth/2fa/complete<br/>unchanged"]
+    Done([Session Established])
 
     Browser --> A1
     A1 --> A2 --> A3
-    A3 --> A4 --> A5 --> A6 --> A7
-    A7 --> A8 --> A9
-    A9 -->|Provider authenticates user| B1
+    A3 --> A4 --> A5 --> A6 --> A7 --> A8
+    A8 -->|302 Redirect| Provider
+    Provider -->|code + state| B1
 
     B1 --> B2 --> B3
     B3 --> B4 --> B5 --> B6 --> B7 --> B8
@@ -90,7 +91,8 @@ flowchart TD
 
     D1 -->|Yes| D2 --> D4
     D1 -->|No| D3 --> D5
-    D4 --> TwoFAComplete
+    D4 --> TwoFAComplete --> Done
+    D5 --> Done
 ```
 
 ---
