@@ -1739,7 +1739,7 @@ components:
                   format: iri-reference
               example:
                 '@id': string
-                '@type': string
+                type: string
                 first: string
                 last: string
                 previous: string
