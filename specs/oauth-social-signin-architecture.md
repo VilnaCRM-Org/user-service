@@ -23,36 +23,74 @@ Prerequisite: the target branch must contain the baseline sign-in/session/2FA co
 
 ## 2. Architecture Overview
 
-```text
-Browser
-  |
-  |- GET /api/auth/social/{provider}
-  |    |- AuthController::initiateOAuth()
-  |    |    |- InitiateOAuthCommand -> InitiateOAuthCommandHandler
-  |    |         |- OAuthProviderRegistry resolves provider adapter
-  |    |         |- generate state + PKCE verifier/challenge + flow binding
-  |    |         |- RedisOAuthStateRepository::save(payload, ttl=10m)
-  |    |         |- provider.getAuthorizationUrl(state, code_challenge)
-  |    |- set Secure/HttpOnly/SameSite=Lax flow cookie
-  |    |- 302 redirect to provider
-  |
-  |- GET /api/auth/social/{provider}/callback?code=&state=
-  |    |- AuthController::handleOAuthCallback()
-  |    |    |- HandleOAuthCallbackCommand -> HandleOAuthCallbackCommandHandler
-  |    |         |- validate required params + flow cookie
-  |    |         |- RedisOAuthStateRepository::validateAndConsume(state, provider, flow_binding)
-  |    |         |- provider.exchangeCode(code, code_verifier)
-  |    |         |- provider.fetchProfile(access_token)
-  |    |         |- OAuthUserResolver::resolve(profile, provider)
-  |    |              |- SocialIdentityRepository::findByProviderAndProviderId(...)
-  |    |              |- [if missing] UserRepository::findByEmail(email)
-  |    |              |- [if existing user] create SocialIdentity (+ confirm user if needed)
-  |    |              |- [if missing user] create user + SocialIdentity
-  |    |         |- 2FA gate:
-  |    |              |- has 2FA: create PendingTwoFactor -> response(twoFactorEnabled=true)
-  |    |              |- no 2FA: SessionIssuer::issue() -> response(twoFactorEnabled=false)+cookies
-  |
-  |- POST /api/auth/2fa/complete (unchanged)
+```mermaid
+flowchart TD
+    Browser([Browser])
+
+    subgraph Initiate["GET /api/auth/social/{provider}"]
+        A1[AuthController::initiateOAuth]
+        A2[InitiateOAuthCommand]
+        A3[InitiateOAuthCommandHandler]
+        A4[OAuthProviderRegistry\nresolve provider adapter]
+        A5[Generate state + PKCE\nverifier/challenge + flow binding]
+        A6[RedisOAuthStateRepository::save\nttl=10m]
+        A7[provider.getAuthorizationUrl\nstate, code_challenge]
+        A8[Set Secure/HttpOnly/SameSite=Lax\nflow cookie]
+        A9[302 Redirect to Provider]
+    end
+
+    subgraph Callback["GET /api/auth/social/{provider}/callback"]
+        B1[AuthController::handleOAuthCallback]
+        B2[HandleOAuthCallbackCommand]
+        B3[HandleOAuthCallbackCommandHandler]
+        B4[Validate required params\n+ flow cookie]
+        B5[RedisOAuthStateRepository::validateAndConsume\nstate, provider, flow_binding]
+        B6[provider.exchangeCode\ncode, code_verifier]
+        B7[provider.fetchProfile\naccess_token]
+        B8[OAuthUserResolver::resolve]
+    end
+
+    subgraph Resolve["User Resolution"]
+        C1[SocialIdentityRepository::findByProviderAndProviderId]
+        C2{Identity\nfound?}
+        C3[Return linked user]
+        C4{Local user\nby email?}
+        C5[Create SocialIdentity\n+ confirm user if needed]
+        C6[Create User\n+ SocialIdentity]
+    end
+
+    subgraph TwoFA["2FA Gate"]
+        D1{User has\n2FA?}
+        D2[Create PendingTwoFactor]
+        D3[SessionIssuer::issue]
+        D4["Response: twoFactorEnabled=true"]
+        D5["Response: twoFactorEnabled=false\n+ session cookies"]
+    end
+
+    TwoFAComplete["POST /api/auth/2fa/complete\n(unchanged)"]
+
+    Browser --> A1
+    A1 --> A2 --> A3
+    A3 --> A4 --> A5 --> A6 --> A7
+    A7 --> A8 --> A9
+    A9 -->|Provider authenticates user| B1
+
+    B1 --> B2 --> B3
+    B3 --> B4 --> B5 --> B6 --> B7 --> B8
+
+    B8 --> C1 --> C2
+    C2 -->|Yes| C3
+    C2 -->|No| C4
+    C4 -->|Yes| C5
+    C4 -->|No| C6
+
+    C3 --> D1
+    C5 --> D1
+    C6 --> D1
+
+    D1 -->|Yes| D2 --> D4
+    D1 -->|No| D3 --> D5
+    D4 --> TwoFAComplete
 ```
 
 ---
