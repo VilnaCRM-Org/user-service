@@ -1,0 +1,60 @@
+{
+  "name": "User Service",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "false",
+      "username": "vscode"
+    },
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "moby": true,
+      "enableNonRootDocker": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "GIT_AUTHOR_NAME": "${localEnv:GIT_AUTHOR_NAME}",
+    "GIT_AUTHOR_EMAIL": "${localEnv:GIT_AUTHOR_EMAIL}"
+  },
+  "secrets": {
+    "MINIMAX_API_KEY": {
+      "description": "MiniMax API key used by Claude CLI via Anthropic-compatible endpoint."
+    },
+    "GH_AUTOMATION_TOKEN": {
+      "description": "GitHub token for non-interactive gh CLI and git push in Codespaces."
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "forwardPorts": [80, 443, 6379, 8080, 27017],
+  "portsAttributes": {
+    "80": {
+      "label": "User Service HTTP",
+      "onAutoForward": "notify"
+    },
+    "443": {
+      "label": "User Service HTTPS",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Structurizr",
+      "onAutoForward": "silent"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug"
+      ]
+    }
+  }
+}
