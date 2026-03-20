@@ -9,7 +9,7 @@
 
         <id field-name="id" type="string" strategy="NONE" />
 
-        <field field-name="provider" type="string" />
+        <field field-name="provider" type="oauth_provider" />
         <field field-name="providerId" name="provider_id" type="string" />
         <field field-name="userId" name="user_id" type="string" />
         <field field-name="createdAt" name="created_at" type="date_immutable" />

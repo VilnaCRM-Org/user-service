@@ -16,6 +16,10 @@ final class RedisConnectionFactory
     {
         $parsed = parse_url($redisUrl);
 
+        if ($parsed === false) {
+            throw new \InvalidArgumentException('Invalid Redis URL');
+        }
+
         $redis = new Redis();
         $redis->connect(
             (string) ($parsed['host'] ?? 'localhost'),

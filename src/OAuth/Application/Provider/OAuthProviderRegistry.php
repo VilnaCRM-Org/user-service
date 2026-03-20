@@ -19,6 +19,12 @@ final class OAuthProviderRegistry
         $this->providers = [];
         foreach ($providers as $provider) {
             $key = (string) $provider->getProvider();
+            if (isset($this->providers[$key])) {
+                throw new \LogicException(sprintf(
+                    'Duplicate OAuth provider registration: %s',
+                    $key
+                ));
+            }
             $this->providers[$key] = $provider;
         }
     }

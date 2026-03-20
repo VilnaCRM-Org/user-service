@@ -69,6 +69,26 @@ final class OAuthProviderRegistryTest extends UnitTestCase
         $this->registry->get('unsupported_provider');
     }
 
+    public function testThrowsOnDuplicateProviderRegistration(): void
+    {
+        $providerName = $this->faker->word();
+
+        $mock1 = $this->createMock(OAuthProviderInterface::class);
+        $mock1->method('getProvider')
+            ->willReturn(new OAuthProvider($providerName));
+
+        $mock2 = $this->createMock(OAuthProviderInterface::class);
+        $mock2->method('getProvider')
+            ->willReturn(new OAuthProvider($providerName));
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage(
+            sprintf('Duplicate OAuth provider registration: %s', $providerName)
+        );
+
+        new OAuthProviderRegistry([$mock1, $mock2]);
+    }
+
     public function testSupportedProvidersReturnsAllProviderNames(): void
     {
         $supported = $this->registry->supportedProviders();

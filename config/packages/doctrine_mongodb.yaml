@@ -6,6 +6,7 @@ doctrine_mongodb:
     oauth2_scope: 'App\OAuth\Infrastructure\DoctrineType\OAuth2ScopeType'
     oauth2_grant: 'App\OAuth\Infrastructure\DoctrineType\OAuth2GrantType'
     oauth2_redirect_uri: 'App\OAuth\Infrastructure\DoctrineType\OAuth2RedirectUriType'
+    oauth_provider: 'App\OAuth\Infrastructure\DoctrineType\OAuthProviderType'
   connections:
     default:
       server: '%env(MONGODB_URL)%'

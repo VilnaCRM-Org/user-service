@@ -12,7 +12,7 @@ final class OAuthStatePayloadTest extends UnitTestCase
 {
     public function testConstructorSetsAllProperties(): void
     {
-        $provider = 'github';
+        $provider = $this->faker->word();
         $codeVerifier = $this->faker->sha256();
         $flowBindingHash = $this->faker->sha256();
         $redirectUri = $this->faker->url();

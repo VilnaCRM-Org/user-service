@@ -11,10 +11,11 @@ final class UnsupportedProviderExceptionTest extends UnitTestCase
 {
     public function testMessageIncludesProviderName(): void
     {
-        $exception = new UnsupportedProviderException('unknown');
+        $provider = $this->faker->word();
+        $exception = new UnsupportedProviderException($provider);
 
         $this->assertSame(
-            'Unsupported OAuth provider: unknown',
+            sprintf('Unsupported OAuth provider: %s', $provider),
             $exception->getMessage()
         );
     }
