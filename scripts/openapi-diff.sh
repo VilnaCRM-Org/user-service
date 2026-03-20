@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BASE_REF="${1:-origin/main}"
 OPENAPI_DIR="$REPO_ROOT/.github/openapi-spec"
 HEAD_SPEC="$OPENAPI_DIR/spec.yaml"
-TMP_DIR="$REPO_ROOT/var/tmp"
+TMP_DIR="${TMPDIR:-/tmp}/openapi-diff"
 BASE_SPEC="$TMP_DIR/openapi-base-spec.yaml"
 
 if [ ! -f "$HEAD_SPEC" ]; then

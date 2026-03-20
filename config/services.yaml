@@ -191,6 +191,23 @@ services:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
 
+  # OAuth Social Sign-In
+  oauth.redis_connection:
+    class: \Redis
+    factory: ['App\OAuth\Infrastructure\Factory\RedisConnectionFactory', 'create']
+    arguments:
+      - '%env(REDIS_URL)%'
+
+  App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
+    arguments:
+      $oauthRedis: '@oauth.redis_connection'
+
+  App\OAuth\Domain\Repository\OAuthStateRepositoryInterface:
+    alias: App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository
+
+  App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface:
+    alias: App\OAuth\Infrastructure\Repository\MongoDBSocialIdentityRepository
+
   # OAuth ODM Persistence Managers
   App\OAuth\Infrastructure\Manager\AccessTokenManager:
     arguments:
