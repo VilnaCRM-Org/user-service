@@ -37,7 +37,6 @@ Classes MUST be in directories matching their type:
 | `Validator/`       | Validation logic                | `UlidValidator`                    |
 | `Builder/`         | Object builders                 | `QueryBuilder`                     |
 | `Fixer/`           | Data fixers/modifiers           | `DataFixer`                        |
-| `Cleaner/`         | Data cleaners/filters           | `DataCleaner`                      |
 | `Factory/`         | Object factories                | `CustomerFactory`                  |
 | `Resolver/`        | Value resolvers                 | `CustomerUpdateScalarResolver`     |
 | `Serializer/`      | Serializers/normalizers         | `CustomerNormalizer`               |
@@ -385,7 +384,6 @@ What does the class DO?
 ├─ Validates values? → Validator/
 ├─ Builds/constructs objects? → Builder/
 ├─ Fixes/modifies data? → Fixer/
-├─ Cleans/filters data? → Cleaner/
 ├─ Creates complex objects? → Factory/
 ├─ Resolves/determines values? → Resolver/
 ├─ Normalizes/serializes? → Serializer/

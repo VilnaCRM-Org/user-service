@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\OAuth\Infrastructure\Revoker;
+namespace App\Tests\Unit\OAuth\Infrastructure\Manager;
 
-use App\OAuth\Infrastructure\Revoker\CredentialsRevoker;
+use App\OAuth\Infrastructure\Manager\CredentialsRevoker;
 use App\Tests\Unit\OAuth\Infrastructure\OAuthInfrastructureTestCase;
 use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;

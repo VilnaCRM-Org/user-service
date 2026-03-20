@@ -6,7 +6,7 @@ namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Behat\Support\RecordingLogger;
-use App\User\Application\TwoFactorSecretEncryptorInterface;
+use App\User\Application\Adapter\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;

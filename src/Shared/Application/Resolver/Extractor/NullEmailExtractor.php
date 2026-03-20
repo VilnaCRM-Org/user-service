@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Resolver\Source;
+namespace App\Shared\Application\Resolver\Extractor;
 
-final class NullEmailSource implements BatchEmailSource
+final class NullEmailExtractor implements BatchEmailExtractor
 {
     /**
      * @param array<string> $entry

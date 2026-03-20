@@ -69,7 +69,7 @@ league_oauth2_server:
       access_token_manager: App\OAuth\Infrastructure\Manager\AccessTokenManager
       refresh_token_manager: App\OAuth\Infrastructure\Manager\RefreshTokenManager
       authorization_code_manager: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
-      credentials_revoker: App\OAuth\Infrastructure\Service\CredentialsRevoker
+      credentials_revoker: App\OAuth\Infrastructure\Manager\CredentialsRevoker
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
   role_prefix: ROLE_OAUTH2_

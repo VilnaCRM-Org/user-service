@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Source;
+namespace App\Tests\Unit\Shared\Application\Extractor;
 
-use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
-use App\Shared\Application\Resolver\Source\ObjectPropertyEmailSource;
+use App\Shared\Application\Resolver\Extractor\ObjectMethodEmailExtractor;
+use App\Shared\Application\Resolver\Extractor\ObjectPropertyEmailExtractor;
 use App\Tests\Unit\UnitTestCase;
 use stdClass;
 
-final class EmailObjectSourceTest extends UnitTestCase
+final class EmailObjectExtractorTest extends UnitTestCase
 {
     public function testObjectPropertySourceReturnsNullForNonObject(): void
     {
-        $source = new ObjectPropertyEmailSource('email');
+        $source = new ObjectPropertyEmailExtractor('email');
 
         self::assertNull($source->extract(['email' => 'value']));
     }
@@ -27,7 +27,7 @@ final class EmailObjectSourceTest extends UnitTestCase
             }
         };
 
-        $source = new ObjectPropertyEmailSource('email');
+        $source = new ObjectPropertyEmailExtractor('email');
 
         self::assertSame($email, $source->extract($entry));
     }
@@ -41,14 +41,14 @@ final class EmailObjectSourceTest extends UnitTestCase
             }
         };
 
-        $source = new ObjectPropertyEmailSource('email');
+        $source = new ObjectPropertyEmailExtractor('email');
 
         self::assertNull($source->extract($entry));
     }
 
     public function testObjectMethodSourceReturnsNullWhenMethodMissing(): void
     {
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
 
         self::assertNull($source->extract(new stdClass()));
     }
@@ -67,7 +67,7 @@ final class EmailObjectSourceTest extends UnitTestCase
             }
         };
 
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
 
         self::assertSame($email, $source->extract($entry));
     }
@@ -86,7 +86,7 @@ final class EmailObjectSourceTest extends UnitTestCase
             }
         };
 
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
 
         self::assertNull($source->extract($entry));
     }

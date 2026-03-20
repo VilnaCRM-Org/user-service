@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\EventDispatcher\Stub;
+namespace App\Tests\Unit\Shared\Infrastructure\EventSubscriber\Stub;
 
-use App\Shared\Infrastructure\EventDispatcher\ResilientEventSubscriber;
+use App\Shared\Infrastructure\EventSubscriber\ResilientEventSubscriber;
 
 final readonly class TestResilientEventSubscriber extends ResilientEventSubscriber
 {

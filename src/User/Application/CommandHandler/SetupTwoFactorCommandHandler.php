@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
+use App\User\Application\Adapter\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\TOTPSecretFactoryInterface;
-use App\User\Application\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;

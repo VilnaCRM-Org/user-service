@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Observability\Subscriber;
+namespace App\Shared\Infrastructure\Observability\EventSubscriber;
 
 use App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface;
 use App\Shared\Application\Observability\Metric\EndpointInvocationsMetric;
-use App\Shared\Infrastructure\EventDispatcher\ResilientEventSubscriber;
+use App\Shared\Infrastructure\EventSubscriber\ResilientEventSubscriber;
 use App\Shared\Infrastructure\Observability\Resolver\ApiEndpointMetricDimensionsResolver;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;

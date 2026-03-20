@@ -71,7 +71,7 @@ See: `reference/processor-patterns.md`
 - Implement a single public entry method, e.g. `transform(OpenApi $openApi): OpenApi`.
 - Iterate paths using `array_keys($openApi->getPaths()->getPaths())`.
 - Apply changes per `PathItem` using an `OPERATIONS` constant + dynamic `with/get` calls.
-- **Do NOT create new directories** (e.g. `Augmenter/`, `Enricher/`, `Helper/`). New OpenAPI transformation classes belong in `Transformer/`. Existing directories (`Cleaner/`, `Sanitizer/`) are in use — do not duplicate their purpose.
+- **Do NOT create new directories** (e.g. `Augmenter/`, `Enricher/`, `Helper/`). New OpenAPI transformation classes belong in `Transformer/`. Existing directories (`Sanitizer/`) are in use — do not duplicate their purpose.
 
 ### Adding a New Endpoint Factory
 

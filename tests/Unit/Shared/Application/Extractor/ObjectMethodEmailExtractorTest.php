@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Source;
+namespace App\Tests\Unit\Shared\Application\Extractor;
 
-use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
+use App\Shared\Application\Resolver\Extractor\ObjectMethodEmailExtractor;
 use App\Tests\Unit\UnitTestCase;
 use stdClass;
 
-final class ObjectMethodEmailSourceTest extends UnitTestCase
+final class ObjectMethodEmailExtractorTest extends UnitTestCase
 {
     public function testReturnsNullWhenEntryIsNotObject(): void
     {
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
 
         $this->assertNull($source->extract($this->faker->email()));
     }
 
     public function testReturnsNullWhenMethodMissing(): void
     {
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
         $entry = new stdClass();
 
         $this->assertNull($source->extract($entry));
@@ -27,7 +27,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
     public function testReturnsNullWhenMethodDoesNotReturnString(): void
     {
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
         $entry = new class() {
             public function getEmail(): int
             {
@@ -40,7 +40,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
     public function testReturnsNullWhenEntryIsCallableClassString(): void
     {
-        $source = new ObjectMethodEmailSource('createFromFormat');
+        $source = new ObjectMethodEmailExtractor('createFromFormat');
 
         $this->assertNull($source->extract(\DateTime::class));
     }
@@ -48,7 +48,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
     public function testReturnsEmailWhenMethodReturnsString(): void
     {
         $email = $this->faker->email();
-        $source = new ObjectMethodEmailSource('getEmail');
+        $source = new ObjectMethodEmailExtractor('getEmail');
         $entry = new class($email) {
             public function __construct(private readonly string $email)
             {
@@ -65,7 +65,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
     public function testReturnsNullForArrayWithoutThrowing(): void
     {
-        $source = new ObjectMethodEmailSource('someMethod');
+        $source = new ObjectMethodEmailExtractor('someMethod');
 
         // Arrays are not objects, should return null without errors
         $result = $source->extract([]);
@@ -75,7 +75,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
     public function testReturnsNullForNullWithoutThrowing(): void
     {
-        $source = new ObjectMethodEmailSource('someMethod');
+        $source = new ObjectMethodEmailExtractor('someMethod');
 
         // null is not an object, should return null without errors
         $result = $source->extract(null);
@@ -85,7 +85,7 @@ final class ObjectMethodEmailSourceTest extends UnitTestCase
 
     public function testReturnsNullForIntegerWithoutThrowing(): void
     {
-        $source = new ObjectMethodEmailSource('someMethod');
+        $source = new ObjectMethodEmailExtractor('someMethod');
 
         // Integers are not objects, should return null without errors
         $result = $source->extract(123);

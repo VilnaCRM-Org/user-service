@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\OAuth\Infrastructure\Revoker;
+namespace App\OAuth\Infrastructure\Manager;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;

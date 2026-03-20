@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\EventDispatcher;
+namespace App\Tests\Unit\Shared\Infrastructure\EventSubscriber;
 
-use App\Tests\Unit\Shared\Infrastructure\EventDispatcher\Stub\TestResilientEventSubscriber;
+use App\Tests\Unit\Shared\Infrastructure\EventSubscriber\Stub\TestResilientEventSubscriber;
 use App\Tests\Unit\UnitTestCase;
 use Psr\Log\LoggerInterface;
 

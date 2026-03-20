@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Resolver\Source;
+namespace App\Shared\Application\Resolver\Extractor;
 
-final class ObjectMethodEmailSource implements BatchEmailSource
+final class ObjectMethodEmailExtractor implements BatchEmailExtractor
 {
     public function __construct(private readonly string $method)
     {

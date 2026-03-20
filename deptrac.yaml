@@ -9,9 +9,7 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric).*'
-        - type: className
-          regex: '.*App\\User\\Application\\(PasswordHasherInterface|TwoFactorSecretEncryptorInterface)$'
+          regex: '.*App\\User\\Application\\(Adapter|Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric).*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Collector|Decoder|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className
@@ -31,9 +29,9 @@ parameters:
         - type: className
           regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Decoder|Extractor|Validator|Matcher|EventListener|Publisher).*'
         - type: className
-          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Revoker|Serializer).*'
+          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Serializer).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache|Serializer|Security|Resolver|Validator).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventSubscriber|Cache|Serializer|Security|Resolver|Validator).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

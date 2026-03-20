@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application;
+namespace App\User\Application\Adapter;
 
 interface PasswordHasherInterface
 {

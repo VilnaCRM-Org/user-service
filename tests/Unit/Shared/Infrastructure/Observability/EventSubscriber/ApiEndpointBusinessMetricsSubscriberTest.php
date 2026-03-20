@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Infrastructure\Observability\Subscriber;
+namespace App\Tests\Unit\Shared\Infrastructure\Observability\EventSubscriber;
 
+use App\Shared\Infrastructure\Observability\EventSubscriber\ApiEndpointBusinessMetricsSubscriber;
 use App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory;
 use App\Shared\Infrastructure\Observability\Resolver\ApiEndpointMetricDimensionsResolver;
-use App\Shared\Infrastructure\Observability\Subscriber\ApiEndpointBusinessMetricsSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy;
 use App\Tests\Unit\UnitTestCase;
 use Psr\Log\NullLogger;
