@@ -46,7 +46,13 @@ final class OAuthProviderType extends Type
             return $value;
         }
 
-        return new OAuthProvider((string) $value);
+        if (is_string($value)) {
+            return new OAuthProvider($value);
+        }
+
+        throw new InvalidArgumentException(
+            'OAuthProviderType expects an OAuthProvider or string.'
+        );
     }
 
     #[\Override]
@@ -69,8 +75,11 @@ final class OAuthProviderType extends Type
         return 'if ($value === null) { $return = null; } '
             . 'elseif ($value instanceof \App\OAuth\Domain\ValueObject\OAuthProvider) { '
             . '$return = $value; '
+            . '} elseif (is_string($value)) { '
+            . '$return = new \App\OAuth\Domain\ValueObject\OAuthProvider($value); '
             . '} else { '
-            . '$return = new \App\OAuth\Domain\ValueObject\OAuthProvider((string) $value); '
+            . 'throw new \InvalidArgumentException('
+            . '"OAuthProviderType expects an OAuthProvider or string."); '
             . '}';
     }
 }

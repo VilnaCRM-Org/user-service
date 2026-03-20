@@ -79,6 +79,17 @@ final class OAuthProviderTypeTest extends UnitTestCase
         $this->assertSame($provider, $result);
     }
 
+    public function testConvertToPhpValueThrowsForInvalidType(): void
+    {
+        $type = $this->getType();
+
+        $this->expectExceptionMessage(
+            'OAuthProviderType expects an OAuthProvider or string.'
+        );
+
+        $type->convertToPHPValue($this->faker->randomNumber());
+    }
+
     public function testClosureToMongoReturnsNonEmptyString(): void
     {
         $type = $this->getType();
