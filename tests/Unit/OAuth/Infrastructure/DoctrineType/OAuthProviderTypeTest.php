@@ -104,7 +104,6 @@ final class OAuthProviderTypeTest extends UnitTestCase
         $this->assertNotEmpty($type->closureToPHP());
     }
 
-    /** @return OAuthProviderType */
     private function getType(): OAuthProviderType
     {
         if (!Type::hasType(OAuthProviderType::NAME)) {

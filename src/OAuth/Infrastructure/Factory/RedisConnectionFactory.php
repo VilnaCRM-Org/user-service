@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\OAuth\Infrastructure\Factory;
 
+use InvalidArgumentException;
 use Redis;
 
 /**
@@ -17,7 +18,7 @@ final class RedisConnectionFactory
         $parsed = parse_url($redisUrl);
 
         if ($parsed === false) {
-            throw new \InvalidArgumentException('Invalid Redis URL');
+            throw new InvalidArgumentException('Invalid Redis URL');
         }
 
         $redis = new Redis();

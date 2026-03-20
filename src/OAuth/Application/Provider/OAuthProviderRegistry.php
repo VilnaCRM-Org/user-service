@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\OAuth\Application\Provider;
 
 use App\OAuth\Domain\Exception\UnsupportedProviderException;
+use LogicException;
 
 final class OAuthProviderRegistry
 {
@@ -20,7 +21,7 @@ final class OAuthProviderRegistry
         foreach ($providers as $provider) {
             $key = (string) $provider->getProvider();
             if (isset($this->providers[$key])) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Duplicate OAuth provider registration: %s',
                     $key
                 ));
