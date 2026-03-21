@@ -7,18 +7,17 @@ namespace App\Shared\Application\OpenApi\Transformer;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Cleaner\PathParameterCleaner;
 
 final class PathParametersTransformer
 {
     private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
 
-    private readonly PathParameterCleaner $parameterCleaner;
+    private readonly PathParameterTransformer $parameterTransformer;
 
     public function __construct(
-        PathParameterCleaner $parameterCleaner = new PathParameterCleaner()
+        PathParameterTransformer $parameterTransformer = new PathParameterTransformer()
     ) {
-        $this->parameterCleaner = $parameterCleaner;
+        $this->parameterTransformer = $parameterTransformer;
     }
 
     public function transform(OpenApi $openApi): OpenApi
@@ -62,7 +61,7 @@ final class PathParametersTransformer
 
         return $operation->withParameters(
             array_map(
-                fn (mixed $parameter) => $this->parameterCleaner->clean($parameter),
+                fn (mixed $parameter) => $this->parameterTransformer->transform($parameter),
                 $parameters
             )
         );

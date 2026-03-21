@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Provider\Http;
 
-use App\Shared\Application\Decoder\JsonBodyDecoder;
+use App\Shared\Application\Converter\JsonBodyConverter;
 
 final readonly class JsonRequestPayloadProvider
 {
     public function __construct(
         private JsonRequestContentProvider $contentProvider,
-        private JsonBodyDecoder $decoder
+        private JsonBodyConverter $jsonBodyConverter
     ) {
     }
 
@@ -31,6 +31,6 @@ final readonly class JsonRequestPayloadProvider
             return [];
         }
 
-        return $this->decoder->decodeToArray($content, $invalidJsonMessage);
+        return $this->jsonBodyConverter->decodeToArray($content, $invalidJsonMessage);
     }
 }

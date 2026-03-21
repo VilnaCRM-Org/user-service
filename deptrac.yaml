@@ -11,9 +11,9 @@ parameters:
         - type: className
           regex: '.*App\\User\\Application\\(Adapter|Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Collector|Decoder|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Converter|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Transformer|OpenApiFactory|Enum|ValueObject).*'
+          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Transformer|OpenApiFactory|Enum|ValueObject).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Application\\.*'
     - name: Domain
@@ -27,11 +27,11 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Decoder|Extractor|Validator|Matcher|EventListener|Publisher).*'
+          regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Converter|Resolver|Validator|EventListener|Publisher).*'
         - type: className
-          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Serializer).*'
+          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Adapter|Serializer).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventSubscriber|Cache|Serializer|Security|Resolver|Validator).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventSubscriber|Cache|Serializer|Adapter|Converter|Resolver|Validator|Provider).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony

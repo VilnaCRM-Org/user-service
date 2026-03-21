@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Resolver;
 
+use App\Shared\Infrastructure\Adapter\ServicePrincipal;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Resolver\AccessTokenUserResolver;
-use App\Shared\Infrastructure\Security\ServicePrincipal;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;

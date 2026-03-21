@@ -9,8 +9,8 @@ use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
+use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
 use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
@@ -33,7 +33,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         private PathParametersTransformer $pathParametersTransformer,
         private ServerErrorResponseTransformer $serverErrorResponseTransformer,
         private PaginationQueryParametersTransformer $paginationTransformer,
-        private NoContentResponseCleaner $noContentResponseCleaner
+        private NoContentResponseTransformer $noContentResponseTransformer
     ) {
     }
 
@@ -55,7 +55,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $this->serverErrorResponseTransformer->transform($openApi);
         $openApi = $this->pathParametersTransformer->transform($openApi);
         $openApi = $this->paginationTransformer->transform($openApi);
-        $openApi = $this->noContentResponseCleaner->clean($openApi);
+        $openApi = $this->noContentResponseTransformer->transform($openApi);
 
         return $openApi->withServers([
             new Model\Server($this->serverUrl),

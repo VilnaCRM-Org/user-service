@@ -624,7 +624,7 @@ so that all requests are authenticated before reaching controllers.
   - [ ] Add `oauth` firewall (pattern: `^/(token|\.well-known)`, security: false)
   - [ ] Change `main` to `api` firewall with `security: true`, `stateless: true`, `oauth2: true`
 - [ ] Task 2: Implement DualAuthenticator (AC: #1)
-  - [ ] `src/Shared/Infrastructure/Security/DualAuthenticator.php`
+  - [ ] `src/Shared/Infrastructure/Adapter/DualAuthenticator.php`
   - [ ] Check `Authorization: Bearer <token>` header first
   - [ ] Fall back to extracting JWT from `__Host-auth_token` cookie
   - [ ] Pin algorithm to RS256 (reject HS256 or others)

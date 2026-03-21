@@ -11,9 +11,9 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
+use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
 use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
@@ -29,7 +29,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     private MockObject $pathParametersTransformer;
     private MockObject $errorResponseTransformer;
     private MockObject $paginationQueryParametersTransformer;
-    private MockObject $noContentResponseCleaner;
+    private MockObject $noContentResponseTransformer;
 
     #[\Override]
     protected function setUp(): void
@@ -48,8 +48,8 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->createMock(ServerErrorResponseTransformer::class);
         $this->paginationQueryParametersTransformer =
             $this->createMock(PaginationQueryParametersTransformer::class);
-        $this->noContentResponseCleaner =
-            $this->createMock(NoContentResponseCleaner::class);
+        $this->noContentResponseTransformer =
+            $this->createMock(NoContentResponseTransformer::class);
     }
 
     public function testInvokeDecoratesOpenApiDocument(): void
@@ -116,8 +116,8 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
-        $this->noContentResponseCleaner->expects($this->once())
-            ->method('clean')
+        $this->noContentResponseTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
     }
@@ -146,7 +146,7 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->pathParametersTransformer,
             $this->errorResponseTransformer,
             $this->paginationQueryParametersTransformer,
-            $this->noContentResponseCleaner
+            $this->noContentResponseTransformer
         );
     }
 

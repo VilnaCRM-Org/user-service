@@ -313,7 +313,7 @@ services:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
       $jwtAudience: '%env(string:JWT_AUDIENCE)%'
 
-  App\Shared\Infrastructure\Security\PublicAccessMatcher:
+  App\Shared\Infrastructure\Resolver\PublicAccessResolver:
     arguments:
       $rules:
         - { pattern: '#^/api/users$#', methods: ['POST'] }
@@ -367,21 +367,21 @@ services:
           secret: '%env(AWS_SQS_SECRET)%'
 
   # OAuth ODM Persistence Managers
-  App\OAuth\Infrastructure\Manager\AccessTokenManager:
+  App\OAuth\Infrastructure\Adapter\AccessTokenManager:
     arguments:
       $persistAccessToken: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
 
   League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\ClientManager
+    alias: App\OAuth\Infrastructure\Adapter\ClientManager
 
   League\Bundle\OAuth2ServerBundle\Manager\AccessTokenManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\AccessTokenManager
+    alias: App\OAuth\Infrastructure\Adapter\AccessTokenManager
 
   League\Bundle\OAuth2ServerBundle\Manager\RefreshTokenManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\RefreshTokenManager
+    alias: App\OAuth\Infrastructure\Adapter\RefreshTokenManager
 
   League\Bundle\OAuth2ServerBundle\Manager\AuthorizationCodeManagerInterface:
-    alias: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
+    alias: App\OAuth\Infrastructure\Adapter\AuthorizationCodeManager
 
   League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface:
-    alias: App\OAuth\Infrastructure\Manager\CredentialsRevoker
+    alias: App\OAuth\Infrastructure\Adapter\CredentialsRevoker

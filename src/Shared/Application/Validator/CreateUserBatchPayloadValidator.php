@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
-use App\Shared\Application\Collector\BatchEmailCollector;
 use App\Shared\Application\DTO\BatchEntriesResult;
 use App\Shared\Application\Normalizer\BatchEntriesNormalizer;
+use App\Shared\Application\Provider\BatchEmailProvider;
 
 final class CreateUserBatchPayloadValidator
 {
@@ -16,7 +16,7 @@ final class CreateUserBatchPayloadValidator
 
     public function __construct(
         private readonly BatchEntriesNormalizer $normalizer,
-        private readonly BatchEmailCollector $collector
+        private readonly BatchEmailProvider $batchEmailProvider
     ) {
     }
 
@@ -41,7 +41,7 @@ final class CreateUserBatchPayloadValidator
             BatchEntriesResult::STATE_EMPTY => [
                 self::MESSAGE_EMPTY,
             ],
-            default => $this->collector
+            default => $this->batchEmailProvider
                 ->collect($result->entries())
                 ->messages(
                     self::MESSAGE_EMAIL_MISSING,

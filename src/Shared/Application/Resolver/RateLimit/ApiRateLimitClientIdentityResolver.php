@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
+use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitClientIdentityResolver
@@ -14,7 +14,7 @@ final readonly class ApiRateLimitClientIdentityResolver
     private const PENDING_SESSION_ID_KEYS = ['pendingSessionId', 'pending_session_id'];
 
     public function __construct(
-        private ?JwtTokenDecoderInterface $jwtDecoder = null,
+        private ?JwtTokenConverterInterface $jwtConverter = null,
         private string $jwtIssuer = 'vilnacrm-user-service',
         private string $jwtAudience = 'vilnacrm-api',
     ) {
@@ -170,7 +170,7 @@ final readonly class ApiRateLimitClientIdentityResolver
      */
     private function resolveValidatedJwtPayload(Request $request): ?array
     {
-        if (!$this->jwtDecoder instanceof JwtTokenDecoderInterface) {
+        if (!$this->jwtConverter instanceof JwtTokenConverterInterface) {
             return null;
         }
 
@@ -179,7 +179,7 @@ final readonly class ApiRateLimitClientIdentityResolver
             return null;
         }
 
-        $payload = $this->jwtDecoder->decode($token);
+        $payload = $this->jwtConverter->decode($token);
         if (!is_array($payload)) {
             return null;
         }

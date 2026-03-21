@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Provider;
 
-use App\Shared\Application\Collector\AllowedMethodsCollector;
 use App\Shared\Application\Normalizer\AllowedMethodsPathNormalizer;
+use App\Shared\Application\Resolver\AllowedMethodsResolver;
 use App\Shared\Domain\ValueObject\ResourceClassAllowlist;
 
 final readonly class AllowedMethodsProvider
 {
     public function __construct(
-        private AllowedMethodsCollector $collector,
+        private AllowedMethodsResolver $allowedMethodsResolver,
         private ResourceClassAllowlist $resourceClassAllowlist,
         private AllowedMethodsPathNormalizer $pathNormalizer
     ) {
@@ -30,7 +30,7 @@ final readonly class AllowedMethodsProvider
         foreach ($this->resourceClassAllowlist->all() as $resourceClass) {
             $methods = array_merge(
                 $methods,
-                $this->collector->collect($resourceClass, $normalizedPath)
+                $this->allowedMethodsResolver->collect($resourceClass, $normalizedPath)
             );
         }
 

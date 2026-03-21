@@ -20,7 +20,7 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
 
     public function testIsAuthenticatedRequestReturnsFalseWhenNoBearerToken(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
 
         self::assertFalse($resolver->isAuthenticatedRequest($request));
@@ -29,9 +29,9 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenDecoderReturnsNull(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->with($token)->willReturn(null);
+        $this->jwtConverter->method('decode')->with($token)->willReturn(null);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -41,9 +41,9 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenDecoderReturnsNonArray(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->with($token)->willReturn(null);
+        $this->jwtConverter->method('decode')->with($token)->willReturn(null);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -53,10 +53,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenWrongIssuer(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['iss' => 'wrong-issuer']));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -66,10 +66,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenWrongAudience(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['aud' => 'wrong-audience']));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -79,11 +79,11 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedReturnsFalseWhenAudienceDoesNotContainExpectedValue(
     ): void {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn(
+        $this->jwtConverter->method('decode')->willReturn(
             $this->buildValidPayload(['aud' => ['some-other-api', 'another-api']])
         );
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -94,11 +94,11 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     {
         $token = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')->willReturn(
+        $this->jwtConverter->method('decode')->willReturn(
             $this->buildValidPayload(['sub' => $subject, 'aud' => ['vilnacrm-api', 'other-api']])
         );
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -108,9 +108,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenSubIsMissing(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn($this->buildValidPayload(['sub' => null]));
+        $payload = $this->buildValidPayload(['sub' => null]);
+        $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -120,9 +121,9 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenSubIsEmptyString(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn($this->buildValidPayload(['sub' => '']));
+        $this->jwtConverter->method('decode')->willReturn($this->buildValidPayload(['sub' => '']));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -132,9 +133,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenSubIsNotString(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn($this->buildValidPayload(['sub' => 12345]));
+        $payload = $this->buildValidPayload(['sub' => 12345]);
+        $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -144,9 +146,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenNbfIsMissing(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn($this->buildValidPayload(['nbf' => null]));
+        $payload = $this->buildValidPayload(['nbf' => null]);
+        $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -156,9 +159,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenExpIsMissing(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn($this->buildValidPayload(['exp' => null]));
+        $payload = $this->buildValidPayload(['exp' => null]);
+        $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -168,10 +172,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenNbfIsNotInteger(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['nbf' => (string) (time() - 60)]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -181,10 +185,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenNbfIsInFuture(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['nbf' => time() + 3600]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -194,11 +198,11 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     public function testIsAuthenticatedRequestReturnsFalseWhenTokenIsExpired(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn(
+        $this->jwtConverter->method('decode')->willReturn(
             $this->buildValidPayload(['nbf' => time() - 120, 'exp' => time() - 60])
         );
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -209,10 +213,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     {
         $token = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -223,10 +227,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     {
         $token = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET', [], ['__Host-auth_token' => $token]);
 
         self::assertTrue($resolver->isAuthenticatedRequest($request));
@@ -236,11 +240,11 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     {
         $bearerToken = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')->with($bearerToken)->willReturn(
+        $this->jwtConverter->method('decode')->with($bearerToken)->willReturn(
             $this->buildValidPayload(['sub' => $subject])
         );
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create(
             '/api/users',
             'GET',
@@ -254,7 +258,7 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
 
     public function testIsAuthenticatedRequestReturnsFalseWhenCookieTokenIsEmpty(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET', [], ['__Host-auth_token' => '']);
 
         self::assertFalse($resolver->isAuthenticatedRequest($request));
@@ -264,10 +268,10 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
     {
         $token = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')->with($token)
+        $this->jwtConverter->method('decode')->with($token)
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'bearer ' . $token);
 
@@ -276,12 +280,12 @@ final class ApiRateLimitClientIdentityResolverIsAuthenticatedTest extends RateLi
 
     public function testIsAuthenticatedReturnsFalseForEmptyCookieEvenIfDecoderAcceptsIt(): void
     {
-        $this->jwtDecoder
+        $this->jwtConverter
             ->method('decode')
             ->with('')
             ->willReturn($this->buildValidPayload(['sub' => $this->faker->uuid()]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET', [], ['__Host-auth_token' => '']);
 
         self::assertFalse($resolver->isAuthenticatedRequest($request));

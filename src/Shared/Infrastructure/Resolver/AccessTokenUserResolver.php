@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Resolver;
 
-use App\Shared\Infrastructure\Security\ServicePrincipal;
+use App\Shared\Infrastructure\Adapter\ServicePrincipal;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\UserInterface as DomainUserInterface;

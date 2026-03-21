@@ -65,11 +65,11 @@ league_oauth2_server:
   # Only one persistence method can be configured at a time.
   persistence: # Required
     custom:
-      client_manager: App\OAuth\Infrastructure\Manager\ClientManager
-      access_token_manager: App\OAuth\Infrastructure\Manager\AccessTokenManager
-      refresh_token_manager: App\OAuth\Infrastructure\Manager\RefreshTokenManager
-      authorization_code_manager: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
-      credentials_revoker: App\OAuth\Infrastructure\Manager\CredentialsRevoker
+      client_manager: App\OAuth\Infrastructure\Adapter\ClientManager
+      access_token_manager: App\OAuth\Infrastructure\Adapter\AccessTokenManager
+      refresh_token_manager: App\OAuth\Infrastructure\Adapter\RefreshTokenManager
+      authorization_code_manager: App\OAuth\Infrastructure\Adapter\AuthorizationCodeManager
+      credentials_revoker: App\OAuth\Infrastructure\Adapter\CredentialsRevoker
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
   role_prefix: ROLE_OAUTH2_

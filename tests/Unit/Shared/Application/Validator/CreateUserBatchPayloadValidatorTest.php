@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
-use App\Shared\Application\Collector\BatchEmailCollector;
 use App\Shared\Application\Normalizer\BatchEntriesNormalizer;
+use App\Shared\Application\Provider\BatchEmailProvider;
 use App\Shared\Application\Resolver\BatchEmailResolver;
 use App\Shared\Application\Validator\CreateUserBatchPayloadValidator;
 use App\Tests\Unit\UnitTestCase;
@@ -20,7 +20,7 @@ final class CreateUserBatchPayloadValidatorTest extends UnitTestCase
         parent::setUp();
         $this->validator = new CreateUserBatchPayloadValidator(
             new BatchEntriesNormalizer(),
-            new BatchEmailCollector(new BatchEmailResolver())
+            new BatchEmailProvider(new BatchEmailResolver())
         );
     }
 

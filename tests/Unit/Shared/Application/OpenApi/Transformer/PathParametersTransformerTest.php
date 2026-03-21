@@ -10,8 +10,8 @@ use ApiPlatform\OpenApi\Model\Parameter;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Cleaner\PathParameterCleaner;
 use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PathParameterTransformer;
 use App\Tests\Unit\UnitTestCase;
 
 final class PathParametersTransformerTest extends UnitTestCase
@@ -19,13 +19,13 @@ final class PathParametersTransformerTest extends UnitTestCase
     public function testTransformRemovesUnsupportedFlagsFromPathParameters(): void
     {
         $openApi = $this->createOpenApiWithPathParameter();
-        $transformer = new PathParametersTransformer(new PathParameterCleaner());
+        $transformer = new PathParametersTransformer(new PathParameterTransformer());
         $transformed = $transformer->transform($openApi);
 
         $this->assertPathParameterWasTransformed($transformed);
     }
 
-    public function testTransformUsesInjectedCleaner(): void
+    public function testTransformUsesInjectedTransformer(): void
     {
         $parameter = new Parameter(
             name: 'id',
@@ -43,9 +43,9 @@ final class PathParametersTransformerTest extends UnitTestCase
 
         $openApi = new OpenApi(new Info('Test', '1.0.0'), [], $paths);
 
-        $cleaner = $this->createMock(PathParameterCleaner::class);
+        $cleaner = $this->createMock(PathParameterTransformer::class);
         $cleaner->expects($this->once())
-            ->method('clean')
+            ->method('transform')
             ->with($parameter)
             ->willReturn($parameter);
 

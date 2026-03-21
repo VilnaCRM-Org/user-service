@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
+use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -89,8 +89,8 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
         string $subject
     ): ApiRateLimitRequestResolver {
         $now = time();
-        $jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
-        $jwtDecoder->method('decode')->willReturn([
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturn([
             'iss' => 'vilnacrm-user-service',
             'aud' => 'vilnacrm-api',
             'sub' => $subject,
@@ -99,7 +99,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
         ]);
 
         return new ApiRateLimitRequestResolver(
-            new ApiRateLimitClientIdentityResolver($jwtDecoder)
+            new ApiRateLimitClientIdentityResolver($jwtConverter)
         );
     }
 }

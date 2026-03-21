@@ -12,9 +12,9 @@
 
 **Files:**
 
-- Modify: `src/Shared/Infrastructure/Security/DualAuthenticator.php`
+- Modify: `src/Shared/Infrastructure/Adapter/DualAuthenticator.php`
 - Modify: `src/User/Infrastructure/EventListener/SchemathesisCleanupListener.php`
-- Modify: `src/User/Infrastructure/Extractor/SchemathesisEmailExtractor.php`
+- Modify: `src/User/Infrastructure/Resolver/SchemathesisEmailResolver.php`
 - Rename: `src/Shared/Infrastructure/Validator/PublicAccessValidator.php`
 - Rename: `src/User/Infrastructure/Validator/SchemathesisCleanupValidator.php`
 - Rename tests under `tests/Unit/Shared/Infrastructure/Validator/`
@@ -166,7 +166,7 @@ git commit -m "refactor: align account lockout class with validator naming"
 
 **Files:**
 
-- Review only: `src/OAuth/Infrastructure/Manager/*.php`
+- Review only: `src/OAuth/Infrastructure/Adapter/*.php`
 - Review only: `src/User/Application/Validator/UserCredentialValidator.php`
 - Review only: `src/User/Infrastructure/Factory/TOTPFactory.php`
 

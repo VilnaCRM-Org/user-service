@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
+use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -36,8 +36,8 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
     public function testResolveGlobalLimiterReturnsAuthenticatedForValidJwt(): void
     {
         $now = time();
-        $jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
-        $jwtDecoder->method('decode')->willReturn([
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturn([
             'iss' => 'vilnacrm-user-service',
             'aud' => 'vilnacrm-api',
             'sub' => $this->faker->uuid(),
@@ -47,7 +47,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
 
         $clientIp = $this->faker->ipv4();
         $resolver = new ApiRateLimitRequestResolver(
-            new ApiRateLimitClientIdentityResolver($jwtDecoder)
+            new ApiRateLimitClientIdentityResolver($jwtConverter)
         );
         $request = Request::create('/api/users', 'GET', [], [], [], ['REMOTE_ADDR' => $clientIp]);
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());

@@ -20,7 +20,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolveUserSubjectReturnsNullWhenNoBearerToken(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
 
         self::assertNull($resolver->resolveUserSubject($request));
@@ -29,9 +29,9 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolveUserSubjectReturnsNullWhenJwtIsInvalid(): void
     {
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')->willReturn(null);
+        $this->jwtConverter->method('decode')->willReturn(null);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -42,10 +42,10 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     {
         $token = $this->faker->sha256();
         $subject = $this->faker->uuid();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -57,9 +57,9 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
         $token = $this->faker->sha256();
         $payload = $this->buildValidPayload([]);
         $payload['sub'] = 99999;
-        $this->jwtDecoder->method('decode')->willReturn($payload);
+        $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 

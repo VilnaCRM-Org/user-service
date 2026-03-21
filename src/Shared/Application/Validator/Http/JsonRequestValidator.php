@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator\Http;
 
-use App\Shared\Application\Decoder\JsonBodyDecoder;
+use App\Shared\Application\Converter\JsonBodyConverter;
 use App\Shared\Application\Provider\Http\JsonRequestContentProvider;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -12,7 +12,7 @@ final class JsonRequestValidator
 {
     public function __construct(
         private readonly JsonRequestContentProvider $contentProvider,
-        private readonly JsonBodyDecoder $decoder
+        private readonly JsonBodyConverter $jsonBodyConverter
     ) {
     }
 
@@ -26,7 +26,7 @@ final class JsonRequestValidator
             return;
         }
 
-        $decoded = $this->decoder->decodeToArray($content, $invalidJsonMessage);
+        $decoded = $this->jsonBodyConverter->decodeToArray($content, $invalidJsonMessage);
 
         if (!$this->isNonEmptyList($decoded)) {
             return;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Application\Decoder\JsonBodyDecoder;
+use App\Shared\Application\Converter\JsonBodyConverter;
 use App\Shared\Application\Provider\Http\JsonRequestContentProvider;
 use App\Shared\Application\Provider\Http\JsonRequestPayloadProvider;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
@@ -80,7 +80,7 @@ abstract class UserPatchProcessorTestCase extends UnitTestCase
         );
         $this->payloadProvider = new JsonRequestPayloadProvider(
             new JsonRequestContentProvider($this->requestStack),
-            new JsonBodyDecoder($serializer)
+            new JsonBodyConverter($serializer)
         );
         $this->updateResolver = new UserPatchUpdateResolver(
             new UserPatchEmailResolver(),

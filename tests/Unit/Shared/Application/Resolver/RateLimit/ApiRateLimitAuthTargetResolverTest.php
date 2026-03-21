@@ -196,10 +196,10 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $subject = $this->faker->uuid();
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/setup', 'POST');
@@ -216,10 +216,10 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $subject = $this->faker->uuid();
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/confirm', 'POST');
@@ -236,10 +236,10 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $subject = $this->faker->uuid();
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/disable', 'POST');
@@ -280,10 +280,10 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $subject = $this->faker->uuid();
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/setup', 'GET');
@@ -296,10 +296,10 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $subject = $this->faker->uuid();
         $token = $this->faker->sha256();
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/unknown', 'POST');
@@ -324,12 +324,12 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $userId = $this->faker->uuid();
         $clientIp = $this->faker->ipv4();
 
-        $this->jwtDecoder->method('decode')
+        $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
         $this->stubPendingSession($sessionId, $userId);
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtDecoder);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
         $resolver = new ApiRateLimitAuthTargetResolver(
             $this->pendingTwoFactorRepository,
             $clientIdentityResolver

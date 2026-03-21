@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
+use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Tests\Unit\UnitTestCase;
 
 abstract class RateLimitClientTestCase extends UnitTestCase
 {
-    protected JwtTokenDecoderInterface $jwtDecoder;
+    protected JwtTokenConverterInterface $jwtConverter;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
+        $this->jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
     }
 
     /**

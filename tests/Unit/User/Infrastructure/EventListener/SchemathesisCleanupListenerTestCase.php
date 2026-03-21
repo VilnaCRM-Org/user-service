@@ -10,12 +10,12 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Decoder\SchemathesisPayloadDecoder;
+use App\User\Infrastructure\Converter\SchemathesisPayloadConverter;
 use App\User\Infrastructure\EventListener\SchemathesisCleanupListener;
-use App\User\Infrastructure\Extractor\SchemathesisBatchUsersEmailExtractor;
-use App\User\Infrastructure\Extractor\SchemathesisEmailExtractor;
-use App\User\Infrastructure\Extractor\SchemathesisSingleUserEmailExtractor;
-use App\User\Infrastructure\Matcher\SchemathesisCleanupMatcher;
+use App\User\Infrastructure\Resolver\SchemathesisBatchUsersEmailResolver;
+use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
+use App\User\Infrastructure\Resolver\SchemathesisEmailResolver;
+use App\User\Infrastructure\Resolver\SchemathesisSingleUserEmailResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,8 +28,8 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
 {
-    protected SchemathesisCleanupMatcher $schemathesisCleanupMatcher;
-    protected SchemathesisEmailExtractor $emailExtractor;
+    protected SchemathesisCleanupResolver $schemathesisCleanupMatcher;
+    protected SchemathesisEmailResolver $emailExtractor;
     protected SchemathesisCleanupListener $listener;
     protected UserRepositoryInterface $repository;
     protected EventBusInterface $eventBus;
@@ -41,7 +41,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->schemathesisCleanupMatcher = new SchemathesisCleanupMatcher();
+        $this->schemathesisCleanupMatcher = new SchemathesisCleanupResolver();
         $this->emailExtractor = $this->createEmailExtractor();
         $this->repository = $this->createMock(UserRepositoryInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
@@ -51,16 +51,16 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         $this->expectations = $this->createExpectations();
     }
 
-    protected function createEmailExtractor(): SchemathesisEmailExtractor
+    protected function createEmailExtractor(): SchemathesisEmailResolver
     {
         $serializer = new Serializer([], [new JsonEncoder()]);
-        $decoder = new SchemathesisPayloadDecoder($serializer);
-        $singleExtractor = new SchemathesisSingleUserEmailExtractor();
-        $batchExtractor = new SchemathesisBatchUsersEmailExtractor();
+        $payloadConverter = new SchemathesisPayloadConverter($serializer);
+        $singleExtractor = new SchemathesisSingleUserEmailResolver();
+        $batchExtractor = new SchemathesisBatchUsersEmailResolver();
 
-        return new SchemathesisEmailExtractor(
+        return new SchemathesisEmailResolver(
             $this->schemathesisCleanupMatcher,
-            $decoder,
+            $payloadConverter,
             $singleExtractor,
             $batchExtractor
         );

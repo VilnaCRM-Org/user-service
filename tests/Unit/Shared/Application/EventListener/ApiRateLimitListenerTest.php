@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
-use App\Shared\Application\Decoder\JwtTokenDecoderInterface;
+use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
@@ -291,14 +291,14 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         string $token,
         array $payload
     ): ApiRateLimitListener {
-        $jwtDecoder = $this->createMock(JwtTokenDecoderInterface::class);
-        $jwtDecoder->method('decode')->willReturnCallback(
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturnCallback(
             static function (string $candidateToken) use ($token, $payload): ?array {
                 return $candidateToken === $token ? $payload : null;
             }
         );
         $clientIdentityResolver =
-            new ApiRateLimitClientIdentityResolver($jwtDecoder);
+            new ApiRateLimitClientIdentityResolver($jwtConverter);
         $authTargetResolver =
             new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
         $requestMatcher = new ApiRateLimitRequestResolver(

@@ -32,9 +32,9 @@ security:
     api:
       pattern: ^/
       stateless: true
-      entry_point: App\Shared\Infrastructure\Security\DualAuthenticator
+      entry_point: App\Shared\Infrastructure\Adapter\DualAuthenticator
       custom_authenticators:
-        - App\Shared\Infrastructure\Security\DualAuthenticator
+        - App\Shared\Infrastructure\Adapter\DualAuthenticator
 
   password_hashers:
     App\User\Domain\Entity\User:

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
-use App\Shared\Application\Collector\BatchEmailCollector;
 use App\Shared\Application\Normalizer\BatchEntriesNormalizer;
+use App\Shared\Application\Provider\BatchEmailProvider;
 use App\Shared\Application\Resolver\BatchEmailResolver;
 use App\Shared\Application\Validator\Constraint\CreateUserBatch;
 use App\Shared\Application\Validator\CreateUserBatchConstraintValidator;
@@ -33,7 +33,7 @@ final class CreateUserBatchConstraintValidatorTest extends UnitTestCase
             $this->translator,
             new CreateUserBatchPayloadValidator(
                 new BatchEntriesNormalizer(),
-                new BatchEmailCollector(new BatchEmailResolver())
+                new BatchEmailProvider(new BatchEmailResolver())
             )
         );
         $this->validator->initialize($this->context);
