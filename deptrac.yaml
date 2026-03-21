@@ -9,7 +9,7 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Adapter|Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider).*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Converter|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className
@@ -27,7 +27,7 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Converter|Resolver|Validator|EventListener|Publisher).*'
+          regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Converter|Resolver|Validator|EventListener|Publisher|Provider).*'
         - type: className
           regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Adapter|Serializer).*'
         - type: className

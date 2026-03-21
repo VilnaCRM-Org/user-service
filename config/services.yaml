@@ -273,7 +273,7 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
-  App\User\Infrastructure\Validator\RedisAccountLockoutValidator:
+  App\User\Infrastructure\Provider\RedisAccountLockoutProvider:
     arguments:
       $cachePool: '@cache.app'
 
@@ -337,11 +337,11 @@ services:
 
   App\User\Application\Factory\ClearAuthCookieResponseFactoryInterface: '@App\User\Application\Factory\ClearAuthCookieResponseFactory'
   App\User\Application\Validator\PasswordResetTokenValidatorInterface: '@App\User\Application\Validator\CompositePasswordResetTokenValidator'
-  App\User\Application\Adapter\PasswordHasherInterface: '@App\User\Infrastructure\Adapter\SymfonyPasswordHasher'
-  App\User\Application\Validator\AccountLockoutValidatorInterface: '@App\User\Infrastructure\Validator\RedisAccountLockoutValidator'
+  App\User\Domain\Contract\PasswordHasherInterface: '@App\User\Infrastructure\Adapter\SymfonyPasswordHasher'
+  App\User\Application\Provider\AccountLockoutProviderInterface: '@App\User\Infrastructure\Provider\RedisAccountLockoutProvider'
   App\User\Application\Factory\AccessTokenFactoryInterface: '@App\User\Infrastructure\Factory\LexikAccessTokenFactory'
   App\User\Application\Validator\TOTPValidatorInterface: '@App\User\Infrastructure\Validator\TOTPValidator'
-  App\User\Application\Adapter\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor'
+  App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor'
   App\User\Application\Factory\TOTPSecretFactoryInterface: '@App\User\Infrastructure\Factory\TOTPSecretFactory'
   App\User\Application\Factory\EventIdFactoryInterface: '@App\User\Application\Factory\EventIdFactory'
   App\User\Application\Factory\IdFactoryInterface: '@App\User\Infrastructure\Factory\UlidIdFactory'

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Application\Validator;
 
-use App\User\Application\Adapter\PasswordHasherInterface;
+use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
@@ -24,7 +25,7 @@ final class UserCredentialValidator implements UserCredentialValidatorInterface
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly PasswordHasherInterface $passwordHasher,
-        private readonly AccountLockoutValidatorInterface $lockoutGuard,
+        private readonly AccountLockoutProviderInterface $lockoutGuard,
         private readonly SignInPublisherInterface $signInPublisher,
         ?string $dummyPasswordHash = null,
     ) {

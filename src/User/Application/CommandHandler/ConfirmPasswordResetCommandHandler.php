@@ -6,11 +6,11 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\User\Application\Adapter\PasswordHasherInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
-use App\User\Application\Validator\AccountLockoutValidatorInterface;
+use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
+use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -26,7 +26,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private AccountLockoutValidatorInterface $accountLockoutGuard,
+        private AccountLockoutProviderInterface $accountLockoutGuard,
         private CommandBusInterface $commandBus,
         private PasswordResetConfirmationPublisherInterface $publisher,
     ) {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Infrastructure\Validator;
+namespace App\Tests\Unit\User\Infrastructure\Provider;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Infrastructure\Validator\RedisAccountLockoutValidator;
+use App\User\Infrastructure\Provider\RedisAccountLockoutProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
-final class RedisAccountLockoutValidatorTest extends UnitTestCase
+final class RedisAccountLockoutProviderTest extends UnitTestCase
 {
     private CacheItemPoolInterface&MockObject $cachePool;
 
@@ -38,7 +38,7 @@ final class RedisAccountLockoutValidatorTest extends UnitTestCase
             ->with(sprintf('signin_lock_%s', $emailHash))
             ->willReturn($lockItem);
 
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
 
         $this->assertTrue($service->isLocked('test@example.com'));
     }
@@ -51,7 +51,7 @@ final class RedisAccountLockoutValidatorTest extends UnitTestCase
             sprintf('signin_lockout_%s', $emailHash),
             $attemptItem
         );
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
 
         $this->assertFalse($service->recordFailure('test@example.com'));
     }
@@ -65,7 +65,7 @@ final class RedisAccountLockoutValidatorTest extends UnitTestCase
         $savedItems = [];
         $this->expectSequentialGetItems($attemptItem, $lockItem, $requestedKeys);
         $this->expectSequentialSaves($savedItems);
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
         $this->assertTrue($service->recordFailure('test@example.com'));
         $expectedKeys = [
             sprintf('signin_lockout_%s', $emailHash),
@@ -88,20 +88,20 @@ final class RedisAccountLockoutValidatorTest extends UnitTestCase
             ])
             ->willReturn(true);
 
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
 
         $service->clearFailures('test@example.com');
     }
 
     public function testMaxAttemptsReturnsConstant(): void
     {
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
         $this->assertSame(20, $service->maxAttempts());
     }
 
     public function testLockoutSecondsReturnsConstant(): void
     {
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
         $this->assertSame(900, $service->lockoutSeconds());
     }
 
@@ -113,7 +113,7 @@ final class RedisAccountLockoutValidatorTest extends UnitTestCase
             sprintf('signin_lockout_%s', $emailHash),
             $attemptItem
         );
-        $service = new RedisAccountLockoutValidator($this->cachePool);
+        $service = new RedisAccountLockoutProvider($this->cachePool);
 
         $this->assertFalse($service->recordFailure('test@example.com'));
     }

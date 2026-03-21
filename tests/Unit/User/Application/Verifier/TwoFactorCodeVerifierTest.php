@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Verifier;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Adapter\TwoFactorSecretEncryptorInterface;
 use App\User\Application\Validator\TOTPValidatorInterface;
 use App\User\Application\Validator\TwoFactorCodeValidator;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
+use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;

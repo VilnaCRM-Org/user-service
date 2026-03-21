@@ -6,12 +6,12 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Adapter\PasswordHasherInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
-use App\User\Application\Validator\AccountLockoutValidatorInterface;
+use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
+use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\PasswordResetTokenAlreadyUsedException;
@@ -29,7 +29,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
     private PasswordResetTokenRepositoryInterface&MockObject $tokenRepository;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private PasswordResetTokenValidatorInterface&MockObject $tokenValidator;
-    private AccountLockoutValidatorInterface&MockObject $accountLockoutGuard;
+    private AccountLockoutProviderInterface&MockObject $accountLockoutGuard;
     private CommandBusInterface&MockObject $commandBus;
     private PasswordResetConfirmationPublisherInterface&MockObject $publisher;
     private ConfirmPasswordResetCommandHandler $handler;
@@ -43,7 +43,7 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->tokenValidator = $this->createMock(PasswordResetTokenValidatorInterface::class);
-        $this->accountLockoutGuard = $this->createMock(AccountLockoutValidatorInterface::class);
+        $this->accountLockoutGuard = $this->createMock(AccountLockoutProviderInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 

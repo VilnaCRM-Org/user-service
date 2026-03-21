@@ -133,19 +133,11 @@ git commit -m "refactor: clarify constraint validator naming"
 
 **Files:**
 
-- Rename or move: `src/User/Infrastructure/Validator/RedisAccountLockout.php`
-- Modify: `src/User/Application/Validator/AccountLockoutValidatorInterface.php`
-- Rename matching tests under `tests/Unit/User/Infrastructure/Validator/`
+- Renamed: `src/User/Infrastructure/Provider/RedisAccountLockoutProvider.php` (was `Validator/RedisAccountLockout.php`)
+- Renamed: `src/User/Application/Provider/AccountLockoutProviderInterface.php` (was `Validator/AccountLockoutValidatorInterface.php`)
+- Renamed tests: `tests/Unit/User/Infrastructure/Provider/RedisAccountLockoutProviderTest.php`
 
-**Step 1: Choose one naming direction**
-
-Option A: Keep `Validator/` and rename class to `RedisAccountLockoutValidator`.
-
-Option B: Prefer a behavior-driven name such as `RedisAccountLockoutTracker`, then move both interface and implementation to a matching directory and naming scheme.
-
-**Step 2: Prefer Option A for the low-risk pass**
-
-It avoids introducing a new directory and keeps the current DI surface stable.
+**Resolution**: Renamed to Provider — class manages lockout state (read + write + clear), not validation.
 
 **Step 3: Update tests and service references**
 
