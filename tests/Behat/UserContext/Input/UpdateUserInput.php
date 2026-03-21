@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext\Input;
 
 /**
- * @psalm-suppress UnusedClass
- * @psalm-suppress UnusedProperty - Properties used via reflection in RequestInput::toArray()
  */
 final class UpdateUserInput extends RequestInput
 {
@@ -16,5 +14,19 @@ final class UpdateUserInput extends RequestInput
         private readonly ?string $oldPassword = null,
         private readonly ?string $newPassword = null
     ) {
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'oldPassword' => $this->oldPassword,
+            'newPassword' => $this->newPassword,
+        ];
     }
 }

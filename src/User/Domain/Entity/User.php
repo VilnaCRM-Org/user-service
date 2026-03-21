@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
@@ -15,6 +14,8 @@ use App\User\Domain\ValueObject\UserUpdate;
 class User implements UserInterface
 {
     private bool $confirmed;
+    private bool $twoFactorEnabled;
+    private ?string $twoFactorSecret;
 
     public function __construct(
         private string $email,
@@ -23,6 +24,8 @@ class User implements UserInterface
         private UuidInterface $id,
     ) {
         $this->confirmed = false;
+        $this->twoFactorEnabled = false;
+        $this->twoFactorSecret = null;
     }
 
     #[\Override]
@@ -32,9 +35,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only.
      */
     public function setId(UuidInterface $id): void
     {
@@ -48,9 +51,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
      *
      * @see User::update()
      */
@@ -65,9 +68,9 @@ class User implements UserInterface
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
+     * @psalm-api
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @internal For Doctrine ORM hydration and test fixtures only. Use update() for business logic.
      *
      * @see User::update()
      */
@@ -76,6 +79,7 @@ class User implements UserInterface
         $this->initials = $initials;
     }
 
+    #[\Override]
     public function getPassword(): string
     {
         return $this->password;
@@ -84,9 +88,29 @@ class User implements UserInterface
     /**
      * @internal For Doctrine ORM hydration only. Use update() for business logic.
      */
+    #[\Override]
     public function setPassword(string $password): void
     {
         $this->password = $password;
+    }
+
+    #[\Override]
+    public function upgradePasswordHash(string $newHash): void
+    {
+        $this->password = $newHash;
+    }
+
+    #[\Override]
+    public function enableTwoFactor(): void
+    {
+        $this->twoFactorEnabled = true;
+    }
+
+    #[\Override]
+    public function disableTwoFactor(): void
+    {
+        $this->twoFactorEnabled = false;
+        $this->twoFactorSecret = null;
     }
 
     #[\Override]
@@ -101,7 +125,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent>
+     *
+     * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
      */
     #[\Override]
     public function update(
@@ -131,16 +157,15 @@ class User implements UserInterface
         return $events;
     }
 
-    /** @psalm-suppress PossiblyUnusedMethod API Platform serialization */
     public function isConfirmed(): bool
     {
         return $this->confirmed;
     }
 
     /**
-     * @internal For Doctrine ORM hydration and test fixtures only. Use confirm() for business logic.
+     * @internal For Doctrine ORM hydration and test fixtures only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      *
      * @see User::confirm()
      */
@@ -149,8 +174,36 @@ class User implements UserInterface
         $this->confirmed = $confirmed;
     }
 
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
     /**
-     * @return array<DomainEvent>
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     */
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): void
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+    }
+
+    /**
+     * @internal For Doctrine ORM hydration and test fixtures only.
+     */
+    public function setTwoFactorSecret(?string $twoFactorSecret): void
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
+    }
+
+    /**
+     * @return array<\App\User\Domain\Event\EmailChangedEvent>
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
      */
     private function processNewEmail(
         string $newEmail,
@@ -170,7 +223,9 @@ class User implements UserInterface
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<\App\User\Domain\Event\PasswordChangedEvent>
+     *
+     * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
      */
     private function processNewPassword(
         string $newPassword,

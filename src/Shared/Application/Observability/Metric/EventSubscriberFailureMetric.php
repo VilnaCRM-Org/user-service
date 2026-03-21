@@ -24,12 +24,18 @@ final readonly class EventSubscriberFailureMetric extends BusinessMetric
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @psalm-return 'EventSubscriberFailures'
+     */
     #[\Override]
     public function name(): string
     {
         return 'EventSubscriberFailures';
     }
 
+    /**
+     * @return EventSubscriberFailureMetricDimensions
+     */
     #[\Override]
     public function dimensions(): MetricDimensionsInterface
     {

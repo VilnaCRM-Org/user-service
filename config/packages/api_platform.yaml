@@ -7,6 +7,8 @@ api_platform:
 
   graphql:
     graphiql: false
+    max_query_depth: 20
+    max_query_complexity: 500
 
   openapi:
     overrideResponses: false
@@ -43,3 +45,9 @@ api_platform:
 
   # Disable Doctrine ORM support (using MongoDB ODM only)
   doctrine: false
+
+when@prod:
+  api_platform:
+    graphql:
+      introspection:
+        enabled: false

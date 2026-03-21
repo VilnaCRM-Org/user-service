@@ -7,8 +7,8 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
-use App\User\Application\Command\RequestPasswordResetCommandResponse;
 use App\User\Application\CommandHandler\RequestPasswordResetCommandHandler;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
@@ -111,7 +111,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|Uuid>
+     * @return array<Uuid|string>
+     *
+     * @psalm-return array{email: string, userId: string, tokenValue: string, uuid: Uuid}
      */
     private function createPasswordResetTestData(): array
     {
@@ -126,7 +128,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     /**
      * @param array<string, string|Uuid> $testData
      *
-     * @return array<string, PasswordResetTokenInterface|UserInterface|PasswordResetRequestedEvent>
+     * @return (MockObject&PasswordResetRequestedEvent|MockObject&PasswordResetTokenInterface|MockObject&UserInterface)[]
+     *
+     * @psalm-return array{token: MockObject&PasswordResetTokenInterface, user: MockObject&UserInterface, event: MockObject&PasswordResetRequestedEvent}
      */
     private function createPasswordResetMocks(array $testData): array
     {

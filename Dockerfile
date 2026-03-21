@@ -1,20 +1,20 @@
-FROM composer/composer:2-bin AS composer
+FROM composer/composer:2.8-bin AS composer
 FROM mlocati/php-extension-installer:2.7 AS php_extension_installer
 
-FROM dunglas/frankenphp:1-php8.4-alpine AS frankenphp_base
+FROM dunglas/frankenphp:1.4-php8.4-alpine AS frankenphp_base
 
 WORKDIR /srv/app
 
 COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
 
 RUN apk add --no-cache \
-    acl \
-    file \
-    gettext \
-    git \
-    curl \
-    autoconf \
-    cyrus-sasl-dev
+    acl=~2.3 \
+    file=~5.46 \
+    gettext=~0.22 \
+    git=~2.47 \
+    curl=~8.12 \
+    autoconf=~2.72 \
+    cyrus-sasl-dev=~2.1
 
 ARG STABILITY=stable
 ENV STABILITY=${STABILITY}
@@ -39,11 +39,11 @@ RUN set -eux; \
         xsl \
         redis \
     && apk add --no-cache \
-        icu-libs \
-        libzip \
-        libxslt \
-        libsasl \
-        snappy
+        icu-libs=~74.2 \
+        libzip=~1.11 \
+        libxslt=~1.1 \
+        libsasl=~2.1 \
+        snappy=~1.1
 
 COPY --link infrastructure/docker/php/conf.d/app.ini $PHP_INI_DIR/conf.d/
 
@@ -66,6 +66,13 @@ RUN set -eux; \
 COPY --link . ./
 RUN rm -Rf infrastructure/docker/
 
+# AC: NFR-61 - Enforce JWT key permissions (RC-03 fix)
+RUN set -eux; \
+    if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then \
+        chmod 600 config/jwt/private.pem; \
+        chmod 644 config/jwt/public.pem; \
+    fi
+
 RUN set -eux; \
     mkdir -p var/cache var/log; \
     if [ -f composer.json ]; then \
@@ -84,10 +91,10 @@ ENV APP_ENV=dev \
     XDEBUG_MODE=off
 
 RUN apk add --no-cache \
-    bash \
-    make \
-    bats \
-    bc
+    bash=~5.2 \
+    make=~4.4 \
+    bats=~1.11 \
+    bc=~1.07
 
 RUN curl -sS https://get.symfony.com/cli/installer | bash \
  && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
@@ -124,7 +131,7 @@ RUN rm -Rf infrastructure/docker/
 # Worker image
 FROM frankenphp_base AS app_workers
 
-RUN apk add --no-cache supervisor
+RUN apk add --no-cache supervisor=~4.2
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 

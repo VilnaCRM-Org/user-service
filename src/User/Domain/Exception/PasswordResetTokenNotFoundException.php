@@ -11,6 +11,9 @@ final class PasswordResetTokenNotFoundException extends DomainException
         parent::__construct('Password reset token not found');
     }
 
+    /**
+     * @psalm-return 'error.password-reset-token-not-found'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

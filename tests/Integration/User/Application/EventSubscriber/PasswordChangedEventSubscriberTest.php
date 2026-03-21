@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
-use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\EventSubscriber\PasswordChangedEventSubscriber;
 use App\User\Domain\Event\PasswordChangedEvent;
 
-final class PasswordChangedEventSubscriberTest extends IntegrationTestCase
+final class PasswordChangedEventSubscriberTest extends UserIntegrationTestCase
 {
     private PasswordChangedEventSubscriber $subscriber;
     private TestEmailSendingUtils $emailUtils;

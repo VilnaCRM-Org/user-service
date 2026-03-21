@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class EmailChangedEvent extends DomainEvent
+final class EmailChangedEvent extends AccountDomainEvent
 {
     public function __construct(
         public readonly string $userId,
@@ -20,6 +20,8 @@ final class EmailChangedEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -36,6 +38,9 @@ final class EmailChangedEvent extends DomainEvent
         );
     }
 
+    /**
+     * @psalm-return 'email.changed'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,7 +48,9 @@ final class EmailChangedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
+     *
+     * @psalm-return array{userId: string, newEmail: string, oldEmail: string}
      */
     #[\Override]
     public function toPrimitives(): array

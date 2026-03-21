@@ -110,7 +110,9 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface|RegisterUserCommand>
+     * @return array<RegisterUserCommand|UserInterface|string>
+     *
+     * @psalm-return array{email: string, existingUser: UserInterface, command: RegisterUserCommand}
      */
     private function createTestDataForExistingUser(): array
     {

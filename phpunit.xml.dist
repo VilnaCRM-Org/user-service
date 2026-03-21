@@ -28,12 +28,12 @@
         </testsuite>
     </testsuites>
 
-    <source restrictDeprecations="false" restrictNotices="false" restrictWarnings="false">
-        <include>
-            <directory suffix=".php">src</directory>
-        </include>
-        <exclude>
-            <directory>src/DataFixtures</directory>
-        </exclude>
-    </source>
-</phpunit>
+     <source restrictDeprecations="false" restrictNotices="false" restrictWarnings="false">
+         <include>
+             <directory suffix=".php">src</directory>
+         </include>
+         <exclude>
+             <directory>src/DataFixtures</directory>
+         </exclude>
+     </source>
+ </phpunit>

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\EventSubscriber\EmailChangedEventSubscriber;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
-final class EmailChangedEventSubscriberTest extends IntegrationTestCase
+final class EmailChangedEventSubscriberTest extends UserIntegrationTestCase
 {
     private EmailChangedEventSubscriber $subscriber;
     private TestEmailSendingUtils $emailUtils;

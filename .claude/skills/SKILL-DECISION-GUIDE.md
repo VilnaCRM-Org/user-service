@@ -1,6 +1,7 @@
 # Skill Decision Guide
 
 **Choose the right skill for your task based on what you're trying to accomplish.**
+**Non-negotiable rule**: Fix root causes. Do not use suppression/ignore annotations to silence PHPMD, PHPInsights, Infection, Psalm, PHPStan, or PHPCS issues.
 
 ## 🚨 Mandatory New Feature Verification Gate (ALL Skills)
 
@@ -58,6 +59,13 @@ What are you trying to do?
 │   ├─ New test cases → testing-workflow
 │   ├─ Add business metrics → observability-instrumentation
 │   └─ Fix file placement / boundaries → code-organization
+│
+├─ Refactor existing code
+│   ├─ Move class / rename / restructure → code-organization
+│   ├─ Hardcoded config to .env → code-organization
+│   ├─ Reduce complexity → complexity-management
+│   ├─ Fix architecture boundaries → deptrac-fixer
+│   └─ Improve testability → testing-workflow
 
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
@@ -138,6 +146,27 @@ This skill covers PHPUnit, Behat, and Infection debugging.
 
 ---
 
+### "I need to refactor code structure / move classes"
+
+**Use**: [code-organization](code-organization/SKILL.md)
+
+This skill enforces "Directory X contains ONLY class type X", proper DDD naming, and provides a refactoring checklist.
+
+**ALSO**: Check [deptrac-fixer](deptrac-fixer/SKILL.md) if refactoring involves layer boundaries.
+**ALSO**: Check [complexity-management](complexity-management/SKILL.md) if refactoring to reduce complexity.
+
+---
+
+### "I have hardcoded config values (TTLs, timeouts, limits) in source code"
+
+**Use**: [code-organization](code-organization/SKILL.md)
+
+This skill includes guidance on extracting hardcoded constants to `.env` parameters and Symfony `%env()%` bindings.
+
+**NOT**: ci-workflow (that runs checks but doesn't guide extraction)
+
+---
+
 ### "I need to understand what quality metrics are protected"
 
 **Use**: [quality-standards](quality-standards/SKILL.md)
@@ -211,7 +240,7 @@ This skill guides entity modification with Doctrine ODM.
 
 **Use**: [openapi-development](openapi-development/SKILL.md)
 
-This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo's validation commands.
+This skill covers OpenAPI factories, processors, and the repo's validation commands.
 
 ---
 
@@ -247,26 +276,34 @@ This skill guides updating workspace.dsl when adding components or changing arch
                     ▼            ▼            ▼
            complexity-    deptrac-fixer   testing-workflow
            management           │               │
-                                ▼               ▼
-                      implementing-ddd-   load-testing
-                        architecture      (performance)
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-       database-                      structurizr-
-        migrations                    architecture-sync
+                 │              ▼               ▼
+                 │    implementing-ddd-   load-testing
+                 │      architecture      (performance)
+                 │            │
+                 │  ┌─────────┴───────────────┐
+                 ▼  ▼                         ▼
+          code-organization            structurizr-
+          (refactoring &               architecture-sync
+           config extraction)
+                 │
+     ┌───────────┴───────────┐
+     ▼                       ▼
+database-              ci-workflow
+ migrations            (validation)
 ```
 
 ## Common Confusions
 
-| Confusion                                      | Clarification                                                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                 |
-| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing |
-| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management    |
-| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                      |
-| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing |
-| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync      |
+| Confusion                                      | Clarification                                                                                                                    |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                    |
+| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                    |
+| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                       |
+| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                         |
+| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                    |
+| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                         |
+| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer               |
+| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management |
 
 ## Multiple Skills for One Task
 
@@ -296,3 +333,11 @@ Some tasks benefit from multiple skills:
 2. **load-testing** - Create performance tests
 3. **complexity-management** - Reduce code complexity
 4. **ci-workflow** - Ensure quality maintained
+
+### Refactoring existing code:
+
+1. **code-organization** - Verify/fix directory placement, naming, extract hardcoded configs
+2. **complexity-management** - Reduce complexity if needed
+3. **deptrac-fixer** - Verify architecture boundaries after moves
+4. **testing-workflow** - Ensure tests still pass and cover refactored code
+5. **ci-workflow** - Validate everything

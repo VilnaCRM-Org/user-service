@@ -56,14 +56,17 @@ make ci
 
 Identify failing check from output and apply fix:
 
-| Check           | Command                       | Fix                                                       |
-| --------------- | ----------------------------- | --------------------------------------------------------- |
-| Code style      | `make phpcsfixer`             | Apply auto-fixes                                          |
-| Static analysis | `make psalm`                  | Fix type errors                                           |
-| Quality metrics | `make phpinsights`            | Reduce complexity, fix architecture                       |
-| Tests           | `make unit-tests`             | Debug failing tests                                       |
-| Mutations       | `make infection`              | Add missing test cases                                    |
-| Config drift    | `make validate-configuration` | Revert locked-file edits, or use exception workflow below |
+| Check           | Command            | Fix                                 | Companion Skill                                            |
+| --------------- | ------------------ | ----------------------------------- | ---------------------------------------------------------- |
+| Code style      | `make phpcsfixer`  | Apply auto-fixes                    | -                                                          |
+| Static analysis | `make psalm`       | Fix type errors                     | -                                                          |
+| Quality metrics | `make phpinsights` | Reduce complexity, fix architecture | [complexity-management](../complexity-management/SKILL.md) |
+| Architecture    | `make deptrac`     | Fix layer boundary violations       | [deptrac-fixer](../deptrac-fixer/SKILL.md)                 |
+| Organization    | `make psalm`       | Fix naming, directory placement     | [code-organization](../code-organization/SKILL.md)         |
+| Tests           | `make unit-tests`  | Debug failing tests                 | [testing-workflow](../testing-workflow/SKILL.md)           |
+| Mutations       | `make infection`   | Add missing test cases              | [testing-workflow](../testing-workflow/SKILL.md)           |
+
+**Refactoring during fixes**: If CI failures reveal structural issues (wrong directory, vague names, hardcoded config), consult the [code-organization](../code-organization/SKILL.md) skill before applying fixes.
 
 ### Step 4: Re-run
 
@@ -72,22 +75,6 @@ make ci
 ```
 
 Repeat Steps 2-4 until success message appears.
-
-### Locked Configuration Exception Workflow
-
-If CI fails with `Modification of locked configuration file is not allowed`:
-
-1. Check whether the user explicitly requested a locked-config change (for example `deptrac.yaml`).
-2. If **no**, treat it as accidental drift:
-   - Revert locked-file edits.
-   - Re-run `make ci`.
-3. If **yes**, follow exception handling:
-   - Keep changes in a dedicated config-governance PR (no unrelated code changes).
-   - Report the failing command output as expected evidence.
-   - Escalate for human approval to merge; autonomous agents must not self-approve or self-merge failed CI.
-   - Include rationale: reason for change, impact on quality gates, rollback plan.
-
-Do not normalize red CI merges as routine behavior.
 
 ## Alternative Commands
 
@@ -114,8 +101,7 @@ Do not normalize red CI merges as routine behavior.
 - Skip failing checks
 - Commit without "✅ CI checks successfully passed!" message
 - Run commands outside Docker container (use `make` or `docker compose exec php`)
-- Edit locked quality config files unless the task explicitly requires a governed config change
-- Present a failed CI run as "complete" without marking it as a human exception
+- Add suppression/ignore annotations to silence PHPMD/PHPInsights/Infection/Psalm/PHPStan/PHPCS failures
 
 ## Format (Output)
 
@@ -133,10 +119,17 @@ Do not normalize red CI merges as routine behavior.
 - [ ] Zero test failures
 - [ ] Zero escaped mutants
 - [ ] No quality threshold decreased
-- [ ] Locked config files unchanged, or human exception path explicitly documented
 
 ## Rollback
 
 If parallel execution causes issues:
 
 1. Use `make ci-sequential` for the original sequential behavior
+
+## Related Skills
+
+- [code-organization](../code-organization/SKILL.md) - Consult when CI failures reveal structural/naming issues or hardcoded configs
+- [complexity-management](../complexity-management/SKILL.md) - Reduce cyclomatic complexity when PHPInsights fails
+- [deptrac-fixer](../deptrac-fixer/SKILL.md) - Fix architectural boundary violations
+- [testing-workflow](../testing-workflow/SKILL.md) - Debug specific test failures or mutation issues
+- [quality-standards](../quality-standards/SKILL.md) - Overview of all protected thresholds

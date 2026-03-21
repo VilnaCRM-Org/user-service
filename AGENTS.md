@@ -427,6 +427,7 @@ config/
 - Strengthen tests for escaped mutants or coverage drops
 - Respect DDD/CQRS boundaries; keep Domain pure
 - Use Faker for all test data (`tests/Unit/UnitTestCase.php`, `tests/Integration/IntegrationTestCase.php`)
+- Never hide problems with suppression/ignore annotations (PHPMD, PHPInsights, Infection, Psalm, PHPStan, PHPCS)
 
 ## Additional Development Guidelines
 
@@ -434,6 +435,12 @@ config/
 
 - **MANDATORY**: Remove inline comments; write self-explanatory code with clear naming.
 - Extract helper methods instead of using comments for explanation.
+
+### Suppressions and Ignore Directives
+
+- **MANDATORY**: Do not use suppression or ignore annotations/directives to make checks pass.
+- Forbidden examples: `@SuppressWarnings(PHPMD.*)`, `@infection-ignore*`, `@codeCoverageIgnore*`, `@psalm-suppress`, `@phpstan-ignore*`, `phpcs:ignore`, `@phpinsights-ignore*`.
+- Fix the root cause in code/tests/architecture instead of muting tools.
 
 ### Symfony & API Platform Built-ins First
 

@@ -22,18 +22,27 @@ final readonly class PasswordResetRequestsMetric extends EndpointOperationBusine
         parent::__construct($value, new MetricUnit(MetricUnit::COUNT));
     }
 
+    /**
+     * @psalm-return 'PasswordResetRequests'
+     */
     #[\Override]
     public function name(): string
     {
         return 'PasswordResetRequests';
     }
 
+    /**
+     * @psalm-return 'User'
+     */
     #[\Override]
     protected function endpoint(): string
     {
         return self::ENDPOINT;
     }
 
+    /**
+     * @psalm-return 'request-password-reset'
+     */
     #[\Override]
     protected function operation(): string
     {

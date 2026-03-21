@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver;
 
-use App\Shared\Application\Resolver\Source\ArrayEmailSource;
-use App\Shared\Application\Resolver\Source\BatchEmailSource;
-use App\Shared\Application\Resolver\Source\ObjectMethodEmailSource;
-use App\Shared\Application\Resolver\Source\ObjectPropertyEmailSource;
+use App\Shared\Application\Resolver\Extractor\ArrayEmailExtractor;
+use App\Shared\Application\Resolver\Extractor\BatchEmailExtractor;
+use App\Shared\Application\Resolver\Extractor\ObjectMethodEmailExtractor;
+use App\Shared\Application\Resolver\Extractor\ObjectPropertyEmailExtractor;
 
 final class BatchEmailResolver
 {
     /**
-     * @var array<BatchEmailSource>
+     * @var array<BatchEmailExtractor>
      */
     private readonly array $sources;
 
     /**
-     * @param array<BatchEmailSource> $sources
+     * @param array<BatchEmailExtractor> $sources
      */
     public function __construct(array $sources = [])
     {
         $this->sources = $sources !== [] ? $sources : [
-            new ArrayEmailSource(),
-            new ObjectMethodEmailSource('getEmail'),
-            new ObjectPropertyEmailSource('email'),
+            new ArrayEmailExtractor(),
+            new ObjectMethodEmailExtractor('getEmail'),
+            new ObjectPropertyEmailExtractor('email'),
         ];
     }
 
@@ -37,7 +37,7 @@ final class BatchEmailResolver
     {
         $candidates = array_filter(
             array_map(
-                static fn (BatchEmailSource $source): string => trim(
+                static fn (BatchEmailExtractor $source): string => trim(
                     (string) $source->extract($entry)
                 ),
                 $this->sources

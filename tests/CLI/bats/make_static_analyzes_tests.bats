@@ -6,6 +6,7 @@ load 'bats-assert/load'
 @test "make phpcsfixer command executes" {
   run make phpcsfixer
   assert_success
+  assert_output --partial "php-cs-fixer fix"
   assert_output --partial "Running analysis on"
 }
 

@@ -1,0 +1,5 @@
+services:
+  php:
+    environment:
+      APP_ENV: schemathesis
+      CADDY_PHP_APP_ENV: schemathesis

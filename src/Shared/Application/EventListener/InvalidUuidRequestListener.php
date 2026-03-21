@@ -43,11 +43,15 @@ final class InvalidUuidRequestListener
 
     private function supports(string $path, mixed $id): bool
     {
-        return match (true) {
-            !str_starts_with($path, self::USER_PATH_PREFIX) => false,
-            !is_string($id) => false,
-            default => !$this->uuidValidator->validate($id),
-        };
+        if (!str_starts_with($path, self::USER_PATH_PREFIX)) {
+            return false;
+        }
+
+        if (!is_string($id)) {
+            return false;
+        }
+
+        return !$this->uuidValidator->validate($id);
     }
 
     private function createNotFoundResponse(string $message): JsonResponse
