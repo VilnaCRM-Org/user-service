@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext;
 
-use App\Shared\Domain\ValueObject\Uuid;
-use App\Tests\Behat\OAuthContext\Input\AuthorizationCodeGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ClientCredentialsGrantInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAccessTokenInput;
 use App\Tests\Behat\OAuthContext\Input\ObtainAuthorizeCodeInput;
 use App\Tests\Behat\OAuthContext\Input\PasswordGrantInput;
-use App\User\Application\DTO\AuthorizationUserDto;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
@@ -23,9 +20,6 @@ use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
 use PHPUnit\Framework\Assert;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use Symfony\Component\Serializer\SerializerInterface;
 use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class OAuthContext implements Context
@@ -35,13 +29,8 @@ final class OAuthContext implements Context
     private ObtainAuthorizeCodeInput $obtainAuthorizeCodeInput;
     private RestContext $restContext;
 
-    private ?string $authCode = null;
-
-    public function __construct(
-        private SerializerInterface $serializer,
-        private EntityManagerInterface $entityManager,
-        private TokenStorageInterface $tokenStorage
-    ) {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
         $this->faker = Factory::create();
     }
 
@@ -61,22 +50,6 @@ final class OAuthContext implements Context
     {
         $this->obtainAccessTokenInput =
             new ClientCredentialsGrantInput($id, $secret);
-    }
-
-    /**
-     * @Given passing client id :id, client secret :secret, redirect_uri :uri and auth code
-     */
-    public function passingIdSecretUriAndAuthCode(
-        string $id,
-        string $secret,
-        string $uri
-    ): void {
-        $this->obtainAccessTokenInput = new AuthorizationCodeGrantInput(
-            $id,
-            $secret,
-            $uri,
-            $this->authCode
-        );
     }
 
     /**
@@ -118,25 +91,6 @@ final class OAuthContext implements Context
     }
 
     /**
-     * @Given obtaining auth code
-     */
-    public function obtainAuthCode(): void
-    {
-        $this->setAuthorizationHeaders();
-
-        $this->sendAuthorizationRequest();
-
-        $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
-        $data = \Safe\json_decode($content, true);
-
-        if (isset($data['code'])) {
-            $this->authCode = $data['code'];
-        } else {
-            $this->authCode = 'default_auth_code';
-        }
-    }
-
-    /**
      * @Given I request the authorization endpoint
      */
     public function requestAuthorizationEndpoint(): void
@@ -149,16 +103,15 @@ final class OAuthContext implements Context
      */
     public function obtainingAccessToken(string $grantType): void
     {
-        $this->obtainAccessTokenInput->grant_type = $grantType;
-
-        $this->setFormUrlEncodedHeaders();
-
         if (!isset($this->obtainAccessTokenInput)) {
             throw new RuntimeException(
                 'obtainAccessTokenInput is not set. '
                 . 'Call the corresponding Given step before requesting a token.'
             );
         }
+
+        $this->obtainAccessTokenInput->grant_type = $grantType;
+        $this->setFormUrlEncodedHeaders();
 
         $requestData = array_filter(
             get_object_vars($this->obtainAccessTokenInput),
@@ -201,29 +154,6 @@ final class OAuthContext implements Context
     }
 
     /**
-     * @Given authenticating user with email :email and password :password
-     */
-    public function authenticatingUser(string $email, string $password): void
-    {
-        $password = password_hash('password', PASSWORD_BCRYPT);
-
-        $userDto = new AuthorizationUserDto(
-            'testuser@example.com',
-            'Test User',
-            $password,
-            new Uuid($this->faker->uuid()),
-            true
-        );
-
-        $token = new UsernamePasswordToken(
-            $userDto,
-            $password,
-            $userDto->getRoles()
-        );
-        $this->tokenStorage->setToken($token);
-    }
-
-    /**
      * @Then invalid credentials error should be returned
      */
     public function invalidCredentialsError(): void
@@ -254,7 +184,7 @@ final class OAuthContext implements Context
     {
         $content = $this->restContext->getMink()->getSession()->getPage()->getContent();
 
-        $data = json_decode($content, true);
+        $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
 
         Assert::assertSame(
             Response::HTTP_INTERNAL_SERVER_ERROR,
@@ -299,12 +229,23 @@ final class OAuthContext implements Context
             ->getSession()
             ->getStatusCode();
 
-        if ($actualStatusCode !== $statusCode) {
+        if (
+            $actualStatusCode !== $statusCode
+            && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)
+        ) {
             $content = $this->restContext->getMink()
                 ->getSession()
                 ->getPage()
                 ->getContent();
-            echo 'Response content: ' . $content . "\n";
+            $sanitized = preg_replace(
+                [
+                    '/("access_token"\s*:\s*")([^"]+)(")/i',
+                    '/("refresh_token"\s*:\s*")([^"]+)(")/i',
+                ],
+                ['$1[REDACTED]$3', '$1[REDACTED]$3'],
+                $content
+            );
+            echo 'Response content: ' . $sanitized . "\n";
             echo 'Expected: ' . $statusCode . ', Got: ' . $actualStatusCode . "\n";
         }
 

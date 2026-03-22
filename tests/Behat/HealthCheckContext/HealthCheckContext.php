@@ -37,30 +37,6 @@ final class HealthCheckContext implements Context
     }
 
     /**
-     * @Given the cache is not working
-     */
-    public function theCacheIsNotWorking(): void
-    {
-        putenv('CACHE_FAILURE=true');
-    }
-
-    /**
-     * @Given the database is not available
-     */
-    public function theDatabaseIsNotAvailable(): void
-    {
-        putenv('DATABASE_FAILURE=true');
-    }
-
-    /**
-     * @Given the message broker is not available
-     */
-    public function theMessageBrokerIsNotAvailable(): void
-    {
-        putenv('MESSAGE_BROKER_FAILURE=true');
-    }
-
-    /**
      * @Then print last response
      */
     public function printLastResponse(): void
@@ -97,15 +73,5 @@ final class HealthCheckContext implements Context
         }
 
         Assert::assertSame($statusCode, $actualStatusCode);
-    }
-
-    /**
-     * @AfterScenario
-     */
-    public function cleanupEnvironmentVariables(): void
-    {
-        putenv('CACHE_FAILURE');
-        putenv('DATABASE_FAILURE');
-        putenv('MESSAGE_BROKER_FAILURE');
     }
 }

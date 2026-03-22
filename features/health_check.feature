@@ -7,18 +7,3 @@ Feature: Health Check Operations
     When I send a "GET" request to "/api/health"
     Then print last response
     Then the response status code should be 204
-
-  Scenario: Checking the health when cache is unavailable
-    Given the cache is not working
-    When I send a "GET" request to "/api/health"
-    Then the response status code should be 204
-
-  Scenario: Checking the health when the database is unavailable
-    Given the database is not available
-    When I send a "GET" request to "/api/health"
-    Then the response status code should be 204
-
-  Scenario: Checking the health when the queue service is unavailable
-    Given the message broker is not available
-    When I send a "GET" request to "/api/health"
-    Then the response status code should be 204

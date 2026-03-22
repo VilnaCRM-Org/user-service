@@ -217,7 +217,10 @@ final class UserOperationsContext implements Context
             ->getSession()
             ->getStatusCode();
 
-        if ($actualStatusCode !== $statusCode) {
+        if (
+            $actualStatusCode !== $statusCode
+            && filter_var(getenv('BEHAT_DEBUG'), FILTER_VALIDATE_BOOLEAN)
+        ) {
             $content = $this->restContext->getMink()
                 ->getSession()
                 ->getPage()
