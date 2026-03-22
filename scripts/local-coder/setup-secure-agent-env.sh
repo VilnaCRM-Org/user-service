@@ -8,15 +8,11 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 # shellcheck source=scripts/local-coder/lib/workspace-secrets.sh
 . "${ROOT_DIR}/scripts/local-coder/lib/workspace-secrets.sh"
 
-for SETTINGS_FILE in \
-    "${ROOT_DIR}/.devcontainer/workspace-settings.env" \
-    "${ROOT_DIR}/.devcontainer/codespaces-settings.env"; do
-    if [ -f "${SETTINGS_FILE}" ]; then
-        # shellcheck disable=SC1090
-        . "${SETTINGS_FILE}"
-        break
-    fi
-done
+SETTINGS_FILE="${ROOT_DIR}/.devcontainer/workspace-settings.env"
+if [ -f "${SETTINGS_FILE}" ]; then
+    # shellcheck disable=SC1090
+    . "${SETTINGS_FILE}"
+fi
 
 readonly AGENT_ENV_DIR="${HOME}/.config/user-service"
 readonly AGENT_SECRETS_FILE="${AGENT_ENV_DIR}/agent-secrets.env"
@@ -29,7 +25,7 @@ readonly AGENT_PROFILE_END="# END USER-SERVICE AGENT ENV"
 readonly USER_NPM_GLOBAL_BIN="${HOME}/.npm-global/bin"
 
 : "${CODEX_NPM_PACKAGE:=@openai/codex}"
-: "${USER_SERVICE_BOOTSTRAP_STRICT:=${CODESPACES:-false}}"
+: "${USER_SERVICE_BOOTSTRAP_STRICT:=false}"
 
 : "${GH_HOST:=github.com}"
 : "${GH_GIT_PROTOCOL:=ssh}"
@@ -38,10 +34,6 @@ readonly USER_NPM_GLOBAL_BIN="${HOME}/.npm-global/bin"
 : "${WORKSPACE_GIT_IDENTITY_EMAIL:=info@vilnacrm.com}"
 : "${WORKSPACE_GIT_COMMITTER_NAME:=}"
 : "${WORKSPACE_GIT_COMMITTER_EMAIL:=}"
-: "${CODESPACE_GIT_IDENTITY_NAME:=${WORKSPACE_GIT_IDENTITY_NAME}}"
-: "${CODESPACE_GIT_IDENTITY_EMAIL:=${WORKSPACE_GIT_IDENTITY_EMAIL}}"
-: "${CODESPACE_GIT_COMMITTER_NAME:=${WORKSPACE_GIT_COMMITTER_NAME}}"
-: "${CODESPACE_GIT_COMMITTER_EMAIL:=${WORKSPACE_GIT_COMMITTER_EMAIL}}"
 
 TMP_FILES=()
 CS_GIT_IDENTITY_NAME=""

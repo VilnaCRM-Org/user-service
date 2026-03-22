@@ -8,15 +8,11 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 # shellcheck source=scripts/local-coder/lib/workspace-secrets.sh
 . "${ROOT_DIR}/scripts/local-coder/lib/workspace-secrets.sh"
 
-for SETTINGS_FILE in \
-    "${ROOT_DIR}/.devcontainer/workspace-settings.env" \
-    "${ROOT_DIR}/.devcontainer/codespaces-settings.env"; do
-    if [ -f "${SETTINGS_FILE}" ]; then
-        # shellcheck disable=SC1090
-        . "${SETTINGS_FILE}"
-        break
-    fi
-done
+SETTINGS_FILE="${ROOT_DIR}/.devcontainer/workspace-settings.env"
+if [ -f "${SETTINGS_FILE}" ]; then
+    # shellcheck disable=SC1090
+    . "${SETTINGS_FILE}"
+fi
 
 if [ -f "${HOME}/.config/user-service/agent-secrets.env" ]; then
     # shellcheck disable=SC1091
@@ -29,7 +25,7 @@ fi
 
 cs_load_host_workspace_secrets
 
-ORG="${1:-${WORKSPACE_GITHUB_ORG:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}}"
+ORG="${1:-${WORKSPACE_GITHUB_ORG:-VilnaCRM-Org}}"
 : "${CODEX_SMOKE_MODEL:=}"
 
 cs_require_command gh

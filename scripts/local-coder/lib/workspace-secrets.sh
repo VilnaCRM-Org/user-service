@@ -8,7 +8,7 @@ cs_load_host_workspace_secrets() {
     local token=""
     local token_file=""
 
-    if [ -z "${OPENAI_API_KEY:-}" ] && [ -f "${env_file}" ]; then
+    if [ -f "${env_file}" ]; then
         openai_value="$(
             env -i ENV_FILE="${env_file}" sh -c '. "$ENV_FILE" >/dev/null 2>&1; printf %s "${OPENAI_API_KEY:-}"'
         )"
@@ -17,21 +17,21 @@ cs_load_host_workspace_secrets() {
         fi
     fi
 
-    if [ -z "${GH_AUTOMATION_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-        for token_file in \
-            "${secrets_root}/gh_pat" \
-            "${secrets_root}/gh_token" \
-            "${secrets_root}/gh_user_token"; do
-            if [ ! -f "${token_file}" ]; then
-                continue
-            fi
-            token="$(tr -d '\r\n' < "${token_file}")"
-            if [ -n "${token}" ]; then
-                export GH_AUTOMATION_TOKEN="${token}"
-                break
-            fi
-        done
-    fi
+    for token_file in \
+        "${secrets_root}/gh_pat" \
+        "${secrets_root}/gh_token" \
+        "${secrets_root}/gh_user_token"; do
+        if [ ! -f "${token_file}" ]; then
+            continue
+        fi
+        token="$(tr -d '\r\n' < "${token_file}")"
+        if [ -n "${token}" ]; then
+            export GH_AUTOMATION_TOKEN="${token}"
+            export GH_TOKEN="${token}"
+            export GITHUB_TOKEN="${token}"
+            break
+        fi
+    done
 
     if [ -n "${GH_AUTOMATION_TOKEN:-}" ] && [ -z "${GH_TOKEN:-}" ]; then
         export GH_TOKEN="${GH_AUTOMATION_TOKEN}"

@@ -105,7 +105,6 @@ What `startup-smoke-tests.sh` checks:
 Repository-tracked defaults for GitHub and Codex bootstrap are stored in:
 
 - `.devcontainer/workspace-settings.env`
-- `.devcontainer/codespaces-settings.env`
 - `.devcontainer/post-create.sh`
 - `scripts/local-coder/setup-secure-agent-env.sh`
 
@@ -138,12 +137,10 @@ Notes:
 
 - secrets are never stored in git; keep them in workspace secrets
 - workspace secrets are provided directly to the container runtime
-- bootstrap does not persist plaintext credentials to disk
-- bootstrap only persists non-secret shell env sourcing in `~/.bashrc` and `~/.profile`
+- bootstrap persists required credentials into `~/.config/user-service/agent-secrets.env` with `chmod 600` for future shell sessions in the same workspace
 - no token values are written to repository files
 - if you do not provide `GH_AUTOMATION_TOKEN`, run interactive login:
   `gh auth login -h github.com -w && gh auth setup-git`
-- compatibility wrappers remain under `scripts/codespaces/*`, but the primary path is `scripts/local-coder/*`
 
 ## Using
 

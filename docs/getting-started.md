@@ -115,12 +115,11 @@ For autonomous AI coding in local workspaces, set workspace secrets:
 The default devcontainer bind mounts look for host-side directories under `${HOME}/.openclaw-host-secrets` and `${HOME}/.openclaw-host-codex`; in local Coder that usually resolves to `/home/coder/...`, and the bootstrap skips host secret or Codex auth sync when those sources are absent.
 
 These secrets are provided directly to the container runtime, so `gh`, `git`, and `codex` can use them in normal terminal sessions.
-The bootstrap does not persist plaintext copies of those credentials inside the workspace.
+The bootstrap persists required credentials into `~/.config/user-service/agent-secrets.env` with `chmod 600` so future login shells in the same workspace keep the same auth state.
 
 Non-secret defaults for GitHub CLI and Codex are persisted in git:
 
 - `.devcontainer/workspace-settings.env`
-- `.devcontainer/codespaces-settings.env`
 - `.devcontainer/post-create.sh`
 - `scripts/local-coder/setup-secure-agent-env.sh`
 

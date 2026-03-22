@@ -8,16 +8,11 @@ cd "${ROOT_DIR}"
 . "${ROOT_DIR}/scripts/local-coder/lib/workspace-secrets.sh"
 
 load_workspace_settings() {
-    local settings_file
-    for settings_file in \
-        "${ROOT_DIR}/.devcontainer/workspace-settings.env" \
-        "${ROOT_DIR}/.devcontainer/codespaces-settings.env"; do
-        if [ -f "${settings_file}" ]; then
-            # shellcheck disable=SC1090
-            . "${settings_file}"
-            break
-        fi
-    done
+    local settings_file="${ROOT_DIR}/.devcontainer/workspace-settings.env"
+    if [ -f "${settings_file}" ]; then
+        # shellcheck disable=SC1090
+        . "${settings_file}"
+    fi
 }
 
 load_workspace_settings
@@ -28,7 +23,7 @@ export OPENCLAW_WORKSPACE_ROOT="${ROOT_DIR}"
 export OPENCLAW_CODER_WORKSPACE_ROOT="${ROOT_DIR}"
 
 : "${DOCKER_API_VERSION:=}"
-: "${USER_SERVICE_BOOTSTRAP_STRICT:=${CODESPACES:-false}}"
+: "${USER_SERVICE_BOOTSTRAP_STRICT:=false}"
 
 if [ -z "${DOCKER_HOST:-}" ] && [ -S /var/run/docker-host.sock ]; then
     docker_sock_target="$(readlink -f /var/run/docker.sock 2>/dev/null || true)"
@@ -128,14 +123,19 @@ ensure_outer_workspace_repo_alias
 ensure_apt_packages make bats
 
 export GH_TOKEN_VAR="${GH_TOKEN_VAR:-GH_AUTOMATION_TOKEN}"
-export WORKSPACE_GITHUB_ORG="${WORKSPACE_GITHUB_ORG:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}"
-export CODESPACE_GITHUB_ORG="${CODESPACE_GITHUB_ORG:-${WORKSPACE_GITHUB_ORG}}"
+export WORKSPACE_GITHUB_ORG="${WORKSPACE_GITHUB_ORG:-VilnaCRM-Org}"
 
 agent_env_ok=true
 if ! bash scripts/local-coder/setup-secure-agent-env.sh; then
     agent_env_ok=false
     echo "Warning: secure agent bootstrap failed."
     echo "Set workspace secrets and rerun: bash scripts/local-coder/setup-secure-agent-env.sh"
+fi
+
+agent_env_file="${HOME}/.config/user-service/agent-secrets.env"
+if [ -f "${agent_env_file}" ]; then
+    # shellcheck disable=SC1091
+    . "${agent_env_file}"
 fi
 
 run_workspace_make() {
@@ -171,13 +171,26 @@ fi
 
 run_workspace_make start
 
+gh_auth_ready=false
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    gh_auth_ready=true
+fi
+
+codex_auth_ready=false
+if command -v codex >/dev/null 2>&1; then
+    if codex login status >/dev/null 2>&1 || [ -n "${OPENAI_API_KEY:-}" ]; then
+        codex_auth_ready=true
+    fi
+fi
+
 if [ "${agent_env_ok}" = true ] \
     && command -v bats >/dev/null 2>&1 \
     && command -v gh >/dev/null 2>&1 \
     && command -v codex >/dev/null 2>&1 \
-    && (gh auth status >/dev/null 2>&1 || codex login status >/dev/null 2>&1); then
+    && [ "${gh_auth_ready}" = true ] \
+    && [ "${codex_auth_ready}" = true ]; then
     gh auth setup-git >/dev/null 2>&1 || true
-    bash scripts/local-coder/startup-smoke-tests.sh "${WORKSPACE_GITHUB_ORG:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}"
+    bash scripts/local-coder/startup-smoke-tests.sh "${WORKSPACE_GITHUB_ORG:-VilnaCRM-Org}"
 else
     echo "Skipping startup smoke tests (workspace auth or test dependencies are not ready)."
 fi
