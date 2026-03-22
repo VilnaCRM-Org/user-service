@@ -53,7 +53,8 @@ endif
 # Variables for environment and commands
 FIXER_ENV = PHP_CS_FIXER_IGNORE_ENV=1
 PHP_CS_FIXER_CMD = php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
-COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
+COVERAGE_REPORT_FILE = /tmp/phpunit_coverage.txt
+COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text=$(COVERAGE_REPORT_FILE)
 
 GITHUB_HOST ?= github.com
 FORMAT ?= markdown
@@ -120,12 +121,13 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
+	@rm -f $(COVERAGE_REPORT_FILE) /tmp/phpunit_output.txt
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
 	@if grep -q "FAILURES!" /tmp/phpunit_output.txt; then \
 		echo "❌ TEST FAILURE: Some tests failed"; \
 		exit 1; \
 	fi
-	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' $(COVERAGE_REPORT_FILE) 2>/dev/null | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
 			echo "❌ COVERAGE FAILURE: Line coverage is $$coverage%, but 100% is required. Please cover all lines of code and achieve the 100% code coverage"; \

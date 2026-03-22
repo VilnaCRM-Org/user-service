@@ -57,13 +57,13 @@ Also, you can see architecture diagram using link below
 
 That's it. You should now be ready to use user service!
 
-### GitHub Codespaces
+### Local Coder Workspaces
 
-This repository ships with a built-in Codespaces definition in `.devcontainer/devcontainer.json`.
+This repository ships with a devcontainer setup that is intended to run inside a local Coder workspace.
 
-When a Codespace is created, the setup script:
+When a workspace is created, the setup script:
 
-- installs `claude` CLI
+- installs `codex` CLI
 - provides `gh` CLI
 - installs `bats` CLI for `make bats`
 - starts the Docker stack with `make start`
@@ -73,25 +73,25 @@ After startup, verify the environment:
 
 ```bash
 gh --version
-claude --version
+codex --version
 make help
 ```
 
 #### Secure setup for autonomous AI coding agents
 
-Use Codespaces secrets (do not commit credentials). Prefer repository-level Codespaces secrets for this repository:
+Use workspace secrets (do not commit credentials):
 
-- `MINIMAX_API_KEY`: MiniMax API key for Claude CLI (Anthropic-compatible mode)
+- `OPENAI_API_KEY`: OpenAI API key for Codex CLI
 - `GH_AUTOMATION_TOKEN`: GitHub token for non-interactive `gh` usage
 - bootstrap sets git identity for automated commits to:
   - `vilnacrm ai bot <info@vilnacrm.com>`
 
-The Codespace `post-create` step runs secure bootstrap automatically and then executes startup smoke tests. You can also run scripts manually:
+The workspace `post-create` step runs secure bootstrap automatically and then executes startup smoke tests. You can also run scripts manually:
 
 ```bash
-bash scripts/codespaces/setup-secure-agent-env.sh
-bash scripts/codespaces/startup-smoke-tests.sh VilnaCRM-Org
-bash scripts/codespaces/verify-gh-claude.sh VilnaCRM-Org
+bash scripts/local-coder/setup-secure-agent-env.sh
+bash scripts/local-coder/startup-smoke-tests.sh VilnaCRM-Org
+bash scripts/local-coder/verify-gh-codex.sh VilnaCRM-Org
 ```
 
 What `startup-smoke-tests.sh` checks:
@@ -99,67 +99,50 @@ What `startup-smoke-tests.sh` checks:
 - `gh` authentication is available
 - repository listing for `VilnaCRM-Org` works
 - `bats` CLI is available
-- `claude` can execute one non-interactive task with `MiniMax-M2.7`
+- `codex` can execute one non-interactive task
 
-Repository-tracked defaults for GitHub and Claude bootstrap are stored in:
+Repository-tracked defaults for GitHub and Codex bootstrap are stored in:
 
+- `.devcontainer/workspace-settings.env`
 - `.devcontainer/codespaces-settings.env`
 - `.devcontainer/post-create.sh`
-- `scripts/codespaces/setup-secure-agent-env.sh`
+- `scripts/local-coder/setup-secure-agent-env.sh`
 
-What `verify-gh-claude.sh` checks:
+What `verify-gh-codex.sh` checks:
 
 - GitHub auth works
 - repository listing for `VilnaCRM-Org` works
 - current PR checks can be queried via `gh`
 - current branch supports `git push --dry-run`
-- `claude` can run a basic non-interactive smoke task via MiniMax M2.7
+- `codex` can run a basic non-interactive smoke task
 - optional tool-calling smoke checks can be enforced when autonomous mode is explicitly enabled
 
-Claude is configured directly (no `make` wrapper) with Anthropic-compatible MiniMax settings:
-
-```json
-{
-  "model": "MiniMax-M2.7",
-  "permissions": {
-    "defaultMode": "default",
-    "ask": []
-  },
-  "env": {
-    "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
-    "ANTHROPIC_MODEL": "MiniMax-M2.7"
-  }
-}
-```
-
-Default bootstrap uses safer Claude settings (`CLAUDE_PERMISSION_MODE=default`) with model `MiniMax-M2.7`.
-If you need autonomous tool execution in a Codespace, set overrides before bootstrap:
+Codex uses the local login profile when available, or `OPENAI_API_KEY` from workspace secrets as fallback.
+If you need autonomous tool execution in a workspace, set overrides before bootstrap:
 
 ```bash
-export CLAUDE_PERMISSION_MODE=bypassPermissions
-export CLAUDE_ALLOW_UNSAFE_MODE=1
-export CLAUDE_TOOL_SMOKE_MODE=enforce
+export CODEX_TOOL_SMOKE_MODE=enforce
 ```
 
 Use autonomous mode only in trusted environments.
 
-Run Claude directly:
+Run Codex directly:
 
 ```bash
-claude -p --model MiniMax-M2.7 "Reply with exactly one line: claude-ok"
-claude "Refactor user update flow to reduce duplication"
+codex exec "Reply with exactly one line: codex-ok"
+codex exec "Refactor user update flow to reduce duplication"
 ```
 
 Notes:
 
-- secrets are never stored in git; keep them in Codespaces secrets
-- Codespaces secrets are provided directly by Codespaces to the container runtime
+- secrets are never stored in git; keep them in workspace secrets
+- workspace secrets are provided directly to the container runtime
 - bootstrap does not persist plaintext credentials to disk
-- bootstrap only persists non-secret Claude defaults in `~/.claude/settings.json` and non-secret shell aliases in `~/.bashrc`
+- bootstrap only persists non-secret shell env sourcing in `~/.bashrc` and `~/.profile`
 - no token values are written to repository files
 - if you do not provide `GH_AUTOMATION_TOKEN`, run interactive login:
   `gh auth login -h github.com -w && gh auth setup-git`
-- this setup is Claude + MiniMax M2.7 only
+- compatibility wrappers remain under `scripts/codespaces/*`, but the primary path is `scripts/local-coder/*`
 
 ## Using
 
