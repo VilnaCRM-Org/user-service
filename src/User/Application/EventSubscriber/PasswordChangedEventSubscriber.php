@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\User\Application\EventSubscriber;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\User\Application\Factory\EmailFactoryInterface;
 use App\User\Domain\Event\PasswordChangedEvent;
-use App\User\Infrastructure\Factory\EmailFactoryInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -36,8 +35,11 @@ final readonly class PasswordChangedEventSubscriber implements
     }
 
     /**
-     * @return array<DomainEvent>
+     * @return array<string>
+     *
+     * @psalm-return list{PasswordChangedEvent::class}
      */
+    #[\Override]
     public function subscribedTo(): array
     {
         return [PasswordChangedEvent::class];

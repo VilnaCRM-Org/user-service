@@ -13,7 +13,8 @@
 
 ## Possibilities
 
-- Modern PHP stack for services: [API Platform 3](https://api-platform.com/), PHP 8, [Symfony 7](https://symfony.com/)
+- Modern PHP stack for services: [API Platform 4](https://api-platform.com/), PHP 8.3+, [Symfony 7](https://symfony.com/)
+- [MongoDB](https://www.mongodb.com/) with [Doctrine MongoDB ODM](https://www.doctrine-project.org/projects/mongodb-odm.html) for flexible, schemaless data persistence
 - [Hexagonal Architecture, DDD & CQRS in PHP](https://github.com/CodelyTV/php-ddd-example)
 - Built-in docker environment and convenient `make` cli command
 - A lot of CI checks to ensure the highest code quality that can be ([Psalm](https://psalm.dev/), [PHPInsights](https://phpinsights.com/), Security checks, Code style fixer)
@@ -42,10 +43,6 @@ Use `make` command to automatically install all needed dependencies
 
 > make install
 
-Use `make` command to run migrations
-
-> make doctrine-migrations-migrate
-
 Go to browser and open the link below to access REST API docs
 
 > https://localhost/api/docs
@@ -59,6 +56,91 @@ Also, you can see architecture diagram using link below
 > http://localhost:8080/workspace/diagrams
 
 That's it. You should now be ready to use user service!
+
+### Local Coder Workspaces
+
+This repository ships with a devcontainer setup that is intended to run inside a local Coder workspace.
+
+When a workspace is created, the setup script:
+
+- installs `codex` CLI
+- provides `gh` CLI
+- installs `bats` CLI for `make bats`
+- starts the Docker stack with `make start`
+- installs PHP dependencies with `make install` if needed
+
+After startup, verify the environment:
+
+```bash
+gh --version
+codex --version
+make help
+```
+
+#### Secure setup for autonomous AI coding agents
+
+Use workspace secrets (do not commit credentials):
+The default devcontainer bind mounts look for host-side directories under `${HOME}/.openclaw-host-secrets` and `${HOME}/.openclaw-host-codex`; in local Coder this is typically `/home/coder/...`, and the bootstrap skips host secret or Codex auth sync when those sources are absent.
+
+- `OPENAI_API_KEY`: OpenAI API key for Codex CLI
+- `GH_AUTOMATION_TOKEN`: GitHub token for non-interactive `gh` usage
+- bootstrap sets git identity for automated commits to:
+  - `vilnacrm ai bot <info@vilnacrm.com>`
+
+The workspace `post-create` step runs secure bootstrap automatically and only executes `scripts/local-coder/startup-smoke-tests.sh` when secure bootstrap succeeds and the required tools/auth are ready; otherwise it prints a skip message. You can also run scripts manually:
+
+```bash
+bash scripts/local-coder/setup-secure-agent-env.sh
+bash scripts/local-coder/startup-smoke-tests.sh VilnaCRM-Org
+bash scripts/local-coder/verify-gh-codex.sh VilnaCRM-Org
+```
+
+What `startup-smoke-tests.sh` checks:
+
+- `gh` authentication is available
+- repository listing for `VilnaCRM-Org` works
+- `bats` CLI is available
+- `codex` can execute one non-interactive task
+
+Repository-tracked defaults for GitHub and Codex bootstrap are stored in:
+
+- `.devcontainer/workspace-settings.env`
+- `.devcontainer/post-create.sh`
+- `scripts/local-coder/setup-secure-agent-env.sh`
+
+What `verify-gh-codex.sh` checks:
+
+- GitHub auth works
+- repository listing for `VilnaCRM-Org` works
+- current PR checks can be queried via `gh`
+- current branch supports `git push --dry-run`
+- `codex` can run a basic non-interactive smoke task
+- tool-calling smoke checks are skipped by default and can be enforced when autonomous mode is explicitly enabled
+
+Codex uses the local login profile when available, or `OPENAI_API_KEY` from workspace secrets as fallback.
+If you need autonomous tool execution in a workspace, set overrides before bootstrap:
+
+```bash
+export CODEX_TOOL_SMOKE_MODE=enforce
+```
+
+Use autonomous mode only in trusted environments.
+
+Run Codex directly:
+
+```bash
+codex exec "Reply with exactly one line: codex-ok"
+codex exec "Refactor user update flow to reduce duplication"
+```
+
+Notes:
+
+- secrets are never stored in git; keep them in workspace secrets
+- workspace secrets are provided directly to the container runtime
+- bootstrap persists required credentials into `~/.config/user-service/agent-secrets.env` with `chmod 600` for future shell sessions in the same workspace
+- no token values are written to repository files
+- if you do not provide `GH_AUTOMATION_TOKEN`, run interactive login:
+  `gh auth login -h github.com -w && gh auth setup-git`
 
 ## Using
 
@@ -82,9 +164,7 @@ check-security               Checks security issues in project dependencies. Wit
 commands                     List all Symfony commands
 composer-validate            The validate command validates a given composer.json and composer.lock
 coverage                     Create the code coverage report with PHPUnit
-create-oauth-client          Run mutation testing
-doctrine-migrations-generate Generates a blank migration class
-doctrine-migrations-migrate  Executes a migration to a specified version or the latest available version
+create-oauth-client          Create OAuth client for testing
 e2e-tests                  Run end-to-end tests
 down                         Stop the docker hub
 infection                  Run mutation testing
@@ -105,6 +185,7 @@ stop                         Stop docker and the Symfony binary server
 smoke-load-tests           Run load tests with minimal load
 spike-load-tests           Run load tests with a spike of extreme load
 up                           Start the docker hub (PHP, caddy)
+validate-configuration       Validate configuration structure and detect locked file modifications
 ```
 
 ## Documentation

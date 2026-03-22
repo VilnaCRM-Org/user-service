@@ -16,6 +16,8 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserInterface;
 
+    public function findById(string $id): ?UserInterface;
+
     /**
      * @param User $user
      */
@@ -27,13 +29,9 @@ interface UserRepositoryInterface
     public function saveBatch(array $users): void;
 
     /**
-     * @param string $id
-     *
-     * @return User
+     * @param array<User> $users
      */
-    public function find(
-        mixed $id,
-        ?int $lockMode = null,
-        ?int $lockVersion = null
-    ): ?object;
+    public function deleteBatch(array $users): void;
+
+    public function deleteAll(): void;
 }

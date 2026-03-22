@@ -14,6 +14,7 @@ final class UserFactoryTest extends UnitTestCase
 {
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

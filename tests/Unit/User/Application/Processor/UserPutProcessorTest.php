@@ -32,6 +32,7 @@ final class UserPutProcessorTest extends UnitTestCase
     private GetUserQueryHandler $getUserQueryHandler;
     private UserPutProcessor $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -8,8 +8,8 @@ use ApiPlatform\OpenApi\Model\Header as ApiPlatformHeader;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ArrayContextBuilder;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
-use App\Shared\Application\OpenApi\Builder\Header;
-use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ArrayResponseBuilderTest extends UnitTestCase
@@ -26,6 +26,7 @@ final class ArrayResponseBuilderTest extends UnitTestCase
     private string $headerFormat;
     private string $headerExample;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

@@ -10,7 +10,7 @@ final class CreateUserBatchInput extends RequestInput
      * @param array<array<string>> $users
      */
     public function __construct(
-        public ?array $users = []
+        private ?array $users = []
     ) {
     }
 

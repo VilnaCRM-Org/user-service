@@ -30,6 +30,16 @@ final readonly class RegisterUserCommandHandler implements
 
     public function __invoke(RegisterUserCommand $command): void
     {
+        $existingUser = $this->userRepository->findByEmail($command->email);
+
+        if ($existingUser !== null) {
+            $command->setResponse(
+                new RegisterUserCommandResponse($existingUser)
+            );
+
+            return;
+        }
+
         $user = $this->transformer->transformToUser($command);
 
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);

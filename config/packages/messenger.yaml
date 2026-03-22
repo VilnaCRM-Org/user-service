@@ -22,10 +22,33 @@ framework:
       insert-user-batch:
         dsn: '%env(INSERT_USER_BATCH_TRANSPORT_DSN)%'
 
+      # Main transport for async domain events (AP from CAP - resilient dispatch)
+      domain-events:
+        dsn: '%env(DOMAIN_EVENTS_TRANSPORT_DSN)%'
+        serializer: messenger.transport.symfony_serializer
+        options:
+          auto_setup: true
+
+        retry_strategy:
+          max_retries: 3
+          # milliseconds delay
+          delay: 60000
+          multiplier: 2
+          max_delay: 0
+
+        failure_transport: failed-domain-events
+
+      # Infinite retry transport for failed domain events (AP theorem - eventual delivery)
+      failed-domain-events:
+        dsn: '%env(FAILED_DOMAIN_EVENTS_TRANSPORT_DSN)%'
+        retry_strategy:
+          service: 'App\Shared\Infrastructure\RetryStrategy\InfiniteRetryStrategy'
+
     routing:
       # Route your messages to the transports
       'Symfony\Component\Mailer\Messenger\SendEmailMessage': send-email
       'App\User\Application\Message\UserRegisteredMessage': insert-user-batch
+      'App\Shared\Infrastructure\Bus\Event\Async\DomainEventEnvelope': domain-events
 
 when@test:
   framework:
@@ -35,3 +58,5 @@ when@test:
           dsn: '%env(REDIS_URL)%'
           options:
             consumer: '%env(MESSENGER_CONSUMER_NAME)%'
+        domain-events: 'in-memory://'
+        failed-domain-events: 'in-memory://'

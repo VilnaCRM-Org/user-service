@@ -14,10 +14,18 @@ final class UpdateUserMutationInputTransformer
     public function transform(array $args): UpdateUserMutationInput
     {
         return new UpdateUserMutationInput(
-            $args['password'] ?? null,
-            $args['initials'] ?? null,
-            $args['email'] ?? null,
-            $args['newPassword'] ?? null
+            $this->value($args, 'password'),
+            $this->value($args, 'initials'),
+            $this->value($args, 'email'),
+            $this->value($args, 'newPassword')
         );
+    }
+
+    /**
+     * @param array<string, string> $args
+     */
+    private function value(array $args, string $key): ?string
+    {
+        return array_key_exists($key, $args) ? $args[$key] : null;
     }
 }

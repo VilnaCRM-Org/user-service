@@ -11,7 +11,7 @@ default:
         environment: test
         class: App\Shared\Kernel
     TwentytwoLabs\BehatOpenApiExtension:
-      schemaFile: '%paths.base%/.github/openapi-spec/spec.yaml' 
+      schemaFile: '%paths.base%/.github/openapi-spec/spec.yaml'
     Behat\MinkExtension:
       base_url: "http://localhost:8081"
       sessions:
@@ -27,8 +27,14 @@ default:
       paths: ['%paths.base%/features/oauth.feature']
       contexts:
         - App\Tests\Behat\UserContext\UserContext
-        - App\Tests\Behat\OAuthContext\OAuthContext
-        - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
+        - App\Tests\Behat\OAuthContext\OAuthStateContext
+        - App\Tests\Behat\OAuthContext\OAuthClientContext
+        - App\Tests\Behat\OAuthContext\OAuthAuthorizationSetupContext
+        - App\Tests\Behat\OAuthContext\OAuthAuthorizationContext
+        - App\Tests\Behat\OAuthContext\OAuthTokenContext
+        - App\Tests\Behat\OAuthContext\OAuthErrorContext
+        - App\Tests\Behat\OAuthContext\OAuthAuthorizationErrorContext
+        - App\Tests\Behat\OAuthContext\OAuthAuthenticationContext
     user_operations:
       paths: ['%paths.base%/features/user_operations.feature']
       contexts:

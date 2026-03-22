@@ -29,6 +29,7 @@ final class RegisterUserProcessorTest extends UnitTestCase
     private SignUpCommandFactoryInterface $mockSignUpCommandFactory;
     private RegisterUserProcessor $processor;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

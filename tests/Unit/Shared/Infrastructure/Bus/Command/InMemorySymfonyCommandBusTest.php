@@ -22,6 +22,7 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
      */
     private array $commandHandlers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

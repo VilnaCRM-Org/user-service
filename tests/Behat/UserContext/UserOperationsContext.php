@@ -184,7 +184,7 @@ final class UserOperationsContext implements Context
     public function userShouldBeTimedOut(): void
     {
         $content = $this->getPageContent();
-        Assert::assertStringContainsString('Too Many Requests', $content);
+        Assert::assertStringContainsString('Cannot send new email till', $content);
     }
 
     /**
@@ -281,7 +281,13 @@ final class UserOperationsContext implements Context
             return '';
         }
 
-        return $this->requestBody->getJson();
+        $payload = array_filter(
+            $this->requestBody->toArray(),
+            static fn (array|bool|float|int|object|string|null $value): bool => $value !== null
+                && (!is_string($value) || $value !== '')
+        );
+
+        return json_encode((object) $payload, JSON_THROW_ON_ERROR);
     }
 
     private function sendRequest(

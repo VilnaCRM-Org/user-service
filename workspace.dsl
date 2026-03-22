@@ -90,10 +90,10 @@ workspace {
                     tags "Database"
                 }
                 cache = component "Cache" "Stores confirmation token, doctrine query cache" "Elasticache" {
-                    tags "Database"
+                    tags "Cache"
                 }
                 sqs = component "AWS SQS" "Message broker for sending emails" "AWS SQS" {
-                    tags "Database"
+                    tags "MessageBroker"
                 }
 
                 registerUserProcessor -> registerUserCommandHandler "dispatches RegisterUserCommand"
@@ -138,6 +138,16 @@ workspace {
             element "Database" {
                 color white
                 shape cylinder
+                background #34abeb
+            }
+            element "Cache" {
+                color white
+                shape cylinder
+                background #34abeb
+            }
+            element "MessageBroker" {
+                color white
+                shape pipe
                 background #34abeb
             }
         }

@@ -11,6 +11,7 @@ use App\User\Domain\ValueObject\UserUpdate;
 final class UpdateUserCommandFactory implements
     UpdateUserCommandFactoryInterface
 {
+    #[\Override]
     public function create(
         UserInterface $user,
         UserUpdate $updateData

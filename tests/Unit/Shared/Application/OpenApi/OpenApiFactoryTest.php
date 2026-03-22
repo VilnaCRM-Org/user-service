@@ -7,152 +7,209 @@ namespace App\Tests\Unit\Shared\Application\OpenApi;
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Info;
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
-use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\Model\Server;
+use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Factory\Endpoint\AbstractEndpointFactory;
-use App\Shared\Application\OpenApi\Factory\Response\InternalErrorFactory;
-use App\Shared\Application\OpenApi\OpenApiFactory;
+use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
+use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
+use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
+use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
+use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
+use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
-use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class OpenApiFactoryTest extends UnitTestCase
 {
-    private InternalErrorFactory $serverErrorResponseFactory;
-    private OpenApiFactoryInterface $decoratedFactory;
-    private AbstractEndpointFactory $endpointFactory1;
-    private AbstractEndpointFactory $endpointFactory2;
+    private MockObject $decoratedFactory;
+    private MockObject $endpointFactoryOne;
+    private MockObject $endpointFactoryTwo;
+    private MockObject $pathParametersSanitizer;
+    private MockObject $errorResponseAugmenter;
+    private MockObject $paginationQueryParametersSanitizer;
+    private MockObject $noContentResponseCleaner;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->serverErrorResponseFactory =
-            $this->createMock(InternalErrorFactory::class);
         $this->decoratedFactory =
             $this->createMock(OpenApiFactoryInterface::class);
-        $this->endpointFactory1 =
-            $this->createMock(AbstractEndpointFactory::class);
-        $this->endpointFactory2 =
-            $this->createMock(AbstractEndpointFactory::class);
+        $this->endpointFactoryOne =
+            $this->createMock(EndpointFactoryInterface::class);
+        $this->endpointFactoryTwo =
+            $this->createMock(EndpointFactoryInterface::class);
+        $this->pathParametersSanitizer =
+            $this->createMock(PathParametersSanitizer::class);
+        $this->errorResponseAugmenter =
+            $this->createMock(ServerErrorResponseAugmenter::class);
+        $this->paginationQueryParametersSanitizer =
+            $this->createMock(PaginationQueryParametersSanitizer::class);
+        $this->noContentResponseCleaner =
+            $this->createMock(NoContentResponseCleaner::class);
     }
 
-    public function testInvoke(): void
+    public function testInvokeDecoratesOpenApiDocument(): void
     {
-        $expectedOpenApi = $this->createExpectedOpenApi();
-        $this->testInvokeSetExpectations($expectedOpenApi);
+        $initialDocument = $this->createBaseOpenApi();
+        $this->setupDecoratorExpectations($initialDocument);
+        $factory = $this->createFactory();
 
-        $openApiFactory = new OpenApiFactory(
+        $result = $factory->__invoke([]);
+
+        $this->assertEquals($this->createExpectedOpenApi($initialDocument), $result);
+    }
+
+    public function testInvokeAddsSecuritySchemeWhenComponentsMissing(): void
+    {
+        $emptyDocument = $this->createBaseOpenApi();
+        $this->setupFactoryExpectation($emptyDocument);
+        $this->setupProcessorExpectations();
+        $factory = $this->createFactory([]);
+
+        $result = $factory->__invoke([]);
+
+        $this->assertSecuritySchemesPresent($result);
+    }
+
+    private function setupDecoratorExpectations(OpenApi $initialDocument): void
+    {
+        $this->setupFactoryExpectation($initialDocument);
+        $this->setupEndpointFactoryExpectations();
+        $this->setupProcessorExpectations();
+    }
+
+    private function setupFactoryExpectation(OpenApi $initialDocument): void
+    {
+        $this->decoratedFactory->expects($this->once())
+            ->method('__invoke')
+            ->with([])
+            ->willReturn($initialDocument);
+    }
+
+    private function setupEndpointFactoryExpectations(): void
+    {
+        $this->endpointFactoryOne->expects($this->once())
+            ->method('createEndpoint')
+            ->with($this->isInstanceOf(OpenApi::class));
+        $this->endpointFactoryTwo->expects($this->once())
+            ->method('createEndpoint')
+            ->with($this->isInstanceOf(OpenApi::class));
+    }
+
+    private function setupProcessorExpectations(): void
+    {
+        $this->errorResponseAugmenter->expects($this->once())
+            ->method('augment')
+            ->with($this->isInstanceOf(OpenApi::class));
+
+        $this->pathParametersSanitizer->expects($this->once())
+            ->method('sanitize')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
+        $this->paginationQueryParametersSanitizer->expects($this->once())
+            ->method('sanitize')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+
+        $this->noContentResponseCleaner->expects($this->once())
+            ->method('clean')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
+    }
+
+    private function assertSecuritySchemesPresent(OpenApi $result): void
+    {
+        $components = $result->getComponents();
+        $this->assertNotNull($components);
+        $schemes = $components->getSecuritySchemes();
+        $this->assertArrayHasKey('OAuth2', $schemes);
+        $this->assertArrayHasKey('OAuthClientBasic', $schemes);
+    }
+
+    /**
+     * @param array<int, EndpointFactoryInterface&MockObject>|null $endpointFactories
+     */
+    private function createFactory(?array $endpointFactories = null): OpenApiFactory
+    {
+        return new OpenApiFactory(
             $this->decoratedFactory,
-            [$this->endpointFactory1, $this->endpointFactory2],
-            $this->serverErrorResponseFactory,
-            getenv('API_URL')
+            $endpointFactories ?? [
+                $this->endpointFactoryOne,
+                $this->endpointFactoryTwo,
+            ],
+            getenv('API_URL'),
+            $this->pathParametersSanitizer,
+            $this->errorResponseAugmenter,
+            $this->paginationQueryParametersSanitizer,
+            $this->noContentResponseCleaner
         );
-
-        $result = $openApiFactory->__invoke([]);
-        $this->assertEquals($expectedOpenApi, $result);
     }
 
-    public function testAddServerErrorResponseToPath(): void
+    private function createBaseOpenApi(): OpenApi
     {
-        $paths = $this->createMock(Paths::class);
-        $openApi = new OpenApi(
+        return new OpenApi(
             $this->createMock(Info::class),
             [],
-            $paths
+            new Paths()
         );
-
-        $url = $this->faker->url();
-        $pathItem = new PathItem();
-        $paths->method('getPath')->with($url)->willReturn($pathItem);
-
-        $openApiFactory = new OpenApiFactory(
-            $this->createMock(OpenApiFactoryInterface::class),
-            [],
-            $this->serverErrorResponseFactory,
-            getenv('API_URL')
-        );
-
-        $this->getReflectionMethod('addServerErrorResponseToPath')
-            ->invokeArgs($openApiFactory, [$openApi, $url, new Response()]);
-
-        $addedPathItem = $openApi->getPaths()->getPath($url);
-        $this->assertEquals($pathItem, $addedPathItem);
     }
 
-    public function testAddServerErrorResponseToAllEndpoints(): void
+    private function createExpectedOpenApi(OpenApi $base): OpenApi
     {
-        $paths = $this->createMock(Paths::class);
-        $openApi = $this->createMock(OpenApi::class);
+        $components = $base->getComponents() ?? new Components();
+        $securitySchemes = $components->getSecuritySchemes() ?? new ArrayObject();
+        $securitySchemes['OAuth2'] = $this->createOAuth2Scheme();
+        $securitySchemes['OAuthClientBasic'] = [
+            'type' => 'http',
+            'scheme' => 'basic',
+            'description' => 'HTTP Basic authentication for OAuth client credentials.',
+        ];
 
-        $openApi->method('getPaths')->willReturn($paths);
-
-        $url = $this->faker->url();
-        $pathItem = new PathItem();
-        $paths->method('getPaths')->willReturn([$url => $url]);
-
-        $paths->method('getPath')->willReturn($pathItem);
-
-        $serverErrorResponse = new Response();
-
-        $this->serverErrorResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($serverErrorResponse);
-
-        $openApiFactory = new OpenApiFactory(
-            $this->createMock(OpenApiFactoryInterface::class),
-            [],
-            $this->serverErrorResponseFactory,
-            getenv('API_URL')
-        );
-
-        $this->getReflectionMethod('addServerErrorResponseToAllEndpoints')
-            ->invokeArgs($openApiFactory, [$openApi]);
-
-        $this->testAddErrorResponseMakeAssertions($paths, $serverErrorResponse);
-    }
-
-    private function createExpectedOpenApi(): OpenApi
-    {
-        $components = $this->createComponents();
-        $expectedOpenApi = new OpenApi(
-            $this->createMock(Info::class),
-            [],
-            $this->createMock(Paths::class)
-        );
-
-        return $expectedOpenApi
-            ->withComponents($components)
+        return $base
+            ->withComponents($components->withSecuritySchemes($securitySchemes))
             ->withServers([new Server(getenv('API_URL'))])
+            ->withTags($this->createTags())
             ->withSecurity([
                 ['OAuth2' => []],
             ]);
     }
 
-    private function createComponents(): Components
+    /**
+     * @return array<int, Tag>
+     */
+    private function createTags(): array
     {
-        return (new Components())->
-        withSecuritySchemes($this->createSecuritySchemes());
-    }
-
-    private function createSecuritySchemes(): ArrayObject
-    {
-        return new ArrayObject([
-            'OAuth2' => $this->createOAuth2Scheme(),
-        ]);
+        return [
+            new Tag('HealthCheck', 'Service health monitoring endpoints'),
+            new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
+            new Tag('User', 'User account management operations'),
+            new Tag('User reset password', 'Password reset workflows'),
+        ];
     }
 
     /**
-     * @return array<string>
+     * @return array{
+     *     type: string,
+     *     description: string,
+     *     flows: array{
+     *         authorizationCode: array{
+     *             authorizationUrl: string,
+     *             tokenUrl: string,
+     *             scopes: array<string, string>
+     *         }
+     *     }
+     * }
      */
     private function createOAuth2Scheme(): array
     {
         return [
             'type' => 'oauth2',
+            'description' => 'OAuth2 Authorization Code flow securing VilnaCRM API.',
             'flows' => [
                 'authorizationCode' => [
                     'authorizationUrl' => 'https://localhost/api/oauth/dialog',
@@ -164,75 +221,5 @@ final class OpenApiFactoryTest extends UnitTestCase
                 ],
             ],
         ];
-    }
-
-    private function getReflectionMethod(string $method): \ReflectionMethod
-    {
-        return new \ReflectionMethod(
-            OpenApiFactory::class,
-            $method
-        );
-    }
-
-    private function testAddErrorResponseMakeAssertions(
-        Paths $paths,
-        Response $serverErrorResponse
-    ): void {
-        foreach ($paths as $pathItem) {
-            $this->processPathItem($pathItem, $serverErrorResponse);
-        }
-    }
-
-    private function processPathItem(
-        PathItem $pathItem,
-        Response $serverErrorResponse
-    ): void {
-        $operations = [
-            $pathItem->getGet(),
-            $pathItem->getPost(),
-            $pathItem->getPut(),
-            $pathItem->getPatch(),
-            $pathItem->getDelete(),
-        ];
-        foreach ($operations as $operation) {
-            if ($operation instanceof Operation) {
-                $this->processOperation($operation, $serverErrorResponse);
-            }
-        }
-    }
-
-    private function processOperation(
-        Operation $operation,
-        Response $serverErrorResponse
-    ): void {
-        $responses = $operation->getResponses();
-        $this->assertArrayHasKey(
-            HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
-            $responses
-        );
-        $this->assertEquals(
-            $serverErrorResponse,
-            $responses[HttpResponse::HTTP_INTERNAL_SERVER_ERROR]
-        );
-    }
-
-    private function testInvokeSetExpectations(
-        OpenApi $expectedOpenApi
-    ): void {
-        $this->decoratedFactory->expects($this->once())
-            ->method('__invoke')
-            ->willReturn($expectedOpenApi);
-
-        $this->endpointFactory1->expects($this->once())
-            ->method('createEndpoint')
-            ->with($expectedOpenApi);
-        $this->endpointFactory2->expects($this->once())
-            ->method('createEndpoint')
-            ->with($expectedOpenApi);
-
-        $serverErrorResponse = new Response();
-        $this->serverErrorResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($serverErrorResponse);
     }
 }

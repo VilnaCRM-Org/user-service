@@ -1,3 +1,6 @@
+parameters:
+  oauth.enable_implicit_grant: '%env(bool:OAUTH_ENABLE_IMPLICIT_GRANT)%'
+
 league_oauth2_server:
   authorization_server: # Required
     # Full path to the private key file.
@@ -38,11 +41,14 @@ league_oauth2_server:
     # Whether to enable the authorization code grant
     enable_auth_code_grant: true
 
+    # Whether to enable the implicit grant (deprecated per OAuth 2.0 specs)
+    enable_implicit_grant: '%oauth.enable_implicit_grant%'
+
     # Whether to require code challenge for public clients for the auth code grant
     require_code_challenge_for_public_clients: true
 
     # Whether to enable access token saving to persistence layer (default to true)
-    persist_access_token: true
+    persist_access_token: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
 
   resource_server: # Required
     # Full path to the public key file
@@ -61,13 +67,12 @@ league_oauth2_server:
   # Configures different persistence methods that can be used by the bundle for saving client and token data.
   # Only one persistence method can be configured at a time.
   persistence: # Required
-    doctrine:
-      # Name of the entity manager that you wish to use for managing clients and tokens.
-      entity_manager: default
-
-      # Table name prefix.
-      table_prefix: oauth2_
-    # in_memory:            ~
+    custom:
+      client_manager: App\OAuth\Infrastructure\Manager\ClientManager
+      access_token_manager: App\OAuth\Infrastructure\Manager\AccessTokenManager
+      refresh_token_manager: App\OAuth\Infrastructure\Manager\RefreshTokenManager
+      authorization_code_manager: App\OAuth\Infrastructure\Manager\AuthorizationCodeManager
+      credentials_revoker: App\OAuth\Infrastructure\Service\CredentialsRevoker
 
   # Set a custom prefix that replaces the default 'ROLE_OAUTH2_' role prefix
   role_prefix: ROLE_OAUTH2_

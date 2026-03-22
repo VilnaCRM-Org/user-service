@@ -7,33 +7,38 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Builder\QueryParameterBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\InvalidCredentialsFactory;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthRedirectFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
+use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
+final class OAuthAuthEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/oauth/authorize';
 
     private Response $unsupportedResponse;
     private Response $invalidResponse;
     private Response $redirectResponse;
+    private Response $redirectTargetResponse;
+    private OAuthAuthorizeQueryParametersFactory $queryParametersFactory;
 
     public function __construct(
         string $apiPrefix,
-        private UnsupportedTypeFactory $unsupportedFactory,
-        private InvalidCredentialsFactory $invalidCredsFactory,
-        private OAuthRedirectFactory $redirectResponseFactory,
-        private QueryParameterBuilder $queryParameterBuilder
+        UnsupportedTypeFactory $unsupportedFactory,
+        InvalidCredentialsFactory $invalidCredsFactory,
+        OAuthRedirectFactory $redirectResponseFactory,
+        OAuthAuthorizeQueryParametersFactory $queryParametersFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
-        $this->unsupportedResponse = $this->unsupportedFactory->getResponse();
-        $this->invalidResponse = $this->invalidCredsFactory->getResponse();
-        $this->redirectResponse = $this->redirectResponseFactory->getResponse();
+        $this->unsupportedResponse = $unsupportedFactory->getResponse();
+        $this->invalidResponse = $invalidCredsFactory->getResponse();
+        $this->redirectResponse = $redirectResponseFactory->getResponse();
+        $this->redirectTargetResponse = $this->createRedirectTargetResponse();
+        $this->queryParametersFactory = $queryParametersFactory;
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $openApi->getPaths()->addPath(
@@ -54,6 +59,9 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     private function createOperation(): Model\Operation
     {
         return new Model\Operation(
+            operationId: 'oauth_authorize_get',
+            summary: 'Start OAuth authorization flow',
+            description: $this->authorizeDescription(),
             tags: ['OAuth'],
             responses: $this->getResponses(),
             parameters: $this->getQueryParams()
@@ -66,6 +74,7 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     private function getResponses(): array
     {
         return [
+            HttpResponse::HTTP_OK => $this->redirectTargetResponse,
             HttpResponse::HTTP_FOUND => $this->redirectResponse,
             HttpResponse::HTTP_BAD_REQUEST => $this->unsupportedResponse,
             HttpResponse::HTTP_UNAUTHORIZED => $this->invalidResponse,
@@ -73,71 +82,41 @@ final class OAuthAuthEndpointFactory implements AbstractEndpointFactory
     }
 
     /**
-     * @return array<Model\Parameter>
+     * @return array<int,Model\Parameter>
      */
     private function getQueryParams(): array
     {
-        return [
-            $this->getResponseTypeQueryParam(),
-            $this->getClientIdQueryParam(),
-            $this->getRedirectUriQueryParam(),
-            $this->getScopeQueryParam(),
-            $this->getStateQueryParam(),
-        ];
+        return $this->queryParametersFactory->create();
     }
 
-    private function getStateQueryParam(): Model\Parameter
+    private function authorizeDescription(): string
     {
-        return $this->queryParameterBuilder->build(
-            'state',
-            'State',
-            false,
-            'af0ifjsldkj',
-            'string'
+        return implode(
+            ' ',
+            [
+                'Redirects the resource owner to grant access',
+                'and returns an authorization code.',
+            ]
         );
     }
 
-    private function getScopeQueryParam(): Model\Parameter
+    private function createRedirectTargetResponse(): Response
     {
-        return $this->queryParameterBuilder->build(
-            'scope',
-            'Scope',
-            false,
-            'profile email',
-            'string'
-        );
-    }
+        $htmlExample = <<<'HTML'
+<!doctype html>
+<html lang="en">
+<head><title>Example Domain</title></head>
+<body><h1>Example Domain</h1></body>
+</html>
+HTML;
 
-    private function getRedirectUriQueryParam(): Model\Parameter
-    {
-        return $this->queryParameterBuilder->build(
-            'redirect_uri',
-            'Redirect uri',
-            true,
-            'https://example.com/oauth/callback',
-            'string'
-        );
-    }
-
-    private function getClientIdQueryParam(): Model\Parameter
-    {
-        return $this->queryParameterBuilder->build(
-            'client_id',
-            'Client ID',
-            true,
-            'dc0bc6323f16fecd4224a3860ca894c5',
-            'string'
-        );
-    }
-
-    private function getResponseTypeQueryParam(): Model\Parameter
-    {
-        return $this->queryParameterBuilder->build(
-            'response_type',
-            'Response type',
-            true,
-            'code',
-            'string'
+        return new Response(
+            description: 'Redirect target served HTML response.',
+            content: new ArrayObject([
+                'text/html' => new Model\MediaType(
+                    example: \strtr($htmlExample, ["\n" => ''])
+                ),
+            ])
         );
     }
 }

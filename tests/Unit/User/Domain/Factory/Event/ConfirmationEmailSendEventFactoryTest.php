@@ -22,6 +22,7 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
     private UuidTransformer $transformer;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,7 +57,7 @@ final class ConfirmationEmailSendEventFactoryTest extends UnitTestCase
             ConfirmationEmailSentEvent::class,
             $event
         );
-        $this->assertEquals($token, $event->token);
+        $this->assertEquals($token->getTokenValue(), $event->tokenValue);
         $this->assertEquals($user->getEmail(), $event->emailAddress);
     }
 }

@@ -22,7 +22,8 @@ final class TokenNotFoundResponseFactoryTest extends UnitTestCase
             ->with(
                 'Token not found or expired',
                 [],
-                []
+                [],
+                'application/problem+json'
             )
             ->willReturn($this->createStub(Response::class));
 

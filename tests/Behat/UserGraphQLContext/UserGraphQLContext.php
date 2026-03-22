@@ -372,14 +372,11 @@ final class UserGraphQLContext implements Context
      */
     private function extractGraphQLVariables(): array
     {
-        $variables = [];
-        if (isset($this->graphQLInput)) {
-            $fields = get_object_vars($this->graphQLInput);
-            foreach ($fields as $fieldName => $fieldValue) {
-                $variables[$fieldName] = $fieldValue;
-            }
+        if (!isset($this->graphQLInput)) {
+            return [];
         }
-        return $variables;
+
+        return $this->graphQLInput->toArray();
     }
 
     private function executeGraphQLRequest(string $requestBody): void
@@ -461,11 +458,15 @@ final class UserGraphQLContext implements Context
      */
     private function validateUserFields(array $userData): void
     {
+        $expectedFields = isset($this->graphQLInput)
+            ? $this->graphQLInput->toArray()
+            : [];
+
         foreach ($this->responseContent as $fieldName) {
             Assert::assertArrayHasKey($fieldName, $userData);
-            if (property_exists($this->graphQLInput, $fieldName)) {
+            if (array_key_exists($fieldName, $expectedFields)) {
                 Assert::assertEquals(
-                    $this->graphQLInput->$fieldName,
+                    $expectedFields[$fieldName],
                     $userData[$fieldName]
                 );
             }

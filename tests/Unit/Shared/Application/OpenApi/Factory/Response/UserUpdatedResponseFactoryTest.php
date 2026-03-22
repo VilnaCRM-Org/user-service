@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UserUpdatedResponseFactoryTest extends UnitTestCase
@@ -49,7 +49,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'email',
             'string',
-            'user@example.com'
+            'update-user@example.com'
         );
     }
 
@@ -58,7 +58,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            'Update User'
         );
     }
 
@@ -67,7 +67,7 @@ final class UserUpdatedResponseFactoryTest extends UnitTestCase
         return new Parameter(
             'id',
             'string',
-            '018dd6ba-e901-7a8c-b27d-65d122caca6b'
+            '018dd6ba-e901-7a8c-b27d-65d122caca6c'
         );
     }
 }

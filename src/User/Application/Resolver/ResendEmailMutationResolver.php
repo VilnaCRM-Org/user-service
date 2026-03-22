@@ -28,6 +28,7 @@ final readonly class ResendEmailMutationResolver implements
      * @param User $item
      * @param array<string,string> $context
      */
+    #[\Override]
     public function __invoke(?object $item, array $context): ?object
     {
         $user = $item;

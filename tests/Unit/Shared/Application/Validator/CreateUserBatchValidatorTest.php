@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
-use App\Shared\Application\Validator\CreateUserBatch;
+use App\Shared\Application\Evaluator\CreateUserBatchConstraintEvaluator;
+use App\Shared\Application\Validator\Constraint\CreateUserBatch;
 use App\Shared\Application\Validator\CreateUserBatchValidator;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Constraint;
@@ -18,74 +19,110 @@ final class CreateUserBatchValidatorTest extends UnitTestCase
     private ExecutionContextInterface $context;
     private CreateUserBatchValidator $validator;
     private Constraint $constraint;
+    private CreateUserBatchConstraintEvaluator $constraintEvaluator;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->context = $this->createMock(ExecutionContextInterface::class);
-        $this->validator = new CreateUserBatchValidator($this->translator);
+        $this->constraintEvaluator = $this->createMock(CreateUserBatchConstraintEvaluator::class);
+        $this->validator = new CreateUserBatchValidator(
+            $this->translator,
+            $this->constraintEvaluator
+        );
         $this->validator->initialize($this->context);
         $this->constraint = $this->createMock(CreateUserBatch::class);
     }
 
-    public function testValidateEmptyBatch(): void
+    public function testAddsViolationsReturnedByEvaluator(): void
     {
-        $message = $this->faker->word();
-        $this->translator->method('trans')
-            ->with('batch.empty')
-            ->willReturn($message);
+        $testData = $this->createBatchValidatorTestData();
+        $builders = $this->createViolationBuilders();
 
-        $violationBuilder =
-            $this->createMock(ConstraintViolationBuilderInterface::class);
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message)
-            ->willReturn($violationBuilder);
+        $this->setupEvaluatorExpectations($testData['messages']);
+        $this->setupTranslatorExpectations($testData['messages'], $testData['translated']);
+        $this->setupContextExpectations($testData['translated'], $builders);
 
-        $violationBuilder->expects($this->once())
-            ->method('addViolation');
-
-        $this->validator->validate([], $this->constraint);
+        $this->validator->validate('value', $this->constraint);
     }
 
-    public function testValidateUniqueEmails(): void
+    public function testSkipsViolationsWhenEvaluatorReturnsNoMessages(): void
     {
+        $this->constraintEvaluator->expects($this->once())
+            ->method('evaluate')
+            ->with('value')
+            ->willReturn([]);
+
+        $this->translator->expects($this->never())
+            ->method('trans');
+
         $this->context->expects($this->never())
             ->method('buildViolation');
 
-        $users = [
-            ['email' => 'user1@example.com'],
-            ['email' => 'user2@example.com'],
-            ['email' => 'user3@example.com'],
-        ];
-
-        $this->validator->validate($users, $this->constraint);
+        $this->validator->validate('value', $this->constraint);
     }
 
-    public function testValidateDuplicateEmails(): void
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private function createBatchValidatorTestData(): array
     {
-        $message = $this->faker->word();
-        $this->translator->method('trans')
-            ->with('batch.email.duplicate')
-            ->willReturn($message);
-
-        $violationBuilder =
-            $this->createMock(ConstraintViolationBuilderInterface::class);
-        $this->context->expects($this->once())
-            ->method('buildViolation')
-            ->with($message)
-            ->willReturn($violationBuilder);
-
-        $violationBuilder->expects($this->once())
-            ->method('addViolation');
-
-        $users = [
-            ['email' => 'user1@example.com'],
-            ['email' => 'user2@example.com'],
-            ['email' => 'user1@example.com'],
+        return [
+            'messages' => ['batch.empty', 'batch.email.duplicate'],
+            'translated' => [$this->faker->sentence(), $this->faker->sentence()],
         ];
+    }
 
-        $this->validator->validate($users, $this->constraint);
+    /**
+     * @return array<int, ConstraintViolationBuilderInterface>
+     */
+    private function createViolationBuilders(): array
+    {
+        $firstBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $firstBuilder->expects($this->once())->method('addViolation');
+
+        $secondBuilder = $this->createMock(ConstraintViolationBuilderInterface::class);
+        $secondBuilder->expects($this->once())->method('addViolation');
+
+        return [$firstBuilder, $secondBuilder];
+    }
+
+    /**
+     * @param array<int, string> $messages
+     */
+    private function setupEvaluatorExpectations(array $messages): void
+    {
+        $this->constraintEvaluator->expects($this->once())
+            ->method('evaluate')
+            ->with('value')
+            ->willReturn($messages);
+    }
+
+    /**
+     * @param array<int, string> $messages
+     * @param array<int, string> $translated
+     */
+    private function setupTranslatorExpectations(array $messages, array $translated): void
+    {
+        $this->translator->expects($this->exactly(2))
+            ->method('trans')
+            ->willReturnCallback(
+                $this->expectSequential([[$messages[0]], [$messages[1]]], $translated)
+            );
+    }
+
+    /**
+     * @param array<int, string> $translated
+     * @param array<int, ConstraintViolationBuilderInterface> $builders
+     */
+    private function setupContextExpectations(array $translated, array $builders): void
+    {
+        $this->context->expects($this->exactly(2))
+            ->method('buildViolation')
+            ->willReturnCallback(
+                $this->expectSequential([[$translated[0]], [$translated[1]]], $builders)
+            );
     }
 }

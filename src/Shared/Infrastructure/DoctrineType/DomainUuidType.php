@@ -6,59 +6,70 @@ namespace App\Shared\Infrastructure\DoctrineType;
 
 use App\Shared\Domain\ValueObject\Uuid;
 use App\Shared\Domain\ValueObject\UuidInterface;
-use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\Type;
-use Symfony\Bridge\Doctrine\Types\UuidType;
+use Doctrine\ODM\MongoDB\Types\ClosureToPHP;
+use Doctrine\ODM\MongoDB\Types\Type;
+use InvalidArgumentException;
 
 final class DomainUuidType extends Type
 {
+    use ClosureToPHP;
+
     public const NAME = 'domain_uuid';
 
-    public function getName(): string
+    #[\Override]
+    public function convertToDatabaseValue(mixed $value): ?string
     {
-        return self::NAME;
-    }
-
-    /**
-     * @param array<string|object> $column
-     */
-    public function getSQLDeclaration(
-        array $column,
-        AbstractPlatform $platform
-    ): string {
-        $symfonyType = $this->getSymfonyUuidType();
-
-        return $symfonyType->getSQLDeclaration($column, $platform);
-    }
-
-    public function convertToDatabaseValue(
-        mixed $value,
-        AbstractPlatform $platform
-    ): ?string {
-        if ($value instanceof UuidInterface) {
-            return $value->toBinary();
+        if ($value === null) {
+            return null;
         }
 
-        $uuid = new Uuid($value);
+        if ($value instanceof UuidInterface) {
+            return (string) $value;
+        }
 
-        return $uuid->toBinary();
+        $uuid = new Uuid((string) $value);
+        if ($uuid->toBinary() === null) {
+            throw new InvalidArgumentException(
+                'DomainUuidType expects a valid UUID string.'
+            );
+        }
+
+        return (string) $uuid;
     }
 
-    public function convertToPHPValue(
-        mixed $value,
-        AbstractPlatform $platform
-    ): ?Uuid {
-        $symfonyType = $this->getSymfonyUuidType();
-        $symfonyUuid = $symfonyType->convertToPHPValue($value, $platform);
-        $transformer = new UuidTransformer(new UuidFactory());
-
-        return $transformer->transformFromSymfonyUuid($symfonyUuid);
-    }
-
-    private function getSymfonyUuidType(): UuidType
+    #[\Override]
+    public function convertToPHPValue(mixed $value): ?Uuid
     {
-        return new UuidType();
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof Uuid) {
+            return $value;
+        }
+
+        return new Uuid((string) $value);
+    }
+
+    #[\Override]
+    public function closureToMongo(): string
+    {
+        return 'if ($value === null) { $return = null; } '
+            . 'elseif ($value instanceof \App\Shared\Domain\ValueObject\UuidInterface) { '
+            . '$return = (string) $value; '
+            . '} else { '
+            . '$return = (string) new \App\Shared\Domain\ValueObject\Uuid((string) $value); '
+            . '}';
+    }
+
+    #[\Override]
+    public function closureToPHP(): string
+    {
+        return 'if ($value === null) { $return = null; } '
+            . 'elseif ($value instanceof \App\Shared\Domain\ValueObject\Uuid) { '
+            . '$return = $value; '
+            . '} else { '
+            . '$return = new \App\Shared\Domain\ValueObject\Uuid((string) $value); '
+            . '}';
     }
 }

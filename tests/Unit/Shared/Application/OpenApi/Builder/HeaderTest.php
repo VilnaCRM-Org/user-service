@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
-use App\Shared\Application\OpenApi\Builder\Header;
+use App\Shared\Application\OpenApi\ValueObject\Header;
 use App\Tests\Unit\UnitTestCase;
 
 final class HeaderTest extends UnitTestCase

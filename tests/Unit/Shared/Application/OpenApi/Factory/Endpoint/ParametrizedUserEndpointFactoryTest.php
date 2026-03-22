@@ -19,6 +19,7 @@ use App\Shared\Application\OpenApi\Factory\Response\UserReturnedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserUpdatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
+use App\Shared\Application\Provider\OpenApi\ParamUserResponseProvider;
 use App\Tests\Unit\UnitTestCase;
 
 final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
@@ -36,75 +37,91 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
     private ReplaceUserRequestFactory $replaceUserRequestFactory;
     private UpdateUserRequestFactory $updateUserRequestFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->validationErrorResponseFactory =
-            $this->createMock(ValidationErrorFactory::class);
-        $this->badRequestResponseFactory =
-            $this->createMock(BadRequestResponseFactory::class);
-        $this->userNotFoundResponseFactory =
-            $this->createMock(UserNotFoundResponseFactory::class);
-        $this->userDeletedResponseFactory =
-            $this->createMock(UserDeletedResponseFactory::class);
-        $this->uuidUriParameterFactory =
-            $this->createMock(UuidUriParameterFactory::class);
-        $this->userUpdatedResponseFactory =
-            $this->createMock(UserUpdatedResponseFactory::class);
-        $this->openApi = $this->createMock(OpenApi::class);
-        $this->paths = $this->createMock(Paths::class);
-        $this->pathItem = $this->createMock(PathItem::class);
+        $this->initializeMocks();
+        $this->initializeOpenApiMocks();
     }
 
     public function testCreateEndpoint(): void
     {
         $this->setExpectations();
+        $factory = $this->createParamUserEndpointFactory();
+        $factory->createEndpoint($this->openApi);
+    }
 
-        $factory = new ParamUserEndpointFactory(
-            getenv('API_PREFIX'),
+    private function initializeMocks(): void
+    {
+        $this->validationErrorResponseFactory = $this->createMock(ValidationErrorFactory::class);
+        $this->badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
+        $this->userNotFoundResponseFactory = $this->createMock(UserNotFoundResponseFactory::class);
+        $this->userDeletedResponseFactory = $this->createMock(UserDeletedResponseFactory::class);
+        $this->uuidUriParameterFactory = $this->createMock(UuidUriParameterFactory::class);
+        $this->userUpdatedResponseFactory = $this->createMock(UserUpdatedResponseFactory::class);
+        $this->userReturnedResponseFactory = $this->createMock(UserReturnedResponseFactory::class);
+        $this->replaceUserRequestFactory = $this->createMock(ReplaceUserRequestFactory::class);
+        $this->updateUserRequestFactory = $this->createMock(UpdateUserRequestFactory::class);
+    }
+
+    private function initializeOpenApiMocks(): void
+    {
+        $this->openApi = $this->createMock(OpenApi::class);
+        $this->paths = $this->createMock(Paths::class);
+        $this->pathItem = $this->createMock(PathItem::class);
+    }
+
+    private function createParamUserEndpointFactory(): ParamUserEndpointFactory
+    {
+        $responseProvider = new ParamUserResponseProvider(
             $this->validationErrorResponseFactory,
             $this->badRequestResponseFactory,
             $this->userNotFoundResponseFactory,
             $this->userDeletedResponseFactory,
-            $this->uuidUriParameterFactory,
             $this->userUpdatedResponseFactory,
-            $this->createMock(UserReturnedResponseFactory::class),
-            $this->createMock(ReplaceUserRequestFactory::class),
-            $this->createMock(UpdateUserRequestFactory::class)
+            $this->userReturnedResponseFactory
         );
 
-        $factory->createEndpoint($this->openApi);
+        return new ParamUserEndpointFactory(
+            getenv('API_PREFIX'),
+            $responseProvider,
+            $this->uuidUriParameterFactory,
+            $this->replaceUserRequestFactory,
+            $this->updateUserRequestFactory
+        );
     }
 
     private function setExpectations(): void
     {
-        $this->validationErrorResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->createMock(Response::class));
-
-        $this->badRequestResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->createMock(Response::class));
-
-        $this->userNotFoundResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->createMock(Response::class));
-
-        $this->userDeletedResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->createMock(Response::class));
-
-        $this->userUpdatedResponseFactory->expects($this->once())
-            ->method('getResponse')
-            ->willReturn($this->createMock(Response::class));
-
-        $this->openApi->expects($this->exactly(8))
-            ->method('getPaths')
-            ->willReturn($this->paths);
-
+        $this->setResponseFactoryExpectations();
+        $this->setRequestFactoryExpectations();
+        $this->openApi->expects($this->exactly(8))->method('getPaths')->willReturn($this->paths);
         $this->setExpectationsFotPaths();
         $this->setExpectationsFotPathItem();
+    }
+
+    private function setResponseFactoryExpectations(): void
+    {
+        $this->validationErrorResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->badRequestResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->userNotFoundResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->userDeletedResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->userUpdatedResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->userReturnedResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+    }
+
+    private function setRequestFactoryExpectations(): void
+    {
+        $this->replaceUserRequestFactory->expects($this->once())->method('getRequest');
+        $this->updateUserRequestFactory->expects($this->once())->method('getRequest');
     }
 
     private function setExpectationsFotPaths(): void
@@ -117,11 +134,11 @@ final class ParametrizedUserEndpointFactoryTest extends UnitTestCase
 
         $this->paths->expects($this->exactly(4))
             ->method('addPath')
-            ->withConsecutive(
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
-                [$endpointUri, $this->isInstanceOf(PathItem::class)],
+            ->willReturnCallback(
+                function (string $uri, PathItem $pathItem) use ($endpointUri): void {
+                    $this->assertSame($endpointUri, $uri);
+                    $this->assertInstanceOf(PathItem::class, $pathItem);
+                }
             );
     }
 

@@ -5,22 +5,22 @@ App\User\Application\DTO\UserRegisterDto:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials: ~
+      - App\Shared\Application\Validator\Constraint\Initials: ~
     password:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Password: ~
+      - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\DTO\UserRegisterBatchDto:
   properties:
     users:
-      - App\Shared\Application\Validator\CreateUserBatch: ~
+      - App\Shared\Application\Validator\Constraint\CreateUserBatch: ~
       - All:
           - Collection:
               email:
@@ -28,17 +28,17 @@ App\User\Application\DTO\UserRegisterBatchDto:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\UniqueEmail: ~
+                - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
               initials:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\Initials: ~
+                - App\Shared\Application\Validator\Constraint\Initials: ~
               password:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\Password: ~
+                - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\DTO\UserPatchDto:
   properties:
@@ -46,22 +46,18 @@ App\User\Application\DTO\UserPatchDto:
       - Email: { message: 'email.invalid' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials:
-          optional: true
+      - App\Shared\Application\Validator\Constraint\Initials: ~
     oldPassword:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Password: ~
+      - App\Shared\Application\Validator\Constraint\Password: ~
     newPassword:
-      - Length:
-          max: 255
-      - App\Shared\Application\Validator\Password:
-          optional: true
+      - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\DTO\UserPutDto:
   properties:
@@ -70,22 +66,22 @@ App\User\Application\DTO\UserPutDto:
       - Email: { message: 'email.invalid' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials: ~
+      - App\Shared\Application\Validator\Constraint\Initials: ~
     oldPassword:
       - Length:
           max: 255
       - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Password: ~
+      - App\Shared\Application\Validator\Constraint\Password: ~
     newPassword:
       - Length:
-          max: 255
+          max: 64
       - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Password: ~
+      - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\DTO\ConfirmUserDto:
   properties:
@@ -101,7 +97,7 @@ App\User\Application\MutationInput\ConfirmUserMutationInput:
 App\User\Application\MutationInput\CreateUserBatchMutationInput:
   properties:
     users:
-      - App\Shared\Application\Validator\CreateUserBatch: ~
+      - App\Shared\Application\Validator\Constraint\CreateUserBatch: ~
       - All:
           - Collection:
               email:
@@ -109,17 +105,17 @@ App\User\Application\MutationInput\CreateUserBatchMutationInput:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\UniqueEmail: ~
+                - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
               initials:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\Initials: ~
+                - App\Shared\Application\Validator\Constraint\Initials: ~
               password:
                 - NotBlank: { message: 'not.blank' }
                 - Length:
                     max: 255
-                - App\Shared\Application\Validator\Password: ~
+                - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\MutationInput\CreateUserMutationInput:
   properties:
@@ -128,17 +124,17 @@ App\User\Application\MutationInput\CreateUserMutationInput:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials: ~
+      - App\Shared\Application\Validator\Constraint\Initials: ~
     password:
       - Length:
           max: 255
       - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Password: ~
+      - App\Shared\Application\Validator\Constraint\Password: ~
 
 App\User\Application\MutationInput\UpdateUserMutationInput:
   properties:
@@ -146,19 +142,77 @@ App\User\Application\MutationInput\UpdateUserMutationInput:
       - Email: { message: 'email.invalid' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\UniqueEmail: ~
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Initials:
-          optional: true
+      - App\Shared\Application\Validator\Constraint\Initials: ~
     password:
       - Length:
-          max: 255
-      - NotBlank: { message: 'not.blank' }
-      - App\Shared\Application\Validator\Password: ~
+          max: 64
+          maxMessage: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|^.{8,}$/'
+          message: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|.*[0-9].*/'
+          message: 'password.missing.number'
+      - Regex:
+          pattern: '/^$|.*[A-Z].*/'
+          message: 'password.missing.uppercase'
     newPassword:
       - Length:
+          max: 64
+          maxMessage: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|^.{8,}$/'
+          message: 'password.invalid.length'
+      - Regex:
+          pattern: '/^$|.*[0-9].*/'
+          message: 'password.missing.number'
+      - Regex:
+          pattern: '/^$|.*[A-Z].*/'
+          message: 'password.missing.uppercase'
+
+App\User\Application\DTO\RequestPasswordResetDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
           max: 255
-      - App\Shared\Application\Validator\Password:
-          optional: true
+
+App\User\Application\DTO\ConfirmPasswordResetDto:
+  properties:
+    token:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+    newPassword:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Constraint\Password: ~
+
+App\User\Application\MutationInput\RequestPasswordResetMutationInput:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+
+App\User\Application\MutationInput\ConfirmPasswordResetMutationInput:
+  properties:
+    token:
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+    newPassword:
+      - NotBlank: { message: 'not.blank' }
+      - NotNull: ~
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Constraint\Password: ~

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\OAuthTokenResponseFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class OAuthTokenReturnedResponseFactoryTest extends UnitTestCase
@@ -21,7 +21,7 @@ final class OAuthTokenReturnedResponseFactoryTest extends UnitTestCase
         $responseBuilder->expects($this->once())
             ->method('build')
             ->with(
-                'Unsupported grant type',
+                'OAuth access token response',
                 [
                     $this->getTypeParam(),
                     $this->getExpiresInParam(),

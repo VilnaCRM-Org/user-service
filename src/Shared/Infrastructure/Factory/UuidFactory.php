@@ -9,6 +9,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 
 final class UuidFactory implements UuidFactoryInterface
 {
+    #[\Override]
     public function create(string $uuid): Uuid
     {
         return new Uuid($uuid);

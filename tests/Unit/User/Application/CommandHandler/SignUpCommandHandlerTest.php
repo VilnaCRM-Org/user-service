@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as IdFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
@@ -33,6 +34,7 @@ final class SignUpCommandHandlerTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private SignUpCommandFactoryInterface $signUpCommandFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -77,22 +79,92 @@ final class SignUpCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
+    public function testInvokeReturnsExistingUserWhenEmailAlreadyRegistered(): void
+    {
+        $testData = $this->createTestDataForExistingUser();
+        $existingUser = $testData['existingUser'];
+        $command = $testData['command'];
+        $email = $testData['email'];
+
+        $this->setupExistingUserExpectations($email, $existingUser);
+        $this->setupNeverCalledForSignup();
+
+        $this->handler->__invoke($command);
+
+        $this->assertSame($existingUser, $command->getResponse()->createdUser);
+    }
+
     private function setExpectations(
         UserInterface $user
     ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->willReturn(null);
+
         $this->transformer->expects($this->once())
             ->method('transformToUser')
             ->willReturn($user);
 
-        $hasher =
-            $this->createMock(PasswordHasherInterface::class);
+        $this->setupPasswordHasherExpectations();
+        $this->setupSaveAndEventExpectations($user);
+    }
+
+    /**
+     * @return array<string, string|UserInterface|RegisterUserCommand>
+     */
+    private function createTestDataForExistingUser(): array
+    {
+        $email = $this->faker->email();
+        $password = $this->faker->password();
+        $initials = $this->faker->firstName();
+        $userId = $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $existingUser = $this->userFactory->create($email, $initials, $password, $userId);
+        $command = $this->signUpCommandFactory->create($email, $initials, $password);
+
+        return [
+            'email' => $email,
+            'existingUser' => $existingUser,
+            'command' => $command,
+        ];
+    }
+
+    private function setupExistingUserExpectations(
+        string $email,
+        UserInterface $existingUser
+    ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($existingUser);
+    }
+
+    private function setupNeverCalledForSignup(): void
+    {
+        $this->transformer->expects($this->never())
+            ->method('transformToUser');
+        $this->hasherFactory->expects($this->never())
+            ->method('getPasswordHasher');
+        $this->userRepository->expects($this->never())
+            ->method('save');
+        $this->registeredEventFactory->expects($this->never())
+            ->method('create');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+    }
+
+    private function setupPasswordHasherExpectations(): void
+    {
+        $hasher = $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('hash')
             ->willReturn($this->faker->password());
         $this->hasherFactory->expects($this->once())
             ->method('getPasswordHasher')
             ->willReturn($hasher);
+    }
 
+    private function setupSaveAndEventExpectations(UserInterface $user): void
+    {
         $this->userRepository->expects($this->once())
             ->method('save')
             ->with($this->equalTo($user));

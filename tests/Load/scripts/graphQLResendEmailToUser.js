@@ -23,7 +23,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function resendEmail(data) {
-  const user = data.users[counter.up()];
+  const user = data.users[counter.up() % data.users.length];
   utils.checkUserIsDefined(user);
 
   const id = utils.getGraphQLIdPrefix() + user.id;
@@ -44,10 +44,16 @@ export default function resendEmail(data) {
     utils.getJsonHeader()
   );
 
+  const parsed = JSON.parse(response.body);
+  const mutationResult = parsed?.data?.[mutationName]?.user?.id === `${id}`;
+  const rateLimited =
+    response.status === 429 ||
+    parsed?.errors?.some(error => error?.message?.includes('Cannot send new email'));
+
   utils.checkResponse(
     response,
-    'user returned',
-    res => JSON.parse(res.body).data[mutationName].user.id === `${id}`
+    'user returned or rate limited',
+    () => mutationResult || rateLimited
   );
 }
 

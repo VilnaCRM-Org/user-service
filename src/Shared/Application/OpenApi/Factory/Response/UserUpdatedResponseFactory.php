@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 
 final class UserUpdatedResponseFactory implements AbstractResponseFactory
 {
@@ -14,6 +15,8 @@ final class UserUpdatedResponseFactory implements AbstractResponseFactory
     {
     }
 
+    /** @psalm-suppress PossiblyUnusedReturnValue Used by OpenApi decorator */
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
@@ -28,7 +31,7 @@ final class UserUpdatedResponseFactory implements AbstractResponseFactory
         );
     }
 
-    public function getConfirmedParam(): Parameter
+    private function getConfirmedParam(): Parameter
     {
         return new Parameter(
             'confirmed',
@@ -37,30 +40,30 @@ final class UserUpdatedResponseFactory implements AbstractResponseFactory
         );
     }
 
-    public function getEmailParam(): Parameter
+    private function getEmailParam(): Parameter
     {
         return new Parameter(
             'email',
             'string',
-            'user@example.com'
+            SchemathesisFixtures::UPDATE_USER_EMAIL
         );
     }
 
-    public function getInitialsParam(): Parameter
+    private function getInitialsParam(): Parameter
     {
         return new Parameter(
             'initials',
             'string',
-            'Name Surname'
+            SchemathesisFixtures::UPDATE_USER_INITIALS
         );
     }
 
-    public function getIdParam(): Parameter
+    private function getIdParam(): Parameter
     {
         return new Parameter(
             'id',
             'string',
-            '018dd6ba-e901-7a8c-b27d-65d122caca6b'
+            SchemathesisFixtures::UPDATE_USER_ID
         );
     }
 }

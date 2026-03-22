@@ -10,12 +10,14 @@ use App\Tests\Integration\TestEmailSendingUtils;
 use App\User\Application\EventSubscriber\EmailChangedEventSubscriber;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class EmailChangedEventSubscriberTest extends IntegrationTestCase
 {
     private EmailChangedEventSubscriber $subscriber;
-    private TestEmailSendingUtils $utils;
+    private TestEmailSendingUtils $emailUtils;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,7 +25,7 @@ final class EmailChangedEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             EmailChangedEventSubscriber::class
         );
-        $this->utils = new TestEmailSendingUtils();
+        $this->emailUtils = new TestEmailSendingUtils($this->container);
     }
 
     public function testConfirmationEmailSent(): void
@@ -38,12 +40,12 @@ final class EmailChangedEventSubscriberTest extends IntegrationTestCase
                 UuidTransformer::class
             )->transformFromString($userId)
         );
-        $event = new EmailChangedEvent(
-            $user,
-            $this->faker->uuid()
-        );
+        $this->container->get(UserRepositoryInterface::class)->save($user);
+
+        $oldEmail = $this->faker->email();
+        $event = new EmailChangedEvent($userId, $emailAddress, $oldEmail, $this->faker->uuid());
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        $this->emailUtils->assertEmailWasSent($this->getMailerEvent(), $emailAddress);
     }
 }

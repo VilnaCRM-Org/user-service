@@ -23,7 +23,7 @@ export function setup() {
 export const options = scenarioUtils.getOptions();
 
 export default function getUser(data) {
-  const user = data.users[counter.up()];
+  const user = data.users[counter.up() % data.users.length];
   utils.checkUserIsDefined(user);
 
   const id = utils.getGraphQLIdPrefix() + user.id;

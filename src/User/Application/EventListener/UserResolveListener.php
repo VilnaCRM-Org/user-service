@@ -6,6 +6,7 @@ namespace App\User\Application\EventListener;
 
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -21,14 +22,34 @@ final readonly class UserResolveListener
 
     public function onUserResolve(UserResolveEvent $event): void
     {
-        $user = $this->userRepository->findByEmail($event->getUsername());
-        $authUser = $this->userTransformer->transformToAuthorizationUser($user);
+        $user = $this->resolveUser($event);
 
-        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
-        if (!$hasher->verify($user->getPassword(), $event->getPassword())) {
+        if ($user === null) {
             return;
         }
 
-        $event->setUser($authUser);
+        $event->setUser(
+            $this->userTransformer->transformToAuthorizationUser($user)
+        );
+    }
+
+    private function resolveUser(UserResolveEvent $event): ?UserInterface
+    {
+        $user = $this->userRepository->findByEmail($event->getUsername());
+
+        return match (true) {
+            !$user instanceof UserInterface => null,
+            !$this->passwordMatches($user, $event->getPassword()) => null,
+            default => $user,
+        };
+    }
+
+    private function passwordMatches(
+        UserInterface $user,
+        string $password
+    ): bool {
+        $hasher = $this->hasherFactory->getPasswordHasher(User::class);
+
+        return $hasher->verify($user->getPassword(), $password);
     }
 }

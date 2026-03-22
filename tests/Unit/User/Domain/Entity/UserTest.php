@@ -8,7 +8,9 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
@@ -29,6 +31,7 @@ final class UserTest extends UnitTestCase
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UuidTransformer $uuidTransformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,6 +56,31 @@ final class UserTest extends UnitTestCase
         );
     }
 
+    public function testNewUserIsNotConfirmedByDefault(): void
+    {
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertUserNotConfirmed($user);
+        $this->assertConfirmedPropertyIsFalse($user);
+    }
+
+    public function testDirectConstructionStartsUnconfirmed(): void
+    {
+        $user = new User(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertFalse($user->isConfirmed());
+    }
+
     public function testConfirm(): void
     {
         $token =
@@ -62,7 +90,7 @@ final class UserTest extends UnitTestCase
         $this->userConfirmedEventFactory->expects($this->once())
             ->method('create')
             ->with($token, $eventID)
-            ->willReturn(new UserConfirmedEvent($token, $eventID));
+            ->willReturn(new UserConfirmedEvent($token->getTokenValue(), $eventID));
 
         $confirmedEvent = $this->user->confirm(
             $token,
@@ -79,14 +107,12 @@ final class UserTest extends UnitTestCase
 
     public function testUpdate(): void
     {
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->password(),
-            $this->faker->password(),
-            $this->faker->name()
-        );
+        $oldEmail = $this->user->getEmail();
+        $updateData = $this->createUpdateData();
         $hashedNewPassword = $this->faker->password();
         $eventID = $this->faker->uuid();
+
+        $expectedEvent = $this->setupEmailChangedEventFactoryMock($oldEmail, $eventID);
 
         $events = $this->user->update(
             $updateData,
@@ -96,11 +122,7 @@ final class UserTest extends UnitTestCase
             $this->passwordChangedEventFactory
         );
 
-        $this->testUpdateMakeAssertions(
-            $events,
-            $updateData,
-            $hashedNewPassword
-        );
+        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
     public function testSetId(): void
@@ -135,21 +157,77 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($confirmed, $this->user->isConfirmed());
     }
 
+    private function assertUserNotConfirmed(User $user): void
+    {
+        $this->assertFalse(
+            $user->isConfirmed(),
+            'New user must not be confirmed'
+        );
+        $this->assertNotTrue(
+            $user->isConfirmed(),
+            'Double-check: new user is definitely not confirmed'
+        );
+    }
+
+    private function assertConfirmedPropertyIsFalse(User $user): void
+    {
+        $reflection = new \ReflectionClass($user);
+        $property = $reflection->getProperty('confirmed');
+        $this->assertFalse(
+            $property->getValue($user),
+            'Confirmed property must be false after construction'
+        );
+        $this->assertSame(
+            false,
+            $property->getValue($user),
+            'Confirmed must be exactly false (not null or other)'
+        );
+    }
+
     /**
      * @param array<DomainEvent> $events
      */
     private function testUpdateMakeAssertions(
         array $events,
         UserUpdate $updateData,
-        string $hashedNewPassword
+        string $hashedNewPassword,
+        EmailChangedEvent $expectedEmailChangedEvent
     ): void {
         $this->assertIsArray($events);
         $this->assertNotEmpty($events);
+        $this->assertContains(
+            $expectedEmailChangedEvent,
+            $events,
+            'EmailChangedEvent should be present in the events array'
+        );
         $this->assertEquals($updateData->newEmail, $this->user->getEmail());
         $this->assertEquals(
             $updateData->newInitials,
             $this->user->getInitials()
         );
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
+    }
+
+    private function createUpdateData(): UserUpdate
+    {
+        return new UserUpdate(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->faker->password()
+        );
+    }
+
+    private function setupEmailChangedEventFactoryMock(
+        string $oldEmail,
+        string $eventID
+    ): EmailChangedEvent {
+        $expectedEvent = $this->createMock(EmailChangedEvent::class);
+        $this->emailChangedEventFactory->expects($this->once())
+            ->method('create')
+            ->with($this->user, $oldEmail, $eventID)
+            ->willReturn($expectedEvent);
+
+        return $expectedEvent;
     }
 }

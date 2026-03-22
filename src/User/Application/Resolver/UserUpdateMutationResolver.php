@@ -7,8 +7,8 @@ namespace App\User\Application\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
-use App\User\Application\MutationInput\MutationInputValidator;
 use App\User\Application\Transformer\UpdateUserMutationInputTransformer;
+use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\ValueObject\UserUpdate;
 
 final readonly class UserUpdateMutationResolver implements
@@ -25,7 +25,8 @@ final readonly class UserUpdateMutationResolver implements
     /**
      * @param array<string,string> $context
      */
-    public function __invoke(?object $item, array $context): object
+    #[\Override]
+    public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];
 

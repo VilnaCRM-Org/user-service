@@ -3,9 +3,27 @@ services:
     alias: 'security.token_storage'
     public: true
 
+  App\Tests\Behat\OAuthContext\OAuthAuthenticationContext:
+    arguments:
+      $tokenStorage: '@security.token_storage'
+
+  App\Tests\Behat\UserContext\UserContext:
+    arguments:
+      $cachePool: '@cache.user'
+
+  # Use synchronous event bus for integration tests
+  # This ensures events are processed immediately during tests
+  App\Shared\Domain\Bus\Event\EventBusInterface:
+    alias: App\Shared\Infrastructure\Bus\Event\InMemorySymfonyEventBus
+
   _defaults:
     autowire: true
     autoconfigure: true
+
+  App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface: '@App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy'
+
+  App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy:
+    public: true
 
   App\Tests\Behat\:
     resource: '../tests/Behat/*'

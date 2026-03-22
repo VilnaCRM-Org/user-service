@@ -1,18 +1,11 @@
-FROM golang:1.24-alpine as builder
+FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+RUN apk add --no-cache git
 
-ENV CGO_ENABLED 0
-RUN go install go.k6.io/xk6/cmd/xk6@v0.11.0
+RUN go install go.k6.io/xk6/cmd/xk6@latest && \
+    xk6 build --with github.com/avitalique/xk6-file@latest \
+              --with github.com/mstoykov/xk6-counter@latest
 
-RUN xk6 build \
-    --with github.com/szkiba/xk6-faker@v0.3.0  \
-    --with github.com/mstoykov/xk6-counter@v0.0.1  \
-    --with github.com/grafana/xk6-exec@v0.3.0  \
-    --with github.com/avitalique/xk6-file@v1.4.0
+FROM grafana/k6:latest
 
-FROM alpine
-
-COPY --from=builder /app/k6 /bin/
-
-ENTRYPOINT [ "k6" ]
+COPY --from=builder /go/k6 /usr/bin/k6

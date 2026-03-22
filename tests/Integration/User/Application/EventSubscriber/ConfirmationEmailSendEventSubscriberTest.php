@@ -7,14 +7,14 @@ namespace App\Tests\Integration\User\Application\EventSubscriber;
 use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
 use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
-use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
 final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
 {
     private ConfirmationEmailSentEventSubscriber $subscriber;
-    private TestEmailSendingUtils $utils;
+    private TestEmailSendingUtils $emailUtils;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,22 +22,20 @@ final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             ConfirmationEmailSentEventSubscriber::class
         );
-        $this->utils = new TestEmailSendingUtils();
+        $this->emailUtils = new TestEmailSendingUtils($this->container);
     }
 
     public function testConfirmationEmailSent(): void
     {
         $tokenValue = $this->faker->uuid();
-        $userId = $this->faker->uuid();
         $emailAddress = $this->faker->email();
-        $token = new ConfirmationToken($tokenValue, $userId);
         $event = new ConfirmationEmailSentEvent(
-            $token,
+            $tokenValue,
             $emailAddress,
             $this->faker->uuid()
         );
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        $this->emailUtils->assertEmailWasSent($this->getMailerEvent(), $emailAddress);
     }
 }

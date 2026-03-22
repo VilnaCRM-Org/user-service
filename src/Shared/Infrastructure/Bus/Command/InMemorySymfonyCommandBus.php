@@ -12,7 +12,7 @@ use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 
-class InMemorySymfonyCommandBus implements CommandBusInterface
+readonly class InMemorySymfonyCommandBus implements CommandBusInterface
 {
     private MessageBus $bus;
 
@@ -29,6 +29,7 @@ class InMemorySymfonyCommandBus implements CommandBusInterface
     /**
      * @throws \Throwable
      */
+    #[\Override]
     public function dispatch(CommandInterface $command): void
     {
         try {
