@@ -55,6 +55,7 @@ if [ "${repo_count}" -lt 1 ]; then
 fi
 echo "GitHub CLI smoke test passed."
 
+# If Codex already has stored credentials, prefer that session over API-key auth.
 if codex login status >/dev/null 2>&1; then
     unset OPENAI_API_KEY
 elif [ -z "${OPENAI_API_KEY:-}" ]; then

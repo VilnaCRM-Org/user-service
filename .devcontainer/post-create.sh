@@ -28,7 +28,6 @@ export OPENCLAW_WORKSPACE_ROOT="${ROOT_DIR}"
 export OPENCLAW_CODER_WORKSPACE_ROOT="${ROOT_DIR}"
 
 : "${DOCKER_API_VERSION:=}"
-: "${CODEX_NPM_PACKAGE:=@openai/codex}"
 : "${USER_SERVICE_BOOTSTRAP_STRICT:=${CODESPACES:-false}}"
 
 if [ -z "${DOCKER_HOST:-}" ] && [ -S /var/run/docker-host.sock ]; then
@@ -85,7 +84,7 @@ ensure_outer_workspace_repo_alias() {
     fi
 
     docker exec -u 0 "${outer_container}" sh -lc "
-        set -euo pipefail
+        set -eu
         outer_repo_root='${outer_repo_root}'
         legacy_repo_root='${legacy_repo_root}'
 
@@ -127,12 +126,6 @@ docker info >/dev/null 2>&1 || {
 ensure_outer_workspace_repo_alias
 
 ensure_apt_packages make bats
-
-if ! command -v codex >/dev/null 2>&1; then
-    npm install -g "${CODEX_NPM_PACKAGE}"
-elif ! command -v codex >/dev/null 2>&1; then
-    echo "Warning: Codex CLI is unavailable; skipping AI smoke tests." >&2
-fi
 
 export GH_TOKEN_VAR="${GH_TOKEN_VAR:-GH_AUTOMATION_TOKEN}"
 export WORKSPACE_GITHUB_ORG="${WORKSPACE_GITHUB_ORG:-${CODESPACE_GITHUB_ORG:-VilnaCRM-Org}}"

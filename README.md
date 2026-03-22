@@ -80,6 +80,7 @@ make help
 #### Secure setup for autonomous AI coding agents
 
 Use workspace secrets (do not commit credentials):
+The default devcontainer bind mounts look for host-side directories under `${HOME}/.openclaw-host-secrets` and `${HOME}/.openclaw-host-codex`; in local Coder this is typically `/home/coder/...`, and the bootstrap skips host secret or Codex auth sync when those sources are absent.
 
 - `OPENAI_API_KEY`: OpenAI API key for Codex CLI
 - `GH_AUTOMATION_TOKEN`: GitHub token for non-interactive `gh` usage
@@ -115,7 +116,7 @@ What `verify-gh-codex.sh` checks:
 - current PR checks can be queried via `gh`
 - current branch supports `git push --dry-run`
 - `codex` can run a basic non-interactive smoke task
-- optional tool-calling smoke checks can be enforced when autonomous mode is explicitly enabled
+- tool-calling smoke checks are skipped by default and can be enforced when autonomous mode is explicitly enabled
 
 Codex uses the local login profile when available, or `OPENAI_API_KEY` from workspace secrets as fallback.
 If you need autonomous tool execution in a workspace, set overrides before bootstrap:

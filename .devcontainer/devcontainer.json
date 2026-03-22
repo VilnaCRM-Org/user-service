@@ -34,8 +34,8 @@
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "mounts": [
-    "source=/run/openclaw-host-secrets,target=/run/openclaw-host-secrets,type=bind,readonly",
-    "source=/home/coder/.openclaw-host-codex,target=/run/openclaw-host-codex,type=bind,readonly"
+    "source=${localEnv:HOME}/.openclaw-host-secrets,target=/run/openclaw-host-secrets,type=bind,readonly",
+    "source=${localEnv:HOME}/.openclaw-host-codex,target=/run/openclaw-host-codex,type=bind,readonly"
   ],
   "forwardPorts": [80, 443, 6379, 8080, 27017],
   "portsAttributes": {

@@ -36,14 +36,22 @@ readonly USER_NPM_GLOBAL_BIN="${HOME}/.npm-global/bin"
 : "${GH_PROMPT:=disabled}"
 : "${WORKSPACE_GIT_IDENTITY_NAME:=vilnacrm ai bot}"
 : "${WORKSPACE_GIT_IDENTITY_EMAIL:=info@vilnacrm.com}"
+: "${WORKSPACE_GIT_COMMITTER_NAME:=}"
+: "${WORKSPACE_GIT_COMMITTER_EMAIL:=}"
 : "${CODESPACE_GIT_IDENTITY_NAME:=${WORKSPACE_GIT_IDENTITY_NAME}}"
 : "${CODESPACE_GIT_IDENTITY_EMAIL:=${WORKSPACE_GIT_IDENTITY_EMAIL}}"
+: "${CODESPACE_GIT_COMMITTER_NAME:=${WORKSPACE_GIT_COMMITTER_NAME}}"
+: "${CODESPACE_GIT_COMMITTER_EMAIL:=${WORKSPACE_GIT_COMMITTER_EMAIL}}"
 
 TMP_FILES=()
 CS_GIT_IDENTITY_NAME=""
 CS_GIT_IDENTITY_EMAIL=""
+CS_GIT_COMMITTER_NAME=""
+CS_GIT_COMMITTER_EMAIL=""
 DETECTED_GIT_IDENTITY_NAME=""
 DETECTED_GIT_IDENTITY_EMAIL=""
+DETECTED_GIT_COMMITTER_NAME=""
+DETECTED_GIT_COMMITTER_EMAIL=""
 
 if [ -f "${AGENT_SECRETS_FILE}" ]; then
     # shellcheck disable=SC1090
@@ -99,10 +107,18 @@ persist_agent_secrets_file() {
         printf 'export PATH=%q:$PATH\n' "${USER_NPM_GLOBAL_BIN}"
         if [ -n "${CS_GIT_IDENTITY_NAME:-}" ]; then
             printf 'export GIT_AUTHOR_NAME=%q\n' "${CS_GIT_IDENTITY_NAME}"
-            printf 'export GIT_COMMITTER_NAME=%q\n' "${CS_GIT_IDENTITY_NAME}"
         fi
         if [ -n "${CS_GIT_IDENTITY_EMAIL:-}" ]; then
             printf 'export GIT_AUTHOR_EMAIL=%q\n' "${CS_GIT_IDENTITY_EMAIL}"
+        fi
+        if [ -n "${CS_GIT_COMMITTER_NAME:-}" ]; then
+            printf 'export GIT_COMMITTER_NAME=%q\n' "${CS_GIT_COMMITTER_NAME}"
+        elif [ -n "${CS_GIT_IDENTITY_NAME:-}" ]; then
+            printf 'export GIT_COMMITTER_NAME=%q\n' "${CS_GIT_IDENTITY_NAME}"
+        fi
+        if [ -n "${CS_GIT_COMMITTER_EMAIL:-}" ]; then
+            printf 'export GIT_COMMITTER_EMAIL=%q\n' "${CS_GIT_COMMITTER_EMAIL}"
+        elif [ -n "${CS_GIT_IDENTITY_EMAIL:-}" ]; then
             printf 'export GIT_COMMITTER_EMAIL=%q\n' "${CS_GIT_IDENTITY_EMAIL}"
         fi
     } > "${tmp_secrets_file}"
@@ -149,12 +165,16 @@ ensure_shell_sources_agent_secrets() {
 }
 
 configure_git_identity() {
-    local name email configured_name configured_email var
+    local author_name author_email committer_name committer_email configured_name configured_email var
 
     CS_GIT_IDENTITY_NAME=""
     CS_GIT_IDENTITY_EMAIL=""
+    CS_GIT_COMMITTER_NAME=""
+    CS_GIT_COMMITTER_EMAIL=""
     DETECTED_GIT_IDENTITY_NAME=""
     DETECTED_GIT_IDENTITY_EMAIL=""
+    DETECTED_GIT_COMMITTER_NAME=""
+    DETECTED_GIT_COMMITTER_EMAIL=""
 
     for var in GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL; do
         if [ -z "${!var:-}" ]; then
@@ -162,41 +182,55 @@ configure_git_identity() {
         fi
     done
 
-    name="${GIT_AUTHOR_NAME:-${GIT_COMMITTER_NAME:-}}"
-    email="${GIT_AUTHOR_EMAIL:-${GIT_COMMITTER_EMAIL:-}}"
+    author_name="${GIT_AUTHOR_NAME:-}"
+    author_email="${GIT_AUTHOR_EMAIL:-}"
+    committer_name="${GIT_COMMITTER_NAME:-}"
+    committer_email="${GIT_COMMITTER_EMAIL:-}"
     configured_name="$(git config --global --get user.name 2>/dev/null || true)"
     configured_email="$(git config --global --get user.email 2>/dev/null || true)"
 
-    if [ -z "${name}" ]; then
-        name="${configured_name}"
+    if [ -z "${author_name}" ]; then
+        author_name="${configured_name}"
     fi
-    if [ -z "${email}" ]; then
-        email="${configured_email}"
+    if [ -z "${author_email}" ]; then
+        author_email="${configured_email}"
     fi
-
-    if [ -n "${name}" ] && [ -n "${email}" ]; then
-        CS_GIT_IDENTITY_NAME="${name}"
-        CS_GIT_IDENTITY_EMAIL="${email}"
-        DETECTED_GIT_IDENTITY_NAME="${name}"
-        DETECTED_GIT_IDENTITY_EMAIL="${email}"
-        return 0
+    if [ -z "${committer_name}" ]; then
+        committer_name="${configured_name}"
+    fi
+    if [ -z "${committer_email}" ]; then
+        committer_email="${configured_email}"
     fi
 
-    name="${WORKSPACE_GIT_IDENTITY_NAME}"
-    email="${WORKSPACE_GIT_IDENTITY_EMAIL}"
+    if [ -z "${author_name}" ]; then
+        author_name="${WORKSPACE_GIT_IDENTITY_NAME}"
+    fi
+    if [ -z "${author_email}" ]; then
+        author_email="${WORKSPACE_GIT_IDENTITY_EMAIL}"
+    fi
+    if [ -z "${committer_name}" ]; then
+        committer_name="${WORKSPACE_GIT_COMMITTER_NAME:-${author_name}}"
+    fi
+    if [ -z "${committer_email}" ]; then
+        committer_email="${WORKSPACE_GIT_COMMITTER_EMAIL:-${author_email}}"
+    fi
 
-    git config --global user.name "${name}"
-    git config --global user.email "${email}"
+    git config --global user.name "${author_name}"
+    git config --global user.email "${author_email}"
 
-    export GIT_AUTHOR_NAME="${name}"
-    export GIT_AUTHOR_EMAIL="${email}"
-    export GIT_COMMITTER_NAME="${name}"
-    export GIT_COMMITTER_EMAIL="${email}"
+    export GIT_AUTHOR_NAME="${author_name}"
+    export GIT_AUTHOR_EMAIL="${author_email}"
+    export GIT_COMMITTER_NAME="${committer_name}"
+    export GIT_COMMITTER_EMAIL="${committer_email}"
 
-    CS_GIT_IDENTITY_NAME="${name}"
-    CS_GIT_IDENTITY_EMAIL="${email}"
-    DETECTED_GIT_IDENTITY_NAME="${name}"
-    DETECTED_GIT_IDENTITY_EMAIL="${email}"
+    CS_GIT_IDENTITY_NAME="${author_name}"
+    CS_GIT_IDENTITY_EMAIL="${author_email}"
+    CS_GIT_COMMITTER_NAME="${committer_name}"
+    CS_GIT_COMMITTER_EMAIL="${committer_email}"
+    DETECTED_GIT_IDENTITY_NAME="${author_name}"
+    DETECTED_GIT_IDENTITY_EMAIL="${author_email}"
+    DETECTED_GIT_COMMITTER_NAME="${committer_name}"
+    DETECTED_GIT_COMMITTER_EMAIL="${committer_email}"
 }
 
 ensure_codex_cli() {
@@ -271,8 +305,10 @@ fi
 echo "Secure agent environment is ready."
 echo "GH auth: ${CS_GH_AUTH_MODE:-unavailable}."
 echo "Git identity configured:"
-echo "  - name: ${DETECTED_GIT_IDENTITY_NAME:-<unset>}"
-echo "  - email: ${DETECTED_GIT_IDENTITY_EMAIL:-<unset>}"
+echo "  - author name: ${DETECTED_GIT_IDENTITY_NAME:-<unset>}"
+echo "  - author email: ${DETECTED_GIT_IDENTITY_EMAIL:-<unset>}"
+echo "  - committer name: ${DETECTED_GIT_COMMITTER_NAME:-<unset>}"
+echo "  - committer email: ${DETECTED_GIT_COMMITTER_EMAIL:-<unset>}"
 if [ "${codex_ready}" = true ]; then
     echo "Codex configured:"
     echo "  - command: $(command -v codex)"

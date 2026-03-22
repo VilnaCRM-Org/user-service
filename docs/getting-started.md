@@ -112,6 +112,8 @@ For autonomous AI coding in local workspaces, set workspace secrets:
 - `GH_AUTOMATION_TOKEN`
 - bootstrap sets git identity for automated commits to `vilnacrm ai bot <info@vilnacrm.com>`
 
+The default devcontainer bind mounts look for host-side directories under `${HOME}/.openclaw-host-secrets` and `${HOME}/.openclaw-host-codex`; in local Coder that usually resolves to `/home/coder/...`, and the bootstrap skips host secret or Codex auth sync when those sources are absent.
+
 These secrets are provided directly to the container runtime, so `gh`, `git`, and `codex` can use them in normal terminal sessions.
 The bootstrap does not persist plaintext copies of those credentials inside the workspace.
 
@@ -143,11 +145,12 @@ bash scripts/local-coder/verify-gh-codex.sh VilnaCRM-Org
 - `bats` CLI is available
 - `codex` can execute one non-interactive task
 
-`verify-gh-codex.sh` includes the Codex basic smoke check by default and can enforce tool-calling smoke checks when autonomous mode is enabled.
+`verify-gh-codex.sh` includes the Codex basic smoke check by default.
+Tool-calling smoke checks are skipped by default and only run when autonomous mode is explicitly enabled.
 This setup uses Codex with:
 
 - local login profile or `OPENAI_API_KEY`
-- `CODEX_TOOL_SMOKE_MODE=enforce` by default
+- `CODEX_TOOL_SMOKE_MODE=skip` by default
 
 If you need to adjust autonomous Codex tool checks in a workspace, set overrides before bootstrap:
 
