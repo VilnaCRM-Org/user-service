@@ -260,8 +260,19 @@ codex_ready=false
 if command -v codex >/dev/null 2>&1; then
     codex_ready=true
 else
+    codex_install_status=0
+    set +e
     ensure_codex_cli
-    codex_ready=true
+    codex_install_status=$?
+    set -e
+
+    if [ "${codex_install_status}" -eq 0 ]; then
+        codex_ready=true
+    elif [ "${USER_SERVICE_BOOTSTRAP_STRICT}" = "1" ] || [ "${USER_SERVICE_BOOTSTRAP_STRICT}" = "true" ]; then
+        exit "${codex_install_status}"
+    else
+        echo "Warning: Codex CLI is unavailable; continuing without AI bootstrap." >&2
+    fi
 fi
 
 codex_login_ready=false

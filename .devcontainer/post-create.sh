@@ -83,16 +83,16 @@ ensure_outer_workspace_repo_alias() {
         outer_repo_root='${outer_repo_root}'
         legacy_repo_root='${legacy_repo_root}'
 
-        if [ -f \"\${outer_repo_root}/Makefile\" ] && [ -d \"\${outer_repo_root}/.git\" ]; then
+        if [ -f \"\${outer_repo_root}/Makefile\" ] && [ -e \"\${outer_repo_root}/.git\" ]; then
             exit 0
         fi
 
-        if [ ! -d \"\${legacy_repo_root}/.git\" ]; then
+        if [ ! -e \"\${legacy_repo_root}/.git\" ]; then
             exit 0
         fi
 
         mkdir -p \"\$(dirname \"\${outer_repo_root}\")\"
-        if [ -e \"\${outer_repo_root}\" ] && [ ! -L \"\${outer_repo_root}\" ]; then
+        if [ -e \"\${outer_repo_root}\" ] && [ ! -L \"\${outer_repo_root}\" ] && [ ! -e \"\${outer_repo_root}/.git\" ]; then
             rm -rf \"\${outer_repo_root}\"
         fi
         ln -sfn \"\${legacy_repo_root}\" \"\${outer_repo_root}\"
@@ -153,6 +153,7 @@ run_workspace_make() {
             docker build -t user-service-spectral -f ./docker/spectral/Dockerfile .
             ;;
         install)
+            docker compose up -d php
             docker compose exec -T php composer install --no-progress --prefer-dist --optimize-autoloader
             ;;
         *)

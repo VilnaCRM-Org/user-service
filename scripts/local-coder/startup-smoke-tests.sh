@@ -85,7 +85,7 @@ if ! "${codex_cmd[@]}" >"${tmp_codex_output}" 2>&1; then
     exit 1
 fi
 
-if ! grep -q "codex-startup-ok" "${tmp_codex_message}"; then
+if ! grep -Fxq "codex-startup-ok" "${tmp_codex_message}"; then
     echo "Error: Codex CLI smoke task did not return expected output." >&2
     sed -n '1,120p' "${tmp_codex_output}" >&2
     exit 1
