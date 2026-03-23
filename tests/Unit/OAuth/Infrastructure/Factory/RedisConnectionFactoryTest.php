@@ -43,11 +43,14 @@ final class RedisConnectionFactoryTest extends UnitTestCase
 
     private function skipIfRedisUnavailable(): void
     {
+        set_error_handler(static fn (): bool => true);
         try {
             $redis = new Redis();
-            @$redis->connect('redis', 6379, 1);
+            $redis->connect('redis', 6379, 1);
         } catch (\RedisException) {
             $this->markTestSkipped('Redis server is not available');
+        } finally {
+            restore_error_handler();
         }
     }
 }
