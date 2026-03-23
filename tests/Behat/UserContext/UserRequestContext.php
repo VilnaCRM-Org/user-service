@@ -175,11 +175,17 @@ final class UserRequestContext implements Context
      */
     private function buildHeaders(string $method): array
     {
-        return [
+        $headers = [
             'Accept' => 'application/json',
             'Accept-Language' => $this->state->language,
-            'Content-Type' => self::CONTENT_TYPES[$method] ?? 'application/json',
         ];
+
+        if ($this->isRequestBodyMethod($method)) {
+            $headers['Content-Type'] =
+                self::CONTENT_TYPES[$method] ?? 'application/json';
+        }
+
+        return $headers;
     }
 
     private function isRequestBodyMethod(string $method): bool
