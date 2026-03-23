@@ -58,12 +58,10 @@ final class UserGraphQLResponseContext implements Context
      */
     public function queryResponseShouldBeNull(): void
     {
-        $userData = json_decode(
-            $this->getPageContent(),
-            true
-        )['data'][$this->state->getQueryName()];
+        $data = $this->parseAndValidateResponse();
+        $this->assertQueryNameExists($data);
 
-        Assert::assertNull($userData);
+        Assert::assertNull($data['data'][$this->state->getQueryName()]);
     }
 
     /**

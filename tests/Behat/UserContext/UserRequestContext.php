@@ -149,12 +149,12 @@ final class UserRequestContext implements Context
     public function requestSendTo(string $method, string $path): void
     {
         $processedPath = $this->processRequestPath($path);
-        $requestBody = $this->bodySerializer->serialize(
-            $this->state->requestBody,
-            $method
-        );
 
         if ($this->isRequestBodyMethod($method)) {
+            $requestBody = $this->bodySerializer->serialize(
+                $this->state->requestBody,
+                $method
+            );
             $this->sendRequestWithBody($method, $processedPath, $requestBody);
 
             return;
@@ -194,7 +194,7 @@ final class UserRequestContext implements Context
     ): void {
         $this->addHeaders($this->buildHeaders($method));
 
-        $pyStringBody = new PyStringNode([$body !== '' ? $body : '{}'], 0);
+        $pyStringBody = new PyStringNode([$body], 0);
         $this->restContext->iSendARequestToWithBody($method, $path, $pyStringBody);
     }
 
