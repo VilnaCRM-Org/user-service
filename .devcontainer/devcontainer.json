@@ -25,14 +25,18 @@
     "GIT_AUTHOR_EMAIL": "${localEnv:GIT_AUTHOR_EMAIL}"
   },
   "secrets": {
-    "MINIMAX_API_KEY": {
-      "description": "MiniMax API key used by Claude CLI via Anthropic-compatible endpoint."
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key used by Codex CLI."
     },
     "GH_AUTOMATION_TOKEN": {
-      "description": "GitHub token for non-interactive gh CLI and git push in Codespaces."
+      "description": "GitHub token for non-interactive gh CLI and git push in the workspace."
     }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "mounts": [
+    "source=${localEnv:HOME}/.openclaw-host-secrets,target=/run/openclaw-host-secrets,type=bind,readonly",
+    "source=${localEnv:HOME}/.openclaw-host-codex,target=/run/openclaw-host-codex,type=bind,readonly"
+  ],
   "forwardPorts": [80, 443, 6379, 8080, 27017],
   "portsAttributes": {
     "80": {

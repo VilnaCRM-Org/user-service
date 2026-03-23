@@ -17,6 +17,7 @@ use App\User\Application\Validator\UserPatchPayloadValidator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\ValueObject\UserUpdate;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * @implements ProcessorInterface<UserPutDto, User>
@@ -31,7 +32,8 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         private GetUserQueryHandler $getUserQueryHandler,
         private JsonRequestPayloadProvider $payloadProvider,
         private UserPatchUpdateResolver $updateResolver,
-        private UserPatchPayloadValidator $payloadValidator
+        private UserPatchPayloadValidator $payloadValidator,
+        private Security $security
     ) {
     }
 
@@ -68,8 +70,21 @@ final readonly class UserPatchProcessor implements ProcessorInterface
         $this->commandBus->dispatch(
             $this->updateUserCommandFactory->create(
                 $user,
-                $update
+                $update,
+                $this->resolveCurrentSessionId()
             )
         );
+    }
+
+    private function resolveCurrentSessionId(): string
+    {
+        $token = $this->security->getToken();
+        if ($token === null) {
+            return '';
+        }
+
+        $sid = $token->getAttribute('sid');
+
+        return is_string($sid) ? $sid : '';
     }
 }

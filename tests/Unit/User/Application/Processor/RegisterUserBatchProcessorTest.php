@@ -10,7 +10,7 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
-use App\User\Application\Command\RegisterUserBatchCommandResponse;
+use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Application\Factory\RegisterUserBatchCommandFactoryInterface;
 use App\User\Application\Processor\RegisterUserBatchProcessor;
@@ -124,6 +124,8 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
 
     /**
      * @return array<UserInterface>
+     *
+     * @psalm-return list{UserInterface,...}
      */
     private function getUsers(): array
     {

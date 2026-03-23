@@ -12,6 +12,7 @@ use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFacto
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryUserRepository;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Factory\UserFactory;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class SchemathesisUserSeederTest extends UnitTestCase
 {
@@ -97,6 +98,27 @@ final class SchemathesisUserSeederTest extends UnitTestCase
         $this->assertSame(SchemathesisFixtures::USER_EMAIL, $users['primary']->getEmail());
     }
 
+    public function testSeedUsersCallsSaveBatchWithIndexedArray(): void
+    {
+        $repository = $this->createMock(UserRepositoryInterface::class);
+        $repository->method('findById')->willReturn(null);
+
+        $repository->expects($this->once())
+            ->method('saveBatch')
+            ->with($this->callback(
+                static fn (array $users): bool => array_is_list($users)
+            ));
+
+        $seeder = new SchemathesisUserSeeder(
+            $repository,
+            new UserFactory(),
+            new HashingPasswordHasherFactory(),
+            new UuidTransformer(new UuidFactory())
+        );
+
+        $seeder->seedUsers();
+    }
+
     private function createSeeder(
         InMemoryUserRepository $repository,
         ?UuidTransformer $uuidTransformer = null,
@@ -111,7 +133,9 @@ final class SchemathesisUserSeederTest extends UnitTestCase
     }
 
     /**
-     * @return array{seeder: SchemathesisUserSeeder, existingUser: \App\User\Domain\Entity\UserInterface}
+     * @return array<SchemathesisUserSeeder|\App\User\Domain\Entity\User>
+     *
+     * @psalm-return array{seeder: SchemathesisUserSeeder, existingUser: \App\User\Domain\Entity\User}
      */
     private function createSeederWithExistingUpdateUser(): array
     {

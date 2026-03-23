@@ -9,11 +9,11 @@ use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Components;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
-use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
-use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
-use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
+use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
+use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
 use ArrayObject;
 
 final class OpenApiFactory implements OpenApiFactoryInterface
@@ -30,10 +30,10 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         private OpenApiFactoryInterface $decorated,
         private iterable $endpointFactories,
         private string $serverUrl,
-        private PathParametersSanitizer $pathParametersSanitizer,
-        private ServerErrorResponseAugmenter $serverErrorResponseAugmenter,
-        private PaginationQueryParametersSanitizer $paginationSanitizer,
-        private NoContentResponseCleaner $noContentResponseCleaner
+        private PathParametersTransformer $pathParametersTransformer,
+        private ServerErrorResponseTransformer $serverErrorResponseTransformer,
+        private PaginationQueryParametersTransformer $paginationTransformer,
+        private NoContentResponseTransformer $noContentResponseTransformer
     ) {
     }
 
@@ -45,17 +45,17 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
         $openApi = $openApi
-            ->withComponents($this->augmentComponents($openApi))
+            ->withComponents($this->buildComponents($openApi))
             ->withTags($this->buildTags());
 
         foreach ($this->endpointFactories as $endpointFactory) {
             $endpointFactory->createEndpoint($openApi);
         }
 
-        $this->serverErrorResponseAugmenter->augment($openApi);
-        $openApi = $this->pathParametersSanitizer->sanitize($openApi);
-        $openApi = $this->paginationSanitizer->sanitize($openApi);
-        $openApi = $this->noContentResponseCleaner->clean($openApi);
+        $this->serverErrorResponseTransformer->transform($openApi);
+        $openApi = $this->pathParametersTransformer->transform($openApi);
+        $openApi = $this->paginationTransformer->transform($openApi);
+        $openApi = $this->noContentResponseTransformer->transform($openApi);
 
         return $openApi->withServers([
             new Model\Server($this->serverUrl),
@@ -64,7 +64,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         ]);
     }
 
-    private function augmentComponents(OpenApi $openApi): Components
+    private function buildComponents(OpenApi $openApi): Components
     {
         $components = $openApi->getComponents() ?? new Components();
         $securitySchemes = $components->getSecuritySchemes()
@@ -80,11 +80,14 @@ final class OpenApiFactory implements OpenApiFactoryInterface
     }
 
     /**
-     * @return array<int, Tag>
+     * @return array<Tag>
+     *
+     * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */
     private function buildTags(): array
     {
         return [
+            new Tag('Authentication', 'Authentication and two-factor endpoints'),
             new Tag('HealthCheck', 'Service health monitoring endpoints'),
             new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
             new Tag('User', 'User account management operations'),

@@ -62,6 +62,9 @@ final class RequestBuilderTest extends UnitTestCase
         $this->assertEquals($expectedContent, $requestBody->getContent());
     }
 
+    /**
+     * @psalm-return ArrayObject<'application/json', array{schema: array{type: 'object', properties: array{name: array{type: 'string'}, age: array{type: 'integer'}}}, example: array{name: string, age: int}}>
+     */
     private function getExpectedContent(
         string $name,
         int $age

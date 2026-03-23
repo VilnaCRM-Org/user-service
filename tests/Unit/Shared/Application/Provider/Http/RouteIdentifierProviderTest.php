@@ -36,4 +36,17 @@ final class RouteIdentifierProviderTest extends UnitTestCase
 
         self::assertNull($provider->identifier('identifier'));
     }
+
+    public function testReturnsNullWhenAttributeIsWhitespaceOnly(): void
+    {
+        $request = new Request();
+        $request->attributes->set('identifier', '   ');
+
+        $stack = new RequestStack();
+        $stack->push($request);
+
+        $provider = new RouteIdentifierProvider($stack);
+
+        self::assertNull($provider->identifier('identifier'));
+    }
 }

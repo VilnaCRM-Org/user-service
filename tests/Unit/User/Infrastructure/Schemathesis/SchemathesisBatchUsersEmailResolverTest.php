@@ -1,0 +1,119 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\User\Infrastructure\Schemathesis;
+
+use App\Tests\Unit\UnitTestCase;
+use App\User\Infrastructure\Resolver\SchemathesisBatchUsersEmailResolver;
+
+final class SchemathesisBatchUsersEmailResolverTest extends UnitTestCase
+{
+    public function testExtractDeduplicatesValidEmails(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                ['email' => 'first@example.com'],
+                ['email' => 'second@example.com'],
+                ['email' => 'first@example.com'],
+                ['email' => null],
+                'invalid',
+            ],
+        ]);
+
+        $this->assertSame(
+            [
+                0 => 'first@example.com',
+                1 => 'second@example.com',
+                2 => 'first@example.com',
+            ],
+            $emails
+        );
+    }
+
+    public function testExtractSkipsEntriesWithoutEmails(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                ['email' => 'alpha@example.com'],
+                ['name' => 'missing email'],
+                ['email' => 'beta@example.com'],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['alpha@example.com', 'beta@example.com'],
+            $emails
+        );
+    }
+
+    public function testExtractReindexesResult(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                3 => ['email' => 'gamma@example.com'],
+                4 => ['email' => null],
+                6 => ['email' => 'delta@example.com'],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['gamma@example.com', 'delta@example.com'],
+            $emails
+        );
+    }
+
+    public function testExtractSkipsNonArrayUsers(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                new \stdClass(),
+                ['email' => 'valid@example.com'],
+            ],
+        ]);
+
+        $this->assertSame(['valid@example.com'], $emails);
+    }
+
+    public function testExtractSkipsScalarUsers(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                'string-value',
+                123,
+                45.67,
+                true,
+                ['email' => 'valid@example.com'],
+            ],
+        ]);
+
+        $this->assertSame(['valid@example.com'], $emails);
+    }
+
+    public function testExtractRequiresBothArrayAndStringEmail(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        $emails = $emailResolver->extract([
+            'users' => [
+                ['email' => 123],           // array but email is integer
+                ['email' => ['nested']],    // array but email is array
+                ['email' => true],          // array but email is boolean
+                ['email' => 'valid@example.com'],  // both conditions met
+            ],
+        ]);
+
+        // Only the last one should be extracted
+        $this->assertSame(['valid@example.com'], $emails);
+    }
+}

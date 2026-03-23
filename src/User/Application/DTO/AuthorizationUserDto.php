@@ -22,7 +22,7 @@ final readonly class AuthorizationUserDto implements
     }
 
     /**
-     * @return array<string>
+     * @psalm-return array<never, never>
      */
     #[\Override]
     public function getRoles(): array

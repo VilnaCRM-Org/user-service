@@ -56,7 +56,7 @@ final class PasswordResetConfirmationPublisherTest extends UnitTestCase
         $this->publisher->publish($user);
     }
 
-    private function userWithId(string $userId): UserInterface
+    private function userWithId(string $userId): MockObject&UserInterface
     {
         $user = $this->createMock(UserInterface::class);
         $user->expects($this->once())
@@ -77,7 +77,9 @@ final class PasswordResetConfirmationPublisherTest extends UnitTestCase
     }
 
     /**
-     * @return array{PasswordResetConfirmedEvent, UserUpdatedEvent}
+     * @return (MockObject&PasswordResetConfirmedEvent|MockObject&UserUpdatedEvent)[]
+     *
+     * @psalm-return list{MockObject&PasswordResetConfirmedEvent, MockObject&UserUpdatedEvent}
      */
     private function expectEvents(string $userId, string $eventId, UserInterface $user): array
     {

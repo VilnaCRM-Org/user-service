@@ -29,16 +29,15 @@ final readonly class PasswordResetRequestedMetricsSubscriber implements
     ) {
     }
 
-    /**
-     * @psalm-suppress UnusedParam Event parameter required by interface but not used
-     */
-    public function __invoke(PasswordResetRequestedEvent $event): void
+    public function __invoke(PasswordResetRequestedEvent $_event): void
     {
         $this->metricsEmitter->emit($this->metricFactory->create());
     }
 
     /**
-     * @return array<class-string>
+     * @return array<string>
+     *
+     * @psalm-return list{PasswordResetRequestedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Resolver;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
-use App\User\Application\Command\RequestPasswordResetCommandResponse;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Application\Resolver\RequestPasswordResetMutationResolver;
 use App\User\Application\Validator\MutationInputValidator;
 
@@ -74,7 +74,9 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, array<string, array<string, string>>>
+     * @return array<array<array<string>>>
+     *
+     * @psalm-return array{args: array{input: array{email: string}}}
      */
     private function createContext(string $email): array
     {

@@ -60,19 +60,22 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return array<UserInterface>
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     public function seedUsers(): array
     {
         $users = $this->prepareUsers();
-        /** @infection-ignore-all */
         $this->userRepository->saveBatch(array_values($users));
 
         return $users;
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return array<UserInterface>
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     private function prepareUsers(): array
     {

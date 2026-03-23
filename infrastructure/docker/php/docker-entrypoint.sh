@@ -32,9 +32,13 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 		fi
 	fi
 
-	# Run composer auto-scripts after database connections are verified
-	composer run-script auto-scripts --no-interaction
-	php bin/console lexik:jwt:generate-keypair --skip-if-exists
+		# Run composer auto-scripts after database connections are verified
+		composer run-script auto-scripts --no-interaction
+		php bin/console lexik:jwt:generate-keypair --skip-if-exists
+		if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then
+			chmod 600 config/jwt/private.pem
+			chmod 644 config/jwt/public.pem
+		fi
 
-fi
+	fi
 exec docker-php-entrypoint "$@"
