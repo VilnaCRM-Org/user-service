@@ -31,7 +31,9 @@ final class UsersBatchCreatedResponseFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array<int, Parameter>
+     * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter, Parameter, Parameter, Parameter}
      */
     private function createBatchUserParameters(): array
     {

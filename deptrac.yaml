@@ -9,11 +9,11 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Sanitizer|Validator|Metric).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Checker|Collector|Decoder|DTO|Evaluator|EventListener|Normalizer|QueryParameter|Resolver|Finder|Factory|Observability|Bus|Matcher).*'
+          regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Converter|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className
-          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Cleaner|Sanitizer|Augmenter|OpenApiFactory|Enum|ValueObject).*'
+          regex: '.*App\\Shared\\Application\\OpenApi\\(Factory|Builder|Processor|Extractor|Transformer|OpenApiFactory|Enum|ValueObject).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Application\\.*'
     - name: Domain
@@ -27,11 +27,11 @@ parameters:
     - name: Infrastructure
       collectors:
         - type: className
-          regex: '.*App\\User\\Infrastructure\\(Factory|Repository|Decoder|Extractor|Evaluator|EventListener|Publisher).*'
+          regex: '.*App\\User\\Infrastructure\\(Adapter|Factory|Repository|Converter|Resolver|Validator|EventListener|Publisher|Provider).*'
         - type: className
-          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Manager|Revoker|Serializer).*'
+          regex: '.*App\\OAuth\\Infrastructure\\(DoctrineType|Adapter|Serializer).*'
         - type: className
-          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventDispatcher|Cache|Serializer).*'
+          regex: '.*App\\Shared\\Infrastructure\\(Bus|DoctrineType|RetryStrategy|Transformer|Factory|Command|Fixture|Observability|EventSubscriber|Cache|Serializer|Adapter|Converter|Resolver|Validator|Provider).*'
         - type: className
           regex: '.*App\\Internal\\HealthCheck\\Infrastructure\\.*'
     - name: Symfony
@@ -70,6 +70,18 @@ parameters:
       collectors:
         - type: className
           regex: '.*Ramsey\\.*'
+    - name: Lexik
+      collectors:
+        - type: className
+          regex: '.*Lexik\\.*'
+    - name: OTPHP
+      collectors:
+        - type: className
+          regex: '.*OTPHP\\.*'
+    - name: PsrCache
+      collectors:
+        - type: className
+          regex: '.*Psr\\Cache\\.*'
   ruleset:
     Application:
       - Domain
@@ -92,5 +104,8 @@ parameters:
       - PhpAttributes
       - Aws
       - Ramsey
+      - Lexik
+      - OTPHP
+      - PsrCache
     Domain:
       - PhpAttributes

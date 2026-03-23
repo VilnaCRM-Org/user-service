@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Validator;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Validator\CompositePasswordResetTokenValidator;
-use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
+use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Exception\PasswordResetTokenNotFoundException;
 

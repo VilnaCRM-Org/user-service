@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Integration\Auth;
+
+use App\Tests\Integration\JwtPayloadDecoder;
+
+final class IntegrationAuthTokenHelperTest extends AuthIntegrationTestCase
+{
+    public function testCreateBearerTokenForUserIncludesExpectedClaims(): void
+    {
+        $userId = $this->faker->uuid();
+
+        $token = $this->createBearerTokenForUser($userId);
+        $payload = JwtPayloadDecoder::decode($token);
+
+        $this->assertSame($userId, $payload['sub'] ?? null);
+        $this->assertSame('vilnacrm-user-service', $payload['iss'] ?? null);
+        $this->assertSame('vilnacrm-api', $payload['aud'] ?? null);
+        $this->assertSame(['ROLE_USER'], $payload['roles'] ?? null);
+        $this->assertIsString($payload['sid'] ?? null);
+        $this->assertNotSame('', (string) ($payload['sid'] ?? ''));
+    }
+
+    public function testCreateBearerTokenForRoleSupportsServiceRole(): void
+    {
+        $token = $this->createBearerTokenForRole('ROLE_SERVICE');
+        $payload = JwtPayloadDecoder::decode($token);
+
+        $this->assertSame(['ROLE_SERVICE'], $payload['roles'] ?? null);
+    }
+
+    public function testCreateAuthenticatedHeadersReturnsBearerAuthorization(): void
+    {
+        $subject = sprintf('subject-%s', strtolower($this->faker->lexify('????')));
+
+        $headers = $this->createAuthenticatedHeaders($subject, ['ROLE_SERVICE']);
+
+        $this->assertArrayHasKey('HTTP_AUTHORIZATION', $headers);
+        $this->assertArrayHasKey('HTTP_ACCEPT', $headers);
+        $this->assertSame('application/json', $headers['HTTP_ACCEPT']);
+        $this->assertStringStartsWith('Bearer ', $headers['HTTP_AUTHORIZATION']);
+
+        $token = substr($headers['HTTP_AUTHORIZATION'], 7);
+        $payload = JwtPayloadDecoder::decode($token);
+
+        $this->assertSame($subject, $payload['sub'] ?? null);
+        $this->assertSame(['ROLE_SERVICE'], $payload['roles'] ?? null);
+    }
+}

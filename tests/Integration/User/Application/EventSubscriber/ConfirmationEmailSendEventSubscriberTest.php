@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
-use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\EventSubscriber\ConfirmationEmailSentEventSubscriber;
 use App\User\Domain\Event\ConfirmationEmailSentEvent;
 
-final class ConfirmationEmailSendEventSubscriberTest extends IntegrationTestCase
+final class ConfirmationEmailSendEventSubscriberTest extends UserIntegrationTestCase
 {
     private ConfirmationEmailSentEventSubscriber $subscriber;
     private TestEmailSendingUtils $emailUtils;

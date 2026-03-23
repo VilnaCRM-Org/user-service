@@ -49,6 +49,13 @@ Quick Decision Tree:
 │   ├─ Add business metrics → observability-instrumentation
 │   └─ Fix file placement / boundaries → code-organization
 │
+├─ Refactor existing code
+│   ├─ Move class / rename / restructure → code-organization
+│   ├─ Hardcoded config to .env → code-organization
+│   ├─ Reduce complexity → complexity-management
+│   ├─ Fix architecture boundaries → deptrac-fixer
+│   └─ Improve testability → testing-workflow
+│
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
@@ -129,16 +136,16 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                        | File                                     | When to Use                                            |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
-| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS       |
-| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                  |
-| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
-| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
-| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
-| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, and type safety         |
-| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing              |
-| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
+| Skill                        | File                                     | When to Use                                                                |
+| ---------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS                           |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                                      |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds                                   |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                                       |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, processors & validation                                 |
+| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
+| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing                                  |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl                           |
 
 ### 💾 Database & Documentation Skills
 
@@ -195,6 +202,17 @@ Complex skills have multi-file structure:
 3. **Execute**: Run appropriate test commands (`make unit-tests`, `make integration-tests`, etc.)
 4. **Debug failures**: Follow troubleshooting steps in the skill file
 
+### Example 4: User asks to "refactor code" or "extract hardcoded configs"
+
+**Your workflow:**
+
+1. **Identify skill**: `code-organization`
+2. **Read**: `.claude/skills/code-organization/SKILL.md`
+3. **For structural refactoring**: Follow directory type classification and refactoring checklist
+4. **For config extraction**: Follow the "Hardcoded Configuration Values → `.env` Extraction" section
+5. **Validate**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
+6. **If CI fails after refactoring**: Consult the "CI Integration: When CI Fails" section in code-organization
+
 ## Key Differences from Claude Code
 
 | Aspect                | Claude Code              | OpenAI/Other Agents                   |
@@ -219,6 +237,7 @@ Complex skills have multi-file structure:
 | Infection   | MSI          | High %   | `testing-workflow`      |
 
 **Always improve code quality to meet standards. Never lower thresholds.**
+**Never hide problems with suppression/ignore annotations (e.g. `@SuppressWarnings`, `@psalm-suppress`, `@infection-ignore-all`, `@codeCoverageIgnore`, `@phpstan-ignore`, `phpcs:ignore`, `@phpinsights-ignore*`).**
 
 ## Locked Configuration Exception Policy (AI Agents)
 
@@ -259,11 +278,12 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 
 ### Fixing Quality Issues
 
-1. Identify issue type (Deptrac? Complexity? Tests?)
+1. Identify issue type (Deptrac? Complexity? Tests? Naming? Hardcoded config?)
 2. Read `SKILL-DECISION-GUIDE.md` to find the right skill
 3. Read the specific skill file
 4. Follow fix instructions
-5. Run `make ci` to verify
+5. If refactoring is needed, also consult `code-organization/SKILL.md`
+6. Run `make ci` to verify
 
 ## File Structure Reference
 
@@ -319,7 +339,7 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 ├── openapi-development/
 │   ├── SKILL.md                # OpenAPI factories & transformers
 │   ├── examples/               # Complete real-world examples
-│   └── reference/              # Sanitizers/augmenters/cleaners patterns
+│   └── reference/              # Processor patterns
 │
 ├── structurizr-architecture-sync/
 │   ├── SKILL.md                # Core architecture sync workflow
@@ -349,6 +369,7 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 - Skip reading the decision guide
 - Jump directly to execution without reading the full skill
 - Lower quality thresholds to make checks pass
+- Add suppression/ignore annotations to silence quality tools
 - Modify skill files without understanding the workflow
 - Ignore supporting documentation when errors occur
 

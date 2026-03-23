@@ -6,7 +6,7 @@ namespace App\Tests\Unit\User\Application\Command;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
-use App\User\Application\Command\RequestPasswordResetCommandResponse;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 
 final class RequestPasswordResetCommandTest extends UnitTestCase
 {

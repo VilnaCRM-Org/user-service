@@ -6,19 +6,20 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
-/** @psalm-suppress UnusedClass */
+/**
+ * @psalm-api
+ */
 final class TestEventSubscriber implements DomainEventSubscriberInterface
 {
-    /**
-     * @psalm-suppress UnusedParam
-     */
-    public function __invoke(TestEvent $event): void
+    public function __invoke(TestEvent $_event): void
     {
         // Test subscriber
     }
 
     /**
-     * @return array<class-string>
+     * @return array<string>
+     *
+     * @psalm-return list{TestEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

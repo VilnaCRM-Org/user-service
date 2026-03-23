@@ -28,7 +28,9 @@ final readonly class EmfDimensionKeys implements IteratorAggregate, Countable, \
     }
 
     /**
-     * @return Traversable<int, string>
+     * @return ArrayIterator
+     *
+     * @psalm-return ArrayIterator<int, string>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -36,6 +38,9 @@ final readonly class EmfDimensionKeys implements IteratorAggregate, Countable, \
         return new ArrayIterator($this->keys);
     }
 
+    /**
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {
@@ -51,7 +56,9 @@ final readonly class EmfDimensionKeys implements IteratorAggregate, Countable, \
     }
 
     /**
-     * @return array<int, array<int, string>>
+     * @return array<array<string>>
+     *
+     * @psalm-return list{array<int, string>}
      */
     #[\Override]
     public function jsonSerialize(): array

@@ -13,7 +13,7 @@ export default class InsertUsersUtils {
   }
 
   loadInsertedUsers() {
-    return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
+    return JSON.parse(open(`/loadTests/${this.utils.getConfig()['usersFileName']}`));
   }
 
   *usersGenerator(numberOfUsers) {
@@ -38,7 +38,7 @@ export default class InsertUsersUtils {
     return [batch, userPasswords];
   }
 
-  *requestGenerator(numberOfRequest, batchSize) {
+  *requestGenerator(numberOfRequest, batchSize, serviceToken) {
     for (let i = 0; i < numberOfRequest; i++) {
       const [batch, userPasswords] = this.prepareUserBatch(batchSize);
 
@@ -50,16 +50,16 @@ export default class InsertUsersUtils {
         method: 'POST',
         url: `${this.utils.getBaseHttpUrl()}/batch`,
         body: payload,
-        params: this.utils.getJsonHeader(),
+        params: this.utils.getJsonHeaderWithAuth(serviceToken),
       };
 
       yield [request, userPasswords];
     }
   }
 
-  prepareRequestBatch(numberOfUsers, batchSize) {
+  prepareRequestBatch(numberOfUsers, batchSize, serviceToken) {
     const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
-    const generator = this.requestGenerator(numberOfRequests, batchSize);
+    const generator = this.requestGenerator(numberOfRequests, batchSize, serviceToken);
     const requestBatch = [];
     const userPasswords = {};
 
@@ -75,11 +75,20 @@ export default class InsertUsersUtils {
   }
 
   insertUsers(numberOfUsers) {
-    const batchSize = Math.min(this.config.batchSize, numberOfUsers);
+    const serviceToken = this.utils.getCLIVariable('serviceToken');
+    if (serviceToken === 'undefined' || serviceToken === '') {
+      throw new Error('Missing serviceToken environment variable for batch user creation');
+    }
 
+    const configuredBatchSize = this.config.endpoints.createUserBatch?.batchSize ?? 10;
+    const safeBatchSize = configuredBatchSize > 0 ? configuredBatchSize : 10;
+    const batchSize = Math.min(safeBatchSize, numberOfUsers);
     const users = [];
-
-    const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
+    const [requestBatch, userPasswords] = this.prepareRequestBatch(
+      numberOfUsers,
+      batchSize,
+      serviceToken
+    );
 
     const responses = http.batch(requestBatch);
     responses.forEach((response, index) => {

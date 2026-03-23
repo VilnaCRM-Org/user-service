@@ -125,6 +125,51 @@ final class UserTest extends UnitTestCase
         $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
+    public function testUpdateEmitsPasswordChangedEventWhenPasswordDiffers(): void
+    {
+        $eventID = $this->faker->uuid();
+        $updateData = $this->createPasswordChangeUpdate();
+
+        $expectedEvent = $this->stubPasswordChangedFactory($eventID);
+
+        $events = $this->user->update(
+            $updateData,
+            $this->faker->sha256(),
+            $eventID,
+            $this->emailChangedEventFactory,
+            $this->passwordChangedEventFactory
+        );
+
+        $this->assertContains($expectedEvent, $events);
+    }
+
+    public function testUpdateDoesNotEmitPasswordChangedEventWhenPasswordIsSame(): void
+    {
+        $samePassword = $this->faker->password();
+        $hashedNewPassword = $this->faker->sha256();
+        $eventID = $this->faker->uuid();
+
+        $updateData = new UserUpdate(
+            $this->user->getEmail(),
+            $this->faker->name(),
+            $samePassword,
+            $samePassword,
+        );
+
+        $this->passwordChangedEventFactory->expects($this->never())
+            ->method('create');
+
+        $events = $this->user->update(
+            $updateData,
+            $hashedNewPassword,
+            $eventID,
+            $this->emailChangedEventFactory,
+            $this->passwordChangedEventFactory
+        );
+
+        $this->assertEmpty($events);
+    }
+
     public function testSetId(): void
     {
         $id = $this->faker->uuid();
@@ -155,6 +200,68 @@ final class UserTest extends UnitTestCase
         $this->user->setConfirmed(true);
 
         $this->assertEquals($confirmed, $this->user->isConfirmed());
+    }
+
+    public function testTwoFactorIsDisabledByDefault(): void
+    {
+        $user = $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertFalse($user->isTwoFactorEnabled());
+        $this->assertNull($user->getTwoFactorSecret());
+    }
+
+    public function testSetTwoFactorData(): void
+    {
+        $secret = $this->faker->sha256();
+
+        $this->user->setTwoFactorEnabled(true);
+        $this->user->setTwoFactorSecret($secret);
+
+        $this->assertTrue($this->user->isTwoFactorEnabled());
+        $this->assertSame($secret, $this->user->getTwoFactorSecret());
+    }
+
+    public function testEnableTwoFactor(): void
+    {
+        $this->assertFalse($this->user->isTwoFactorEnabled());
+
+        $this->user->enableTwoFactor();
+
+        $this->assertTrue($this->user->isTwoFactorEnabled());
+    }
+
+    public function testDisableTwoFactor(): void
+    {
+        $this->user->setTwoFactorEnabled(true);
+        $this->user->setTwoFactorSecret($this->faker->sha256());
+
+        $this->user->disableTwoFactor();
+
+        $this->assertFalse($this->user->isTwoFactorEnabled());
+        $this->assertNull($this->user->getTwoFactorSecret());
+    }
+
+    public function testUpgradePasswordHash(): void
+    {
+        $newHash = $this->faker->sha256();
+
+        $this->user->upgradePasswordHash($newHash);
+
+        $this->assertSame($newHash, $this->user->getPassword());
+    }
+
+    public function testSetPassword(): void
+    {
+        $newPassword = $this->faker->password();
+
+        $this->user->setPassword($newPassword);
+
+        $this->assertSame($newPassword, $this->user->getPassword());
     }
 
     private function assertUserNotConfirmed(User $user): void
@@ -208,6 +315,30 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($hashedNewPassword, $this->user->getPassword());
     }
 
+    private function createPasswordChangeUpdate(): UserUpdate
+    {
+        return new UserUpdate(
+            $this->user->getEmail(),
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->faker->password(),
+        );
+    }
+
+    private function stubPasswordChangedFactory(
+        string $eventID
+    ): \App\User\Domain\Event\PasswordChangedEvent {
+        $event = new \App\User\Domain\Event\PasswordChangedEvent(
+            $this->user->getEmail(),
+            $eventID
+        );
+        $this->passwordChangedEventFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($event);
+
+        return $event;
+    }
+
     private function createUpdateData(): UserUpdate
     {
         return new UserUpdate(
@@ -222,7 +353,12 @@ final class UserTest extends UnitTestCase
         string $oldEmail,
         string $eventID
     ): EmailChangedEvent {
-        $expectedEvent = $this->createMock(EmailChangedEvent::class);
+        $expectedEvent = new EmailChangedEvent(
+            (string) $this->user->getId(),
+            $this->user->getEmail(),
+            $oldEmail,
+            $eventID
+        );
         $this->emailChangedEventFactory->expects($this->once())
             ->method('create')
             ->with($this->user, $oldEmail, $eventID)

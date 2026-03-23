@@ -32,25 +32,37 @@ setup() {
 #!/usr/bin/env bash
 set -euo pipefail
 
-args="$*"
-
-if [[ "$args" == *"exec --help"* ]]; then
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
   echo "--output-last-message"
   exit 0
 fi
 
-if [[ "$args" == *"review --help"* ]]; then
-  echo "codex review help"
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+
+  if [[ -z "$output_file" ]]; then
+    echo "missing --output-last-message argument" >&2
+    exit 2
+  fi
+
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+STATUS
   exit 0
 fi
 
-if [[ "$args" == *"review"* ]]; then
-  echo "STATUS: PASS"
-  echo "0 issues."
-  exit 0
-fi
-
-echo "unexpected codex invocation: $args" >&2
+echo "unexpected codex invocation: $*" >&2
 exit 2
 EOF
   chmod +x "$bin_dir/codex"

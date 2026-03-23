@@ -11,12 +11,12 @@ use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\Model\Server;
 use ApiPlatform\OpenApi\Model\Tag;
 use ApiPlatform\OpenApi\OpenApi;
-use App\Shared\Application\OpenApi\Augmenter\ServerErrorResponseAugmenter;
-use App\Shared\Application\OpenApi\Cleaner\NoContentResponseCleaner;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
-use App\Shared\Application\OpenApi\Sanitizer\PaginationQueryParametersSanitizer;
-use App\Shared\Application\OpenApi\Sanitizer\PathParametersSanitizer;
+use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
+use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -26,10 +26,10 @@ final class OpenApiFactoryTest extends UnitTestCase
     private MockObject $decoratedFactory;
     private MockObject $endpointFactoryOne;
     private MockObject $endpointFactoryTwo;
-    private MockObject $pathParametersSanitizer;
-    private MockObject $errorResponseAugmenter;
-    private MockObject $paginationQueryParametersSanitizer;
-    private MockObject $noContentResponseCleaner;
+    private MockObject $pathParametersTransformer;
+    private MockObject $errorResponseTransformer;
+    private MockObject $paginationQueryParametersTransformer;
+    private MockObject $noContentResponseTransformer;
 
     #[\Override]
     protected function setUp(): void
@@ -42,14 +42,14 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->createMock(EndpointFactoryInterface::class);
         $this->endpointFactoryTwo =
             $this->createMock(EndpointFactoryInterface::class);
-        $this->pathParametersSanitizer =
-            $this->createMock(PathParametersSanitizer::class);
-        $this->errorResponseAugmenter =
-            $this->createMock(ServerErrorResponseAugmenter::class);
-        $this->paginationQueryParametersSanitizer =
-            $this->createMock(PaginationQueryParametersSanitizer::class);
-        $this->noContentResponseCleaner =
-            $this->createMock(NoContentResponseCleaner::class);
+        $this->pathParametersTransformer =
+            $this->createMock(PathParametersTransformer::class);
+        $this->errorResponseTransformer =
+            $this->createMock(ServerErrorResponseTransformer::class);
+        $this->paginationQueryParametersTransformer =
+            $this->createMock(PaginationQueryParametersTransformer::class);
+        $this->noContentResponseTransformer =
+            $this->createMock(NoContentResponseTransformer::class);
     }
 
     public function testInvokeDecoratesOpenApiDocument(): void
@@ -102,22 +102,22 @@ final class OpenApiFactoryTest extends UnitTestCase
 
     private function setupProcessorExpectations(): void
     {
-        $this->errorResponseAugmenter->expects($this->once())
-            ->method('augment')
+        $this->errorResponseTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class));
 
-        $this->pathParametersSanitizer->expects($this->once())
-            ->method('sanitize')
+        $this->pathParametersTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
-        $this->paginationQueryParametersSanitizer->expects($this->once())
-            ->method('sanitize')
+        $this->paginationQueryParametersTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
 
-        $this->noContentResponseCleaner->expects($this->once())
-            ->method('clean')
+        $this->noContentResponseTransformer->expects($this->once())
+            ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
     }
@@ -143,10 +143,10 @@ final class OpenApiFactoryTest extends UnitTestCase
                 $this->endpointFactoryTwo,
             ],
             getenv('API_URL'),
-            $this->pathParametersSanitizer,
-            $this->errorResponseAugmenter,
-            $this->paginationQueryParametersSanitizer,
-            $this->noContentResponseCleaner
+            $this->pathParametersTransformer,
+            $this->errorResponseTransformer,
+            $this->paginationQueryParametersTransformer,
+            $this->noContentResponseTransformer
         );
     }
 
@@ -180,11 +180,14 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array<int, Tag>
+     * @return array<Tag>
+     *
+     * @psalm-return list{Tag, Tag, Tag, Tag, Tag}
      */
     private function createTags(): array
     {
         return [
+            new Tag('Authentication', 'Authentication and two-factor endpoints'),
             new Tag('HealthCheck', 'Service health monitoring endpoints'),
             new Tag('OAuth', 'OAuth 2.0 authorization and token endpoints'),
             new Tag('User', 'User account management operations'),
@@ -193,17 +196,9 @@ final class OpenApiFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     type: string,
-     *     description: string,
-     *     flows: array{
-     *         authorizationCode: array{
-     *             authorizationUrl: string,
-     *             tokenUrl: string,
-     *             scopes: array<string, string>
-     *         }
-     *     }
-     * }
+     * @return array<array<array<string|array<string>>>|string>
+     *
+     * @psalm-return array{type: 'oauth2', description: 'OAuth2 Authorization Code flow securing VilnaCRM API.', flows: array{authorizationCode: array{authorizationUrl: 'https://localhost/api/oauth/dialog', tokenUrl: 'https://localhost/api/oauth/token', scopes: array{'write:pets': 'modify pets in your account', 'read:pets': 'read your pets'}}}}
      */
     private function createOAuth2Scheme(): array
     {

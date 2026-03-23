@@ -42,22 +42,24 @@ Feature: OAuth authorization
     When I request the authorization endpoint
     Then unauthorized error should be returned
 
-  Scenario: Obtaining access token with implicit grant
+  Scenario: Implicit grant is disabled
     Given client with id "ImplicitId", secret "ImplicitSecret" and redirect uri "https://example.com" exists
     And passing client id "ImplicitId" and redirect_uri "https://example.com"
     And using response type "token"
     And authenticating user with email "implicituser@example.com" and password "password"
     When I request the authorization endpoint
-    Then implicit access token should be provided
+    Then unsupported response type error should be returned
 
   Scenario: Failing to obtain authorization code with invalid client
     And passing client id "InvalidClientId" and redirect_uri "https://example.com"
+    And authenticating user with email "invalidclient@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid credentials error should be returned
 
   Scenario: Failing to obtain authorization code with invalid redirect uri
     Given client with id "BadRedirectId", secret "BadRedirectSecret" and redirect uri "https://example.com" exists
     And passing client id "BadRedirectId" and redirect_uri "https://evil.example.com"
+    And authenticating user with email "badredirect@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid credentials error should be returned
 
@@ -65,6 +67,7 @@ Feature: OAuth authorization
     Given client with id "BadResponseId", secret "BadResponseSecret" and redirect uri "https://example.com" exists
     And passing client id "BadResponseId" and redirect_uri "https://example.com"
     And using response type "invalid"
+    And authenticating user with email "badresponse@example.com" and password "password"
     When I request the authorization endpoint
     Then unsupported response type error should be returned
 
@@ -72,12 +75,14 @@ Feature: OAuth authorization
     Given client with id "BadScopeId", secret "BadScopeSecret" and redirect uri "https://example.com" exists
     And passing client id "BadScopeId" and redirect_uri "https://example.com"
     And requesting scope "unknown_scope"
+    And authenticating user with email "badscope@example.com" and password "password"
     When I request the authorization endpoint
     Then authorization redirect error "invalid_scope" with description "The requested scope is invalid, unknown, or malformed" should be returned
 
   Scenario: Failing to obtain authorization code for public client without code challenge
     Given public client with id "PublicClientId" and redirect uri "https://example.com" exists
     And passing client id "PublicClientId" and redirect_uri "https://example.com"
+    And authenticating user with email "publicclient@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -85,6 +90,7 @@ Feature: OAuth authorization
     Given client with id "BadPkceId", secret "BadPkceSecret" and redirect uri "https://example.com" exists
     And passing client id "BadPkceId" and redirect_uri "https://example.com"
     And using code challenge "invalid"
+    And authenticating user with email "badpkce@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -92,6 +98,7 @@ Feature: OAuth authorization
     Given client with id "BadPkceMethodId", secret "BadPkceMethodSecret" and redirect uri "https://example.com" exists
     And passing client id "BadPkceMethodId" and redirect_uri "https://example.com"
     And using code challenge "validcodechallengevalidcodechallengevalidcodechallenge" and method "invalid"
+    And authenticating user with email "badpkcemethod@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -104,9 +111,11 @@ Feature: OAuth authorization
 
   Scenario: Obtaining access token with refresh token grant
     Given client with id "RefreshId", secret "RefreshSecret" and redirect uri "https://example.com" exists
-    And user with email "refreshGrant@mail.com" and password "pass" exists
-    And passing client id "RefreshId", client secret "RefreshSecret", email "refreshGrant@mail.com" and password "pass"
-    When obtaining access token with "password" grant-type
+    And passing client id "RefreshId" and redirect_uri "https://example.com"
+    And authenticating user with email "refreshGrant@mail.com" and password "pass"
+    And obtaining auth code
+    And passing client id "RefreshId", client secret "RefreshSecret", redirect_uri "https://example.com" and auth code
+    When obtaining access token with "authorization_code" grant-type
     Then refresh token should be provided
     And passing client id "RefreshId", client secret "RefreshSecret" and refresh token
     When obtaining access token with "refresh_token" grant-type
@@ -175,22 +184,24 @@ Feature: OAuth authorization
     When obtaining access token with "authorization_code" grant-type
     Then invalid grant error should be returned
 
-  Scenario: Obtaining access token with implicit grant
+  Scenario: Implicit grant is disabled
     Given client with id "ImplicitId", secret "ImplicitSecret" and redirect uri "https://example.com" exists
     And passing client id "ImplicitId" and redirect_uri "https://example.com"
     And using response type "token"
     And authenticating user with email "implicituser@example.com" and password "password"
     When I request the authorization endpoint
-    Then implicit access token should be provided
+    Then unsupported response type error should be returned
 
   Scenario: Failing to obtain authorization code with invalid client
     And passing client id "InvalidClientId" and redirect_uri "https://example.com"
+    And authenticating user with email "invalidclient-two@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid credentials error should be returned
 
   Scenario: Failing to obtain authorization code with invalid redirect uri
     Given client with id "BadRedirectId", secret "BadRedirectSecret" and redirect uri "https://example.com" exists
     And passing client id "BadRedirectId" and redirect_uri "https://evil.example.com"
+    And authenticating user with email "badredirect-two@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid credentials error should be returned
 
@@ -198,6 +209,7 @@ Feature: OAuth authorization
     Given client with id "BadResponseId", secret "BadResponseSecret" and redirect uri "https://example.com" exists
     And passing client id "BadResponseId" and redirect_uri "https://example.com"
     And using response type "invalid"
+    And authenticating user with email "badresponse-two@example.com" and password "password"
     When I request the authorization endpoint
     Then unsupported response type error should be returned
 
@@ -205,12 +217,14 @@ Feature: OAuth authorization
     Given client with id "BadScopeId", secret "BadScopeSecret" and redirect uri "https://example.com" exists
     And passing client id "BadScopeId" and redirect_uri "https://example.com"
     And requesting scope "unknown_scope"
+    And authenticating user with email "badscope-two@example.com" and password "password"
     When I request the authorization endpoint
     Then authorization redirect error "invalid_scope" with description "The requested scope is invalid, unknown, or malformed" should be returned
 
   Scenario: Failing to obtain authorization code for public client without code challenge
     Given public client with id "PublicClientId" and redirect uri "https://example.com" exists
     And passing client id "PublicClientId" and redirect_uri "https://example.com"
+    And authenticating user with email "publicclient-two@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -218,6 +232,7 @@ Feature: OAuth authorization
     Given client with id "BadPkceId", secret "BadPkceSecret" and redirect uri "https://example.com" exists
     And passing client id "BadPkceId" and redirect_uri "https://example.com"
     And using code challenge "invalid"
+    And authenticating user with email "badpkce-two@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -225,6 +240,7 @@ Feature: OAuth authorization
     Given client with id "BadPkceMethodId", secret "BadPkceMethodSecret" and redirect uri "https://example.com" exists
     And passing client id "BadPkceMethodId" and redirect_uri "https://example.com"
     And using code challenge "validcodechallengevalidcodechallengevalidcodechallenge" and method "invalid"
+    And authenticating user with email "badpkcemethod-two@example.com" and password "password"
     When I request the authorization endpoint
     Then invalid request error should be returned
 
@@ -237,9 +253,11 @@ Feature: OAuth authorization
 
   Scenario: Obtaining access token with refresh token grant
     Given client with id "RefreshId", secret "RefreshSecret" and redirect uri "https://example.com" exists
-    And user with email "refreshGrant@mail.com" and password "pass" exists
-    And passing client id "RefreshId", client secret "RefreshSecret", email "refreshGrant@mail.com" and password "pass"
-    When obtaining access token with "password" grant-type
+    And passing client id "RefreshId" and redirect_uri "https://example.com"
+    And authenticating user with email "refreshGrant@mail.com" and password "pass"
+    And obtaining auth code
+    And passing client id "RefreshId", client secret "RefreshSecret", redirect_uri "https://example.com" and auth code
+    When obtaining access token with "authorization_code" grant-type
     Then refresh token should be provided
     And passing client id "RefreshId", client secret "RefreshSecret" and refresh token
     When obtaining access token with "refresh_token" grant-type

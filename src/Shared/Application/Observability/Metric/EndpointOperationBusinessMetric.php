@@ -14,6 +14,9 @@ use App\Shared\Application\Observability\Metric\ValueObject\MetricDimensionsInte
  */
 abstract readonly class EndpointOperationBusinessMetric extends BusinessMetric
 {
+    /**
+     * @return EndpointOperationMetricDimensions
+     */
     #[\Override]
     final public function dimensions(): MetricDimensionsInterface
     {

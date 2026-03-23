@@ -250,6 +250,7 @@ After refactoring:
 - [quality-standards](../quality-standards/SKILL.md) - Overview of all protected quality thresholds
 - [implementing-ddd-architecture](../implementing-ddd-architecture/SKILL.md) - Proper layer separation and patterns
 - [deptrac-fixer](../deptrac-fixer/SKILL.md) - Fix architectural violations
+- [code-organization](../code-organization/SKILL.md) - Structural refactoring, directory placement, naming, config extraction
 - [ci-workflow](../ci-workflow/SKILL.md) - Run comprehensive CI checks
 - [testing-workflow](../testing-workflow/SKILL.md) - Maintain test coverage during refactoring
 

@@ -1,0 +1,24 @@
+App\User\Application\DTO\AuthPayload:
+  attributes:
+    id:
+      groups: ['auth:output']
+    success:
+      groups: ['auth:output']
+    twoFactorEnabled:
+      groups: ['auth:output']
+    accessToken:
+      groups: ['auth:output']
+    refreshToken:
+      groups: ['auth:output']
+    pendingSessionId:
+      groups: ['auth:output']
+    otpauthUri:
+      groups: ['auth:output']
+    secret:
+      groups: ['auth:output']
+    recoveryCodes:
+      groups: ['auth:output']
+    recoveryCodesRemaining:
+      groups: ['auth:output']
+    warning:
+      groups: ['auth:output']

@@ -10,6 +10,8 @@ abstract readonly class GraphQLMutationInput
 {
     /**
      * @return array<Argument>
+     *
+     * @psalm-return list{0?: Argument,...}
      */
     public function toGraphQLArguments(): array
     {
@@ -32,10 +34,6 @@ abstract readonly class GraphQLMutationInput
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            if (!$property->isPublic()) {
-                /** @psalm-suppress UnusedMethodCall */
-                $property->setAccessible(true);
-            }
             $values[$property->getName()] = $property->getValue($this);
         }
 

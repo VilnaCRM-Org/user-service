@@ -1,0 +1,57 @@
+import http from 'k6/http';
+import exec from 'k6/execution';
+import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
+import Utils from '../../utils/utils.js';
+import InsertUsersUtils from '../../utils/insertUsersUtils.js';
+
+const scenarioName = 'graphQLConfirmUser';
+
+const utils = new Utils();
+const scenarioUtils = new ScenarioUtils(utils, scenarioName);
+const mailCatcherUtils = new MailCatcherUtils(utils);
+const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
+
+const users = insertUsersUtils.loadInsertedUsers();
+
+export function setup() {
+  return {
+    users: users,
+  };
+}
+
+export const options = scenarioUtils.getOptions();
+
+export default async function confirmUser(data) {
+  const num = exec.scenario.iterationInTest + 1;
+  const user = data.users[num % data.users.length];
+  utils.checkUserIsDefined(user);
+  const mutationName = 'confirmUser';
+
+  const token = await mailCatcherUtils.getConfirmationToken(num);
+
+  const mutation = `
+     mutation {
+        ${mutationName}(input: { token: "${token}" }) {
+            user {
+               id
+            }
+        }
+     }`;
+
+  const response = http.post(
+    utils.getBaseGraphQLUrl(),
+    JSON.stringify({ query: mutation }),
+    utils.getJsonHeaderWithAuth(user.accessToken)
+  );
+
+  utils.checkResponse(
+    response,
+    'confirmed user returned',
+    res => JSON.parse(res.body).data[mutationName].user.id !== undefined
+  );
+}
+
+export function teardown(data) {
+  mailCatcherUtils.clearMessages();
+}

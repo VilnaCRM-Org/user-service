@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Shared\Application\Validator\Constraint;
 
 use App\Shared\Application\Validator\Constraint\Initials;
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\Shared\SharedIntegrationTestCase;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-final class InitialsConstraintIntegrationTest extends IntegrationTestCase
+final class InitialsConstraintIntegrationTest extends SharedIntegrationTestCase
 {
     private ValidatorInterface $validator;
 

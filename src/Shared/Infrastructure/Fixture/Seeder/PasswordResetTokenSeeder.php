@@ -23,7 +23,6 @@ final readonly class PasswordResetTokenSeeder
     public function seedTokens(UserInterface $user, array $tokenValues): void
     {
         $tokens = $this->prepareTokens($user, $tokenValues);
-        /** @infection-ignore-all */
         $this->tokenRepository->saveBatch($tokens);
     }
 
@@ -31,6 +30,8 @@ final readonly class PasswordResetTokenSeeder
      * @param array<int,string> $tokenValues
      *
      * @return array<PasswordResetTokenInterface>
+     *
+     * @psalm-return list{0?: PasswordResetTokenInterface,...}
      */
     private function prepareTokens(
         UserInterface $user,
@@ -70,7 +71,7 @@ final readonly class PasswordResetTokenSeeder
     private function createToken(
         UserInterface $user,
         string $tokenValue
-    ): PasswordResetTokenInterface {
+    ): PasswordResetToken {
         return new PasswordResetToken(
             $tokenValue,
             $user->getId(),

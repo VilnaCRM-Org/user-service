@@ -383,7 +383,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ### 12. OpenAPI Development (`openapi-development/`)
 
-**Purpose**: Guide for contributing to the OpenAPI layer (factories/sanitizers/augmenters/cleaners)
+**Purpose**: Guide for contributing to the OpenAPI layer (factories/processors)
 
 **When activated**:
 

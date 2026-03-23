@@ -79,18 +79,21 @@ User/Domain
 └── ValueObject
 ```
 
-- **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer, Decorators for cross-cutting concerns like rate limiting, and Services that implement domain interfaces using external frameworks.
+- **Infrastructure:** This layer consists of various Repositories for Entities from the Domain layer, Decorators for cross-cutting concerns like rate limiting, and Adapters that implement domain interfaces using external frameworks.
 
 ```bash
 User/Infrastructure
-├── Decoder
+├── Adapter
+├── Converter
 ├── Decorator
-├── Evaluator
 ├── EventListener
-├── Extractor
+├── EventSubscriber
 ├── Factory
+├── Fixture
+├── Publisher
 ├── Repository
-└── Service
+├── Resolver
+├── Validator
 ```
 
 ### OAuth

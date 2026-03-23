@@ -209,9 +209,12 @@ final class EmfPayloadFactoryTest extends UnitTestCase
         );
     }
 
-    private function createTimestampProvider(): EmfTimestampProvider
+    private function createTimestampProvider(): object
     {
         return new class() implements EmfTimestampProvider {
+            /**
+             * @psalm-return 1702425600000
+             */
             #[\Override]
             public function currentTimestamp(): int
             {

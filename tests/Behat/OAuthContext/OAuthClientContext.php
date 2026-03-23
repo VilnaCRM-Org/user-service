@@ -33,7 +33,7 @@ final class OAuthClientContext implements Context
         $this->state->clientId = $id;
         $this->state->clientSecret = $secret;
         $this->state->obtainAccessTokenInput =
-            new ClientCredentialsGrantInput($id, $secret);
+            new ClientCredentialsGrantInput();
     }
 
     /**
@@ -66,8 +66,6 @@ final class OAuthClientContext implements Context
         $this->state->clientId = $id;
         $this->state->clientSecret = $secret;
         $this->state->obtainAccessTokenInput = new PasswordGrantInput(
-            $id,
-            $secret,
             $email,
             $password
         );

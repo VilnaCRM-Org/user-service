@@ -14,8 +14,9 @@ final class UpdateUserCommandFactory implements
     #[\Override]
     public function create(
         UserInterface $user,
-        UserUpdate $updateData
+        UserUpdate $updateData,
+        string $currentSessionId
     ): UpdateUserCommand {
-        return new UpdateUserCommand($user, $updateData);
+        return new UpdateUserCommand($user, $updateData, $currentSessionId);
     }
 }

@@ -9,7 +9,7 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Application\Command\RegisterUserBatchCommand;
-use App\User\Application\Command\RegisterUserBatchCommandResponse;
+use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;

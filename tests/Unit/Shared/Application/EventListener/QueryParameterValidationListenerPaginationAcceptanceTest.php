@@ -6,11 +6,11 @@ namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\QueryParameterValidationListener;
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\Finder\QueryViolationFinder;
 use App\Shared\Application\QueryParameter as QP;
-use App\Shared\Application\QueryParameter\Evaluator;
 use App\Shared\Application\QueryParameter\Normalizer;
 use App\Shared\Application\QueryParameter\Pagination as QPP;
+use App\Shared\Application\QueryParameter\Validator;
+use App\Shared\Application\Resolver\QueryViolationResolver;
 use App\Shared\Application\Validator\Pagination as VP;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -95,14 +95,14 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
 
     public function testIsExplicitlyProvidedTrimsWhitespace(): void
     {
-        $evaluator = new Evaluator\ExplicitValueEvaluator();
+        $evaluator = new Validator\ExplicitValueValidator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided('   '));
     }
 
     public function testIsExplicitlyProvidedDetectsEmptyArray(): void
     {
-        $evaluator = new Evaluator\ExplicitValueEvaluator();
+        $evaluator = new Validator\ExplicitValueValidator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided([]));
     }
@@ -111,7 +111,7 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
     {
         return new QueryParameterValidationListener(
             [$this->createAllowedParametersRule(), $this->createPaginationRule()],
-            new QueryViolationFinder()
+            new QueryViolationResolver()
         );
     }
 
@@ -124,14 +124,14 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
 
     private function createPaginationRule(): QPP\PaginationRule
     {
-        $valueEvaluator = new Evaluator\ExplicitValueEvaluator();
+        $valueValidator = new Validator\ExplicitValueValidator();
         $normalizer = new Normalizer\PositiveIntegerNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
 
         return new QPP\PaginationRule(
-            new VP\PageParameterValidator($valueEvaluator, $normalizer, $violationFactory),
+            new VP\PageParameterValidator($valueValidator, $normalizer, $violationFactory),
             new VP\ItemsPerPageParameterValidator(
-                new QPP\ItemsPerPageRule($valueEvaluator, $normalizer, $violationFactory)
+                new QPP\ItemsPerPageRule($valueValidator, $normalizer, $violationFactory)
             )
         );
     }

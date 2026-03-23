@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Shared\Application\QueryParameter\Pagination;
 
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\QueryParameter\Validator\ExplicitValueValidator;
 
 final class ItemsPerPageRule
 {
     private const MAX_ITEMS_PER_PAGE = 100;
 
     public function __construct(
-        private readonly ExplicitValueEvaluator $valueEvaluator,
+        private readonly ExplicitValueValidator $valueValidator,
         private readonly PositiveIntegerNormalizer $normalizer,
         private readonly QueryParameterViolationFactory $violationFactory
     ) {
@@ -25,11 +25,11 @@ final class ItemsPerPageRule
      */
     public function evaluate(mixed $value): ?QueryParameterViolation
     {
-        if (!$this->valueEvaluator->wasParameterSent($value)) {
+        if (!$this->valueValidator->wasParameterSent($value)) {
             return null;
         }
 
-        if (!$this->valueEvaluator->isExplicitlyProvided($value)) {
+        if (!$this->valueValidator->isExplicitlyProvided($value)) {
             return $this->violationFactory->invalidPagination();
         }
 
