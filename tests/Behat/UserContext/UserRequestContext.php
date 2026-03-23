@@ -210,8 +210,17 @@ final class UserRequestContext implements Context
 
     private function sendRequestWithoutBody(string $method, string $path): void
     {
+        $this->resetBodyHeaders();
         $this->addHeaders($this->buildHeaders($method));
         $this->restContext->iSendARequestTo($method, $path);
+    }
+
+    private function resetBodyHeaders(): void
+    {
+        $this->restContext
+            ->getMink()
+            ->getSession()
+            ->setRequestHeader('Content-Type', '');
     }
 
     /**
