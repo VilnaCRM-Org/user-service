@@ -16,6 +16,7 @@ jobs:
         with:
           php-version: ${{ vars.PHP_VERSION }}
           extensions: mongodb, redis
+          coverage: xdebug
 
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist

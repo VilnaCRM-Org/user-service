@@ -43,6 +43,10 @@ final class RedisConnectionFactoryTest extends UnitTestCase
 
     private function skipIfRedisUnavailable(): void
     {
+        if (!class_exists(Redis::class)) {
+            $this->markTestSkipped('PHP Redis extension is not installed');
+        }
+
         set_error_handler(static fn (): bool => true);
         try {
             $redis = new Redis();

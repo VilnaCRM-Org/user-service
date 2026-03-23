@@ -92,13 +92,17 @@ final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
             );
         }
 
-        /** @infection-ignore-all - depth 512 is PHP default, not testable */
-        return json_decode(
-            (string) $raw,
-            true,
-            512,
-            JSON_THROW_ON_ERROR
-        );
+        return $this->deserializeState((string) $raw);
+    }
+
+    /**
+     * @infection-ignore-all - depth 512 is PHP default, not testable
+     *
+     * @return array{provider: string, code_verifier: string, flow_binding_hash: string, redirect_uri: string, created_at: string}
+     */
+    private function deserializeState(string $raw): array
+    {
+        return json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
