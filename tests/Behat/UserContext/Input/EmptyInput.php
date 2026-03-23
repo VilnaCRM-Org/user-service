@@ -10,6 +10,7 @@ final class EmptyInput extends RequestInput
     {
     }
 
+    #[\Override]
     public function getJson(): string
     {
         return '{}';

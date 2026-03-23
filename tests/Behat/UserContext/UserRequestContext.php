@@ -10,22 +10,37 @@ use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\KernelInterface;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
+use RuntimeException;
 use Symfony\Component\Serializer\SerializerInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserRequestContext implements Context
 {
+    private const CONTENT_TYPES = [
+        'PATCH' => 'application/merge-patch+json',
+    ];
+
     private UrlResolver $urlResolver;
     private RequestBodySerializer $bodySerializer;
+    private RestContext $restContext;
 
     public function __construct(
         private UserOperationsState $state,
-        private readonly KernelInterface $kernel,
         SerializerInterface $serializer
     ) {
         $this->urlResolver = new UrlResolver();
         $this->bodySerializer = new RequestBodySerializer($serializer);
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -85,6 +100,15 @@ final class UserRequestContext implements Context
         string $initials,
         string $password
     ): void {
+        if (!$this->state->requestBody instanceof CreateUserBatchInput) {
+            throw new RuntimeException(
+                sprintf(
+                    'requestBody must be initialized with "%s" before calling addUser().',
+                    'Given sending a batch of users'
+                )
+            );
+        }
+
         $this->state->requestBody->addUser(
             [
                 'email' => $email,
@@ -125,40 +149,68 @@ final class UserRequestContext implements Context
     public function requestSendTo(string $method, string $path): void
     {
         $processedPath = $this->processRequestPath($path);
-        $headers = $this->buildRequestHeaders($method);
-        $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
+        $requestBody = $this->bodySerializer->serialize(
+            $this->state->requestBody,
+            $method
+        );
 
-        $this->state->response = $this->kernel->handle(Request::create(
-            $processedPath,
-            $method,
-            [],
-            [],
-            [],
-            $headers,
-            $requestBody
-        ));
+        if ($this->isRequestBodyMethod($method)) {
+            $this->sendRequestWithBody($method, $processedPath, $requestBody);
+
+            return;
+        }
+
+        $this->sendRequestWithoutBody($method, $processedPath);
     }
 
     private function processRequestPath(string $path): string
     {
         $this->urlResolver->setCurrentUserEmail($this->state->currentUserEmail);
+
         return $this->urlResolver->resolve($path);
     }
 
     /**
      * @return array<string, string>
      */
-    private function buildRequestHeaders(string $method): array
+    private function buildHeaders(string $method): array
     {
         return [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
-            'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
+            'Accept' => 'application/json',
+            'Accept-Language' => $this->state->language,
+            'Content-Type' => self::CONTENT_TYPES[$method] ?? 'application/json',
         ];
     }
 
-    private function getContentTypeForMethod(string $method): string
+    private function isRequestBodyMethod(string $method): bool
     {
-        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+        return in_array($method, ['POST', 'PUT', 'PATCH'], true);
+    }
+
+    private function sendRequestWithBody(
+        string $method,
+        string $path,
+        string $body
+    ): void {
+        $this->addHeaders($this->buildHeaders($method));
+
+        $pyStringBody = new PyStringNode([$body !== '' ? $body : '{}'], 0);
+        $this->restContext->iSendARequestToWithBody($method, $path, $pyStringBody);
+    }
+
+    private function sendRequestWithoutBody(string $method, string $path): void
+    {
+        $this->addHeaders($this->buildHeaders($method));
+        $this->restContext->iSendARequestTo($method, $path);
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function addHeaders(array $headers): void
+    {
+        foreach ($headers as $name => $value) {
+            $this->restContext->iAddHeaderEqualTo($name, $value);
+        }
     }
 }

@@ -16,6 +16,7 @@ final class CreateUserInput extends RequestInput
     ) {
     }
 
+    #[\Override]
     public function getJson(): string
     {
         return json_encode([

@@ -13,21 +13,30 @@ use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutation
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserGraphQLMutationContext implements Context
 {
     private const GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private const GRAPHQL_ID_PREFIX = '/api/users/';
+    private RestContext $restContext;
 
-    public function __construct(
-        private UserGraphQLState $state,
-        private readonly KernelInterface $kernel,
-    ) {
+    public function __construct(private UserGraphQLState $state)
+    {
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -187,19 +196,24 @@ final class UserGraphQLMutationContext implements Context
      */
     public function sendGraphQlRequest(): void
     {
-        $this->state->setResponse($this->kernel->handle(Request::create(
-            self::GRAPHQL_ENDPOINT_URI,
+        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
+        $this->restContext->iAddHeaderEqualTo(
+            'Content-Type',
+            'application/json'
+        );
+        $this->restContext->iAddHeaderEqualTo(
+            'Accept-Language',
+            $this->state->getLanguage()
+        );
+
+        $requestBody = \Safe\json_encode(['query' => $this->state->getQuery()]);
+        $pyStringBody = new PyStringNode(explode(PHP_EOL, $requestBody), 0);
+
+        $this->restContext->iSendARequestToWithBody(
             'POST',
-            [],
-            [],
-            [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_ACCEPT_LANGUAGE' => $this->state->getLanguage(),
-            ],
-            \Safe\json_encode(['query' => $this->state->getQuery()])
-        )));
+            self::GRAPHQL_ENDPOINT_URI,
+            $pyStringBody
+        );
     }
 
     /**

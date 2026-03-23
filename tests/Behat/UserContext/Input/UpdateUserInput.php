@@ -18,6 +18,7 @@ final class UpdateUserInput extends RequestInput
     ) {
     }
 
+    #[\Override]
     public function getJson(): string
     {
         $data = [];

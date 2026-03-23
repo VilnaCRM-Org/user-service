@@ -5,12 +5,25 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserResponseContext implements Context
 {
+    private RestContext $restContext;
+
     public function __construct(private UserOperationsState $state)
     {
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -18,7 +31,7 @@ final class UserResponseContext implements Context
      */
     public function userShouldBeTimedOut(): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertStringContainsString(
             'Cannot send new email till',
             $data['detail']
@@ -30,7 +43,7 @@ final class UserResponseContext implements Context
      */
     public function theErrorMessageShouldBe(string $errorMessage): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertEquals($errorMessage, $data['detail']);
     }
 
@@ -39,7 +52,10 @@ final class UserResponseContext implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        Assert::assertEquals($statusCode, $this->state->response->getStatusCode());
+        Assert::assertEquals(
+            $statusCode,
+            $this->restContext->getMink()->getSession()->getStatusCode()
+        );
     }
 
     /**
@@ -47,8 +63,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseBodyShouldContain(string $text): void
     {
-        Assert::assertNotNull($this->state->response);
-        Assert::assertStringContainsString($text, (string) $this->state->response->getContent());
+        Assert::assertStringContainsString($text, $this->getPageContent());
     }
 
     /**
@@ -56,7 +71,7 @@ final class UserResponseContext implements Context
      */
     public function theViolationShouldBe(string $violation): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertEquals(
             $violation,
             $data['violations'][$this->state->violationNum]['message']
@@ -69,7 +84,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldContainAListOfUsers(): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertIsArray($data);
     }
 
@@ -80,7 +95,7 @@ final class UserResponseContext implements Context
         string $email,
         string $initials
     ): void {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertArrayHasKey('id', $data);
         Assert::assertArrayHasKey('email', $data);
         Assert::assertEquals($email, $data['email']);
@@ -95,7 +110,7 @@ final class UserResponseContext implements Context
      */
     public function userWithIdShouldBeReturned(string $id): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
         Assert::assertArrayHasKey('id', $data);
         Assert::assertEquals($id, $data['id']);
         Assert::assertArrayHasKey('email', $data);
@@ -109,11 +124,19 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldContain(string $text): void
     {
-        $responseContent = $this->state->response->getContent();
         Assert::assertStringContainsString(
             $text,
-            $responseContent,
+            $this->getPageContent(),
             "The response does not contain the expected text: '{$text}'."
         );
+    }
+
+    private function getPageContent(): string
+    {
+        return $this->restContext
+            ->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
     }
 }

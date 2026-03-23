@@ -5,15 +5,27 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserGraphQLContext;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserGraphQLResponseContext implements Context
 {
     private ResponseValidator $responseValidator;
+    private RestContext $restContext;
 
     public function __construct(private UserGraphQLState $state)
     {
         $this->responseValidator = new ResponseValidator();
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -47,7 +59,7 @@ final class UserGraphQLResponseContext implements Context
     public function queryResponseShouldBeNull(): void
     {
         $userData = json_decode(
-            $this->state->getResponse()->getContent(),
+            $this->getPageContent(),
             true
         )['data'][$this->state->getQueryName()];
 
@@ -60,13 +72,13 @@ final class UserGraphQLResponseContext implements Context
     public function graphQLPasswordResetMutationShouldSucceed(): void
     {
         $responseData = json_decode(
-            $this->state->getResponse()->getContent(),
+            $this->getPageContent(),
             true
         );
 
         if (!isset($responseData['data'])) {
             throw new \RuntimeException(
-                'GraphQL response: ' . $this->state->getResponse()->getContent()
+                'GraphQL response: ' . $this->getPageContent()
             );
         }
 
@@ -87,7 +99,7 @@ final class UserGraphQLResponseContext implements Context
     public function collectionOfUsersShouldBeReturned(): void
     {
         $userData = json_decode(
-            $this->state->getResponse()->getContent(),
+            $this->getPageContent(),
             true
         )['data'][$this->state->getQueryName()]['edges'];
 
@@ -102,7 +114,7 @@ final class UserGraphQLResponseContext implements Context
      */
     public function graphQLErrorShouldBe(string $errorMessage): void
     {
-        $data = json_decode($this->state->getResponse()->getContent(), true);
+        $data = json_decode($this->getPageContent(), true);
 
         Assert::assertEquals(
             $errorMessage,
@@ -128,10 +140,8 @@ final class UserGraphQLResponseContext implements Context
      */
     private function parseAndValidateResponse(): array
     {
-        $msg = 'Response is null; did you call sendGraphQlRequest()?';
-        Assert::assertNotNull($this->state->getResponse(), $msg);
         $data = json_decode(
-            $this->state->getResponse()->getContent(),
+            $this->getPageContent(),
             true,
             512,
             JSON_THROW_ON_ERROR
@@ -173,5 +183,14 @@ final class UserGraphQLResponseContext implements Context
         foreach ($this->state->getResponseContent() as $item) {
             Assert::assertArrayHasKey($item, $userNode);
         }
+    }
+
+    private function getPageContent(): string
+    {
+        return $this->restContext
+            ->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
     }
 }

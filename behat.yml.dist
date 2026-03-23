@@ -39,23 +39,33 @@ default:
       paths: ['%paths.base%/features/user_operations.feature']
       contexts:
         - App\Tests\Behat\UserContext\UserContext
-        - App\Tests\Behat\UserContext\UserOperationsContext
+        - App\Tests\Behat\UserContext\UserOperationsStateContext
+        - App\Tests\Behat\UserContext\UserRequestContext
+        - App\Tests\Behat\UserContext\UserResponseContext
         - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
     user_localization:
       paths: ['%paths.base%/features/user_localization.feature']
       contexts:
         - App\Tests\Behat\UserContext\UserContext
-        - App\Tests\Behat\UserContext\UserOperationsContext
+        - App\Tests\Behat\UserContext\UserOperationsStateContext
+        - App\Tests\Behat\UserContext\UserRequestContext
+        - App\Tests\Behat\UserContext\UserResponseContext
         - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
     user_graphql_operations:
       paths: ['%paths.base%/features/user_graphql_operations.feature']
       contexts:
         - App\Tests\Behat\UserContext\UserContext
-        - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLStateContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLQueryContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLMutationContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLResponseContext
         - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
     user_graphql_localization:
       paths: ['%paths.base%/features/user_graphql_localization.feature']
       contexts:
         - App\Tests\Behat\UserContext\UserContext
-        - App\Tests\Behat\UserGraphQLContext\UserGraphQLContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLStateContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLQueryContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLMutationContext
+        - App\Tests\Behat\UserGraphQLContext\UserGraphQLResponseContext
         - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
