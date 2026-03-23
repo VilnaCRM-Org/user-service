@@ -148,6 +148,7 @@ final class UserRequestContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
+        $method = strtoupper($method);
         $processedPath = $this->processRequestPath($path);
 
         if ($this->isRequestBodyMethod($method)) {
@@ -175,6 +176,7 @@ final class UserRequestContext implements Context
      */
     private function buildHeaders(string $method): array
     {
+        $method = strtoupper($method);
         $headers = [
             'Accept' => 'application/json',
             'Accept-Language' => $this->state->language,
@@ -190,6 +192,8 @@ final class UserRequestContext implements Context
 
     private function isRequestBodyMethod(string $method): bool
     {
+        $method = strtoupper($method);
+
         return in_array($method, ['POST', 'PUT', 'PATCH'], true);
     }
 
