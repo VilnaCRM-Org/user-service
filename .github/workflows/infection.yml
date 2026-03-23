@@ -21,3 +21,5 @@ jobs:
 
       - name: Run infection
         run: CI=1 make infection
+        env:
+          XDEBUG_MODE: coverage
