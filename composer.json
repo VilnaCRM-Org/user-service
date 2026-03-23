@@ -145,7 +145,7 @@
     "symfony/phpunit-bridge": "7.4.*",
     "symfony/stopwatch": "7.4.*",
     "symfony/web-profiler-bundle": "7.4.*",
-    "twentytwo-labs/behat-open-api": "^1.0",
+    "twentytwo-labs/behat-open-api": "^1.0.5",
     "vimeo/psalm": "^6.13",
     "zenstruck/messenger-test": "^1.9"
   },

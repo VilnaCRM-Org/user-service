@@ -13,9 +13,4 @@ final class ConfirmUserInput extends RequestInput
     {
     }
 
-    #[\Override]
-    public function getJson(): string
-    {
-        return json_encode(['token' => $this->token]);
-    }
 }
