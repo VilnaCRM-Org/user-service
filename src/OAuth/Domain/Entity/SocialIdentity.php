@@ -29,7 +29,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setId(string $id): void
     {
@@ -44,7 +44,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setProvider(OAuthProvider $provider): void
     {
@@ -59,7 +59,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setProviderId(string $providerId): void
     {
@@ -74,7 +74,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setUserId(string $userId): void
     {
@@ -89,7 +89,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setCreatedAt(DateTimeImmutable $createdAt): void
     {
@@ -104,7 +104,7 @@ final class SocialIdentity
     /**
      * @internal For Doctrine ODM hydration only.
      *
-     * @psalm-suppress PossiblyUnusedMethod Doctrine hydration
+     * @psalm-api
      */
     public function setLastUsedAt(DateTimeImmutable $lastUsedAt): void
     {

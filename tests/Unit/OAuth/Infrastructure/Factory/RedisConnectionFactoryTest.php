@@ -41,6 +41,28 @@ final class RedisConnectionFactoryTest extends UnitTestCase
         $this->assertInstanceOf(Redis::class, $redis);
     }
 
+    public function testCreateAuthenticatesWhenPasswordProvided(): void
+    {
+        $this->skipIfRedisUnavailable();
+
+        $tempPassword = 'test_temp_pass_' . bin2hex(random_bytes(8));
+
+        $admin = new Redis();
+        $admin->connect('redis', 6379, 1);
+        $admin->config('SET', 'requirepass', $tempPassword);
+
+        try {
+            $redis = RedisConnectionFactory::create(
+                sprintf('redis://:%s@redis:6379/0', $tempPassword)
+            );
+
+            $this->assertInstanceOf(Redis::class, $redis);
+        } finally {
+            $admin->auth($tempPassword);
+            $admin->config('SET', 'requirepass', '');
+        }
+    }
+
     private function skipIfRedisUnavailable(): void
     {
         if (!class_exists(Redis::class)) {

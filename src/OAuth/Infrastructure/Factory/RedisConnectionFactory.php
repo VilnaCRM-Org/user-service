@@ -27,6 +27,11 @@ final class RedisConnectionFactory
             (int) ($parsed['port'] ?? 6379),
         );
 
+        $password = (string) ($parsed['pass'] ?? '');
+        if ($password !== '') {
+            $redis->auth($password);
+        }
+
         $database = ltrim((string) ($parsed['path'] ?? '/0'), '/');
         if ($database !== '') {
             $redis->select((int) $database);

@@ -11,27 +11,27 @@ interface OAuthProviderInterface
 {
     public function getProvider(): OAuthProvider;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function supportsPkce(): bool;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function emailAlwaysVerified(): bool;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function requiresExtraProfileCall(): bool;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function getAuthorizationUrl(
         string $state,
         ?string $codeChallenge,
     ): string;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function exchangeCode(
         string $code,
         ?string $codeVerifier,
     ): string;
 
-    /** @psalm-suppress PossiblyUnusedMethod Used by Epic 2 command handlers */
+    /** @psalm-api */
     public function fetchProfile(string $accessToken): OAuthUserProfile;
 }

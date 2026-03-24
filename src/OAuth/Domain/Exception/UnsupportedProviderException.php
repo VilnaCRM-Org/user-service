@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\OAuth\Domain\Exception;
 
-final class UnsupportedProviderException extends \RuntimeException
+use RuntimeException;
+
+final class UnsupportedProviderException extends RuntimeException
 {
     public function __construct(string $provider)
     {
