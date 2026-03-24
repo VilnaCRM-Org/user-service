@@ -28,87 +28,111 @@ final class OAuthStatePayloadTest extends UnitTestCase
 
         $this->assertSame($provider, $payload->provider);
         $this->assertSame($codeVerifier, $payload->codeVerifier);
-        $this->assertSame($flowBindingHash, $payload->flowBindingHash);
+        $this->assertSame(
+            $flowBindingHash,
+            $payload->flowBindingHash
+        );
         $this->assertSame($redirectUri, $payload->redirectUri);
         $this->assertSame($createdAt, $payload->createdAt);
     }
 
     public function testEqualsReturnsTrueForIdenticalPayloads(): void
     {
-        $provider = $this->faker->word();
-        $codeVerifier = $this->faker->sha256();
-        $flowBindingHash = $this->faker->sha256();
-        $redirectUri = $this->faker->url();
-        $createdAt = new DateTimeImmutable();
-
-        $payload1 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $redirectUri, $createdAt);
-        $payload2 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $redirectUri, $createdAt);
+        $payload1 = $this->createPayload();
+        $payload2 = new OAuthStatePayload(
+            $payload1->provider,
+            $payload1->codeVerifier,
+            $payload1->flowBindingHash,
+            $payload1->redirectUri,
+            $payload1->createdAt,
+        );
 
         $this->assertTrue($payload1->equals($payload2));
     }
 
     public function testEqualsReturnsFalseForDifferentProvider(): void
     {
-        $codeVerifier = $this->faker->sha256();
-        $flowBindingHash = $this->faker->sha256();
-        $redirectUri = $this->faker->url();
-        $createdAt = new DateTimeImmutable();
+        $base = $this->createPayload();
 
-        $payload1 = new OAuthStatePayload($this->faker->word(), $codeVerifier, $flowBindingHash, $redirectUri, $createdAt);
-        $payload2 = new OAuthStatePayload($this->faker->word(), $codeVerifier, $flowBindingHash, $redirectUri, $createdAt);
+        $other = new OAuthStatePayload(
+            $this->faker->word(),
+            $base->codeVerifier,
+            $base->flowBindingHash,
+            $base->redirectUri,
+            $base->createdAt,
+        );
 
-        $this->assertFalse($payload1->equals($payload2));
+        $this->assertFalse($base->equals($other));
     }
 
     public function testEqualsReturnsFalseForDifferentCodeVerifier(): void
     {
-        $provider = $this->faker->word();
-        $flowBindingHash = $this->faker->sha256();
-        $redirectUri = $this->faker->url();
-        $createdAt = new DateTimeImmutable();
+        $base = $this->createPayload();
 
-        $payload1 = new OAuthStatePayload($provider, $this->faker->sha256(), $flowBindingHash, $redirectUri, $createdAt);
-        $payload2 = new OAuthStatePayload($provider, $this->faker->sha256(), $flowBindingHash, $redirectUri, $createdAt);
+        $other = new OAuthStatePayload(
+            $base->provider,
+            $this->faker->sha256(),
+            $base->flowBindingHash,
+            $base->redirectUri,
+            $base->createdAt,
+        );
 
-        $this->assertFalse($payload1->equals($payload2));
+        $this->assertFalse($base->equals($other));
     }
 
     public function testEqualsReturnsFalseForDifferentFlowBindingHash(): void
     {
-        $provider = $this->faker->word();
-        $codeVerifier = $this->faker->sha256();
-        $redirectUri = $this->faker->url();
-        $createdAt = new DateTimeImmutable();
+        $base = $this->createPayload();
 
-        $payload1 = new OAuthStatePayload($provider, $codeVerifier, $this->faker->sha256(), $redirectUri, $createdAt);
-        $payload2 = new OAuthStatePayload($provider, $codeVerifier, $this->faker->sha256(), $redirectUri, $createdAt);
+        $other = new OAuthStatePayload(
+            $base->provider,
+            $base->codeVerifier,
+            $this->faker->sha256(),
+            $base->redirectUri,
+            $base->createdAt,
+        );
 
-        $this->assertFalse($payload1->equals($payload2));
+        $this->assertFalse($base->equals($other));
     }
 
     public function testEqualsReturnsFalseForDifferentRedirectUri(): void
     {
-        $provider = $this->faker->word();
-        $codeVerifier = $this->faker->sha256();
-        $flowBindingHash = $this->faker->sha256();
-        $createdAt = new DateTimeImmutable();
+        $base = $this->createPayload();
 
-        $payload1 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $this->faker->url(), $createdAt);
-        $payload2 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $this->faker->url(), $createdAt);
+        $other = new OAuthStatePayload(
+            $base->provider,
+            $base->codeVerifier,
+            $base->flowBindingHash,
+            $this->faker->url(),
+            $base->createdAt,
+        );
 
-        $this->assertFalse($payload1->equals($payload2));
+        $this->assertFalse($base->equals($other));
     }
 
     public function testEqualsReturnsFalseForDifferentCreatedAt(): void
     {
-        $provider = $this->faker->word();
-        $codeVerifier = $this->faker->sha256();
-        $flowBindingHash = $this->faker->sha256();
-        $redirectUri = $this->faker->url();
+        $base = $this->createPayload();
 
-        $payload1 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $redirectUri, new DateTimeImmutable('2025-01-01'));
-        $payload2 = new OAuthStatePayload($provider, $codeVerifier, $flowBindingHash, $redirectUri, new DateTimeImmutable('2025-06-01'));
+        $other = new OAuthStatePayload(
+            $base->provider,
+            $base->codeVerifier,
+            $base->flowBindingHash,
+            $base->redirectUri,
+            new DateTimeImmutable('2020-01-01'),
+        );
 
-        $this->assertFalse($payload1->equals($payload2));
+        $this->assertFalse($base->equals($other));
+    }
+
+    private function createPayload(): OAuthStatePayload
+    {
+        return new OAuthStatePayload(
+            provider: $this->faker->word(),
+            codeVerifier: $this->faker->sha256(),
+            flowBindingHash: $this->faker->sha256(),
+            redirectUri: $this->faker->url(),
+            createdAt: new DateTimeImmutable(),
+        );
     }
 }
