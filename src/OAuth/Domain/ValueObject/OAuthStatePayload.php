@@ -16,4 +16,13 @@ final readonly class OAuthStatePayload
         public DateTimeImmutable $createdAt,
     ) {
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->provider === $other->provider
+            && $this->codeVerifier === $other->codeVerifier
+            && $this->flowBindingHash === $other->flowBindingHash
+            && $this->redirectUri === $other->redirectUri
+            && $this->createdAt == $other->createdAt;
+    }
 }

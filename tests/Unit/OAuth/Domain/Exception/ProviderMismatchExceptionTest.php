@@ -11,10 +11,13 @@ final class ProviderMismatchExceptionTest extends UnitTestCase
 {
     public function testMessageIncludesProviders(): void
     {
-        $exception = new ProviderMismatchException('github', 'google');
+        $expected = $this->faker->word();
+        $actual = $this->faker->word();
+
+        $exception = new ProviderMismatchException($expected, $actual);
 
         $this->assertSame(
-            'Provider mismatch: expected github, got google',
+            sprintf('Provider mismatch: expected %s, got %s', $expected, $actual),
             $exception->getMessage()
         );
     }

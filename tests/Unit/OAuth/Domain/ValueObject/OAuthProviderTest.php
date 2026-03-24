@@ -11,15 +11,17 @@ final class OAuthProviderTest extends UnitTestCase
 {
     public function testValueIsStored(): void
     {
-        $provider = new OAuthProvider('github');
+        $value = $this->faker->word();
+        $provider = new OAuthProvider($value);
 
-        $this->assertSame('github', $provider->value);
+        $this->assertSame($value, $provider->value);
     }
 
     public function testToStringReturnsValue(): void
     {
-        $provider = new OAuthProvider('google');
+        $value = $this->faker->word();
+        $provider = new OAuthProvider($value);
 
-        $this->assertSame('google', (string) $provider);
+        $this->assertSame($value, (string) $provider);
     }
 }

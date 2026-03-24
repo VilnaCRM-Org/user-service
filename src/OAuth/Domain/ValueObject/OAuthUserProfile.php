@@ -13,4 +13,12 @@ final readonly class OAuthUserProfile
         public bool $emailVerified,
     ) {
     }
+
+    public function equals(self $other): bool
+    {
+        return $this->email === $other->email
+            && $this->name === $other->name
+            && $this->providerId === $other->providerId
+            && $this->emailVerified === $other->emailVerified;
+    }
 }
