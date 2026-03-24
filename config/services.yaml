@@ -369,7 +369,7 @@ services:
   # OAuth Social Sign-In
   oauth.redis_connection:
     class: \Redis
-    factory: ['App\OAuth\Infrastructure\Factory\RedisConnectionFactory', 'create']
+    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
     arguments:
       - '%env(REDIS_URL)%'
 
