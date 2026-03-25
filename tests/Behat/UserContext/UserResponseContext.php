@@ -280,7 +280,7 @@ final class UserResponseContext implements Context
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array<string>|bool|float|int|string|null>
      */
     private function parseJsonResponse(): array
     {

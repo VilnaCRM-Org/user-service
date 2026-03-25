@@ -12,6 +12,7 @@ use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use Behat\Behat\Context\Context;
 use DateTimeImmutable;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,10 +38,11 @@ final class SessionLifecycleContext implements Context
         private readonly KernelInterface $kernel,
         SerializerInterface $serializer,
         private readonly UserContextAuthServices $auth,
-        private readonly UserContextUserManagementServices $userManagement,
+        private readonly SessionLifecycleUserResolver $userResolver,
         private readonly AuthSessionRepositoryInterface $sessionRepo,
         private readonly AuthRefreshTokenRepositoryInterface $refreshRepo,
         private readonly UlidFactory $ulidFactory,
+        private readonly DocumentManagerResetter $documentManagerResetter,
     ) {
         $this->bodySerializer = new RequestBodySerializer(
             $serializer
@@ -54,7 +56,7 @@ final class SessionLifecycleContext implements Context
         string $identifier,
         int $count
     ): void {
-        $user = $this->resolveUserByIdentifier($identifier);
+        $user = $this->userResolver->resolveByIdentifier($identifier);
         $this->createSessionsForUser(
             $user->getId(),
             $count
@@ -68,12 +70,7 @@ final class SessionLifecycleContext implements Context
         string $id,
         int $count
     ): void {
-        $user = $this->userManagement
-            ->userRepository->findById($id);
-        Assert::assertNotNull(
-            $user,
-            "User with id {$id} not found."
-        );
+        $this->userResolver->resolveByIdentifier($id);
         $this->createSessionsForUser(
             $id,
             $count
@@ -86,7 +83,7 @@ final class SessionLifecycleContext implements Context
     public function iAmAuthenticatedWithTrackedSession(
         string $email
     ): void {
-        $user = $this->resolveUserByEmail($email);
+        $user = $this->userResolver->resolveByEmail($email);
         $sessionId = $this->createSessionRecord(
             $user->getId()
         );
@@ -121,7 +118,7 @@ final class SessionLifecycleContext implements Context
         $this->assertSessionExists($index);
 
         $session = $this->sessions[$index];
-        $user = $this->resolveUserByIdentifier($identifier);
+        $user = $this->userResolver->resolveByIdentifier($identifier);
 
         $this->trackedSessionId = $session['sessionId'];
         $this->trackedRefreshToken = $session['refreshToken'];
@@ -156,12 +153,9 @@ final class SessionLifecycleContext implements Context
             '',
             $this->trackedAccessToken
         );
-        $this->state->accessToken = $this->trackedAccessToken;
-        $this->state->useAuthCookie = false;
-        $this->state->authCookieToken = '';
-        $this->sendPost(
-            '/api/users?page=1&itemsPerPage=10',
-            'GET'
+
+        $this->state->response = $this->sendProtectedUsersHttpRequest(
+            $this->trackedAccessToken
         );
     }
 
@@ -185,6 +179,8 @@ final class SessionLifecycleContext implements Context
      */
     public function allSessionsShouldBeRevoked(int $count): void
     {
+        $this->documentManagerResetter->clear();
+
         for ($i = 0; $i < $count; $i++) {
             $this->assertSessionExists($i);
             $session = $this->sessionRepo->findById(
@@ -208,6 +204,7 @@ final class SessionLifecycleContext implements Context
     {
         $index = $num - 1;
         $this->assertSessionExists($index);
+        $this->documentManagerResetter->clear();
 
         $session = $this->sessionRepo->findById(
             $this->sessions[$index]['sessionId']
@@ -223,6 +220,7 @@ final class SessionLifecycleContext implements Context
     {
         $index = $num - 1;
         $this->assertSessionExists($index);
+        $this->documentManagerResetter->clear();
 
         $session = $this->sessionRepo->findById(
             $this->sessions[$index]['sessionId']
@@ -237,6 +235,7 @@ final class SessionLifecycleContext implements Context
     public function theCurrentSessionShouldRemainValid(): void
     {
         Assert::assertNotSame('', $this->trackedSessionId);
+        $this->documentManagerResetter->clear();
 
         $session = $this->sessionRepo->findById(
             $this->trackedSessionId
@@ -252,6 +251,7 @@ final class SessionLifecycleContext implements Context
     {
         $index = $num - 1;
         $this->assertSessionExists($index);
+        $this->documentManagerResetter->clear();
 
         $tokens = $this->refreshRepo->findBySessionId(
             $this->sessions[$index]['sessionId']
@@ -334,7 +334,8 @@ final class SessionLifecycleContext implements Context
         int $count,
         string $identifier
     ): void {
-        $user = $this->resolveUserByIdentifier($identifier);
+        $this->documentManagerResetter->clear();
+        $user = $this->userResolver->resolveByIdentifier($identifier);
         $sessions = $this->sessionRepo->findByUserId($user->getId());
 
         Assert::assertCount($count, $sessions);
@@ -407,66 +408,41 @@ final class SessionLifecycleContext implements Context
         return $plainToken;
     }
 
-    private function resolveUserByIdentifier(string $identifier): \App\User\Domain\Entity\User
-    {
-        if (str_contains($identifier, '@')) {
-            return $this->resolveUserByEmail($identifier);
-        }
-
-        $user = $this->userManagement
-            ->userRepository->findById($identifier);
-        Assert::assertNotNull(
-            $user,
-            "User with id {$identifier} not found."
-        );
-        UserContext::registerUserIdByEmail(
-            $user->getEmail(),
-            $user->getId()
+    private function sendProtectedUsersHttpRequest(
+        string $accessToken
+    ): \Symfony\Component\HttpFoundation\Response {
+        $httpResponse = HttpClient::create()->request(
+            'GET',
+            'http://localhost:8081/api/users?page=1&itemsPerPage=10',
+            [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Accept-Language' => $this->state->language,
+                    'Authorization' => sprintf('Bearer %s', $accessToken),
+                ],
+            ]
         );
 
-        return $user;
+        return new \Symfony\Component\HttpFoundation\Response(
+            $httpResponse->getContent(false),
+            $httpResponse->getStatusCode(),
+            $this->flattenHeaders($httpResponse->getHeaders(false))
+        );
     }
 
-    private function resolveUserByEmail(string $email): \App\User\Domain\Entity\User
+    /**
+     * @param array<string, list<string>> $headers
+     *
+     * @return array<string, string>
+     */
+    private function flattenHeaders(array $headers): array
     {
-        $user = $this->userManagement
-            ->userRepository->findByEmail($email);
-        if ($user !== null) {
-            UserContext::registerUserIdByEmail(
-                $email,
-                $user->getId()
-            );
-
-            return $user;
+        $flattenedHeaders = [];
+        foreach ($headers as $name => $values) {
+            $flattenedHeaders[$name] = implode(', ', $values);
         }
 
-        return $this->createUser($email);
-    }
-
-    private function createUser(
-        string $email
-    ): \App\User\Domain\Entity\User {
-        $faker = \Faker\Factory::create();
-        $password = $faker->password;
-        $uuid = $this->userManagement->uuidFactory->create();
-        $userId = $this->userManagement->transformer
-            ->transformFromSymfonyUuid($uuid);
-        $user = $this->userManagement->userFactory->create(
-            $email,
-            $faker->name,
-            $password,
-            $userId
-        );
-        $hasher = $this->userManagement->hasherFactory
-            ->getPasswordHasher($user::class);
-        $user->setPassword($hasher->hash($password, null));
-        $this->userManagement->userRepository->save($user);
-        UserContext::registerUserIdByEmail(
-            $email,
-            (string) $userId
-        );
-
-        return $user;
+        return $flattenedHeaders;
     }
 
     private function assertSessionExists(int $index): void

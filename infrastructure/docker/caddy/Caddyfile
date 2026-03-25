@@ -23,6 +23,7 @@
 
     root * /srv/app/public
     encode zstd gzip
+    header -Server
 
     vulcain
 
@@ -36,16 +37,13 @@
         format json
     }
 
-    # AC: NFR-39 - limit request body size to prevent memory exhaustion
-    request_body {
-        max_size 64KB
-    }
-
     root * /srv/app/public
+    header -Server
 
     vulcain
     php_server {
         env APP_ENV {$CADDY_PHP_APP_ENV:test}
+        env APP_DEBUG {$CADDY_PHP_APP_DEBUG:0}
     }
     encode zstd gzip
     file_server

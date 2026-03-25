@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
-use App\Tests\Behat\UserContext\Input\CompleteTwoFactorInput;
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
@@ -15,7 +14,6 @@ use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Mink\Driver\BrowserKitDriver;
-use OTPHP\TOTP;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -46,6 +44,7 @@ final class UserRequestContext implements Context
     {
         $environment = $scope->getEnvironment();
         $this->restContext = $environment->getContext(RestContext::class);
+        $this->restContext->getMink()->getSession()->restart();
     }
 
     /**
@@ -106,57 +105,6 @@ final class UserRequestContext implements Context
             $email,
             $initials,
             $password
-        );
-    }
-
-    /**
-     * @Given completing 2FA with pending session :pendingSessionId and code :code
-     * @Given completing 2FA with pending_session_id :pendingSessionId and code :code
-     */
-    public function completingTwoFactorWithPendingSessionAndCode(
-        string $pendingSessionId,
-        string $code
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $pendingSessionId,
-            $code
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending session and code :code
-     * @Given completing 2FA with the stored pending_session_id and code :code
-     */
-    public function completingTwoFactorWithStoredPendingSessionAndCode(
-        string $code
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $this->resolveStoredPendingSessionId(),
-            $code
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending session and secret :secret
-     */
-    public function completingTwoFactorWithStoredPendingSessionAndSecret(
-        string $secret
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $this->resolveStoredPendingSessionId(),
-            $this->generateTotpCode($secret)
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending_session_id :key and a valid TOTP code
-     */
-    public function completingTwoFactorWithStoredPendingSessionIdAndValidTotpCode(
-        string $key
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $this->resolveStoredPendingSessionIdByKey($key),
-            $this->generateTotpCode('JBSWY3DPEHPK3PXP')
         );
     }
 
@@ -309,6 +257,7 @@ final class UserRequestContext implements Context
         $this->appendAuthorizationHeader($headers);
         $this->appendAuthCookieHeader($headers);
         $this->appendOriginHeader($headers);
+        $this->appendClientIpHeader($headers);
 
         return $headers;
     }
@@ -389,70 +338,6 @@ final class UserRequestContext implements Context
         $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
     }
 
-    private function resolveStoredPendingSessionId(): string
-    {
-        if (
-            is_string($this->state->pendingSessionId)
-            && $this->state->pendingSessionId !== ''
-        ) {
-            return $this->state->pendingSessionId;
-        }
-
-        $pendingSessionId = $this->extractPendingSessionId($this->decodePendingSessionResponse());
-        $this->state->pendingSessionId = $pendingSessionId;
-
-        return $pendingSessionId;
-    }
-
-    private function resolveStoredPendingSessionIdByKey(string $key): string
-    {
-        $pendingSessionId = $this->state->{$key};
-        if (is_string($pendingSessionId) && $pendingSessionId !== '') {
-            return $pendingSessionId;
-        }
-
-        throw new \RuntimeException(
-            sprintf('Stored pending_session_id "%s" is missing.', $key)
-        );
-    }
-
-    /**
-     * @return array<string, array<string>|int|string>
-     */
-    private function decodePendingSessionResponse(): array
-    {
-        $responseContent = $this->state->response?->getContent();
-        if (!is_string($responseContent) || $responseContent === '') {
-            throw new \RuntimeException(
-                'No response body available to extract pending_session_id.'
-            );
-        }
-
-        $responseData = json_decode($responseContent, true);
-        if (!is_array($responseData)) {
-            throw new \RuntimeException(
-                'pending_session_id is missing in the latest response.'
-            );
-        }
-
-        return $responseData;
-    }
-
-    /**
-     * @param array<string, array<string>|int|string> $responseData
-     */
-    private function extractPendingSessionId(array $responseData): string
-    {
-        $pendingSessionId = $responseData['pending_session_id'] ?? '';
-        if (!is_string($pendingSessionId) || $pendingSessionId === '') {
-            throw new \RuntimeException(
-                'pending_session_id is missing in the latest response.'
-            );
-        }
-
-        return $pendingSessionId;
-    }
-
     /**
      * @param array<string, string> $headers
      */
@@ -491,8 +376,15 @@ final class UserRequestContext implements Context
         }
     }
 
-    private function generateTotpCode(string $secret): string
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendClientIpHeader(array &$headers): void
     {
-        return TOTP::create($secret)->now();
+        $clientIpAddress = $this->state->clientIpAddress
+            ?? $this->state->expectedIpAddress;
+        if (is_string($clientIpAddress) && $clientIpAddress !== '') {
+            $headers['X-Forwarded-For'] = $clientIpAddress;
+        }
     }
 }
