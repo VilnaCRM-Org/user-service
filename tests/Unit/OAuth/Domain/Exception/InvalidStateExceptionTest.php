@@ -11,8 +11,9 @@ final class InvalidStateExceptionTest extends UnitTestCase
 {
     public function testCanBeInstantiatedWithMessage(): void
     {
-        $exception = new InvalidStateException('test message');
+        $message = $this->faker->sentence();
+        $exception = new InvalidStateException($message);
 
-        $this->assertSame('test message', $exception->getMessage());
+        $this->assertSame($message, $exception->getMessage());
     }
 }
