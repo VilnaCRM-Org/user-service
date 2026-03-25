@@ -449,7 +449,6 @@ Even when the alias is redundant, you may still need an explicit service definit
 App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
   arguments:
     $oauthRedis: '@oauth.redis_connection'
-
 # ❌ NOT NEEDED: the interface alias (autowiring resolves it)
 # App\OAuth\Domain\Repository\OAuthStateRepositoryInterface:
 #   alias: App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository
