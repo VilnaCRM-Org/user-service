@@ -71,6 +71,28 @@ final class MethodNotAllowedResponseListenerTest extends UnitTestCase
         );
     }
 
+    public function testMethodNotAllowedNonJsonResponseIsNotChanged(): void
+    {
+        $listener = new MethodNotAllowedResponseListener();
+        $event = new ResponseEvent(
+            $this->createMock(HttpKernelInterface::class),
+            Request::create('/api/signin', 'GET'),
+            HttpKernelInterface::MAIN_REQUEST,
+            new Response(
+                '<html><body>Method Not Allowed</body></html>',
+                Response::HTTP_METHOD_NOT_ALLOWED,
+                ['Content-Type' => 'text/html; charset=UTF-8']
+            )
+        );
+
+        $listener($event);
+
+        $this->assertSame(
+            'text/html; charset=UTF-8',
+            $event->getResponse()->headers->get('Content-Type')
+        );
+    }
+
     private function createResponseEvent(
         string $path,
         string $method,
