@@ -409,6 +409,60 @@ grep -r "private.*\$converter;" src/  # Find vague names
 make deptrac  # Must show 0 violations
 ```
 
+## Symfony Service Configuration: No Redundant Wiring
+
+> **Do not add explicit interface aliases in `services.yaml` when Symfony autowiring can resolve them automatically.**
+
+### Rule
+
+When an interface has **exactly one implementation** in `src/`, Symfony autowiring automatically aliases the interface to that implementation. Do NOT add a manual alias — it is redundant.
+
+### When an Explicit Alias IS Required
+
+- The interface has **multiple implementations** (e.g., `UserRepositoryInterface` → `CachedUserRepository` vs `MongoDBUserRepository`)
+- The implementation lives **outside** the autowired `src/` resource (e.g., a third-party bundle class)
+- You need to alias to a **different** implementation than what autowiring would pick
+
+### When an Explicit Alias is REDUNDANT (remove it)
+
+- Only one class in `src/` implements the interface
+- Both the interface and implementation are covered by the `App\:` resource in `services.yaml`
+
+### Example
+
+```yaml
+# ❌ REDUNDANT: Only one implementation exists — autowiring handles this
+App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface:
+  alias: App\OAuth\Infrastructure\Repository\MongoDBSocialIdentityRepository
+
+# ✅ REQUIRED: Two implementations exist — must disambiguate
+App\User\Domain\Repository\UserRepositoryInterface:
+  alias: App\User\Infrastructure\Repository\CachedUserRepository
+```
+
+### Explicit Constructor Arguments Are Still Needed
+
+Even when the alias is redundant, you may still need an explicit service definition for **constructor arguments** that autowiring cannot resolve (e.g., non-type-hinted parameters, named service references):
+
+```yaml
+# ✅ NEEDED: $oauthRedis is a named Redis connection, not autowirable
+App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
+  arguments:
+    $oauthRedis: '@oauth.redis_connection'
+
+# ❌ NOT NEEDED: the interface alias (autowiring resolves it)
+# App\OAuth\Domain\Repository\OAuthStateRepositoryInterface:
+#   alias: App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository
+```
+
+### Verification
+
+```bash
+# Check that autowiring resolves the interface correctly
+docker compose exec php bin/console debug:container <InterfaceName>
+# Should show "This service is a private alias for the service <Implementation>"
+```
+
 ## Constraints (Never Do This)
 
 **NEVER**:
@@ -421,6 +475,7 @@ make deptrac  # Must show 0 violations
 - Use arrays for structured data when typed classes would be appropriate
 - Inject cross-cutting concerns (metrics, logging) into command handlers
 - Create complex objects directly without factories in production code
+- Add redundant interface aliases in `services.yaml` when autowiring resolves them
 
 **ALWAYS**:
 

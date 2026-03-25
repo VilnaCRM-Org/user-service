@@ -377,11 +377,6 @@ services:
     arguments:
       $oauthRedis: '@oauth.redis_connection'
 
-  App\OAuth\Domain\Repository\OAuthStateRepositoryInterface:
-    alias: App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository
-
-  App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface:
-    alias: App\OAuth\Infrastructure\Repository\MongoDBSocialIdentityRepository
 
   # OAuth ODM Persistence Managers
   App\OAuth\Infrastructure\Adapter\AccessTokenManager:
