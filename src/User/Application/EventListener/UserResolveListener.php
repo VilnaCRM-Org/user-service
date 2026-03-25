@@ -37,11 +37,15 @@ final readonly class UserResolveListener
     {
         $user = $this->userRepository->findByEmail($event->getUsername());
 
-        return match (true) {
-            !$user instanceof UserInterface => null,
-            !$this->passwordMatches($user, $event->getPassword()) => null,
-            default => $user,
-        };
+        if (!$user instanceof UserInterface) {
+            return null;
+        }
+
+        if (!$this->passwordMatches($user, $event->getPassword())) {
+            return null;
+        }
+
+        return $user;
     }
 
     private function passwordMatches(

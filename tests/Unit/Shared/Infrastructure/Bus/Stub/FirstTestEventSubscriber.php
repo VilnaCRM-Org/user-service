@@ -7,24 +7,26 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 
 /**
- * @psalm-suppress UnusedClass
- * @psalm-suppress UnusedProperty
  */
 final class FirstTestEventSubscriber implements DomainEventSubscriberInterface
 {
-    public function __construct(private bool &$called)
-    {
-    }
+    private bool $called = false;
 
-    /**
-     * @psalm-suppress UnusedParam
-     */
-    public function __invoke(TestEvent $event): void
+    public function __invoke(TestEvent $_event): void
     {
         $this->called = true;
     }
 
-    /** @return array<class-string> */
+    public function isCalled(): bool
+    {
+        return $this->called;
+    }
+
+    /**
+     * @return array<string>
+     *
+     * @psalm-return list{TestEvent::class}
+     */
     #[\Override]
     public function subscribedTo(): array
     {

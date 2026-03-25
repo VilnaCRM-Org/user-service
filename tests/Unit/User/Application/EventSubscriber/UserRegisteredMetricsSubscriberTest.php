@@ -12,6 +12,7 @@ use App\User\Application\EventSubscriber\UserRegisteredMetricsSubscriber;
 use App\User\Application\Factory\UsersRegisteredMetricFactory;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Event\UserRegisteredEvent;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class UserRegisteredMetricsSubscriberTest extends UnitTestCase
 {
@@ -44,13 +45,13 @@ final class UserRegisteredMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
 
         $event = new UserRegisteredEvent(
             userId: $user->getId(),
             email: $user->getEmail(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         );
 
         ($this->subscriber)($event);
@@ -87,18 +88,18 @@ final class UserRegisteredMetricsSubscriberTest extends UnitTestCase
             email: $this->faker->email(),
             initials: 'JD',
             password: 'secret',
-            id: new Uuid((string) $this->faker->uuid())
+            id: new Uuid($this->faker->uuid())
         );
 
         return new UserRegisteredEvent(
             userId: $user->getId(),
             email: $user->getEmail(),
-            eventId: (string) $this->faker->uuid()
+            eventId: $this->faker->uuid()
         );
     }
 
-    private function createFailingEmitter(): BusinessMetricsEmitterInterface
-    {
+    private function createFailingEmitter(
+    ): MockObject&BusinessMetricsEmitterInterface {
         $failingEmitter = $this->createMock(BusinessMetricsEmitterInterface::class);
         $failingEmitter
             ->method('emit')

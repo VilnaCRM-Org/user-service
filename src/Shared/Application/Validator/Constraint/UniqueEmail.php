@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator\Constraint;
 
-use App\Shared\Application\Validator\UniqueEmailValidator;
+use App\Shared\Application\Validator\UniqueEmailConstraintValidator;
 use Symfony\Component\Validator\Constraint;
 
 #[\Attribute]
@@ -17,9 +17,12 @@ final class UniqueEmail extends Constraint
         parent::__construct([], $groups, $payload);
     }
 
+    /**
+     * @psalm-return UniqueEmailConstraintValidator::class
+     */
     #[\Override]
     public function validatedBy(): string
     {
-        return UniqueEmailValidator::class;
+        return UniqueEmailConstraintValidator::class;
     }
 }

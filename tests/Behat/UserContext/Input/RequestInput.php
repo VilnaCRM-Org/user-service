@@ -25,11 +25,6 @@ abstract class RequestInput
         $values = [];
 
         foreach ($reflection->getProperties() as $property) {
-            if (!$property->isPublic()) {
-                /** @psalm-suppress UnusedMethodCall */
-                $property->setAccessible(true);
-            }
-
             if (!$property->isInitialized($this)) {
                 $values[$property->getName()] = null;
                 continue;

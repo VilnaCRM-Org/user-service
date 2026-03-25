@@ -13,30 +13,18 @@ use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutation
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\UpdateUserGraphQLMutationInput;
 use Behat\Behat\Context\Context;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Gherkin\Node\PyStringNode;
 use GraphQL\RequestBuilder\Argument;
 use GraphQL\RequestBuilder\RootType;
 use GraphQL\RequestBuilder\Type;
-use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserGraphQLMutationContext implements Context
 {
-    private const GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private const GRAPHQL_ID_PREFIX = '/api/users/';
-    private RestContext $restContext;
 
-    public function __construct(private UserGraphQLState $state)
-    {
-    }
-
-    /**
-     * @BeforeScenario
-     */
-    public function gatherContexts(BeforeScenarioScope $scope): void
-    {
-        $environment = $scope->getEnvironment();
-        $this->restContext = $environment->getContext(RestContext::class);
+    public function __construct(
+        private readonly UserGraphQLState $state,
+        private readonly UserGraphQLRequestExecutor $requestExecutor,
+    ) {
     }
 
     /**
@@ -90,7 +78,9 @@ final class UserGraphQLMutationContext implements Context
     public function confirmingUserWithToken(string $token): void
     {
         $this->state->setQueryName('confirmUser');
-        $this->state->setGraphQLInput(new ConfirmUserGraphQLMutationInput($token));
+        $this->state->setGraphQLInput(
+            new ConfirmUserGraphQLMutationInput($token)
+        );
 
         $this->state->setQuery($this->createMutation(
             $this->state->getQueryName(),
@@ -106,7 +96,9 @@ final class UserGraphQLMutationContext implements Context
     {
         $id = self::GRAPHQL_ID_PREFIX . $id;
         $this->state->setQueryName('resendEmailToUser');
-        $this->state->setGraphQLInput(new ResendEmailGraphQLMutationInput($id));
+        $this->state->setGraphQLInput(
+            new ResendEmailGraphQLMutationInput($id)
+        );
 
         $this->state->setQuery($this->createMutation(
             $this->state->getQueryName(),
@@ -122,7 +114,9 @@ final class UserGraphQLMutationContext implements Context
     {
         $this->state->setQueryName('deleteUser');
         $id = self::GRAPHQL_ID_PREFIX . $id;
-        $this->state->setGraphQLInput(new DeleteUserGraphQLMutationInput($id));
+        $this->state->setGraphQLInput(
+            new DeleteUserGraphQLMutationInput($id)
+        );
 
         $this->state->setQuery($this->createMutation(
             $this->state->getQueryName(),
@@ -137,9 +131,13 @@ final class UserGraphQLMutationContext implements Context
     public function requestPasswordResetViaGraphQL(string $email): void
     {
         $this->state->setQueryName('requestPasswordResetUser');
-        $this->state->setGraphQLInput(new RequestPasswordResetGraphQLMutationInput($email));
+        $this->state->setGraphQLInput(
+            new RequestPasswordResetGraphQLMutationInput($email)
+        );
 
-        $mutation = (string) (new RootType($this->state->getQueryName()))->addArgument(
+        $mutation = (string) (new RootType(
+            $this->state->getQueryName()
+        ))->addArgument(
             new Argument('input', $this->state->getGraphQLInput()->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
 
@@ -149,15 +147,19 @@ final class UserGraphQLMutationContext implements Context
     /**
      * @Given confirming password reset with token :token and new password :newPassword via graphQL
      */
-    public function confirmPasswordResetViaGraphQL(string $token, string $newPassword): void
-    {
+    public function confirmPasswordResetViaGraphQL(
+        string $token,
+        string $newPassword
+    ): void {
         $this->state->setQueryName('confirmPasswordResetUser');
         $this->state->setGraphQLInput(new ConfirmPasswordResetGraphQLMutationInput(
             $token,
             $newPassword
         ));
 
-        $mutation = (string) (new RootType($this->state->getQueryName()))->addArgument(
+        $mutation = (string) (new RootType(
+            $this->state->getQueryName()
+        ))->addArgument(
             new Argument('input', $this->state->getGraphQLInput()->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
 
@@ -167,8 +169,9 @@ final class UserGraphQLMutationContext implements Context
     /**
      * @Given confirming password reset with valid token and new password :newPassword via graphQL
      */
-    public function confirmPasswordResetWithValidTokenViaGraphQL(string $newPassword): void
-    {
+    public function confirmPasswordResetWithValidTokenViaGraphQL(
+        string $newPassword
+    ): void {
         $token = \App\Tests\Behat\UserContext\UserContext::getLastPasswordResetToken();
         $this->state->setQueryName('confirmPasswordResetUser');
         $this->state->setGraphQLInput(new ConfirmPasswordResetGraphQLMutationInput(
@@ -176,11 +179,75 @@ final class UserGraphQLMutationContext implements Context
             $newPassword
         ));
 
-        $mutation = (string) (new RootType($this->state->getQueryName()))->addArgument(
+        $mutation = (string) (new RootType(
+            $this->state->getQueryName()
+        ))->addArgument(
             new Argument('input', $this->state->getGraphQLInput()->toGraphQLArguments())
         )->addSubType((new Type('user'))->addSubType(new Type('id')));
 
         $this->state->setQuery('mutation' . $mutation);
+    }
+
+    /**
+     * @When I execute GraphQL mutation updateUser for user :userId
+     */
+    public function iExecuteGraphQLMutationUpdateUserForUser(
+        string $userId
+    ): void {
+        $id = self::GRAPHQL_ID_PREFIX . $userId;
+        $this->state->setQueryName('updateUser');
+        $this->state->setGraphQLInput(new UpdateUserGraphQLMutationInput(
+            $id,
+            'attacker-update@test.com',
+            'passWORD1'
+        ));
+
+        $this->state->setQuery($this->createMutation(
+            $this->state->getQueryName(),
+            $this->state->getGraphQLInput(),
+            ['id', 'email']
+        ));
+        $this->requestExecutor->sendCurrentQuery();
+    }
+
+    /**
+     * @When I execute GraphQL mutation deleteUser for user :userId
+     */
+    public function iExecuteGraphQLMutationDeleteUserForUser(
+        string $userId
+    ): void {
+        $id = self::GRAPHQL_ID_PREFIX . $userId;
+        $this->state->setQueryName('deleteUser');
+        $this->state->setGraphQLInput(
+            new DeleteUserGraphQLMutationInput($id)
+        );
+
+        $this->state->setQuery($this->createMutation(
+            $this->state->getQueryName(),
+            $this->state->getGraphQLInput(),
+            ['id']
+        ));
+        $this->requestExecutor->sendCurrentQuery();
+    }
+
+    /**
+     * @When I execute GraphQL mutation resendEmailTo for user :userId
+     */
+    public function iExecuteGraphQLMutationResendEmailToForUser(
+        string $userId
+    ): void {
+        $id = self::GRAPHQL_ID_PREFIX . $userId;
+        $this->state->setQueryName('resendEmailToUser');
+        $this->state->setGraphQLInput(
+            new ResendEmailGraphQLMutationInput($id)
+        );
+
+        $this->state->setQuery($this->createMutation(
+            $this->state->getQueryName(),
+            $this->state->getGraphQLInput(),
+            ['id', 'email']
+        ));
+        $this->requestExecutor->sendCurrentQuery();
     }
 
     /**
@@ -192,28 +259,53 @@ final class UserGraphQLMutationContext implements Context
     }
 
     /**
+     * @Given the application environment is :environment
+     */
+    public function setApplicationEnvironment(string $environment): void
+    {
+        $normalizedEnvironment = trim($environment, "\"'");
+        $allowedEnvironments = ['test', 'dev', 'prod'];
+
+        if (!in_array($normalizedEnvironment, $allowedEnvironments, true)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Unsupported application environment "%s".',
+                    $normalizedEnvironment
+                )
+            );
+        }
+
+        $this->state->setApplicationEnvironment($normalizedEnvironment);
+    }
+
+    /**
+     * @When /^I execute GraphQL mutation createUser with email "([^"]*)", initials "([^"]*)", password "([^"]*)"$/
+     */
+    public function iExecuteGraphQLMutationCreateUser(
+        string $email,
+        string $initials,
+        string $password
+    ): void {
+        $this->state->setQueryName('createUser');
+        $this->state->setGraphQLInput(new CreateUserGraphQLMutationInput(
+            $email,
+            $initials,
+            $password
+        ));
+        $this->state->setQuery($this->createMutation(
+            'createUser',
+            $this->state->getGraphQLInput(),
+            ['id', 'email', 'initials']
+        ));
+        $this->requestExecutor->sendCurrentQuery();
+    }
+
+    /**
      * @When graphQL request is send
      */
     public function sendGraphQlRequest(): void
     {
-        $this->restContext->iAddHeaderEqualTo('Accept', 'application/json');
-        $this->restContext->iAddHeaderEqualTo(
-            'Content-Type',
-            'application/json'
-        );
-        $this->restContext->iAddHeaderEqualTo(
-            'Accept-Language',
-            $this->state->getLanguage()
-        );
-
-        $requestBody = \Safe\json_encode(['query' => $this->state->getQuery()]);
-        $pyStringBody = new PyStringNode(explode(PHP_EOL, $requestBody), 0);
-
-        $this->restContext->iSendARequestToWithBody(
-            'POST',
-            self::GRAPHQL_ENDPOINT_URI,
-            $pyStringBody
-        );
+        $this->requestExecutor->sendCurrentQuery();
     }
 
     /**

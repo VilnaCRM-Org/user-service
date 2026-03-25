@@ -12,6 +12,7 @@ interface UpdateUserCommandFactoryInterface
 {
     public function create(
         UserInterface $user,
-        UserUpdate $updateData
+        UserUpdate $updateData,
+        string $currentSessionId
     ): UpdateUserCommand;
 }

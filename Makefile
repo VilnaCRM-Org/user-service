@@ -10,6 +10,7 @@ LOAD_TEST_CONFIG = tests/Load/config.prod.json
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
+DOCKER_COMPOSE_LOAD_TEST = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.load-tests.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
 SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
@@ -21,18 +22,22 @@ EXEC_PHP      = $(DOCKER_COMPOSE) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
+EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
+SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
-BEHAT         = ./vendor/bin/behat --stop-on-failure -n
+BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
+BEHAT_ENV     = env APP_DEBUG=0
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 DEPTRAC       = ./vendor/bin/deptrac
 INFECTION     = ./vendor/bin/infection
+INFECTION_THREADS ?= 4
 
 # Misc
 .DEFAULT_GOAL = help
@@ -101,6 +106,22 @@ check-requirements: ## Checks requirements for running Symfony and gives useful 
 check-security: ## Checks security issues in project dependencies. Without arguments, it looks for a "composer.lock" file in the current directory. Pass it explicitly to check a specific "composer.lock" file.
 	$(EXEC_ENV) $(SYMFONY_BIN) security:check
 
+check-jwt-key-permissions: ## Verify JWT key permissions are correct (AC: NFR-61, RC-03 fix)
+	@echo "🔐 Checking JWT key permissions..."
+	@PRIVATE_PERMS=$$(stat -c %a config/jwt/private.pem 2>/dev/null || stat -f %A config/jwt/private.pem 2>/dev/null || echo "ERROR"); \
+	PUBLIC_PERMS=$$(stat -c %a config/jwt/public.pem 2>/dev/null || stat -f %A config/jwt/public.pem 2>/dev/null || echo "ERROR"); \
+	if [ "$$PRIVATE_PERMS" != "600" ]; then \
+		echo "❌ CRITICAL: private.pem has permissions $$PRIVATE_PERMS (expected 600)"; \
+		echo "   Run: chmod 600 config/jwt/private.pem"; \
+		exit 1; \
+	fi; \
+	if [ "$$PUBLIC_PERMS" != "644" ]; then \
+		echo "❌ ERROR: public.pem has permissions $$PUBLIC_PERMS (expected 644)"; \
+		echo "   Run: chmod 644 config/jwt/public.pem"; \
+		exit 1; \
+	fi; \
+	echo "✅ JWT key permissions are correct (private: 600, public: 644)"
+
 psalm: ## A static analysis tool for finding errors in PHP applications
 	$(EXEC_ENV) $(PSALM)
 
@@ -121,8 +142,8 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
-	@if grep -q "FAILURES!" /tmp/phpunit_output.txt; then \
-		echo "❌ TEST FAILURE: Some tests failed"; \
+	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
+		echo "❌ TEST FAILURE: Some unit tests failed"; \
 		exit 1; \
 	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
@@ -145,7 +166,7 @@ deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
 behat: setup-test-db ## A php framework for autotesting business expectations
-	$(EXEC_ENV) $(BEHAT)
+	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
@@ -158,37 +179,47 @@ tests-with-coverage: ## Run tests with coverage
 
 setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) c:c
+	$(SYMFONY_TEST_ENV_NODEBUG) c:c
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Seeding test OAuth client..."
+	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
 	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
 	tests/Load/execute-load-test.sh cachePerformance true false false false
 
 build-k6-docker:
@@ -198,7 +229,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j8 --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --configuration=infection.json5 --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
@@ -297,10 +328,19 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
+	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.schemathesis.yml up --detach --wait php
+	$(EXEC_PHP) bin/console cache:clear
 	$(EXEC_PHP) bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
-	$(EXEC_PHP) bin/console app:seed-schemathesis-data
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'
+	$(EXEC_PHP) bin/console cache:pool:clear cache.app
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	examples_exit=$$?; \
+	$(EXEC_PHP) bin/console app:seed-schemathesis-data; \
+	$(EXEC_PHP) bin/console cache:pool:clear cache.app; \
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	coverage_exit=$$?; \
+	$(DOCKER_COMPOSE) up --detach --wait php; \
+	$(EXEC_PHP) bin/console cache:clear; \
+	if [ $$examples_exit -ne 0 ] || [ $$coverage_exit -ne 0 ]; then exit 1; fi
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
@@ -311,9 +351,13 @@ start-prod-loadtest: ## Start production environment with load testing capabilit
 stop-prod-loadtest: ## Stop production load testing environment
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml down --remove-orphans
 
-ci: ci-preflight ## Run comprehensive CI checks with parallelization (excludes bats and load tests)
-	@echo "🚀 Running parallel CI checks..."
-	@$(MAKE) -j4 --output-sync=target ci-static-analysis ci-deptrac ci-mutation ci-tests-and-openapi
+ci: ci-preflight ## Run comprehensive CI checks with stable resource usage (excludes bats and load tests)
+	@echo "🚀 Running static checks in parallel..."
+	@$(MAKE) -j2 --output-sync=target ci-static-analysis ci-deptrac
+	@echo "🧪 Running tests and API validation..."
+	@$(MAKE) ci-tests-and-openapi
+	@echo "🧬 Running mutation testing..."
+	@$(MAKE) ci-mutation
 	@echo ""
 	@echo "✅ CI checks successfully passed!"
 
@@ -327,6 +371,7 @@ ci-static-analysis:
 	@$(MAKE) check-requirements
 	@$(MAKE) check-security
 	@$(MAKE) validate-configuration
+	@$(MAKE) check-jwt-key-permissions
 	@$(MAKE) psalm
 	@$(MAKE) psalm-security
 

@@ -70,7 +70,7 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
     public function testFindByUserID(): void
     {
         $userID = $this->faker->uuid();
-        $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
+        $expectedToken = $this->createMock(PasswordResetToken::class);
 
         $repositoryClass = MongoDBPasswordResetTokenRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
@@ -120,6 +120,32 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
             ->method('flush');
 
         $this->repository->delete($token);
+    }
+
+    public function testDeleteAll(): void
+    {
+        $queryBuilder = $this->createMock(\Doctrine\ODM\MongoDB\Query\Builder::class);
+        $query = $this->createMock(\Doctrine\ODM\MongoDB\Query\Query::class);
+
+        $queryBuilder->expects($this->once())
+            ->method('remove')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('execute');
+
+        $repository = $this->getMockBuilder(MongoDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+
+        $repository->deleteAll();
     }
 
     public function testSaveBatch(): void

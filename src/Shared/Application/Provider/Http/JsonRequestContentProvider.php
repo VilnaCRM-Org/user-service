@@ -21,6 +21,6 @@ final readonly class JsonRequestContentProvider
             return null;
         }
 
-        return trim((string) $request->getContent());
+        return trim($request->getContent());
     }
 }

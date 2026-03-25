@@ -13,8 +13,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 
 /**
  * @extends ServiceDocumentRepository<PasswordResetToken>
- *
- * @psalm-suppress UnusedClass - Used via dependency injection
  */
 final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepository implements
     PasswordResetTokenRepositoryInterface
@@ -34,6 +32,9 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         $this->documentManager->flush();
     }
 
+    /**
+     * @return PasswordResetToken|null
+     */
     #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
@@ -42,7 +43,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
 
     public function findByUserID(
         string $userID
-    ): ?PasswordResetTokenInterface {
+    ): ?PasswordResetToken {
         return $this->findOneBy(
             ['userID' => $userID],
             ['createdAt' => 'DESC']
@@ -56,11 +57,6 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
         $this->documentManager->flush();
     }
 
-    /**
-     * @codeCoverageIgnore Tested in integration tests
-     *
-     * @infection-ignore-all Tested in integration tests
-     */
     #[\Override]
     public function deleteAll(): void
     {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Application\Validator;
 
 use ApiPlatform\Validator\Exception\ValidationException;
-use App\User\Application\MutationInput\MutationInput;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final readonly class MutationInputValidator
@@ -15,7 +14,7 @@ final readonly class MutationInputValidator
     ) {
     }
 
-    public function validate(MutationInput $input): void
+    public function validate(object $input): void
     {
         $errors = $this->validator->validate(
             $input,

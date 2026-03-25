@@ -84,8 +84,6 @@ final class PasswordResetTokenUsageTest extends UnitTestCase
 
         $reflection = new \ReflectionClass($token);
         $property = $reflection->getProperty('isUsed');
-        /** @psalm-suppress UnusedMethodCall */
-        $property->setAccessible(true);
         $this->assertFalse(
             $property->getValue($token)
         );

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Command;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\RegisterUserBatchCommandResponse;
+use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;

@@ -15,10 +15,10 @@ export default class Utils {
 
   getConfig() {
     try {
-      return JSON.parse(open('../config.json'));
+      return JSON.parse(open('/loadTests/config.json'));
     } catch (error) {
       try {
-        return JSON.parse(open('../config.json.dist'));
+        return JSON.parse(open('/loadTests/config.json.dist'));
       } catch (error) {
         console.log('Error occurred while trying to open config');
       }
@@ -49,6 +49,15 @@ export default class Utils {
     };
   }
 
+  getJsonHeaderWithAuth(accessToken) {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+  }
+
   getEnv(variable) {
     const value = typeof __ENV !== 'undefined' ? __ENV[variable] : undefined;
 
@@ -63,6 +72,15 @@ export default class Utils {
     return {
       headers: {
         'Content-Type': 'application/merge-patch+json',
+      },
+    };
+  }
+
+  getMergePatchHeaderWithAuth(accessToken) {
+    return {
+      headers: {
+        'Content-Type': 'application/merge-patch+json',
+        Authorization: `Bearer ${accessToken}`,
       },
     };
   }

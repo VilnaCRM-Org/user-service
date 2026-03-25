@@ -318,9 +318,11 @@ Place files in directories that match their class type. Each directory should co
 **Rules**:
 
 - Never mix class types in a directory
-- Create new directories when introducing new class types
+- **NEVER create new directories autonomously** — every new class-type directory MUST follow a well-known software engineering pattern (Factory, Provider, Builder, Resolver, Validator, etc.) AND be explicitly requested/approved by the user. When in doubt, use an existing directory
+- Do not invent ad-hoc class-type directories or suffixes (`Applier`, `Attacher`, `Enricher`, `Helper`, `Util`, `Service`). The `Service` suffix leads to anemic domain models — use specific pattern names instead (Provider, Factory, Resolver, etc.)
 - Use subdirectories for logical grouping (e.g., `Validator/Http/`, `Provider/Http/`)
 - Respect Deptrac rules—never modify architecture config to accommodate misplaced files
+- Follow DDD and CQRS strictly — all class organization must align with established DDD layers and CQRS patterns
 
 ## 📚 Additional Resources
 

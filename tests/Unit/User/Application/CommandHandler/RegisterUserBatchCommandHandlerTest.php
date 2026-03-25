@@ -10,8 +10,8 @@ use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
-use App\User\Application\Command\RegisterUserBatchCommandResponse;
 use App\User\Application\CommandHandler\RegisterUserBatchCommandHandler;
+use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
@@ -207,7 +207,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, string|UserInterface>
+     * @return array<\App\User\Domain\Entity\User|string>
+     *
+     * @psalm-return array{password: string, email: string, initials: string, existingUser: \App\User\Domain\Entity\User}
      */
     private function createExistingUserTestData(): array
     {

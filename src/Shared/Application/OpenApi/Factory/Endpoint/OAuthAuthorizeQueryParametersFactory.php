@@ -50,7 +50,9 @@ final class OAuthAuthorizeQueryParametersFactory
     }
 
     /**
-     * @return array<int, Parameter>
+     * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter,...}
      */
     public function create(): array
     {

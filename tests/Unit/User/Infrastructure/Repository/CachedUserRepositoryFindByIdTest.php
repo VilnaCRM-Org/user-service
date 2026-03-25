@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\User\Domain\Entity\UserInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Contracts\Cache\ItemInterface;
 
 final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCase
@@ -197,8 +198,9 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
             );
     }
 
-    private function createCacheItemForUser(string $id): ItemInterface
-    {
+    private function createCacheItemForUser(
+        string $id
+    ): MockObject&ItemInterface {
         $item = $this->createMock(ItemInterface::class);
         $item->expects($this->once())
             ->method('expiresAfter')

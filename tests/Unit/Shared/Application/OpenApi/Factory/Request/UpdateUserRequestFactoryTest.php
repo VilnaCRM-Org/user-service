@@ -33,6 +33,8 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
 
     /**
      * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter, Parameter, Parameter, Parameter}
      */
     private function getParams(): array
     {
@@ -65,7 +67,7 @@ final class UpdateUserRequestFactoryTest extends UnitTestCase
             255,
             null,
             Requirement::OPTIONAL,
-            '^(?!\\d).*\\S.*$'
+            '^(?!\d).*\S.*$'
         );
     }
 

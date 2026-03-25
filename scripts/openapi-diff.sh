@@ -24,5 +24,5 @@ docker run --rm \
   -v "$HEAD_SPEC:/workspace/head.yaml" \
   -v "$BASE_SPEC:/workspace/base.yaml" \
   openapitools/openapi-diff:latest \
-  /workspace/head.yaml \
-  /workspace/base.yaml
+  /workspace/base.yaml \
+  /workspace/head.yaml

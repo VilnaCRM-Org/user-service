@@ -74,13 +74,6 @@ ensure_codex_output_last_message() {
   fi
 }
 
-ensure_codex_review_command() {
-  if ! "$codex_cmd" review --help >/dev/null 2>&1; then
-    echo "Codex CLI is missing review command; update Codex CLI." >&2
-    exit 1
-  fi
-}
-
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
     echo "$2 is required but not installed: $1" >&2
@@ -93,7 +86,6 @@ validate_agent() {
     codex)
       require_command "$codex_cmd" "Codex CLI (codex)" || exit 1
       ensure_codex_output_last_message
-      ensure_codex_review_command
       ;;
     claude)
       require_command "$claude_cmd" "Claude CLI (claude)" || exit 1
@@ -196,14 +188,11 @@ run_review() {
     codex)
       prompt="$(build_review_prompt)"
       printf "%s" "$prompt" \
-        | "$codex_cmd" \
+        | "$codex_cmd" exec \
             ${codex_flags[@]+"${codex_flags[@]}"} \
             --sandbox "$review_sandbox" \
-            review \
-            --base "$review_base" \
-            --uncommitted \
-            - \
-          >"$output_file" 2>"${output_file}.log"
+            --output-last-message "$output_file" - \
+          >"${output_file}.log" 2>&1
       ;;
     claude)
       "$claude_cmd" -p "/review" \
