@@ -23,6 +23,6 @@ final readonly class OAuthStatePayload
             && $this->codeVerifier === $other->codeVerifier
             && $this->flowBindingHash === $other->flowBindingHash
             && $this->redirectUri === $other->redirectUri
-            && $this->createdAt == $other->createdAt;
+            && $this->createdAt === $other->createdAt;
     }
 }
