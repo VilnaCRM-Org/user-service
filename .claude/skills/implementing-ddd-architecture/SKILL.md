@@ -294,12 +294,18 @@ final readonly class CustomerNameChangedSubscriber implements DomainEventSubscri
 - Modify `deptrac.yaml` to allow violations
 - Skip validation (either in Value Objects or YAML config)
 - Use public setters in entities
+- Use `array` type for collections of domain objects — create typed collection classes instead
+- Use `json_encode`/`json_decode` in repositories — use Symfony `SerializerInterface` (enforced by Psalm)
+- Use hardcoded `new ClassName()` in production source code — provide factory methods (`fromString()`, `create()`) on value objects
 
 ### ALWAYS
 
 - Keep Domain layer pure (no framework dependencies)
 - Put business logic in Domain entities/aggregates
 - Use Value Objects for validation and invariants
+- Provide static factory methods (`fromString()`, `create()`) on value objects for construction
+- Create typed collection classes (implementing `IteratorAggregate`, `Countable`) for groups of domain objects
+- Use Symfony `SerializerInterface` for serialization in infrastructure repositories
 - Create repository interfaces in Domain layer
 - Implement repositories in Infrastructure layer
 - Use Command Bus for write operations

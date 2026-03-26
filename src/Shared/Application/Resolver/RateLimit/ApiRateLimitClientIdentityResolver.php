@@ -96,6 +96,7 @@ final readonly class ApiRateLimitClientIdentityResolver
         string $rawPayload,
         array $keys
     ): ?string {
+        /** @psalm-suppress ForbiddenCode */
         $jsonPayload = json_decode($rawPayload, true);
         if (!is_array($jsonPayload)) {
             return null;

@@ -34,13 +34,14 @@ final class OAuthProviderType extends Type
         };
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) - Doctrine types lack DI */
     #[\Override]
     public function convertToPHPValue(mixed $value): ?OAuthProvider
     {
         return match (true) {
             $value === null => null,
             $value instanceof OAuthProvider => $value,
-            is_string($value) => new OAuthProvider($value),
+            is_string($value) => OAuthProvider::fromString($value),
             default => throw new InvalidArgumentException(
                 self::ERROR_MSG
             ),
@@ -79,7 +80,7 @@ final class OAuthProviderType extends Type
             ),
             '{ $return = $value; }',
             'elseif (is_string($value))',
-            sprintf('{ $return = new %s($value); }', $fqcn),
+            sprintf('{ $return = %s::fromString($value); }', $fqcn),
             'else { throw new \InvalidArgumentException(',
             sprintf('"%s"); }', self::ERROR_MSG),
         ]);

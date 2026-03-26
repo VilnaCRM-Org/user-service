@@ -64,4 +64,19 @@ final class OAuthProviderTest extends UnitTestCase
 
         $this->assertFalse($provider1->equals($provider2));
     }
+
+    public function testFromStringCreatesInstance(): void
+    {
+        $value = $this->faker->word();
+        $provider = OAuthProvider::fromString($value);
+
+        $this->assertSame($value, $provider->value);
+    }
+
+    public function testFromStringThrowsForEmptyValue(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        OAuthProvider::fromString('');
+    }
 }

@@ -22,6 +22,7 @@ final readonly class EmfLogFormatter
     public function format(EmfPayload $payload): string
     {
         try {
+            /** @psalm-suppress ForbiddenCode */
             return json_encode($payload, JSON_THROW_ON_ERROR) . "\n";
         } catch (\JsonException $e) {
             $this->logger->error('Failed to encode EMF payload', [

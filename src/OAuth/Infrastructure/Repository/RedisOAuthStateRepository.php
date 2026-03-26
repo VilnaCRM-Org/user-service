@@ -8,8 +8,9 @@ use App\OAuth\Domain\Exception\InvalidStateException;
 use App\OAuth\Domain\Exception\ProviderMismatchException;
 use App\OAuth\Domain\Repository\OAuthStateRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthStatePayload;
-use DateTimeImmutable;
 use Redis;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @psalm-suppress UnusedClass - Used via dependency injection
@@ -28,6 +29,7 @@ final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
 
     public function __construct(
         private readonly Redis $oauthRedis,
+        private readonly SerializerInterface $serializer,
     ) {
     }
 
@@ -37,16 +39,10 @@ final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
         OAuthStatePayload $payload,
         int $ttlSeconds,
     ): void {
-        /** @var string $serialized */
-        $serialized = json_encode([
-            'provider' => $payload->provider,
-            'code_verifier' => $payload->codeVerifier,
-            'flow_binding_hash' => $payload->flowBindingHash,
-            'redirect_uri' => $payload->redirectUri,
-            'created_at' => $payload->createdAt->format(
-                DateTimeImmutable::ATOM
-            ),
-        ], JSON_THROW_ON_ERROR);
+        $serialized = $this->serializer->serialize(
+            $payload,
+            JsonEncoder::FORMAT,
+        );
 
         $this->oauthRedis->setex(
             self::KEY_PREFIX . $state,
@@ -61,23 +57,15 @@ final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
         string $provider,
         string $flowBinding,
     ): OAuthStatePayload {
-        $data = $this->atomicConsume($state);
-        $this->validateProvider($data, $provider);
-        $this->validateFlowBinding($data, $flowBinding);
+        $raw = $this->atomicConsume($state);
+        $payload = $this->deserializeState($raw);
+        $this->validateProvider($payload, $provider);
+        $this->validateFlowBinding($payload, $flowBinding);
 
-        return new OAuthStatePayload(
-            provider: $data['provider'],
-            codeVerifier: $data['code_verifier'],
-            flowBindingHash: $data['flow_binding_hash'],
-            redirectUri: $data['redirect_uri'],
-            createdAt: new DateTimeImmutable($data['created_at']),
-        );
+        return $payload;
     }
 
-    /**
-     * @return array{provider: string, code_verifier: string, flow_binding_hash: string, redirect_uri: string, created_at: string}
-     */
-    private function atomicConsume(string $state): array
+    private function atomicConsume(string $state): string
     {
         /** @var string|false $raw */
         $raw = $this->oauthRedis->eval(
@@ -92,43 +80,36 @@ final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
             );
         }
 
-        return $this->deserializeState((string) $raw);
+        return (string) $raw;
     }
 
-    /**
-     * @infection-ignore-all - depth 512 is PHP default, not testable
-     *
-     * @return array{provider: string, code_verifier: string, flow_binding_hash: string, redirect_uri: string, created_at: string}
-     */
-    private function deserializeState(string $raw): array
+    private function deserializeState(string $raw): OAuthStatePayload
     {
-        return json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        return $this->serializer->deserialize(
+            $raw,
+            OAuthStatePayload::class,
+            JsonEncoder::FORMAT,
+        );
     }
 
-    /**
-     * @param array{provider: string, code_verifier: string, flow_binding_hash: string, redirect_uri: string, created_at: string} $data
-     */
     private function validateProvider(
-        array $data,
+        OAuthStatePayload $payload,
         string $provider,
     ): void {
-        if ($data['provider'] !== $provider) {
+        if ($payload->provider !== $provider) {
             throw new ProviderMismatchException(
-                $data['provider'],
+                $payload->provider,
                 $provider,
             );
         }
     }
 
-    /**
-     * @param array{provider: string, code_verifier: string, flow_binding_hash: string, redirect_uri: string, created_at: string} $data
-     */
     private function validateFlowBinding(
-        array $data,
+        OAuthStatePayload $payload,
         string $flowBinding,
     ): void {
         $flowBindingHash = hash('sha256', $flowBinding);
-        if (!hash_equals($data['flow_binding_hash'], $flowBindingHash)) {
+        if (!hash_equals($payload->flowBindingHash, $flowBindingHash)) {
             throw new InvalidStateException(
                 'Flow binding verification failed'
             );

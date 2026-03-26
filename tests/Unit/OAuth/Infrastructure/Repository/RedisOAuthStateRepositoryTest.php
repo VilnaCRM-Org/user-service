@@ -11,10 +11,13 @@ use App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
 use Redis;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class RedisOAuthStateRepositoryTest extends UnitTestCase
 {
     private Redis $redis;
+    private SerializerInterface $serializer;
     private RedisOAuthStateRepository $repository;
 
     #[\Override]
@@ -23,22 +26,30 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
         parent::setUp();
 
         $this->redis = $this->createMock(Redis::class);
-        $this->repository = new RedisOAuthStateRepository($this->redis);
+        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->repository = new RedisOAuthStateRepository(
+            $this->redis,
+            $this->serializer,
+        );
     }
 
     public function testSaveStoresPayloadWithTtl(): void
     {
         $state = $this->faker->sha256();
         $payload = $this->createPayload('github');
+        $serialized = $this->faker->sha256();
+
+        $this->serializer->expects($this->once())
+            ->method('serialize')
+            ->with($payload, JsonEncoder::FORMAT)
+            ->willReturn($serialized);
 
         $this->redis->expects($this->once())
             ->method('setex')
             ->with(
                 'oauth_state:' . $state,
                 600,
-                $this->callback(
-                    $this->buildPayloadValidator($payload),
-                ),
+                $serialized,
             );
 
         $this->repository->save($state, $payload, 600);
@@ -48,11 +59,20 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
     {
         $state = $this->faker->sha256();
         $flowBinding = $this->faker->sha256();
-        $storedData = $this->encodeStateData(
-            'github',
-            hash('sha256', $flowBinding),
+        $rawJson = $this->faker->sha256();
+        $payload = new OAuthStatePayload(
+            provider: 'github',
+            codeVerifier: 'test_verifier',
+            flowBindingHash: hash('sha256', $flowBinding),
+            redirectUri: 'https://localhost/callback',
+            createdAt: new DateTimeImmutable(),
         );
-        $this->expectEvalCalledWith($state, $storedData);
+
+        $this->expectEvalCalledWith($state, $rawJson);
+        $this->serializer->expects($this->once())
+            ->method('deserialize')
+            ->with($rawJson, OAuthStatePayload::class, JsonEncoder::FORMAT)
+            ->willReturn($payload);
 
         $result = $this->repository->validateAndConsume(
             $state,
@@ -94,11 +114,17 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
     public function testValidateAndConsumeThrowsForProviderMismatch(): void
     {
         $flowBinding = $this->faker->sha256();
-        $storedData = $this->encodeStateData(
-            'github',
-            hash('sha256', $flowBinding),
+        $rawJson = $this->faker->sha256();
+        $payload = new OAuthStatePayload(
+            provider: 'github',
+            codeVerifier: 'test_verifier',
+            flowBindingHash: hash('sha256', $flowBinding),
+            redirectUri: 'https://localhost/callback',
+            createdAt: new DateTimeImmutable(),
         );
-        $this->redis->method('eval')->willReturn($storedData);
+
+        $this->redis->method('eval')->willReturn($rawJson);
+        $this->serializer->method('deserialize')->willReturn($payload);
 
         $this->expectException(ProviderMismatchException::class);
 
@@ -111,11 +137,17 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
 
     public function testValidateAndConsumeThrowsForFlowBindingMismatch(): void
     {
-        $storedData = $this->encodeStateData(
-            'github',
-            hash('sha256', 'correct_binding'),
+        $rawJson = $this->faker->sha256();
+        $payload = new OAuthStatePayload(
+            provider: 'github',
+            codeVerifier: 'test_verifier',
+            flowBindingHash: hash('sha256', 'correct_binding'),
+            redirectUri: 'https://localhost/callback',
+            createdAt: new DateTimeImmutable(),
         );
-        $this->redis->method('eval')->willReturn($storedData);
+
+        $this->redis->method('eval')->willReturn($rawJson);
+        $this->serializer->method('deserialize')->willReturn($payload);
 
         $this->expectException(InvalidStateException::class);
 
@@ -124,16 +156,6 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
             'github',
             'wrong_binding',
         );
-    }
-
-    private function buildPayloadValidator(
-        OAuthStatePayload $payload,
-    ): \Closure {
-        return function (string $serialized) use ($payload): bool {
-            $this->assertSerializedPayload($serialized, $payload);
-
-            return true;
-        };
     }
 
     private function expectEvalCalledWith(
@@ -150,24 +172,6 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
             ->willReturn($returnValue);
     }
 
-    private function assertSerializedPayload(
-        string $serialized,
-        OAuthStatePayload $payload,
-    ): void {
-        /** @var array<string, string> $data */
-        $data = json_decode(
-            $serialized,
-            true,
-            512,
-            JSON_THROW_ON_ERROR,
-        );
-        $this->assertSame($payload->provider, $data['provider']);
-        $this->assertSame($payload->codeVerifier, $data['code_verifier']);
-        $this->assertSame($payload->flowBindingHash, $data['flow_binding_hash']);
-        $this->assertSame($payload->redirectUri, $data['redirect_uri']);
-        $this->assertArrayHasKey('created_at', $data);
-    }
-
     private function createPayload(string $provider): OAuthStatePayload
     {
         return new OAuthStatePayload(
@@ -177,20 +181,5 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
             redirectUri: 'https://localhost/api/auth/social/' . $provider . '/callback',
             createdAt: new DateTimeImmutable(),
         );
-    }
-
-    private function encodeStateData(
-        string $provider,
-        string $flowBindingHash,
-    ): string {
-        return json_encode([
-            'provider' => $provider,
-            'code_verifier' => 'test_verifier',
-            'flow_binding_hash' => $flowBindingHash,
-            'redirect_uri' => 'https://localhost/callback',
-            'created_at' => (new DateTimeImmutable())->format(
-                DateTimeImmutable::ATOM
-            ),
-        ], JSON_THROW_ON_ERROR);
     }
 }

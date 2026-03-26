@@ -89,6 +89,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
         }
 
         try {
+            /** @psalm-suppress ForbiddenCode */
             $users = json_decode(
                 json: (string) file_get_contents($path),
                 associative: true,
@@ -178,6 +179,7 @@ final class AttachLoadTestAccessTokensCommand extends Command
      */
     private function writeUsersFile(string $path, array $users): bool
     {
+        /** @psalm-suppress ForbiddenCode */
         $encoded = json_encode($users);
         if ($encoded === false) {
             return false;

@@ -152,22 +152,41 @@ When creating or reviewing a class, verify:
 - ❌ **Namespace mismatches** - Must match directory structure
 - ❌ **Ad-hoc directory/class type inventions** - Use established patterns only; NEVER create new directories without explicit user approval
 - ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own; any new directory must follow a well-known software engineering pattern and be approved by the user
+- ❌ **Hardcoded `new ClassName()` in source code** - Use factory methods (`ClassName::fromString()`, `ClassName::create()`) or Factory classes instead. Doctrine types that lack DI must use factory methods with `@SuppressWarnings(PHPMD.StaticAccess)`. Tests may use `new` directly.
+- ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforces this; any exceptions need `@psalm-suppress ForbiddenCode` with justification.
+- ❌ **Bare `array` types for collections of domain objects** - Use typed collection classes (implementing `IteratorAggregate`, `Countable`) instead of `array<string, SomeInterface>`. Internal storage in collections may use `array`.
 
 ## Factory Pattern (Maintainability & Flexibility)
 
-> **Use factories when creating typed classes with dependencies or configuration**
+> **Avoid hardcoded `new ClassName()` in production source code — use factory methods or Factory classes**
 
-### When Factories Are REQUIRED (Production Code)
+### Factory Methods on Value Objects
+
+Value objects SHOULD provide static factory methods as named constructors:
+
+```php
+// ❌ BAD: Direct instantiation in production code
+$provider = new OAuthProvider($value);
+
+// ✅ GOOD: Factory method
+$provider = OAuthProvider::fromString($value);
+```
+
+Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred** way to instantiate value objects outside of their own class and Factory classes. The constructor remains public for use within factory methods and tests.
+
+### When Factory Classes Are REQUIRED (Production Code)
 
 1. Objects with injected dependencies (timestamp providers, config, etc.)
 2. Objects requiring complex construction logic
 3. Objects needing different implementations per environment
 4. Objects created from external input (DTOs, metrics, etc.)
 
-### When Factories Are OPTIONAL (Tests)
+### When Direct `new` Is ACCEPTABLE
 
-- Tests can instantiate objects directly for simplicity
-- Test-specific factories can be created for reusable fixtures
+- Inside factory methods and Factory classes (that's their purpose)
+- In test code (simplicity over abstraction)
+- For framework-required patterns (e.g., `throw new InvalidArgumentException()`)
+- Inside Doctrine types that lack DI (use factory methods with `@SuppressWarnings(PHPMD.StaticAccess)`)
 
 ### Factory Benefits
 
@@ -208,9 +227,9 @@ public function emit(BusinessMetric $metric): void
 
 ## Type Safety: Classes Over Arrays
 
-> **Prefer typed classes and collections over arrays for structured data**
+> **Arrays are NOT allowed for collections of domain/application objects. Always use typed collection classes.**
 
-Arrays lack type safety and self-documentation. Use concrete classes instead.
+Arrays lack type safety and self-documentation. Use concrete classes instead. This is enforced during code review and by convention.
 
 ### Array vs Class Comparison
 
@@ -220,6 +239,7 @@ Arrays lack type safety and self-documentation. Use concrete classes instead.
 | Return data   | `return ['name' => $n, 'value' => $v]`    | `return new MetricData($n, $v)`             |
 | Method params | `function emit(array $metrics)`           | `function emit(MetricCollection $metrics)`  |
 | Events data   | `['type' => 'created', 'id' => $id]`      | `new CustomerCreatedEvent($id)`             |
+| Registry      | `private array $providers`                | `private OAuthProviderCollection $providers`|
 
 ### Benefits of Typed Classes
 
@@ -472,6 +492,9 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Create "Helper" or "Util" classes (extract specific responsibilities)
 - Allow namespace to mismatch directory structure
 - Use arrays for structured data when typed classes would be appropriate
+- Use `array` type for collections of domain/application objects — use typed collections
+- Use `json_encode`/`json_decode` — use Symfony `SerializerInterface` (enforced by Psalm `forbiddenFunctions`)
+- Use hardcoded `new ClassName()` in production code — use factory methods or Factory classes
 - Inject cross-cutting concerns (metrics, logging) into command handlers
 - Create complex objects directly without factories in production code
 - Add redundant interface aliases in `services.yaml` when autowiring resolves them
@@ -484,7 +507,9 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Ensure namespace matches directory structure exactly
 - Extract specific responsibilities from Helper/Util classes
 - Prefer typed classes over arrays for structured data
-- Use collections instead of arrays of objects
+- Use typed collection classes instead of arrays of objects
+- Use Symfony `SerializerInterface` instead of `json_encode`/`json_decode`
+- Use factory methods (`fromString()`, `create()`) or Factory classes instead of `new ClassName()`
 - Use event subscribers for cross-cutting concerns
 - Use factories for complex object creation in production code
 

@@ -241,6 +241,7 @@ final readonly class AccessTokenValidator
     private function decodeJsonObject(string $json): array
     {
         try {
+            /** @psalm-suppress ForbiddenCode */
             $decodedObject = json_decode(
                 $json,
                 true,

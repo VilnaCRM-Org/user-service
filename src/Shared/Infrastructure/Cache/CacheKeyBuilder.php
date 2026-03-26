@@ -51,6 +51,7 @@ final readonly class CacheKeyBuilder
     {
         ksort($filters);
 
+        /** @psalm-suppress ForbiddenCode */
         return $this->build(
             'user',
             'collection',
