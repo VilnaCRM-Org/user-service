@@ -11,12 +11,12 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\EmailChangedEvent;
+use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\ConfirmationTokenFactory;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
@@ -25,8 +25,7 @@ final class UserTest extends UnitTestCase
 {
     private UserInterface $user;
     private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
-    private EmailChangedEventFactoryInterface $emailChangedEventFactory;
-    private PasswordChangedEventFactoryInterface $passwordChangedEventFactory;
+    private UserUpdateEventFactoryInterface $userUpdateEventFactory;
     private UserFactoryInterface $userFactory;
     private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
     private UuidTransformer $uuidTransformer;
@@ -38,10 +37,8 @@ final class UserTest extends UnitTestCase
 
         $this->userConfirmedEventFactory =
             $this->createMock(UserConfirmedEventFactoryInterface::class);
-        $this->emailChangedEventFactory =
-            $this->createMock(EmailChangedEventFactoryInterface::class);
-        $this->passwordChangedEventFactory =
-            $this->createMock(PasswordChangedEventFactoryInterface::class);
+        $this->userUpdateEventFactory =
+            $this->createMock(UserUpdateEventFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->confirmationTokenFactory = new ConfirmationTokenFactory(
             $this->faker->numberBetween(1, 10)
@@ -118,8 +115,7 @@ final class UserTest extends UnitTestCase
             $updateData,
             $hashedNewPassword,
             $eventID,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedEventFactory
+            $this->userUpdateEventFactory
         );
 
         $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
@@ -136,8 +132,7 @@ final class UserTest extends UnitTestCase
             $updateData,
             $this->faker->sha256(),
             $eventID,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedEventFactory
+            $this->userUpdateEventFactory
         );
 
         $this->assertContains($expectedEvent, $events);
@@ -156,15 +151,14 @@ final class UserTest extends UnitTestCase
             $samePassword,
         );
 
-        $this->passwordChangedEventFactory->expects($this->never())
-            ->method('create');
+        $this->userUpdateEventFactory->expects($this->never())
+            ->method('createPasswordChanged');
 
         $events = $this->user->update(
             $updateData,
             $hashedNewPassword,
             $eventID,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedEventFactory
+            $this->userUpdateEventFactory
         );
 
         $this->assertEmpty($events);
@@ -327,13 +321,14 @@ final class UserTest extends UnitTestCase
 
     private function stubPasswordChangedFactory(
         string $eventID
-    ): \App\User\Domain\Event\PasswordChangedEvent {
-        $event = new \App\User\Domain\Event\PasswordChangedEvent(
+    ): PasswordChangedEvent {
+        $event = new PasswordChangedEvent(
             $this->user->getEmail(),
             $eventID
         );
-        $this->passwordChangedEventFactory->expects($this->once())
-            ->method('create')
+        $this->userUpdateEventFactory->expects($this->once())
+            ->method('createPasswordChanged')
+            ->with($this->user->getEmail(), $eventID)
             ->willReturn($event);
 
         return $event;
@@ -359,8 +354,8 @@ final class UserTest extends UnitTestCase
             $oldEmail,
             $eventID
         );
-        $this->emailChangedEventFactory->expects($this->once())
-            ->method('create')
+        $this->userUpdateEventFactory->expects($this->once())
+            ->method('createEmailChanged')
             ->with($this->user, $oldEmail, $eventID)
             ->willReturn($expectedEvent);
 

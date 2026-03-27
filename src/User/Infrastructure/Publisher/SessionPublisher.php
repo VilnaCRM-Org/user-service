@@ -6,8 +6,7 @@ namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\EventIdFactoryInterface;
-use App\User\Domain\Event\AllSessionsRevokedEvent;
-use App\User\Domain\Event\SessionRevokedEvent;
+use App\User\Domain\Factory\Event\SessionRevocationEventFactoryInterface;
 
 /**
  * @psalm-api
@@ -17,6 +16,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
     public function __construct(
         private EventBusInterface $eventBus,
         private EventIdFactoryInterface $eventIdFactory,
+        private SessionRevocationEventFactoryInterface $sessionRevocationEventFactory,
     ) {
     }
 
@@ -26,7 +26,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
         string $sessionId,
         string $reason
     ): void {
-        $this->eventBus->publish(new SessionRevokedEvent(
+        $this->eventBus->publish($this->sessionRevocationEventFactory->createSessionRevoked(
             $userId,
             $sessionId,
             $reason,
@@ -40,7 +40,7 @@ final readonly class SessionPublisher implements SessionPublisherInterface
         string $reason,
         int $revokedCount
     ): void {
-        $this->eventBus->publish(new AllSessionsRevokedEvent(
+        $this->eventBus->publish($this->sessionRevocationEventFactory->createAllSessionsRevoked(
             $userId,
             $reason,
             $revokedCount,

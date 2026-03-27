@@ -6,9 +6,8 @@ namespace App\User\Domain\Entity;
 
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 class User implements UserInterface
@@ -134,21 +133,20 @@ class User implements UserInterface
         UserUpdate $updateData,
         string $hashedNewPassword,
         string $eventID,
-        EmailChangedEventFactoryInterface $emailChangedEventFactory,
-        PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
+        UserUpdateEventFactoryInterface $userUpdateEventFactory,
     ): array {
         $events = [];
 
         $events += $this->processNewEmail(
             $updateData->newEmail,
             $eventID,
-            $emailChangedEventFactory
+            $userUpdateEventFactory
         );
         $events += $this->processNewPassword(
             $updateData->newPassword,
             $updateData->oldPassword,
             $eventID,
-            $passwordChangedEventFactory
+            $userUpdateEventFactory
         );
 
         $this->initials = $updateData->newInitials;
@@ -208,15 +206,18 @@ class User implements UserInterface
     private function processNewEmail(
         string $newEmail,
         string $eventID,
-        EmailChangedEventFactoryInterface $emailChangedEventFactory,
+        UserUpdateEventFactoryInterface $userUpdateEventFactory,
     ): array {
         $events = [];
         if ($newEmail !== $this->email) {
             $oldEmail = $this->email;
             $this->email = $newEmail;
             $this->confirmed = false;
-            $events[] =
-                $emailChangedEventFactory->create($this, $oldEmail, $eventID);
+            $events[] = $userUpdateEventFactory->createEmailChanged(
+                $this,
+                $oldEmail,
+                $eventID
+            );
         }
 
         return $events;
@@ -231,12 +232,14 @@ class User implements UserInterface
         string $newPassword,
         string $oldPassword,
         string $eventID,
-        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
+        UserUpdateEventFactoryInterface $userUpdateEventFactory
     ): array {
         $events = [];
         if ($newPassword !== $oldPassword) {
-            $events[] =
-                $passwordChangedEventFactory->create($this->email, $eventID);
+            $events[] = $userUpdateEventFactory->createPasswordChanged(
+                $this->email,
+                $eventID
+            );
         }
         return $events;
     }

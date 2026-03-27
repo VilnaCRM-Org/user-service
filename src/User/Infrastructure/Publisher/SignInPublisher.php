@@ -6,15 +6,14 @@ namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\EventIdFactoryInterface;
-use App\User\Domain\Event\AccountLockedOutEvent;
-use App\User\Domain\Event\SignInFailedEvent;
-use App\User\Domain\Event\UserSignedInEvent;
+use App\User\Domain\Factory\Event\SignInEventFactoryInterface;
 
 final readonly class SignInPublisher implements SignInPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
         private EventIdFactoryInterface $eventIdFactory,
+        private SignInEventFactoryInterface $signInEventFactory,
     ) {
     }
 
@@ -27,7 +26,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
         string $userAgent,
         bool $twoFactorUsed
     ): void {
-        $this->eventBus->publish(new UserSignedInEvent(
+        $this->eventBus->publish($this->signInEventFactory->createSignedIn(
             $userId,
             $email,
             $sessionId,
@@ -45,7 +44,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
         string $userAgent,
         string $reason
     ): void {
-        $this->eventBus->publish(new SignInFailedEvent(
+        $this->eventBus->publish($this->signInEventFactory->createFailed(
             $email,
             $ipAddress,
             $userAgent,
@@ -60,7 +59,7 @@ final readonly class SignInPublisher implements SignInPublisherInterface
         int $failedAttempts,
         int $lockoutDurationSeconds
     ): void {
-        $this->eventBus->publish(new AccountLockedOutEvent(
+        $this->eventBus->publish($this->signInEventFactory->createLockedOut(
             $email,
             $failedAttempts,
             $lockoutDurationSeconds,

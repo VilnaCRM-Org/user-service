@@ -154,8 +154,9 @@ When creating or reviewing a class, verify:
 - ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own; any new directory must follow a well-known software engineering pattern and be approved by the user
 - ❌ **Constructor defaults that instantiate collaborators** - Inject dependencies instead of using `new` in `__construct(...)` defaults. Psalm architecture guards enforce this in `src/`.
 - ❌ **Direct `new OAuthProvider(...)` in production code** - Use `OAuthProvider::fromString()` instead. Psalm architecture guards enforce this in `src/`.
+- ❌ **Direct instantiation of reviewed collections/events in production code** - Use dedicated factory classes such as `OAuthProviderCollectionFactory`, `SignInEventFactory`, `SessionRevocationEventFactory`, `TwoFactorEventFactory`, and `RefreshTokenEventFactory`. Psalm architecture guards enforce this in `src/`.
 - ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforce this in `src/`; tests are excluded.
-- ❌ **Bare `array` or `list` collections of OAuth providers** - Use `OAuthProviderCollection` instead of `array<string, OAuthProviderInterface>`. Internal storage inside collection classes may still use `array`.
+- ❌ **Bare `array`, `list`, or `iterable` collections of OAuth providers** - Use `OAuthProviderCollection` instead of `array<string, OAuthProviderInterface>` or `iterable<OAuthProviderInterface>`. Internal storage inside collection classes may still use `array`.
 
 ## Factory Pattern (Maintainability & Flexibility)
 
@@ -174,6 +175,8 @@ $provider = OAuthProvider::fromString($value);
 ```
 
 Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred** way to instantiate value objects outside of their own class. The constructor remains public for use within named constructors and tests.
+
+Collections and domain events should follow a different rule in production code: use dedicated Factory classes instead of adding static convenience constructors just to avoid `new`.
 
 ### When Factory Classes Are REQUIRED (Production Code)
 
@@ -230,7 +233,7 @@ public function emit(BusinessMetric $metric): void
 
 > **Arrays are NOT allowed for collections that already have a dedicated collection type. Use the collection class instead.**
 
-Arrays lack type safety and self-documentation. Use concrete classes instead. Current CI guards specifically block bare OAuth provider collections in production code.
+Arrays lack type safety and self-documentation. Use concrete classes instead. Current CI guards specifically block bare OAuth provider collections in production code, including iterable-based variants.
 
 ### Array vs Class Comparison
 

@@ -6,25 +6,23 @@ namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\EventIdFactoryInterface;
-use App\User\Domain\Event\RecoveryCodeUsedEvent;
-use App\User\Domain\Event\TwoFactorCompletedEvent;
-use App\User\Domain\Event\TwoFactorDisabledEvent;
-use App\User\Domain\Event\TwoFactorEnabledEvent;
-use App\User\Domain\Event\TwoFactorFailedEvent;
-use App\User\Domain\Event\UserSignedInEvent;
+use App\User\Domain\Factory\Event\SignInEventFactoryInterface;
+use App\User\Domain\Factory\Event\TwoFactorEventFactoryInterface;
 
 final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
 {
     public function __construct(
         private EventBusInterface $eventBus,
         private EventIdFactoryInterface $eventIdFactory,
+        private TwoFactorEventFactoryInterface $twoFactorEventFactory,
+        private SignInEventFactoryInterface $signInEventFactory,
     ) {
     }
 
     #[\Override]
     public function publishEnabled(string $userId, string $email): void
     {
-        $this->eventBus->publish(new TwoFactorEnabledEvent(
+        $this->eventBus->publish($this->twoFactorEventFactory->createEnabled(
             $userId,
             $email,
             $this->eventIdFactory->generate()
@@ -34,7 +32,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
     #[\Override]
     public function publishDisabled(string $userId, string $email): void
     {
-        $this->eventBus->publish(new TwoFactorDisabledEvent(
+        $this->eventBus->publish($this->twoFactorEventFactory->createDisabled(
             $userId,
             $email,
             $this->eventIdFactory->generate()
@@ -50,7 +48,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
         string $userAgent,
         ?string $verificationMethod
     ): void {
-        $this->eventBus->publish(new TwoFactorCompletedEvent(
+        $this->eventBus->publish($this->twoFactorEventFactory->createCompleted(
             $userId,
             $sessionId,
             $ipAddress,
@@ -58,7 +56,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
             (string) $verificationMethod,
             $this->eventIdFactory->generate()
         ));
-        $this->eventBus->publish(new UserSignedInEvent(
+        $this->eventBus->publish($this->signInEventFactory->createSignedIn(
             $userId,
             $email,
             $sessionId,
@@ -75,7 +73,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
         string $ipAddress,
         string $reason
     ): void {
-        $this->eventBus->publish(new TwoFactorFailedEvent(
+        $this->eventBus->publish($this->twoFactorEventFactory->createFailed(
             $pendingSessionId,
             $ipAddress,
             $reason,
@@ -86,7 +84,7 @@ final readonly class TwoFactorPublisher implements TwoFactorPublisherInterface
     #[\Override]
     public function publishRecoveryCodeUsed(string $userId, int $remainingCount): void
     {
-        $this->eventBus->publish(new RecoveryCodeUsedEvent(
+        $this->eventBus->publish($this->twoFactorEventFactory->createRecoveryCodeUsed(
             $userId,
             $remainingCount,
             $this->eventIdFactory->generate()
