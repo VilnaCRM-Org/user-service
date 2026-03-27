@@ -157,6 +157,7 @@ When creating or reviewing a class, verify:
 - ✅ **`new StringableArrayNormalizer()` in Doctrine types** - Allowed because Doctrine types cannot use constructor DI.
 - ❌ **Direct instantiation of reviewed collections/events in production code** - Use dedicated factory classes such as `OAuthProviderCollectionFactory`, `SignInEventFactory`, `SessionRevocationEventFactory`, `TwoFactorEventFactory`, and `RefreshTokenEventFactory`. Psalm architecture guards enforce this in `src/`.
 - ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforce this in `src/`; tests are excluded.
+- ❌ **Untyped `array` in method signatures** - Always specify the array's content type via docblock (`list<string>`, `array<string, int>`) or use a typed collection class. Psalm architecture guards flag bare `array` type hints without generic type info in `src/` (excluding DoctrineType and Collection directories).
 - ❌ **Bare `array`, `list`, or `iterable` collections of domain objects** - Use typed collection classes instead of bare arrays. Psalm architecture guards enforce this **repo-wide** in `src/` (not just OAuth). Enforced types and their collections:
   - `OAuthProvider`/`OAuthProviderInterface` → `OAuthProviderCollection`
   - `User`/`UserInterface` → `UserCollection`
@@ -504,6 +505,7 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Create "Helper" or "Util" classes (extract specific responsibilities)
 - Allow namespace to mismatch directory structure
 - Use arrays for structured data when typed classes would be appropriate
+- Use untyped `array` in method signatures — always specify content type via docblock or use collection classes
 - Use `array` type for collections of domain/application objects — use typed collections
 - Use `json_encode`/`json_decode` — use Symfony `SerializerInterface` (enforced by Psalm `forbiddenFunctions` in `src/`)
 - Use constructor defaults that instantiate collaborators — inject the dependency instead
@@ -520,6 +522,7 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Ensure namespace matches directory structure exactly
 - Extract specific responsibilities from Helper/Util classes
 - Prefer typed classes over arrays for structured data
+- Always specify array content types in method signatures (e.g. `list<string>`, `array<string, int>`)
 - Use typed collection classes instead of arrays of objects
 - Use Symfony `SerializerInterface` instead of `json_encode`/`json_decode`
 - Inject dependencies instead of instantiating constructor defaults

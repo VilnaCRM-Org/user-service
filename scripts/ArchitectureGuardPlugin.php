@@ -42,6 +42,7 @@ use Psalm\Type\Atomic;
 use Psalm\Type\Atomic\TArray;
 use Psalm\Type\Atomic\TIterable;
 use Psalm\Type\Atomic\TKeyedArray;
+use Psalm\Type\Atomic\TMixed;
 use Psalm\Type\Atomic\TNamedObject;
 use Psalm\Type\Union;
 
@@ -56,8 +57,11 @@ final class ArchitectureGuardPlugin implements
     private const SOURCE_DIRECTORY = DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
     private const FACTORY_DIRECTORY = DIRECTORY_SEPARATOR . 'Factory' . DIRECTORY_SEPARATOR;
     private const COLLECTION_DIRECTORY = DIRECTORY_SEPARATOR . 'Collection' . DIRECTORY_SEPARATOR;
+    private const DOCTRINE_TYPE_DIRECTORY = DIRECTORY_SEPARATOR . 'DoctrineType' . DIRECTORY_SEPARATOR;
     private const CONSTRUCTOR_DEFAULT_MESSAGE =
         'Inject dependencies instead of instantiating them in constructor defaults.';
+    private const BARE_ARRAY_MESSAGE =
+        'Use a typed array (e.g. list<string>) or a typed collection class instead of untyped array.';
 
     /**
      * Maps domain object types to their required typed collection classes.
@@ -168,6 +172,10 @@ final class ArchitectureGuardPlugin implements
 
         if (!self::isFactorySource($filePath) && !self::isCollectionSource($filePath)) {
             self::reportDomainObjectArrayCollections($event, $statement);
+        }
+
+        if (!self::isDoctrineTypeSource($filePath) && !self::isCollectionSource($filePath)) {
+            self::reportBareArraySignatures($event, $statement);
         }
 
         return null;
@@ -411,6 +419,84 @@ final class ArchitectureGuardPlugin implements
         );
     }
 
+    private static function reportBareArraySignatures(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        self::reportBareArrayParameters($event, $statement);
+        self::reportBareArrayReturnType($event, $statement);
+    }
+
+    private static function reportBareArrayParameters(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        foreach ($statement->getParams() as $index => $parameter) {
+            $storageParameter = $event->getFunctionlikeStorage()->params[$index] ?? null;
+            if ($storageParameter === null) {
+                continue;
+            }
+
+            if (self::containsBareArray($storageParameter->type)) {
+                self::reportFunctionLikeIssue(
+                    $event,
+                    $parameter,
+                    self::BARE_ARRAY_MESSAGE
+                );
+            }
+        }
+    }
+
+    private static function reportBareArrayReturnType(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        if (!self::containsBareArray($event->getFunctionlikeStorage()->return_type)) {
+            return;
+        }
+
+        $returnType = $statement->getReturnType();
+        if ($returnType === null) {
+            return;
+        }
+
+        self::reportFunctionLikeIssue(
+            $event,
+            $returnType,
+            self::BARE_ARRAY_MESSAGE
+        );
+    }
+
+    private static function containsBareArray(?Union $type): bool
+    {
+        if ($type === null) {
+            return false;
+        }
+
+        foreach ($type->getAtomicTypes() as $atomicType) {
+            if (self::isBareArray($atomicType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function isBareArray(Atomic $atomicType): bool
+    {
+        if (!$atomicType instanceof TArray) {
+            return false;
+        }
+
+        foreach ($atomicType->type_params[1]->getAtomicTypes() as $valueType) {
+            if ($valueType instanceof TMixed) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static function isFactorySource(string $filePath): bool
     {
         return str_contains($filePath, self::FACTORY_DIRECTORY);
@@ -419,6 +505,11 @@ final class ArchitectureGuardPlugin implements
     private static function isCollectionSource(string $filePath): bool
     {
         return str_contains($filePath, self::COLLECTION_DIRECTORY);
+    }
+
+    private static function isDoctrineTypeSource(string $filePath): bool
+    {
+        return str_contains($filePath, self::DOCTRINE_TYPE_DIRECTORY);
     }
 
     private static function isProductionSource(string $filePath): bool
