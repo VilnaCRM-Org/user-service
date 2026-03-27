@@ -15,10 +15,10 @@ use const JSON_THROW_ON_ERROR;
 use function mkdir;
 use function rmdir;
 use function sprintf;
-use function sys_get_temp_dir;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
+use function sys_get_temp_dir;
 use function unlink;
 
 final class LoadTestUsersFileRepositoryTest extends UnitTestCase

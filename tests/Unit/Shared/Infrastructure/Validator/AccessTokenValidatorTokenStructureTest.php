@@ -169,34 +169,11 @@ final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorT
     public function testValidateUsesAssociativeDecodeContextForHeaderJson(): void
     {
         $subject = $this->faker->email();
-        $sid = $this->faker->uuid();
         $headerJson = json_encode(['alg' => 'RS256', 'typ' => 'JWT'], JSON_THROW_ON_ERROR);
-        $token = $this->base64UrlEncode($headerJson)
-            . '.'
-            . $this->base64UrlEncode(json_encode(['sub' => $subject], JSON_THROW_ON_ERROR))
-            . '.signature';
-        $payload = $this->buildPayload($subject, $sid, ['ROLE_USER']);
-        $serializer = $this->createMock(Serializer::class);
-        $serializer
-            ->expects($this->once())
-            ->method('decode')
-            ->with(
-                $headerJson,
-                JsonEncoder::FORMAT,
-                [
-                    JsonDecode::ASSOCIATIVE => true,
-                    JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
-                    JsonDecode::RECURSION_DEPTH => 4,
-                ]
-            )
-            ->willReturn(['alg' => 'RS256', 'typ' => 'JWT']);
-
-        $validator = new AccessTokenValidator($serializer, $this->jwtEncoder);
-        $this->jwtEncoder
-            ->expects($this->once())
-            ->method('decode')
-            ->with($token)
-            ->willReturn($payload);
+        $token = $this->createTokenWithHeaderJson($headerJson, $subject);
+        $payload = $this->buildPayload($subject, $this->faker->uuid(), ['ROLE_USER']);
+        $validator = $this->createValidatorExpectingHeaderDecode($headerJson);
+        $this->expectJwtDecode($token, $payload);
 
         $result = $validator->validate($token);
 
@@ -248,5 +225,45 @@ final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorT
         $result = $this->validator->validate($token);
 
         $this->assertSame($subject, $result['subject']);
+    }
+
+    private function createTokenWithHeaderJson(string $headerJson, string $subject): string
+    {
+        return $this->base64UrlEncode($headerJson)
+            . '.'
+            . $this->base64UrlEncode(json_encode(['sub' => $subject], JSON_THROW_ON_ERROR))
+            . '.signature';
+    }
+
+    private function createValidatorExpectingHeaderDecode(string $headerJson): AccessTokenValidator
+    {
+        $serializer = $this->createMock(Serializer::class);
+        $serializer
+            ->expects($this->once())
+            ->method('decode')
+            ->with(
+                $headerJson,
+                JsonEncoder::FORMAT,
+                [
+                    JsonDecode::ASSOCIATIVE => true,
+                    JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
+                    JsonDecode::RECURSION_DEPTH => 4,
+                ]
+            )
+            ->willReturn(['alg' => 'RS256', 'typ' => 'JWT']);
+
+        return new AccessTokenValidator($serializer, $this->jwtEncoder);
+    }
+
+    /**
+     * @param array<string, array<int|string>|int|string> $payload
+     */
+    private function expectJwtDecode(string $token, array $payload): void
+    {
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($token)
+            ->willReturn($payload);
     }
 }

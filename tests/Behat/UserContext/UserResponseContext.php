@@ -219,26 +219,6 @@ final class UserResponseContext implements Context
     }
 
     /**
-     * @param array<array-key, mixed> $payload
-     */
-    private function assertJsonFieldIsAbsent(array $payload, string $field): void
-    {
-        foreach ($payload as $key => $value) {
-            Assert::assertNotSame(
-                $field,
-                (string) $key,
-                sprintf('The response unexpectedly contains field "%s".', $field)
-            );
-
-            if (!is_array($value)) {
-                continue;
-            }
-
-            $this->assertJsonFieldIsAbsent($value, $field);
-        }
-    }
-
-    /**
      * @Then the response should set auth cookie
      */
     public function theResponseShouldSetAuthCookie(): void
@@ -266,6 +246,26 @@ final class UserResponseContext implements Context
         Assert::assertNotSame('', $pendingSessionId);
 
         $this->state->pendingSessionId = $pendingSessionId;
+    }
+
+    /**
+     * @param array<array-key, array|bool|float|int|string|null> $payload
+     */
+    private function assertJsonFieldIsAbsent(array $payload, string $field): void
+    {
+        foreach ($payload as $key => $value) {
+            Assert::assertNotSame(
+                $field,
+                (string) $key,
+                sprintf('The response unexpectedly contains field "%s".', $field)
+            );
+
+            if (!is_array($value)) {
+                continue;
+            }
+
+            $this->assertJsonFieldIsAbsent($value, $field);
+        }
     }
 
     private function assertNoSchemaInResponse(

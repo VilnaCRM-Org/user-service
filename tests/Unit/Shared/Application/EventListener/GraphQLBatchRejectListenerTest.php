@@ -55,27 +55,14 @@ final class GraphQLBatchRejectListenerTest extends UnitTestCase
             ['query' => '{ __typename }'],
             ['query' => '{ __typename }'],
         ], JSON_THROW_ON_ERROR);
-        $serializer = $this->createMock(Serializer::class);
-        $serializer
-            ->expects($this->once())
-            ->method('decode')
-            ->with(
-                $body,
-                JsonEncoder::FORMAT,
-                [JsonDecode::ASSOCIATIVE => true]
-            )
-            ->willReturn([
-                ['query' => '{ __typename }'],
-                ['query' => '{ __typename }'],
-            ]);
-
-        $listener = new GraphQLBatchRejectListener($serializer);
+        $listener = new GraphQLBatchRejectListener(
+            $this->createBatchDecodingSerializer($body),
+        );
         $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $body);
 
         $listener($event);
 
-        $this->assertTrue($event->hasResponse());
-        $this->assertSame(Response::HTTP_BAD_REQUEST, $event->getResponse()->getStatusCode());
+        $this->assertBadRequestResponse($event);
     }
 
     public function testAllowsSingleGraphqlRequests(): void
@@ -159,5 +146,30 @@ final class GraphQLBatchRejectListenerTest extends UnitTestCase
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );
+    }
+
+    private function createBatchDecodingSerializer(string $body): Serializer
+    {
+        $serializer = $this->createMock(Serializer::class);
+        $serializer
+            ->expects($this->once())
+            ->method('decode')
+            ->with(
+                $body,
+                JsonEncoder::FORMAT,
+                [JsonDecode::ASSOCIATIVE => true]
+            )
+            ->willReturn([
+                ['query' => '{ __typename }'],
+                ['query' => '{ __typename }'],
+            ]);
+
+        return $serializer;
+    }
+
+    private function assertBadRequestResponse(RequestEvent $event): void
+    {
+        $this->assertTrue($event->hasResponse());
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $event->getResponse()->getStatusCode());
     }
 }
