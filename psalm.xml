@@ -16,9 +16,10 @@
         </ignoreFiles>
     </projectFiles>
     <plugins>
+        <plugin filename="scripts/ArchitectureGuardPlugin.php"/>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
     </plugins>
-    <!-- Forbid plain json_encode/json_decode in favour of Symfony Serializer.
+    <!-- Forbid raw JSON helpers and guard reviewed architecture regressions in src/.
          Violations surface as ForbiddenCode and are suppressed in tests/. -->
     <forbiddenFunctions>
         <function name="json_encode"/>

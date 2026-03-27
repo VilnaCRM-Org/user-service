@@ -152,9 +152,10 @@ When creating or reviewing a class, verify:
 - ❌ **Namespace mismatches** - Must match directory structure
 - ❌ **Ad-hoc directory/class type inventions** - Use established patterns only; NEVER create new directories without explicit user approval
 - ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own; any new directory must follow a well-known software engineering pattern and be approved by the user
-- ❌ **Hardcoded `new ClassName()` in source code** - Use factory methods (`ClassName::fromString()`, `ClassName::create()`) or Factory classes instead. Doctrine types that lack DI must use factory methods with `@SuppressWarnings(PHPMD.StaticAccess)`. Tests may use `new` directly.
-- ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforces this; any exceptions need `@psalm-suppress ForbiddenCode` with justification.
-- ❌ **Bare `array` types for collections of domain objects** - Use typed collection classes (implementing `IteratorAggregate`, `Countable`) instead of `array<string, SomeInterface>`. Internal storage in collections may use `array`.
+- ❌ **Constructor defaults that instantiate collaborators** - Inject dependencies instead of using `new` in `__construct(...)` defaults. Psalm architecture guards enforce this in `src/`.
+- ❌ **Direct `new OAuthProvider(...)` in production code** - Use `OAuthProvider::fromString()` instead. Psalm architecture guards enforce this in `src/`.
+- ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforce this in `src/`; tests are excluded.
+- ❌ **Bare `array` or `list` collections of OAuth providers** - Use `OAuthProviderCollection` instead of `array<string, OAuthProviderInterface>`. Internal storage inside collection classes may still use `array`.
 
 ## Factory Pattern (Maintainability & Flexibility)
 
@@ -172,7 +173,7 @@ $provider = new OAuthProvider($value);
 $provider = OAuthProvider::fromString($value);
 ```
 
-Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred** way to instantiate value objects outside of their own class and Factory classes. The constructor remains public for use within factory methods and tests.
+Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred** way to instantiate value objects outside of their own class. The constructor remains public for use within named constructors and tests.
 
 ### When Factory Classes Are REQUIRED (Production Code)
 
@@ -186,7 +187,7 @@ Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred*
 - Inside factory methods and Factory classes (that's their purpose)
 - In test code (simplicity over abstraction)
 - For framework-required patterns (e.g., `throw new InvalidArgumentException()`)
-- Inside Doctrine types that lack DI (use factory methods with `@SuppressWarnings(PHPMD.StaticAccess)`)
+- Inside the value object's own named constructors
 
 ### Factory Benefits
 
@@ -227,9 +228,9 @@ public function emit(BusinessMetric $metric): void
 
 ## Type Safety: Classes Over Arrays
 
-> **Arrays are NOT allowed for collections of domain/application objects. Always use typed collection classes.**
+> **Arrays are NOT allowed for collections that already have a dedicated collection type. Use the collection class instead.**
 
-Arrays lack type safety and self-documentation. Use concrete classes instead. This is enforced during code review and by convention.
+Arrays lack type safety and self-documentation. Use concrete classes instead. Current CI guards specifically block bare OAuth provider collections in production code.
 
 ### Array vs Class Comparison
 
@@ -493,8 +494,9 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Allow namespace to mismatch directory structure
 - Use arrays for structured data when typed classes would be appropriate
 - Use `array` type for collections of domain/application objects — use typed collections
-- Use `json_encode`/`json_decode` — use Symfony `SerializerInterface` (enforced by Psalm `forbiddenFunctions`)
-- Use hardcoded `new ClassName()` in production code — use factory methods or Factory classes
+- Use `json_encode`/`json_decode` — use Symfony `SerializerInterface` (enforced by Psalm `forbiddenFunctions` in `src/`)
+- Use constructor defaults that instantiate collaborators — inject the dependency instead
+- Use direct `new OAuthProvider(...)` in production code — use `OAuthProvider::fromString()`
 - Inject cross-cutting concerns (metrics, logging) into command handlers
 - Create complex objects directly without factories in production code
 - Add redundant interface aliases in `services.yaml` when autowiring resolves them
@@ -509,7 +511,8 @@ docker compose exec php bin/console debug:container <InterfaceName>
 - Prefer typed classes over arrays for structured data
 - Use typed collection classes instead of arrays of objects
 - Use Symfony `SerializerInterface` instead of `json_encode`/`json_decode`
-- Use factory methods (`fromString()`, `create()`) or Factory classes instead of `new ClassName()`
+- Inject dependencies instead of instantiating constructor defaults
+- Use `OAuthProvider::fromString()` instead of direct `new OAuthProvider(...)`
 - Use event subscribers for cross-cutting concerns
 - Use factories for complex object creation in production code
 

@@ -82,14 +82,15 @@ final class OAuthProviderCollectionTest extends UnitTestCase
         $this->assertSame($github, $items['github']);
     }
 
-    public function testLastProviderWinsOnDuplicateKey(): void
+    public function testThrowsOnDuplicateKey(): void
     {
         $first = $this->createProviderMock('github');
         $second = $this->createProviderMock('github');
-        $collection = new OAuthProviderCollection($first, $second);
 
-        $this->assertSame($second, $collection->get('github'));
-        $this->assertCount(1, $collection);
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Duplicate OAuth provider registration: github');
+
+        new OAuthProviderCollection($first, $second);
     }
 
     private function createProviderMock(

@@ -21,7 +21,10 @@ abstract class AccessTokenValidatorTestCase extends UnitTestCase
         parent::setUp();
 
         $this->jwtEncoder = $this->createMock(JWTEncoderInterface::class);
-        $this->validator = new AccessTokenValidator($this->jwtEncoder);
+        $this->validator = new AccessTokenValidator(
+            $this->createJsonSerializer(),
+            $this->jwtEncoder,
+        );
     }
 
     protected function createValidToken(string $algorithm = 'RS256', int $parts = 3): string

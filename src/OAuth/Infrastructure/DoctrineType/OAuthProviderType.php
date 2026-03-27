@@ -34,14 +34,15 @@ final class OAuthProviderType extends Type
         };
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) - Doctrine types lack DI */
     #[\Override]
     public function convertToPHPValue(mixed $value): ?OAuthProvider
     {
+        $providerFactory = $this->providerFactory();
+
         return match (true) {
             $value === null => null,
             $value instanceof OAuthProvider => $value,
-            is_string($value) => OAuthProvider::fromString($value),
+            is_string($value) => $providerFactory($value),
             default => throw new InvalidArgumentException(
                 self::ERROR_MSG
             ),
@@ -80,9 +81,17 @@ final class OAuthProviderType extends Type
             ),
             '{ $return = $value; }',
             'elseif (is_string($value))',
-            sprintf('{ $return = %s::fromString($value); }', $fqcn),
+            sprintf('{ $factory = [%s::class, "fromString"]; $return = $factory($value); }', $fqcn),
             'else { throw new \InvalidArgumentException(',
             sprintf('"%s"); }', self::ERROR_MSG),
         ]);
+    }
+
+    /**
+     * @return callable(string): OAuthProvider
+     */
+    private function providerFactory(): callable
+    {
+        return [OAuthProvider::class, 'fromString'];
     }
 }

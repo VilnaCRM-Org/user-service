@@ -9,6 +9,9 @@ use Faker\Generator;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @SuppressWarnings(PHPMD.NumberOfChildren)
@@ -28,6 +31,11 @@ abstract class UnitTestCase extends TestCase
     protected function makeAccessible(
         ReflectionMethod|ReflectionProperty $_reflection
     ): void {
+    }
+
+    protected function createJsonSerializer(): SerializerInterface
+    {
+        return new Serializer([], [new JsonEncoder()]);
     }
 
     /**

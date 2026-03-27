@@ -9,6 +9,7 @@ use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Factory\AuthSessionFactory;
 use App\User\Infrastructure\Fixture\Command\AttachLoadTestAccessTokensCommand;
+use App\User\Infrastructure\Repository\LoadTestUsersFileRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Command\Command;
@@ -294,7 +295,10 @@ final class AttachLoadTestAccessTokensCommandTest extends UnitTestCase
             new AuthSessionFactory(),
             new UlidFactory(),
             new UuidFactory(),
-            $this->tempDir,
+            new LoadTestUsersFileRepository(
+                $this->createJsonSerializer(),
+                $this->tempDir
+            ),
         );
 
         return [

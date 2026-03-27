@@ -60,19 +60,10 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
         $state = $this->faker->sha256();
         $flowBinding = $this->faker->sha256();
         $rawJson = $this->faker->sha256();
-        $payload = new OAuthStatePayload(
-            provider: 'github',
-            codeVerifier: 'test_verifier',
-            flowBindingHash: hash('sha256', $flowBinding),
-            redirectUri: 'https://localhost/callback',
-            createdAt: new DateTimeImmutable(),
-        );
+        $payload = $this->createValidatedPayload($flowBinding);
 
         $this->expectEvalCalledWith($state, $rawJson);
-        $this->serializer->expects($this->once())
-            ->method('deserialize')
-            ->with($rawJson, OAuthStatePayload::class, JsonEncoder::FORMAT)
-            ->willReturn($payload);
+        $this->expectDeserializePayload($rawJson, $payload);
 
         $result = $this->repository->validateAndConsume(
             $state,
@@ -80,9 +71,7 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
             $flowBinding,
         );
 
-        $this->assertInstanceOf(OAuthStatePayload::class, $result);
-        $this->assertSame('github', $result->provider);
-        $this->assertSame('test_verifier', $result->codeVerifier);
+        $this->assertPayloadReturned($result);
     }
 
     public function testValidateAndConsumeThrowsForMissingState(): void
@@ -170,6 +159,34 @@ final class RedisOAuthStateRepositoryTest extends UnitTestCase
                 1,
             )
             ->willReturn($returnValue);
+    }
+
+    private function expectDeserializePayload(
+        string $rawJson,
+        OAuthStatePayload $payload,
+    ): void {
+        $this->serializer->expects($this->once())
+            ->method('deserialize')
+            ->with($rawJson, OAuthStatePayload::class, JsonEncoder::FORMAT)
+            ->willReturn($payload);
+    }
+
+    private function assertPayloadReturned(OAuthStatePayload $payload): void
+    {
+        $this->assertInstanceOf(OAuthStatePayload::class, $payload);
+        $this->assertSame('github', $payload->provider);
+        $this->assertSame('test_verifier', $payload->codeVerifier);
+    }
+
+    private function createValidatedPayload(string $flowBinding): OAuthStatePayload
+    {
+        return new OAuthStatePayload(
+            provider: 'github',
+            codeVerifier: 'test_verifier',
+            flowBindingHash: hash('sha256', $flowBinding),
+            redirectUri: 'https://localhost/callback',
+            createdAt: new DateTimeImmutable(),
+        );
     }
 
     private function createPayload(string $provider): OAuthStatePayload

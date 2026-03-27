@@ -8,11 +8,13 @@ use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use DateTimeImmutable;
 use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -24,7 +26,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 {
     public function testIgnoresSubRequest(): void
     {
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'registration' => $this->createNeverCalledFactory(),
             'global_api_anonymous' => $this->createNeverCalledFactory(),
         ]);
@@ -41,7 +43,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testIgnoresUnsupportedPath(): void
     {
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'global_api_anonymous' => $this->createNeverCalledFactory(),
         ]);
         $event = $this->createRequestEvent('/health', 'GET');
@@ -53,7 +55,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testThrowsLogicExceptionWhenLimiterNotConfigured(): void
     {
-        $listener = new ApiRateLimitListener([]);
+        $listener = $this->createListener([]);
         $event = $this->createRequestEvent('/api/users', 'POST');
 
         $this->expectException(LogicException::class);
@@ -64,7 +66,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testGlobalLimiterRejectsAfterEndpointLimiterPasses(): void
     {
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'registration' => $this->createLimiterFactoryMock('ip:127.0.0.1', true),
             'global_api_anonymous' => $this->createLimiterFactoryMock(
                 'ip:127.0.0.1',
@@ -91,7 +93,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
             accepted: true
         );
 
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'registration' => $registrationLimiter,
             'global_api_anonymous' => $globalLimiter,
         ]);
@@ -104,7 +106,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testReturnsProblemResponseWhenEndpointLimiterRejects(): void
     {
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'registration' => $this->createLimiterFactoryMock(
                 'ip:127.0.0.1',
                 false,
@@ -157,7 +159,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         $signinIpLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
         $signinEmailLimiter = $this->createLimiterFactoryMock(sprintf('email:%s', $email), true);
         $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
-        $listener = new ApiRateLimitListener([
+        $listener = $this->createListener([
             'signin_ip' => $signinIpLimiter,
             'signin_email' => $signinEmailLimiter,
             'global_api_anonymous' => $globalLimiter,
@@ -192,7 +194,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     public function testUsesAnonymousGlobalLimiterForInvalidBearerRequests(): void
     {
         $globalLimiter = $this->createLimiterFactoryMock('ip:127.0.0.1', true);
-        $listener = new ApiRateLimitListener(['global_api_anonymous' => $globalLimiter]);
+        $listener = $this->createListener(['global_api_anonymous' => $globalLimiter]);
         $event = $this->createBearerRequestEvent('/api/health', 'GET', 'invalid-token');
         $listener($event);
         $this->assertFalse($event->hasResponse());
@@ -284,6 +286,32 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     /**
      * @param array<string, RateLimiterFactory> $limiterFactories
+     */
+    private function createListener(
+        array $limiterFactories,
+        ?ApiRateLimitRequestResolver $requestMatcher = null,
+    ): ApiRateLimitListener {
+        return new ApiRateLimitListener(
+            $limiterFactories,
+            $requestMatcher ?? $this->createDefaultRequestMatcher(),
+            $this->createMock(LoggerInterface::class),
+        );
+    }
+
+    private function createDefaultRequestMatcher(): ApiRateLimitRequestResolver
+    {
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
+            new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
+        );
+
+        return new ApiRateLimitRequestResolver(
+            $clientIdentityResolver,
+            new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver),
+        );
+    }
+
+    /**
+     * @param array<string, RateLimiterFactory> $limiterFactories
      * @param array<string, array<int, string>|bool|float|int|string|null> $payload
      */
     private function createListenerWithValidatedToken(
@@ -297,18 +325,20 @@ final class ApiRateLimitListenerTest extends UnitTestCase
                 return $candidateToken === $token ? $payload : null;
             }
         );
-        $clientIdentityResolver =
-            new ApiRateLimitClientIdentityResolver($jwtConverter);
-        $authTargetResolver =
-            new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
+            new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
+            $jwtConverter,
+        );
+        $authTargetResolver = new ApiRateLimitAuthTargetResolver(
+            null,
+            $clientIdentityResolver,
+        );
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             $authTargetResolver
         );
-        return new ApiRateLimitListener(
-            $limiterFactories,
-            $requestMatcher
-        );
+
+        return $this->createListener($limiterFactories, $requestMatcher);
     }
 
     /**

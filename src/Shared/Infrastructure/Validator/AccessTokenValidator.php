@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Validator;
 
-use JsonException;
 use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class AccessTokenValidator
 {
@@ -15,6 +18,7 @@ final readonly class AccessTokenValidator
     private const JWT_HEADER_DEPTH_LIMIT = 4;
 
     public function __construct(
+        private SerializerInterface $serializer,
         private JWTEncoderInterface $jwtEncoder,
         private string $jwtIssuer = 'vilnacrm-user-service',
         private string $jwtAudience = 'vilnacrm-api',
@@ -241,14 +245,16 @@ final readonly class AccessTokenValidator
     private function decodeJsonObject(string $json): array
     {
         try {
-            /** @psalm-suppress ForbiddenCode */
-            $decodedObject = json_decode(
+            $decodedObject = $this->serializer->decode(
                 $json,
-                true,
-                self::JWT_HEADER_DEPTH_LIMIT,
-                JSON_THROW_ON_ERROR,
+                JsonEncoder::FORMAT,
+                [
+                    JsonDecode::ASSOCIATIVE => true,
+                    JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
+                    JsonDecode::RECURSION_DEPTH => self::JWT_HEADER_DEPTH_LIMIT,
+                ],
             );
-        } catch (JsonException) {
+        } catch (NotEncodableValueException) {
             throw new CustomUserMessageAuthenticationException('Invalid access token.');
         }
 

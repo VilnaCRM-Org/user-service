@@ -17,9 +17,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class RedisOAuthStateRepository implements OAuthStateRepositoryInterface
 {
-    private const string KEY_PREFIX = 'oauth_state:';
+    private const KEY_PREFIX = 'oauth_state:';
 
-    private const string CONSUME_LUA_SCRIPT = <<<'LUA'
+    private const CONSUME_LUA_SCRIPT = <<<'LUA'
         local val = redis.call('GET', KEYS[1])
         if val then
             redis.call('DEL', KEYS[1])

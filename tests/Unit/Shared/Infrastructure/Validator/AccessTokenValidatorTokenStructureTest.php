@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Validator;
 
+use App\Shared\Infrastructure\Validator\AccessTokenValidator;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Serializer;
+
 final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorTestCase
 {
     public function testValidateThrowsForTokenWithTwoParts(): void
@@ -159,6 +164,43 @@ final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorT
         $this->expectInvalidTokenException();
 
         $this->validator->validate($token);
+    }
+
+    public function testValidateUsesAssociativeDecodeContextForHeaderJson(): void
+    {
+        $subject = $this->faker->email();
+        $sid = $this->faker->uuid();
+        $headerJson = json_encode(['alg' => 'RS256', 'typ' => 'JWT'], JSON_THROW_ON_ERROR);
+        $token = $this->base64UrlEncode($headerJson)
+            . '.'
+            . $this->base64UrlEncode(json_encode(['sub' => $subject], JSON_THROW_ON_ERROR))
+            . '.signature';
+        $payload = $this->buildPayload($subject, $sid, ['ROLE_USER']);
+        $serializer = $this->createMock(Serializer::class);
+        $serializer
+            ->expects($this->once())
+            ->method('decode')
+            ->with(
+                $headerJson,
+                JsonEncoder::FORMAT,
+                [
+                    JsonDecode::ASSOCIATIVE => true,
+                    JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
+                    JsonDecode::RECURSION_DEPTH => 4,
+                ]
+            )
+            ->willReturn(['alg' => 'RS256', 'typ' => 'JWT']);
+
+        $validator = new AccessTokenValidator($serializer, $this->jwtEncoder);
+        $this->jwtEncoder
+            ->expects($this->once())
+            ->method('decode')
+            ->with($token)
+            ->willReturn($payload);
+
+        $result = $validator->validate($token);
+
+        $this->assertSame($subject, $result['subject']);
     }
 
     public function testValidateThrowsForWrongAlgorithmEvenWhenDecoderSucceeds(): void

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Cache;
 
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\SerializerInterface;
+
 /**
  * Cache Key Builder Service
  *
@@ -18,6 +21,11 @@ namespace App\Shared\Infrastructure\Cache;
  */
 final readonly class CacheKeyBuilder
 {
+    public function __construct(
+        private SerializerInterface $serializer,
+    ) {
+    }
+
     /**
      * Build cache key from namespace and parts
      */
@@ -51,11 +59,13 @@ final readonly class CacheKeyBuilder
     {
         ksort($filters);
 
-        /** @psalm-suppress ForbiddenCode */
         return $this->build(
             'user',
             'collection',
-            hash('sha256', json_encode($filters, JSON_THROW_ON_ERROR))
+            hash(
+                'sha256',
+                $this->serializer->encode($filters, JsonEncoder::FORMAT),
+            )
         );
     }
 

@@ -27,7 +27,7 @@ final class OAuthProviderRegistryTest extends UnitTestCase
         foreach ($supportedProviders as $name) {
             $mock = $this->createMock(OAuthProviderInterface::class);
             $mock->method('getProvider')
-                ->willReturn(new OAuthProvider($name));
+                ->willReturn(OAuthProvider::fromString($name));
             $this->mockProviders[$name] = $mock;
         }
 
@@ -75,11 +75,11 @@ final class OAuthProviderRegistryTest extends UnitTestCase
 
         $mock1 = $this->createMock(OAuthProviderInterface::class);
         $mock1->method('getProvider')
-            ->willReturn(new OAuthProvider($providerName));
+            ->willReturn(OAuthProvider::fromString($providerName));
 
         $mock2 = $this->createMock(OAuthProviderInterface::class);
         $mock2->method('getProvider')
-            ->willReturn(new OAuthProvider($providerName));
+            ->willReturn(OAuthProvider::fromString($providerName));
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage(

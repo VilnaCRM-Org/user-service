@@ -12,12 +12,8 @@ final class PathParametersTransformer
 {
     private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
 
-    private readonly PathParameterTransformer $parameterTransformer;
-
-    public function __construct(
-        PathParameterTransformer $parameterTransformer = new PathParameterTransformer()
-    ) {
-        $this->parameterTransformer = $parameterTransformer;
+    public function __construct(private readonly PathParameterTransformer $parameterTransformer)
+    {
     }
 
     public function transform(OpenApi $openApi): OpenApi

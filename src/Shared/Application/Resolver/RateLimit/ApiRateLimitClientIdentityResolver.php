@@ -14,6 +14,7 @@ final readonly class ApiRateLimitClientIdentityResolver
     private const PENDING_SESSION_ID_KEYS = ['pendingSessionId', 'pending_session_id'];
 
     public function __construct(
+        private ApiRateLimitPayloadValueResolver $payloadValueResolver,
         private ?JwtTokenConverterInterface $jwtConverter = null,
         private string $jwtIssuer = 'vilnacrm-user-service',
         private string $jwtAudience = 'vilnacrm-api',
@@ -70,13 +71,7 @@ final readonly class ApiRateLimitClientIdentityResolver
      */
     public function resolvePayloadValue(Request $request, array $keys): ?string
     {
-        $rawPayload = trim($request->getContent());
-        $jsonValue = $this->resolveJsonPayloadValue($rawPayload, $keys);
-        if ($jsonValue !== null) {
-            return $jsonValue;
-        }
-
-        return $this->resolveFormPayloadValue($rawPayload, $keys);
+        return $this->payloadValueResolver->resolve($request, $keys);
     }
 
     /**
@@ -87,50 +82,6 @@ final readonly class ApiRateLimitClientIdentityResolver
         $subject = $payload['sub'] ?? null;
 
         return is_string($subject) ? $subject : null;
-    }
-
-    /**
-     * @param list<string> $keys
-     */
-    private function resolveJsonPayloadValue(
-        string $rawPayload,
-        array $keys
-    ): ?string {
-        /** @psalm-suppress ForbiddenCode */
-        $jsonPayload = json_decode($rawPayload, true);
-        if (!is_array($jsonPayload)) {
-            return null;
-        }
-
-        return $this->findStringValue($jsonPayload, $keys);
-    }
-
-    /**
-     * @param list<string> $keys
-     */
-    private function resolveFormPayloadValue(
-        string $rawPayload,
-        array $keys
-    ): ?string {
-        parse_str($rawPayload, $formPayload);
-
-        return $this->findStringValue($formPayload, $keys);
-    }
-
-    /**
-     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
-     * @param list<string> $keys
-     */
-    private function findStringValue(array $payload, array $keys): ?string
-    {
-        foreach ($keys as $key) {
-            $value = $payload[$key] ?? null;
-            if (is_string($value) && $value !== '') {
-                return $value;
-            }
-        }
-
-        return null;
     }
 
     private function resolveClientIdFromBasicAuth(Request $request): ?string

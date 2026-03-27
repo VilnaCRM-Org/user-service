@@ -294,9 +294,10 @@ final readonly class CustomerNameChangedSubscriber implements DomainEventSubscri
 - Modify `deptrac.yaml` to allow violations
 - Skip validation (either in Value Objects or YAML config)
 - Use public setters in entities
-- Use `array` type for collections of domain objects — create typed collection classes instead
-- Use `json_encode`/`json_decode` in repositories — use Symfony `SerializerInterface` (enforced by Psalm)
-- Use hardcoded `new ClassName()` in production source code — provide factory methods (`fromString()`, `create()`) on value objects
+- Use `array` or `list` for OAuth provider collections — create and pass `OAuthProviderCollection` instead
+- Use `json_encode`/`json_decode` in production source — use Symfony `SerializerInterface` (enforced by Psalm in `src/`)
+- Use constructor defaults that instantiate collaborators — inject dependencies instead
+- Use direct `new OAuthProvider(...)` in production source code — use `OAuthProvider::fromString()`
 
 ### ALWAYS
 
@@ -304,7 +305,7 @@ final readonly class CustomerNameChangedSubscriber implements DomainEventSubscri
 - Put business logic in Domain entities/aggregates
 - Use Value Objects for validation and invariants
 - Provide static factory methods (`fromString()`, `create()`) on value objects for construction
-- Create typed collection classes (implementing `IteratorAggregate`, `Countable`) for groups of domain objects
+- Create typed collection classes (implementing `IteratorAggregate`, `Countable`) when a module exposes repeated object groups such as OAuth providers
 - Use Symfony `SerializerInterface` for serialization in infrastructure repositories
 - Create repository interfaces in Domain layer
 - Implement repositories in Infrastructure layer

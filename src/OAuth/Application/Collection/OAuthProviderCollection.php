@@ -8,6 +8,7 @@ use App\OAuth\Application\Provider\OAuthProviderInterface;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use LogicException;
 use Traversable;
 
 /**
@@ -24,7 +25,14 @@ final readonly class OAuthProviderCollection implements
     {
         $indexed = [];
         foreach ($providers as $provider) {
-            $indexed[(string) $provider->getProvider()] = $provider;
+            $key = (string) $provider->getProvider();
+            if (isset($indexed[$key])) {
+                throw new LogicException(sprintf(
+                    'Duplicate OAuth provider registration: %s',
+                    $key
+                ));
+            }
+            $indexed[$key] = $provider;
         }
         $this->providers = $indexed;
     }

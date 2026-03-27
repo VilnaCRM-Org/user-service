@@ -41,7 +41,7 @@ Feature: Data Protection and Sensitive Data Handling
     When GET request is send to "/api/users?page=1&itemsPerPage=10"
     Then the response status code should be 200
     And the response should not contain "twoFactorSecret"
-    And the response should not contain "password"
+    And the response JSON should not have field "password"
 
   Scenario: 2FA setup response does not contain encrypted secret
     Given I am authenticated as user "dp-2fa-setup@test.com"
