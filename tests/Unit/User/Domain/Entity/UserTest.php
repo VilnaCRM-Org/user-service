@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Entity;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
@@ -135,7 +135,7 @@ final class UserTest extends UnitTestCase
             $this->userUpdateEventFactory
         );
 
-        $this->assertContains($expectedEvent, $events);
+        $this->assertContains($expectedEvent, $events->toArray());
     }
 
     public function testUpdateDoesNotEmitPasswordChangedEventWhenPasswordIsSame(): void
@@ -161,7 +161,7 @@ final class UserTest extends UnitTestCase
             $this->userUpdateEventFactory
         );
 
-        $this->assertEmpty($events);
+        $this->assertTrue($events->isEmpty());
     }
 
     public function testSetId(): void
@@ -285,21 +285,18 @@ final class UserTest extends UnitTestCase
         );
     }
 
-    /**
-     * @param array<DomainEvent> $events
-     */
     private function testUpdateMakeAssertions(
-        array $events,
+        DomainEventCollection $events,
         UserUpdate $updateData,
         string $hashedNewPassword,
         EmailChangedEvent $expectedEmailChangedEvent
     ): void {
-        $this->assertIsArray($events);
-        $this->assertNotEmpty($events);
+        $this->assertInstanceOf(DomainEventCollection::class, $events);
+        $this->assertFalse($events->isEmpty());
         $this->assertContains(
             $expectedEmailChangedEvent,
-            $events,
-            'EmailChangedEvent should be present in the events array'
+            $events->toArray(),
+            'EmailChangedEvent should be present in the events collection'
         );
         $this->assertEquals($updateData->newEmail, $this->user->getEmail());
         $this->assertEquals(

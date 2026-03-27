@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
@@ -43,10 +43,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         $this->eventBus->publish(...$finalEvents);
     }
 
-    /**
-     * @return list<DomainEvent>
-     */
-    private function applyUpdate(UpdateUserCommand $command, string $eventId): array
+    private function applyUpdate(UpdateUserCommand $command, string $eventId): DomainEventCollection
     {
         $user = $command->user;
         $previousEmail = $user->getEmail();
@@ -61,26 +58,19 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
 
         $this->userRepository->save($user);
 
-        $events[] = $this->userUpdateEventFactory->createUserUpdated(
+        return $events->add($this->userUpdateEventFactory->createUserUpdated(
             $user,
             $previousEmail !== $user->getEmail() ? $previousEmail : null,
             $eventId
-        );
-
-        return $events;
+        ));
     }
 
-    /**
-     * @param list<\App\Shared\Domain\Bus\Event\DomainEvent> $events
-     *
-     * @return list<\App\Shared\Domain\Bus\Event\DomainEvent>
-     */
     private function appendRevocationEvent(
         UpdateUserCommand $command,
         string $userId,
-        array $events,
+        DomainEventCollection $events,
         string $eventId
-    ): array {
+    ): DomainEventCollection {
         if ($command->updateData->newPassword === $command->updateData->oldPassword) {
             return $events;
         }
@@ -89,14 +79,13 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             $userId,
             $command->currentSessionId
         );
-        $events[] = $this->sessionRevocationEventFactory->createAllSessionsRevoked(
+
+        return $events->add($this->sessionRevocationEventFactory->createAllSessionsRevoked(
             $userId,
             'password_change',
             $revokedCount,
             $eventId
-        );
-
-        return $events;
+        ));
     }
 
     private function revokeOtherSessions(string $userId, string $currentSessionId): int

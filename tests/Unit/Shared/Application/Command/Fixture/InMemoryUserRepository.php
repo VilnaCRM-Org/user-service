@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
@@ -50,22 +51,16 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->users[$id] ?? null;
     }
 
-    /**
-     * @param array<UserInterface> $users
-     */
     #[\Override]
-    public function saveBatch(array $users): void
+    public function saveBatch(UserCollection $users): void
     {
-        array_map(fn (UserInterface $user) => $this->save($user), $users);
+        array_map(fn (UserInterface $user) => $this->save($user), $users->users);
     }
 
-    /**
-     * @param array<UserInterface> $users
-     */
     #[\Override]
-    public function deleteBatch(array $users): void
+    public function deleteBatch(UserCollection $users): void
     {
-        array_map(fn (UserInterface $user) => $this->delete($user), $users);
+        array_map(fn (UserInterface $user) => $this->delete($user), $users->users);
     }
 
     /**

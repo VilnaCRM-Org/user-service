@@ -12,6 +12,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
 use App\User\Application\Factory\EventIdFactoryInterface;
+use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
@@ -96,7 +97,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         [$command, , $eventId] = $this->arrangePasswordChange($user);
         $otherSession = $this->createOtherSession('other-session-id', $user->getId());
         $this->authSessionRepository->method('findByUserId')
-            ->willReturn([$otherSession]);
+            ->willReturn(new AuthSessionCollection($otherSession));
         $this->authSessionRepository->method('save');
         $this->authRefreshTokenRepository->method('findBySessionId')->willReturn([]);
         $this->expectAllSessionsRevokedEventFactory(
@@ -252,9 +253,14 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
         $activeRefreshToken = $this->createRefreshToken($activeSession->getId());
         $revokedRefreshToken = $this->createRefreshToken($activeSession->getId());
         $revokedRefreshToken->revoke();
-        $this->authSessionRepository->expects($this->once())->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn([$currentSession, $revokedSession, $activeSession]);
+        $sessions = new AuthSessionCollection(
+            $currentSession,
+            $revokedSession,
+            $activeSession
+        );
+        $this->authSessionRepository->expects($this->once())
+            ->method('findByUserId')->with($user->getId())
+            ->willReturn($sessions);
         $this->expectActiveSessionSavedAsRevoked($activeSession);
         $this->authRefreshTokenRepository->expects($this->once())->method('findBySessionId')
             ->with($activeSession->getId())
@@ -437,7 +443,7 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
 
         $otherSession = $this->createOtherSession('other-session-id', $user->getId());
         $this->authSessionRepository->method('findByUserId')
-            ->willReturn([$otherSession]);
+            ->willReturn(new AuthSessionCollection($otherSession));
         $this->authSessionRepository->method('save');
         $this->authRefreshTokenRepository->method('findBySessionId')->willReturn([]);
         $this->expectAllSessionsRevokedEventFactory(

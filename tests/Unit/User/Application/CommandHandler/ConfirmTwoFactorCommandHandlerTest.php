@@ -11,6 +11,7 @@ use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
+use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -62,7 +63,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->expectTotpVerification($user, $code);
         $this->expectUserSavedWithTwoFactorEnabled();
         $this->expectGeneratedRecoveryCodes($user, $expectedCodes);
-        $this->configureSessionLookupOnce($user, []);
+        $this->configureSessionLookupOnce($user, new AuthSessionCollection());
         $this->expectSuccessEvents();
 
         $command = $this->invokeHandler($user->getEmail(), $code, $sessionId);
@@ -128,7 +129,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->configureUserLookupStub($user);
         $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
-        $this->configureSessionLookupOnce($user, [$otherSession]);
+        $this->configureSessionLookupOnce($user, new AuthSessionCollection($otherSession));
 
         $this->authSessionRepository->expects($this->once())->method('save')
             ->with($this->callback(
@@ -151,7 +152,11 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->configureUserLookupStub($user);
         $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
-        $this->authSessionRepository->method('findByUserId')->willReturn([$currentSession]);
+        $this->authSessionRepository
+            ->method('findByUserId')
+            ->willReturn(
+                new AuthSessionCollection($currentSession)
+            );
 
         $this->authSessionRepository->expects($this->never())->method('save');
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
@@ -185,7 +190,11 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->configureUserLookupStub($user);
         $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
-        $this->authSessionRepository->method('findByUserId')->willReturn([$otherSession]);
+        $this->authSessionRepository
+            ->method('findByUserId')
+            ->willReturn(
+                new AuthSessionCollection($otherSession)
+            );
         $this->authSessionRepository->method('save');
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
 
@@ -253,10 +262,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->sessionEvents->expects($this->once())->method('publishAllSessionsRevoked');
     }
 
-    /**
-     * @param array<int, AuthSession> $sessions
-     */
-    private function configureSessionLookupOnce(User $user, array $sessions): void
+    private function configureSessionLookupOnce(User $user, AuthSessionCollection $sessions): void
     {
         $this->authSessionRepository
             ->expects($this->once())
@@ -268,7 +274,9 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     private function configureRecoveryAndSessions(): void
     {
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
-        $this->authSessionRepository->method('findByUserId')->willReturn([]);
+        $this->authSessionRepository
+            ->method('findByUserId')
+            ->willReturn(new AuthSessionCollection());
     }
 
     private function invokeHandler(

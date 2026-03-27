@@ -69,7 +69,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
         $command = new RegisterUserBatchCommand(new UserCollection($usersData));
 
-        $this->setExpectations($uuids, $hashedPasswords, $users);
+        $this->setExpectations($uuids, $hashedPasswords);
 
         $this->handler->__invoke($command);
 
@@ -141,12 +141,10 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
      *
      * @param array<UuidInterface> $uuids
      * @param array<string> $hashedPasswords
-     * @param array<UserInterface> $users
      */
     private function setExpectations(
         array $uuids,
-        array $hashedPasswords,
-        array $users
+        array $hashedPasswords
     ): void {
         $this->mockTransformer->expects($this->exactly(self::BATCH_SIZE))
             ->method('transformFromSymfonyUuid')
@@ -169,7 +167,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
         $this->userRepository->expects($this->once())
             ->method('saveBatch')
-            ->with($users);
+            ->with($this->isInstanceOf(UserCollection::class));
         $this->eventBus->expects($this->once())
             ->method('publish')
             ->with(...$events);

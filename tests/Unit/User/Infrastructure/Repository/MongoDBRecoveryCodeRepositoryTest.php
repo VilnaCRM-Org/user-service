@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\RecoveryCodeCollection;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository;
 use DateTimeImmutable;
@@ -73,10 +74,8 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     public function testFindByUserId(): void
     {
         $userId = $this->faker->uuid();
-        $expectedRecoveryCodes = [
-            $this->createRecoveryCode(),
-            $this->createRecoveryCode(),
-        ];
+        $code1 = $this->createRecoveryCode();
+        $code2 = $this->createRecoveryCode();
         $repositoryClass = MongoDBRecoveryCodeRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
             ->setConstructorArgs([$this->documentManager, $this->registry])
@@ -86,9 +85,11 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $repository->expects($this->once())
             ->method('findBy')
             ->with(['userId' => $userId])
-            ->willReturn($expectedRecoveryCodes);
+            ->willReturn([$code1, $code2]);
 
-        $this->assertSame($expectedRecoveryCodes, $repository->findByUserId($userId));
+        $result = $repository->findByUserId($userId);
+        $this->assertInstanceOf(RecoveryCodeCollection::class, $result);
+        $this->assertCount(2, $result);
     }
 
     public function testDelete(): void
@@ -160,7 +161,9 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     public function testDeleteByUserId(): void
     {
         $userId = $this->faker->uuid();
-        $codes = [$this->createRecoveryCode(), $this->createRecoveryCode()];
+        $code1 = $this->createRecoveryCode();
+        $code2 = $this->createRecoveryCode();
+        $codes = new RecoveryCodeCollection($code1, $code2);
         $repository = $this->createMockRepositoryWithFindByUserId($userId, $codes);
         $this->documentManager
             ->expects($this->exactly(2))
@@ -172,12 +175,9 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $this->assertSame(2, $result);
     }
 
-    /**
-     * @param array<RecoveryCode> $codes
-     */
     private function createMockRepositoryWithFindByUserId(
         string $userId,
-        array $codes
+        RecoveryCodeCollection $codes
     ): MongoDBRecoveryCodeRepository {
         $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
             ->setConstructorArgs([$this->documentManager, $this->registry])

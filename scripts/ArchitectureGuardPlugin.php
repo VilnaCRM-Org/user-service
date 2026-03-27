@@ -7,6 +7,12 @@ namespace App\Psalm;
 use App\OAuth\Application\Collection\OAuthProviderCollection;
 use App\OAuth\Application\Provider\OAuthProviderInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
+use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\User\Domain\Entity\AuthSession;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
+use App\User\Domain\Entity\RecoveryCode;
+use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\AccountLockedOutEvent;
 use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Event\RecoveryCodeUsedEvent;
@@ -21,8 +27,6 @@ use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 
 use const DIRECTORY_SEPARATOR;
-
-use function in_array;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -50,15 +54,31 @@ final class ArchitectureGuardPlugin implements
     AfterFunctionLikeAnalysisInterface
 {
     private const SOURCE_DIRECTORY = DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
-    private const OAUTH_DIRECTORY = self::SOURCE_DIRECTORY . 'OAuth' . DIRECTORY_SEPARATOR;
     private const FACTORY_DIRECTORY = DIRECTORY_SEPARATOR . 'Factory' . DIRECTORY_SEPARATOR;
+    private const COLLECTION_DIRECTORY = DIRECTORY_SEPARATOR . 'Collection' . DIRECTORY_SEPARATOR;
     private const CONSTRUCTOR_DEFAULT_MESSAGE =
         'Inject dependencies instead of instantiating them in constructor defaults.';
 
-    private const OAUTH_PROVIDER_TYPES = [
-        OAuthProvider::class,
-        OAuthProviderInterface::class,
+    /**
+     * Maps domain object types to their required typed collection classes.
+     * When a method parameter or return type uses array<MappedType>,
+     * the guard reports it and suggests the corresponding collection class.
+     */
+    private const COLLECTION_REQUIRED_TYPES = [
+        OAuthProvider::class => 'OAuthProviderCollection',
+        OAuthProviderInterface::class => 'OAuthProviderCollection',
+        User::class => 'UserCollection',
+        UserInterface::class => 'UserCollection',
+        RecoveryCode::class => 'RecoveryCodeCollection',
+        AuthSession::class => 'AuthSessionCollection',
+        PasswordResetTokenInterface::class => 'PasswordResetTokenCollection',
+        DomainEvent::class => 'DomainEventCollection',
     ];
+
+    /**
+     * Maps classes to their preferred factory for production code.
+     * Using 'new ClassName()' outside factory contexts will be reported.
+     */
     private const PREFERRED_FACTORY_MAP = [
         OAuthProvider::class => [
             'OAuthProvider',
@@ -146,8 +166,8 @@ final class ArchitectureGuardPlugin implements
 
         self::reportConstructorDefaultInstantiations($event, $statement);
 
-        if (self::isOAuthSource($filePath) && !self::isFactorySource($filePath)) {
-            self::reportOAuthProviderArrayCollections($event, $statement);
+        if (!self::isFactorySource($filePath) && !self::isCollectionSource($filePath)) {
+            self::reportDomainObjectArrayCollections($event, $statement);
         }
 
         return null;
@@ -174,36 +194,40 @@ final class ArchitectureGuardPlugin implements
         }
     }
 
-    private static function reportOAuthProviderArrayCollections(
+    private static function reportDomainObjectArrayCollections(
         AfterFunctionLikeAnalysisEvent $event,
         Node\FunctionLike $statement,
     ): void {
-        self::reportOAuthProviderArrayParameters($event, $statement);
-        self::reportOAuthProviderArrayReturnType($event, $statement);
+        self::reportDomainObjectArrayParameters($event, $statement);
+        self::reportDomainObjectArrayReturnType($event, $statement);
     }
 
-    private static function reportOAuthProviderArrayParameters(
+    private static function reportDomainObjectArrayParameters(
         AfterFunctionLikeAnalysisEvent $event,
         Node\FunctionLike $statement,
     ): void {
         foreach ($statement->getParams() as $index => $parameter) {
-            if (!self::parameterContainsOAuthProviderArray($event, $index)) {
+            $collectionName = self::parameterContainsDomainObjectArray($event, $index);
+            if ($collectionName === null) {
                 continue;
             }
 
             self::reportFunctionLikeIssue(
                 $event,
                 $parameter,
-                self::parameterCollectionMessage()
+                self::parameterCollectionMessage($collectionName)
             );
         }
     }
 
-    private static function reportOAuthProviderArrayReturnType(
+    private static function reportDomainObjectArrayReturnType(
         AfterFunctionLikeAnalysisEvent $event,
         Node\FunctionLike $statement,
     ): void {
-        if (!self::containsOAuthProviderArray($event->getFunctionlikeStorage()->return_type)) {
+        $collectionName = self::containsDomainObjectArray(
+            $event->getFunctionlikeStorage()->return_type
+        );
+        if ($collectionName === null) {
             return;
         }
 
@@ -215,59 +239,68 @@ final class ArchitectureGuardPlugin implements
         self::reportFunctionLikeIssue(
             $event,
             $returnType,
-            self::returnCollectionMessage()
+            self::returnCollectionMessage($collectionName)
         );
     }
 
-    private static function containsOAuthProviderArray(?Union $type): bool
+    private static function containsDomainObjectArray(?Union $type): ?string
     {
         if ($type === null) {
-            return false;
+            return null;
         }
 
         foreach ($type->getAtomicTypes() as $atomicType) {
-            if (self::matchesOAuthProviderCollectionAtomic($atomicType)) {
-                return true;
+            $collectionName = self::matchesDomainObjectCollectionAtomic($atomicType);
+            if ($collectionName !== null) {
+                return $collectionName;
             }
         }
 
-        return false;
+        return null;
     }
 
-    private static function matchesOAuthProviderCollectionAtomic(Atomic $atomicType): bool
+    private static function matchesDomainObjectCollectionAtomic(Atomic $atomicType): ?string
     {
         if ($atomicType instanceof TArray || $atomicType instanceof TIterable) {
-            return self::containsOAuthProviderType($atomicType->type_params[1]);
+            return self::containsDomainObjectType($atomicType->type_params[1]);
         }
 
-        return $atomicType instanceof TKeyedArray
+        if (
+            $atomicType instanceof TKeyedArray
             && $atomicType->fallback_params !== null
-            && self::containsOAuthProviderType($atomicType->fallback_params[1]);
+        ) {
+            return self::containsDomainObjectType($atomicType->fallback_params[1]);
+        }
+
+        return null;
     }
 
-    private static function containsOAuthProviderType(Union $type): bool
+    private static function containsDomainObjectType(Union $type): ?string
     {
         foreach ($type->getAtomicTypes() as $atomicType) {
             if (!$atomicType instanceof TNamedObject) {
                 continue;
             }
 
-            if (in_array($atomicType->value, self::OAUTH_PROVIDER_TYPES, true)) {
-                return true;
+            $collectionName = self::COLLECTION_REQUIRED_TYPES[$atomicType->value] ?? null;
+            if ($collectionName !== null) {
+                return $collectionName;
             }
         }
 
-        return false;
+        return null;
     }
 
-    private static function parameterContainsOAuthProviderArray(
+    private static function parameterContainsDomainObjectArray(
         AfterFunctionLikeAnalysisEvent $event,
         int $index,
-    ): bool {
+    ): ?string {
         $storageParameter = $event->getFunctionlikeStorage()->params[$index] ?? null;
+        if ($storageParameter === null) {
+            return null;
+        }
 
-        return $storageParameter !== null
-            && self::containsOAuthProviderArray($storageParameter->type);
+        return self::containsDomainObjectArray($storageParameter->type);
     }
 
     private static function preferredFactoryMessage(
@@ -309,21 +342,19 @@ final class ArchitectureGuardPlugin implements
             && strtolower($statement->name->name) === '__construct';
     }
 
-    private static function parameterCollectionMessage(): string
+    private static function parameterCollectionMessage(string $collectionName): string
     {
         return sprintf(
-            'Use %s instead of %s.',
-            'OAuthProviderCollection',
-            'bare array, list, or iterable collections of OAuth providers'
+            'Use %s instead of bare array, list, or iterable of domain objects.',
+            $collectionName
         );
     }
 
-    private static function returnCollectionMessage(): string
+    private static function returnCollectionMessage(string $collectionName): string
     {
         return sprintf(
-            'Return %s instead of %s.',
-            'OAuthProviderCollection',
-            'bare OAuth provider arrays, lists, or iterables'
+            'Return %s instead of bare array, list, or iterable of domain objects.',
+            $collectionName
         );
     }
 
@@ -380,14 +411,14 @@ final class ArchitectureGuardPlugin implements
         );
     }
 
-    private static function isOAuthSource(string $filePath): bool
-    {
-        return str_contains($filePath, self::OAUTH_DIRECTORY);
-    }
-
     private static function isFactorySource(string $filePath): bool
     {
         return str_contains($filePath, self::FACTORY_DIRECTORY);
+    }
+
+    private static function isCollectionSource(string $filePath): bool
+    {
+        return str_contains($filePath, self::COLLECTION_DIRECTORY);
     }
 
     private static function isProductionSource(string $filePath): bool

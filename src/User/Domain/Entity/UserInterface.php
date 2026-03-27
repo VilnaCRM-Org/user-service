@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
-use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
@@ -32,13 +32,10 @@ interface UserInterface
         UserConfirmedEventFactoryInterface $userConfirmedEventFactory
     ): UserConfirmedEvent;
 
-    /**
-     * @return array<DomainEvent>
-     */
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
         string $eventID,
         UserUpdateEventFactoryInterface $userUpdateEventFactory,
-    ): array;
+    ): DomainEventCollection;
 }

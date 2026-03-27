@@ -5,20 +5,16 @@ declare(strict_types=1);
 namespace App\Shared\Domain\Aggregate;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Domain\Collection\DomainEventCollection;
 
 abstract class AggregateRoot
 {
-    /**
-     * @var array<DomainEvent>
-     */
+    /** @var list<DomainEvent> */
     private array $domainEvents = [];
 
-    /**
-     * @return array<DomainEvent>
-     */
-    final public function pullDomainEvents(): array
+    final public function pullDomainEvents(): DomainEventCollection
     {
-        $domainEvents = $this->domainEvents;
+        $domainEvents = new DomainEventCollection(...$this->domainEvents);
         $this->domainEvents = [];
 
         return $domainEvents;

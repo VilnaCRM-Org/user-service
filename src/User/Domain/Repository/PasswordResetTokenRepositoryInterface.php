@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Repository;
 
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 
 interface PasswordResetTokenRepositoryInterface
@@ -16,8 +17,5 @@ interface PasswordResetTokenRepositoryInterface
 
     public function deleteAll(): void;
 
-    /**
-     * @param array<PasswordResetTokenInterface> $tokens
-     */
-    public function saveBatch(array $tokens): void;
+    public function saveBatch(PasswordResetTokenCollection $tokens): void;
 }

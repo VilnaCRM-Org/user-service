@@ -154,9 +154,17 @@ When creating or reviewing a class, verify:
 - ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own; any new directory must follow a well-known software engineering pattern and be approved by the user
 - ❌ **Constructor defaults that instantiate collaborators** - Inject dependencies instead of using `new` in `__construct(...)` defaults. Psalm architecture guards enforce this in `src/`.
 - ❌ **Direct `new OAuthProvider(...)` in production code** - Use `OAuthProvider::fromString()` instead. Psalm architecture guards enforce this in `src/`.
+- ✅ **`new StringableArrayNormalizer()` in Doctrine types** - Allowed because Doctrine types cannot use constructor DI.
 - ❌ **Direct instantiation of reviewed collections/events in production code** - Use dedicated factory classes such as `OAuthProviderCollectionFactory`, `SignInEventFactory`, `SessionRevocationEventFactory`, `TwoFactorEventFactory`, and `RefreshTokenEventFactory`. Psalm architecture guards enforce this in `src/`.
 - ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforce this in `src/`; tests are excluded.
-- ❌ **Bare `array`, `list`, or `iterable` collections of OAuth providers** - Use `OAuthProviderCollection` instead of `array<string, OAuthProviderInterface>` or `iterable<OAuthProviderInterface>`. Internal storage inside collection classes may still use `array`.
+- ❌ **Bare `array`, `list`, or `iterable` collections of domain objects** - Use typed collection classes instead of bare arrays. Psalm architecture guards enforce this **repo-wide** in `src/` (not just OAuth). Enforced types and their collections:
+  - `OAuthProvider`/`OAuthProviderInterface` → `OAuthProviderCollection`
+  - `User`/`UserInterface` → `UserCollection`
+  - `RecoveryCode` → `RecoveryCodeCollection`
+  - `AuthSession` → `AuthSessionCollection`
+  - `PasswordResetTokenInterface` → `PasswordResetTokenCollection`
+  - `DomainEvent` → `DomainEventCollection`
+  - Internal storage inside collection classes may still use `array`.
 
 ## Factory Pattern (Maintainability & Flexibility)
 

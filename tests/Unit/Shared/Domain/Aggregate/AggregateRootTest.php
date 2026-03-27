@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Domain\Aggregate;
 
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use App\Shared\Domain\Bus\Event\DomainEvent;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use PHPUnit\Framework\TestCase;
 
 final class AggregateRootTest extends TestCase
@@ -16,10 +17,7 @@ final class AggregateRootTest extends TestCase
         $event2 = $this->createMock(DomainEvent::class);
 
         $aggregateRoot = new class() extends AggregateRoot {
-            /**
-             * @return array<DomainEvent>
-             */
-            public function getDomainEvents(): array
+            public function getDomainEvents(): DomainEventCollection
             {
                 return $this->pullDomainEvents();
             }
@@ -36,8 +34,8 @@ final class AggregateRootTest extends TestCase
         $domainEvents = $aggregateRoot->getDomainEvents();
 
         $this->assertCount(2, $domainEvents);
-        $this->assertSame($event1, $domainEvents[0]);
-        $this->assertSame($event2, $domainEvents[1]);
+        $this->assertSame($event1, $domainEvents->toArray()[0]);
+        $this->assertSame($event2, $domainEvents->toArray()[1]);
     }
 
     public function testPullDomainEventsFromOutside(): void
@@ -58,7 +56,7 @@ final class AggregateRootTest extends TestCase
         $domainEvents = $aggregateRoot->pullDomainEvents();
 
         $this->assertCount(2, $domainEvents);
-        $this->assertSame($event1, $domainEvents[0]);
-        $this->assertSame($event2, $domainEvents[1]);
+        $this->assertSame($event1, $domainEvents->toArray()[0]);
+        $this->assertSame($event2, $domainEvents->toArray()[1]);
     }
 }

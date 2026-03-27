@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
@@ -123,31 +124,26 @@ class User implements UserInterface
         return $userConfirmedEventFactory->create($token, $eventID);
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent>
-     *
-     * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
-     */
     #[\Override]
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
         string $eventID,
         UserUpdateEventFactoryInterface $userUpdateEventFactory,
-    ): array {
-        $events = [];
+    ): DomainEventCollection {
+        $events = new DomainEventCollection();
 
-        $events += $this->processNewEmail(
+        $events = $events->merge($this->processNewEmail(
             $updateData->newEmail,
             $eventID,
             $userUpdateEventFactory
-        );
-        $events += $this->processNewPassword(
+        ));
+        $events = $events->merge($this->processNewPassword(
             $updateData->newPassword,
             $updateData->oldPassword,
             $eventID,
             $userUpdateEventFactory
-        );
+        ));
 
         $this->initials = $updateData->newInitials;
         $this->password = $hashedNewPassword;
@@ -198,49 +194,43 @@ class User implements UserInterface
         $this->twoFactorSecret = $twoFactorSecret;
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\EmailChangedEvent>
-     *
-     * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
-     */
     private function processNewEmail(
         string $newEmail,
         string $eventID,
         UserUpdateEventFactoryInterface $userUpdateEventFactory,
-    ): array {
-        $events = [];
-        if ($newEmail !== $this->email) {
-            $oldEmail = $this->email;
-            $this->email = $newEmail;
-            $this->confirmed = false;
-            $events[] = $userUpdateEventFactory->createEmailChanged(
+    ): DomainEventCollection {
+        if ($newEmail === $this->email) {
+            return new DomainEventCollection();
+        }
+
+        $oldEmail = $this->email;
+        $this->email = $newEmail;
+        $this->confirmed = false;
+
+        return new DomainEventCollection(
+            $userUpdateEventFactory->createEmailChanged(
                 $this,
                 $oldEmail,
                 $eventID
-            );
-        }
-
-        return $events;
+            )
+        );
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\PasswordChangedEvent>
-     *
-     * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
-     */
     private function processNewPassword(
         string $newPassword,
         string $oldPassword,
         string $eventID,
         UserUpdateEventFactoryInterface $userUpdateEventFactory
-    ): array {
-        $events = [];
-        if ($newPassword !== $oldPassword) {
-            $events[] = $userUpdateEventFactory->createPasswordChanged(
+    ): DomainEventCollection {
+        if ($newPassword === $oldPassword) {
+            return new DomainEventCollection();
+        }
+
+        return new DomainEventCollection(
+            $userUpdateEventFactory->createPasswordChanged(
                 $this->email,
                 $eventID
-            );
-        }
-        return $events;
+            )
+        );
     }
 }

@@ -294,10 +294,11 @@ final readonly class CustomerNameChangedSubscriber implements DomainEventSubscri
 - Modify `deptrac.yaml` to allow violations
 - Skip validation (either in Value Objects or YAML config)
 - Use public setters in entities
-- Use `array`, `list`, or `iterable` for OAuth provider collections — create and pass `OAuthProviderCollection` instead
+- Use bare `array`, `list`, or `iterable` for domain object collections — create and pass typed collection classes instead (`OAuthProviderCollection`, `UserCollection`, `RecoveryCodeCollection`, `AuthSessionCollection`, `PasswordResetTokenCollection`, `DomainEventCollection`). Psalm enforces this **repo-wide** in `src/`.
 - Use `json_encode`/`json_decode` in production source — use Symfony `SerializerInterface` (enforced by Psalm in `src/`)
 - Use constructor defaults that instantiate collaborators — inject dependencies instead
 - Use direct `new OAuthProvider(...)` in production source code — use `OAuthProvider::fromString()`
+- Use direct `new StringableArrayNormalizer()` outside of Doctrine types (Doctrine types are exempt since they lack DI support)
 - Use direct `new` for reviewed domain events and collections in production source code — use dedicated Factory classes instead
 
 ### ALWAYS
@@ -307,7 +308,7 @@ final readonly class CustomerNameChangedSubscriber implements DomainEventSubscri
 - Use Value Objects for validation and invariants
 - Provide static factory methods on value objects when production code needs a stable construction path
 - Use dedicated Factory classes for domain events and collection assembly in production code
-- Create typed collection classes (implementing `IteratorAggregate`, `Countable`) when a module exposes repeated object groups such as OAuth providers
+- Create typed collection classes (implementing `IteratorAggregate`, `Countable`) when a module exposes repeated domain object groups. Existing collections: `OAuthProviderCollection`, `UserCollection`, `RecoveryCodeCollection`, `AuthSessionCollection`, `PasswordResetTokenCollection`, `DomainEventCollection`
 - Use Symfony `SerializerInterface` for serialization in infrastructure repositories
 - Create repository interfaces in Domain layer
 - Implement repositories in Infrastructure layer

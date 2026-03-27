@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\RecoveryCodeCollection;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use DateTimeImmutable;
@@ -37,15 +38,12 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
         return $this->find($id);
     }
 
-    /**
-     * @return array<RecoveryCode>
-     */
     #[\Override]
-    public function findByUserId(string $userId): array
+    public function findByUserId(string $userId): RecoveryCodeCollection
     {
         $result = $this->findBy(['userId' => $userId]);
 
-        return array_values($result);
+        return new RecoveryCodeCollection(...array_values($result));
     }
 
     #[\Override]

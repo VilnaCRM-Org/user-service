@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
@@ -249,10 +250,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         return [$queryBuilder, $query];
     }
 
-    /**
-     * @return array<User>
-     */
-    private function getUsersForBatchSave(int $count): array
+    private function getUsersForBatchSave(int $count): UserCollection
     {
         $users = [];
         for ($i = 0; $i < $count; ++$i) {
@@ -264,13 +262,10 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             );
         }
 
-        return $users;
+        return new UserCollection($users);
     }
 
-    /**
-     * @param array<User> $users
-     */
-    private function testSaveBatchSetDocumentManagerExpectations(array $users): void
+    private function testSaveBatchSetDocumentManagerExpectations(UserCollection $users): void
     {
         $totalUsers = count($users);
         $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
