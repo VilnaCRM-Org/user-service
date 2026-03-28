@@ -34,6 +34,23 @@ final class OAuthProviderCollectionFactoryTest extends UnitTestCase
         $this->assertSame($google, $collection->get('google'));
     }
 
+    public function testCreatePreservesAllItemsFromDuplicateKeyIterables(): void
+    {
+        $github = $this->createProviderMock('github');
+        $google = $this->createProviderMock('google');
+
+        $generator = (static function () use ($github, $google): \Generator {
+            yield 0 => $github;
+            yield 0 => $google;
+        })();
+
+        $collection = $this->factory->create($generator);
+
+        $this->assertCount(2, $collection);
+        $this->assertSame($github, $collection->get('github'));
+        $this->assertSame($google, $collection->get('google'));
+    }
+
     private function createProviderMock(string $name): OAuthProviderInterface
     {
         $mock = $this->createMock(OAuthProviderInterface::class);
