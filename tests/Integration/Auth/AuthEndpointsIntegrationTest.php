@@ -331,7 +331,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->assertInstanceOf(User::class, $reloadedUser);
         $this->assertFalse($reloadedUser->isTwoFactorEnabled());
         $this->assertNull($reloadedUser->getTwoFactorSecret());
-        $this->assertSame([], $this->recoveryCodeRepository->findByUserId($user->getId()));
+        $this->assertCount(0, $this->recoveryCodeRepository->findByUserId($user->getId()));
     }
 
     /**

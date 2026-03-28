@@ -29,7 +29,7 @@ final class AuthSessionAssertionContext implements Context
         Assert::assertNotNull($user);
 
         $activeSessions = array_filter(
-            $this->sessionRepository->findByUserId($user->getId()),
+            iterator_to_array($this->sessionRepository->findByUserId($user->getId())),
             static fn (AuthSession $session): bool => !$session->isRevoked()
                 && !$session->isExpired()
         );
@@ -95,7 +95,7 @@ final class AuthSessionAssertionContext implements Context
     private function resolveSortedActiveSessions(string $userId): array
     {
         $activeSessions = array_values(array_filter(
-            $this->sessionRepository->findByUserId($userId),
+            iterator_to_array($this->sessionRepository->findByUserId($userId)),
             static fn (AuthSession $session): bool => !$session->isRevoked()
                 && !$session->isExpired()
         ));
