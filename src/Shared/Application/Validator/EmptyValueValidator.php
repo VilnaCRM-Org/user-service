@@ -16,6 +16,9 @@ final class EmptyValueValidator
         return $value === null || $value === '';
     }
 
+    /**
+     * @param array<string, scalar|null>|string|int|float|bool|null $value
+     */
     public function shouldSkip(
         array|string|int|float|bool|null $value,
         Constraint $_constraint

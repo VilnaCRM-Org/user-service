@@ -48,6 +48,9 @@ final class AuthorizationCodeManager implements AuthorizationCodeManagerInterfac
         return $this->deletedCount($result);
     }
 
+    /**
+     * @param array<string, string|int|bool>|object|int|null $result
+     */
     private function deletedCount(array|object|int|null $result): int
     {
         if (is_int($result)) {

@@ -40,6 +40,7 @@ use Psalm\Plugin\EventHandler\Event\AfterExpressionAnalysisEvent;
 use Psalm\Plugin\EventHandler\Event\AfterFunctionLikeAnalysisEvent;
 use Psalm\Type\Atomic;
 use Psalm\Type\Atomic\TArray;
+use Psalm\Type\Atomic\TArrayKey;
 use Psalm\Type\Atomic\TIterable;
 use Psalm\Type\Atomic\TKeyedArray;
 use Psalm\Type\Atomic\TMixed;
@@ -57,11 +58,14 @@ final class ArchitectureGuardPlugin implements
     private const SOURCE_DIRECTORY = DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
     private const FACTORY_DIRECTORY = DIRECTORY_SEPARATOR . 'Factory' . DIRECTORY_SEPARATOR;
     private const COLLECTION_DIRECTORY = DIRECTORY_SEPARATOR . 'Collection' . DIRECTORY_SEPARATOR;
-    private const DOCTRINE_TYPE_DIRECTORY = DIRECTORY_SEPARATOR . 'DoctrineType' . DIRECTORY_SEPARATOR;
+    private const DOCTRINE_TYPE_DIRECTORY =
+        DIRECTORY_SEPARATOR . 'DoctrineType' . DIRECTORY_SEPARATOR;
+    private const CONSTRAINT_DIRECTORY =
+        DIRECTORY_SEPARATOR . 'Constraint' . DIRECTORY_SEPARATOR;
     private const CONSTRUCTOR_DEFAULT_MESSAGE =
         'Inject dependencies instead of instantiating them in constructor defaults.';
     private const BARE_ARRAY_MESSAGE =
-        'Use a typed array (e.g. list<string>) or a typed collection class instead of untyped array.';
+        'Use a typed array or collection class instead of untyped array.';
 
     /**
      * Maps domain object types to their required typed collection classes.
@@ -174,7 +178,11 @@ final class ArchitectureGuardPlugin implements
             self::reportDomainObjectArrayCollections($event, $statement);
         }
 
-        if (!self::isDoctrineTypeSource($filePath) && !self::isCollectionSource($filePath)) {
+        if (
+            !self::isDoctrineTypeSource($filePath)
+            && !self::isCollectionSource($filePath)
+            && !self::isConstraintSource($filePath)
+        ) {
             self::reportBareArraySignatures($event, $statement);
         }
 
@@ -488,7 +496,24 @@ final class ArchitectureGuardPlugin implements
             return false;
         }
 
-        foreach ($atomicType->type_params[1]->getAtomicTypes() as $valueType) {
+        return self::hasDefaultKeyType($atomicType)
+            && self::hasMixedValueType($atomicType);
+    }
+
+    private static function hasDefaultKeyType(TArray $arrayType): bool
+    {
+        foreach ($arrayType->type_params[0]->getAtomicTypes() as $keyType) {
+            if ($keyType instanceof TArrayKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function hasMixedValueType(TArray $arrayType): bool
+    {
+        foreach ($arrayType->type_params[1]->getAtomicTypes() as $valueType) {
             if ($valueType instanceof TMixed) {
                 return true;
             }
@@ -510,6 +535,11 @@ final class ArchitectureGuardPlugin implements
     private static function isDoctrineTypeSource(string $filePath): bool
     {
         return str_contains($filePath, self::DOCTRINE_TYPE_DIRECTORY);
+    }
+
+    private static function isConstraintSource(string $filePath): bool
+    {
+        return str_contains($filePath, self::CONSTRAINT_DIRECTORY);
     }
 
     private static function isProductionSource(string $filePath): bool

@@ -23,10 +23,10 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
     ) {
     }
 
-    #[\Override]
     /**
      * @return list<string>
      */
+    #[\Override]
     public function create(User $user): array
     {
         $codes = [];
