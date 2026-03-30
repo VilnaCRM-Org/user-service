@@ -387,6 +387,57 @@ services:
     arguments:
       - '%env(REDIS_URL)%'
 
+  oauth.guzzle_handler_stack:
+    class: GuzzleHttp\HandlerStack
+    factory: ['GuzzleHttp\HandlerStack', 'create']
+
+  App\OAuth\Infrastructure\Factory\ResilientHttpClientFactory:
+    arguments:
+      $connectTimeoutMs: '%env(int:OAUTH_PROVIDER_HTTP_CONNECT_TIMEOUT_MS)%'
+      $timeoutMs: '%env(int:OAUTH_PROVIDER_HTTP_TIMEOUT_MS)%'
+      $maxRetries: '%env(int:OAUTH_PROVIDER_HTTP_MAX_RETRIES)%'
+      $handlerStack: '@oauth.guzzle_handler_stack'
+
+  oauth.resilient_http_client:
+    class: GuzzleHttp\ClientInterface
+    factory: ['@App\OAuth\Infrastructure\Factory\ResilientHttpClientFactory', 'create']
+
+  oauth.github.league_provider:
+    class: League\OAuth2\Client\Provider\Github
+    arguments:
+      - clientId: '%env(OAUTH_GITHUB_CLIENT_ID)%'
+        clientSecret: '%env(OAUTH_GITHUB_CLIENT_SECRET)%'
+        redirectUri: '%env(OAUTH_GITHUB_REDIRECT_URI)%'
+      - httpClient: '@oauth.resilient_http_client'
+
+  oauth.github.provider_name:
+    class: App\OAuth\Domain\ValueObject\OAuthProvider
+    factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
+    arguments: ['github']
+
+  App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
+    arguments:
+      $github: '@oauth.github.league_provider'
+      $provider: '@oauth.github.provider_name'
+
+  oauth.google.league_provider:
+    class: League\OAuth2\Client\Provider\Google
+    arguments:
+      - clientId: '%env(OAUTH_GOOGLE_CLIENT_ID)%'
+        clientSecret: '%env(OAUTH_GOOGLE_CLIENT_SECRET)%'
+        redirectUri: '%env(OAUTH_GOOGLE_REDIRECT_URI)%'
+      - httpClient: '@oauth.resilient_http_client'
+
+  oauth.google.provider_name:
+    class: App\OAuth\Domain\ValueObject\OAuthProvider
+    factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
+    arguments: ['google']
+
+  App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
+    arguments:
+      $google: '@oauth.google.league_provider'
+      $provider: '@oauth.google.provider_name'
+
   App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
     arguments:
       $oauthRedis: '@oauth.redis_connection'
