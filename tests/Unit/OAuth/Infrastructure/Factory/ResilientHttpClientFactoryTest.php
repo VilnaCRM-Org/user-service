@@ -18,6 +18,22 @@ use GuzzleHttp\Psr7\Response;
 
 final class ResilientHttpClientFactoryTest extends UnitTestCase
 {
+    public function testCreateBuildsIndependentHandlerPerClient(): void
+    {
+        $baseStack = HandlerStack::create();
+        $factory = new ResilientHttpClientFactory(1500, 5000, 1, $baseStack);
+
+        $first = $factory->create();
+        $second = $factory->create();
+
+        /** @var Client $first */
+        /** @var Client $second */
+        $this->assertNotSame(
+            $first->getConfig('handler'),
+            $second->getConfig('handler'),
+        );
+    }
+
     public function testCreateReturnsGuzzleClient(): void
     {
         $factory = new ResilientHttpClientFactory(
@@ -34,41 +50,26 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
 
     public function testClientRetriesOnServerError(): void
     {
-        $requestHistory = [];
         $mock = new MockHandler([
             new Response(500, [], 'Server Error'),
             new Response(200, [], 'OK'),
         ]);
 
-        $stack = HandlerStack::create($mock);
-
-        $factory = new ResilientHttpClientFactory(1500, 5000, 1, $stack);
-        $factory->create();
-        // Push history AFTER retry so it captures all retries
-        $stack->push(Middleware::history($requestHistory));
-
-        $client = new Client(['handler' => $stack]);
+        $client = $this->createResilientClient($mock, 1);
         $response = $client->request('GET', 'https://example.com');
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertCount(2, $requestHistory);
+        $this->assertSame(0, $mock->count());
     }
 
     public function testClientDoesNotRetryOnClientError(): void
     {
-        $requestHistory = [];
         $mock = new MockHandler([
             new Response(400, [], 'Bad Request'),
             new Response(200, [], 'Should not reach'),
         ]);
 
-        $stack = HandlerStack::create($mock);
-
-        $factory = new ResilientHttpClientFactory(1500, 5000, 1, $stack);
-        $factory->create();
-        $stack->push(Middleware::history($requestHistory));
-
-        $client = new Client(['handler' => $stack]);
+        $client = $this->createResilientClient($mock, 1);
 
         $exceptionThrown = false;
 
@@ -79,25 +80,18 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         }
 
         $this->assertTrue($exceptionThrown);
-        $this->assertCount(1, $requestHistory);
+        $this->assertSame(1, $mock->count());
     }
 
     public function testClientRespectsMaxRetries(): void
     {
-        $requestHistory = [];
         $mock = new MockHandler([
             new Response(500),
             new Response(500),
             new Response(500),
         ]);
 
-        $stack = HandlerStack::create($mock);
-
-        $factory = new ResilientHttpClientFactory(1500, 5000, 1, $stack);
-        $factory->create();
-        $stack->push(Middleware::history($requestHistory));
-
-        $client = new Client(['handler' => $stack]);
+        $client = $this->createResilientClient($mock, 1);
 
         $exceptionThrown = false;
 
@@ -108,28 +102,24 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         }
 
         $this->assertTrue($exceptionThrown);
-        $this->assertCount(2, $requestHistory);
+        $this->assertSame(1, $mock->count());
     }
 
     public function testClientRetriesOnConnectException(): void
     {
-        $requestHistory = [];
         $mock = new MockHandler([
-            new ConnectException('Connection refused', new Request('GET', '/')),
+            new ConnectException(
+                'Connection refused',
+                new Request('GET', '/'),
+            ),
             new Response(200, [], 'OK'),
         ]);
 
-        $stack = HandlerStack::create($mock);
-
-        $factory = new ResilientHttpClientFactory(1500, 5000, 1, $stack);
-        $factory->create();
-        $stack->push(Middleware::history($requestHistory));
-
-        $client = new Client(['handler' => $stack]);
+        $client = $this->createResilientClient($mock, 1);
         $response = $client->request('GET', 'https://example.com');
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertCount(2, $requestHistory);
+        $this->assertSame(0, $mock->count());
     }
 
     public function testTimeoutConfigurationIsApplied(): void
@@ -148,5 +138,20 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $config = $client->getConfig();
         $this->assertEquals(2.0, $config['connect_timeout']);
         $this->assertEquals(8.0, $config['timeout']);
+    }
+
+    private function createResilientClient(
+        MockHandler $mock,
+        int $maxRetries,
+    ): ClientInterface {
+        $stack = HandlerStack::create($mock);
+        $factory = new ResilientHttpClientFactory(
+            1500,
+            5000,
+            $maxRetries,
+            $stack,
+        );
+
+        return $factory->create();
     }
 }

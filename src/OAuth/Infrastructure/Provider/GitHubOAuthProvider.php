@@ -111,7 +111,7 @@ final class GitHubOAuthProvider implements OAuthProviderInterface
     {
         $token = new AccessToken(['access_token' => $accessToken]);
         $owner = $this->github->getResourceOwner($token);
-        $email = $this->fetchVerifiedPrimaryEmail($accessToken);
+        $email = $this->fetchVerifiedPrimaryEmail($token);
 
         return new OAuthUserProfile(
             email: $email,
@@ -121,12 +121,8 @@ final class GitHubOAuthProvider implements OAuthProviderInterface
         );
     }
 
-    private function fetchVerifiedPrimaryEmail(string $accessToken): string
+    private function fetchVerifiedPrimaryEmail(AccessToken $token): string
     {
-        $token = new AccessToken([
-            'access_token' => $accessToken,
-        ]);
-
         $request = $this->github->getAuthenticatedRequest(
             'GET',
             self::EMAILS_ENDPOINT,

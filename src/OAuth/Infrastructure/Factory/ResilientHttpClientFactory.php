@@ -25,10 +25,11 @@ final class ResilientHttpClientFactory
 
     public function create(): ClientInterface
     {
-        $this->handlerStack->push($this->createRetryMiddleware());
+        $stack = clone $this->handlerStack;
+        $stack->push($this->createRetryMiddleware());
 
         return new Client([
-            'handler' => $this->handlerStack,
+            'handler' => $stack,
             'connect_timeout' => $this->connectTimeoutMs / self::MILLISECONDS_PER_SECOND,
             'timeout' => $this->timeoutMs / self::MILLISECONDS_PER_SECOND,
         ]);

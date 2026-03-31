@@ -155,7 +155,7 @@ final class GoogleOAuthProviderTest extends UnitTestCase
     public function testFetchProfileThrowsUnverifiedWhenEmailNotVerified(): void
     {
         $owner = $this->createMock(GoogleUser::class);
-        $owner->method('getEmail')->willReturn('test@example.com');
+        $owner->method('getEmail')->willReturn($this->faker->safeEmail());
         $owner->method('getEmailVerified')->willReturn(false);
 
         $this->google->method('getResourceOwner')->willReturn($owner);

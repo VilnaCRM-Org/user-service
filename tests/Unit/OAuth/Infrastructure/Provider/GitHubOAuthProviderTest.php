@@ -151,7 +151,7 @@ final class GitHubOAuthProviderTest extends UnitTestCase
 
         $this->stubResourceOwner(null, $nickname, 123);
         $this->stubEmailsEndpoint([
-            ['email' => 'test@example.com', 'primary' => true, 'verified' => true],
+            ['email' => $this->faker->safeEmail(), 'primary' => true, 'verified' => true],
         ]);
 
         $profile = $this->provider->fetchProfile($this->faker->sha256());
@@ -163,7 +163,7 @@ final class GitHubOAuthProviderTest extends UnitTestCase
     {
         $this->stubResourceOwner('Test', null, 1);
         $this->stubEmailsEndpoint([
-            ['email' => 'unverified@example.com', 'primary' => true, 'verified' => false],
+            ['email' => $this->faker->safeEmail(), 'primary' => true, 'verified' => false],
         ]);
 
         $this->expectException(UnverifiedProviderEmailException::class);
