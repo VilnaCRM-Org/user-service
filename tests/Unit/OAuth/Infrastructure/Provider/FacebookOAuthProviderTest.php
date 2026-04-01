@@ -119,6 +119,8 @@ final class FacebookOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeThrowsOAuthProviderExceptionOnFailure(): void
     {
+        $invalidCode = $this->faker->sha256();
+
         $this->facebook->method('getAccessToken')
             ->willThrowException(
                 new IdentityProviderException('bad_code', 400, [])
@@ -127,7 +129,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->expectException(OAuthProviderException::class);
         $this->expectExceptionMessageMatches('/facebook/');
 
-        $this->provider->exchangeCode('invalid_code', null);
+        $this->provider->exchangeCode($invalidCode, null);
     }
 
     public function testFetchProfileReturnsProfileWithEmail(): void
@@ -180,6 +182,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeWithoutPkceVerifier(): void
     {
+        $code = $this->faker->sha256();
         $expectedToken = $this->faker->sha256();
 
         $accessToken = $this->createMock(AccessToken::class);
@@ -190,7 +193,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
 
         $this->assertSame(
             $expectedToken,
-            $this->provider->exchangeCode('code', null),
+            $this->provider->exchangeCode($code, null),
         );
     }
 
