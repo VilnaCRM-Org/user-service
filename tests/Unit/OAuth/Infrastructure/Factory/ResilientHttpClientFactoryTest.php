@@ -12,7 +12,6 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
@@ -23,11 +22,11 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $baseStack = HandlerStack::create();
         $factory = new ResilientHttpClientFactory(1500, 5000, 1, $baseStack);
 
+        /** @var Client $first */
         $first = $factory->create();
+        /** @var Client $second */
         $second = $factory->create();
 
-        /** @var Client $first */
-        /** @var Client $second */
         $this->assertNotSame(
             $first->getConfig('handler'),
             $second->getConfig('handler'),
