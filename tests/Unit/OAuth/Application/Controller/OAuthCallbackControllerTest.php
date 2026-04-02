@@ -108,7 +108,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $response = $this->invokeController();
         $cookies = $response->headers->getCookies();
 
-        $this->assertNotEmpty($cookies);
+        $this->assertContains($cookie, $cookies);
     }
 
     public function testInvokeDoesNotSetAuthCookieForTwoFactor(): void
@@ -135,6 +135,10 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $response = $this->invokeController();
 
         $this->assertSame('no-cache', $response->headers->get('Pragma'));
+        $this->assertStringContainsString(
+            'no-store',
+            (string) $response->headers->get('Cache-Control')
+        );
     }
 
     public function testInvokeThrowsOnMissingCode(): void

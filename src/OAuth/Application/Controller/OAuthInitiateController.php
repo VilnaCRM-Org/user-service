@@ -42,6 +42,8 @@ final readonly class OAuthInitiateController
             $this->flowCookieFactory->create($commandResponse->flowBindingToken)
         );
 
+        $response->headers->set('Cache-Control', 'no-store');
+
         return $response;
     }
 }

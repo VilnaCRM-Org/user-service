@@ -54,6 +54,7 @@ final readonly class OAuthCallbackController
             $this->buildResponseBody($commandResponse),
         );
 
+        $response->headers->set('Cache-Control', 'no-store');
         $response->headers->set('Pragma', 'no-cache');
 
         if (!$commandResponse->isTwoFactorEnabled()) {
@@ -90,8 +91,21 @@ final readonly class OAuthCallbackController
             return $body;
         }
 
-        $body['access_token'] = (string) $response->getAccessToken();
-        $body['refresh_token'] = (string) $response->getRefreshToken();
+        $accessToken = $response->getAccessToken();
+        $refreshToken = $response->getRefreshToken();
+
+        if (
+            $accessToken === null || $accessToken === ''
+            || $refreshToken === null || $refreshToken === ''
+        ) {
+            throw new \LogicException(
+                'OAuth callback response missing access/refresh token'
+                . ' when 2FA is disabled.'
+            );
+        }
+
+        $body['access_token'] = $accessToken;
+        $body['refresh_token'] = $refreshToken;
 
         return $body;
     }

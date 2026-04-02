@@ -48,6 +48,10 @@ final class OAuthInitiateControllerTest extends UnitTestCase
             Response::HTTP_FOUND,
             $response->getStatusCode()
         );
+        $this->assertStringContainsString(
+            'no-store',
+            (string) $response->headers->get('Cache-Control')
+        );
     }
 
     public function testInvokeRedirectsToAuthorizationUrl(): void
