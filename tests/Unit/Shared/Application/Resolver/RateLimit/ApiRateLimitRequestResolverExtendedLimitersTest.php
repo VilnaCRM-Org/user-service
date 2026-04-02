@@ -98,4 +98,84 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
 
         return $this->createRequestResolver($jwtConverter);
     }
+
+    public function testResolveEndpointLimitersForOAuthSocialInitiate(): void
+    {
+        $resolver = $this->createRequestResolver();
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/auth/social/github',
+            'GET',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $limiters = $resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertArrayHasKey('oauth_social_initiate', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['oauth_social_initiate']);
+    }
+
+    public function testResolveEndpointLimitersForOAuthSocialCallback(): void
+    {
+        $resolver = $this->createRequestResolver();
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/auth/social/github/callback',
+            'GET',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $limiters = $resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertArrayHasKey('oauth_social_callback', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['oauth_social_callback']);
+    }
+
+    public function testOAuthSocialInitiateNotMatchedForPostMethod(): void
+    {
+        $resolver = $this->createRequestResolver();
+        $request = Request::create('/api/auth/social/github', 'POST');
+
+        $limiters = $resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('oauth_social_initiate', $names);
+    }
+
+    public function testOAuthSocialCallbackNotMatchedForPostMethod(): void
+    {
+        $resolver = $this->createRequestResolver();
+        $request = Request::create(
+            '/api/auth/social/github/callback',
+            'POST'
+        );
+
+        $limiters = $resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('oauth_social_callback', $names);
+    }
+
+    public function testCallbackPathDoesNotMatchInitiateLimiter(): void
+    {
+        $resolver = $this->createRequestResolver();
+        $request = Request::create(
+            '/api/auth/social/github/callback',
+            'GET'
+        );
+
+        $limiters = $resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('oauth_social_initiate', $names);
+        self::assertContains('oauth_social_callback', $names);
+    }
 }

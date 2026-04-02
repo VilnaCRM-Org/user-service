@@ -70,7 +70,11 @@ final class OAuthPublisherTest extends UnitTestCase
             ->willReturn($eventId);
 
         $event = new OAuthUserSignedInEvent(
-            $userId, $email, $provider, $sessionId, $eventId
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId
         );
 
         $this->oAuthEventFactory->expects($this->once())
@@ -82,7 +86,10 @@ final class OAuthPublisherTest extends UnitTestCase
             ->method('publish')->with($event);
 
         $this->publisher->publishUserSignedIn(
-            $userId, $email, $provider, $sessionId
+            $userId,
+            $email,
+            $provider,
+            $sessionId
         );
     }
 }

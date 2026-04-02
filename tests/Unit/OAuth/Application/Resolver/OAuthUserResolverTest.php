@@ -208,7 +208,9 @@ final class OAuthUserResolverTest extends UnitTestCase
             ->willReturn($this->faker->sha256());
 
         $profile = $this->createProfile(
-            $this->faker->safeEmail(), null, false
+            $this->faker->safeEmail(),
+            null,
+            false
         );
         $result = $this->resolver->resolve($provider, $profile);
 
