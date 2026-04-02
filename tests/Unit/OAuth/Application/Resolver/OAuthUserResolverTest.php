@@ -180,6 +180,42 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->assertSame($expected, $result->user->getInitials());
     }
 
+    public function testResolveSkipsAutoLinkWhenEmailNotVerified(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $email = $this->faker->safeEmail();
+        $this->createUser($email);
+
+        $this->arrangeNoIdentityMatch();
+        $this->userRepo->expects($this->never())->method('findByEmail');
+        $this->passwordHasher->method('hash')
+            ->willReturn($this->faker->sha256());
+
+        $profile = $this->createProfile($email, null, false);
+        $result = $this->resolver->resolve($provider, $profile);
+
+        $this->assertTrue($result->newlyCreated);
+        $this->assertFalse($result->user->isConfirmed());
+    }
+
+    public function testResolveNewUserNotConfirmedWhenEmailNotVerified(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+
+        $this->arrangeNoIdentityMatch();
+        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->method('hash')
+            ->willReturn($this->faker->sha256());
+
+        $profile = $this->createProfile(
+            $this->faker->safeEmail(), null, false
+        );
+        $result = $this->resolver->resolve($provider, $profile);
+
+        $this->assertTrue($result->newlyCreated);
+        $this->assertFalse($result->user->isConfirmed());
+    }
+
     public function testResolveAutoLinkSkipsSaveIfAlreadyConfirmed(): void
     {
         $provider = OAuthProvider::fromString($this->faker->word());
@@ -205,12 +241,13 @@ final class OAuthUserResolverTest extends UnitTestCase
     private function createProfile(
         string $email,
         ?string $providerId = null,
+        bool $emailVerified = true,
     ): OAuthUserProfile {
         return new OAuthUserProfile(
             $email,
             $this->faker->name(),
             $providerId ?? $this->faker->uuid(),
-            true,
+            $emailVerified,
         );
     }
 

@@ -66,35 +66,23 @@ final class OAuthPublisherTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $eventId = $this->faker->uuid();
 
-        $event = $this->arrangeSignedInEvent($eventId);
+        $this->eventIdFactory->method('generate')
+            ->willReturn($eventId);
+
+        $event = new OAuthUserSignedInEvent(
+            $userId, $email, $provider, $sessionId, $eventId
+        );
 
         $this->oAuthEventFactory->expects($this->once())
             ->method('createUserSignedIn')
+            ->with($userId, $email, $provider, $sessionId, $eventId)
             ->willReturn($event);
 
         $this->eventBus->expects($this->once())
             ->method('publish')->with($event);
 
         $this->publisher->publishUserSignedIn(
-            $userId,
-            $email,
-            $provider,
-            $sessionId
-        );
-    }
-
-    private function arrangeSignedInEvent(
-        string $eventId,
-    ): OAuthUserSignedInEvent {
-        $this->eventIdFactory->method('generate')
-            ->willReturn($eventId);
-
-        return new OAuthUserSignedInEvent(
-            $this->faker->uuid(),
-            $this->faker->safeEmail(),
-            $this->faker->word(),
-            $this->faker->uuid(),
-            $eventId
+            $userId, $email, $provider, $sessionId
         );
     }
 }

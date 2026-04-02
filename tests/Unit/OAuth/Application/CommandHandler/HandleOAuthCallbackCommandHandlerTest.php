@@ -211,6 +211,11 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         );
 
         $this->stateRepository->method('validateAndConsume')
+            ->with(
+                $this->isType('string'),
+                $this->providerName,
+                $this->isType('string'),
+            )
             ->willReturn($payload);
     }
 

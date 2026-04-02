@@ -14,6 +14,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class OAuthCallbackTwoFactorHandlerTest extends UnitTestCase
@@ -68,6 +69,30 @@ final class OAuthCallbackTwoFactorHandlerTest extends UnitTestCase
         $this->assertTrue($response->isTwoFactorEnabled());
         $this->assertNull($response->getAccessToken());
         $this->assertNotEmpty($response->getPendingSessionId());
+    }
+
+    public function testConstructorRejectsZeroTtl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new OAuthCallbackTwoFactorHandler(
+            $this->pendingTwoFactorRepo,
+            new PendingTwoFactorFactory(),
+            $this->idFactory,
+            0,
+        );
+    }
+
+    public function testConstructorRejectsNegativeTtl(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new OAuthCallbackTwoFactorHandler(
+            $this->pendingTwoFactorRepo,
+            new PendingTwoFactorFactory(),
+            $this->idFactory,
+            -1,
+        );
     }
 
     private function createUser(): User

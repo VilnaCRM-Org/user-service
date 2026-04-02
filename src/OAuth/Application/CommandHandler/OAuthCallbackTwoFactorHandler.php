@@ -12,6 +12,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\PendingTwoFactorFactoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 /**
  * @psalm-api
@@ -27,6 +28,11 @@ final readonly class OAuthCallbackTwoFactorHandler
         private IdFactoryInterface $idFactory,
         private int $pendingTwoFactorTtlSeconds = self::DEFAULT_TTL_SECONDS,
     ) {
+        if ($this->pendingTwoFactorTtlSeconds <= 0) {
+            throw new InvalidArgumentException(
+                'pendingTwoFactorTtlSeconds must be greater than 0.'
+            );
+        }
     }
 
     public function handle(

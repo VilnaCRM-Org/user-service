@@ -44,6 +44,10 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
             return $this->handleExistingIdentity($existing);
         }
 
+        if (!$profile->emailVerified) {
+            return $this->handleNewUser($provider, $profile);
+        }
+
         $user = $this->userRepository->findByEmail($profile->email);
 
         if ($user instanceof User) {
@@ -115,7 +119,10 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
             $hashedPassword,
             $uuid,
         );
-        $user->setConfirmed(true);
+
+        if ($profile->emailVerified) {
+            $user->setConfirmed(true);
+        }
 
         return $user;
     }
