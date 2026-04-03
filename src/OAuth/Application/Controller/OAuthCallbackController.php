@@ -10,6 +10,7 @@ use App\OAuth\Application\Factory\OAuthFlowCookieFactory;
 use App\OAuth\Domain\Exception\MissingOAuthParametersException;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
+use LogicException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +28,23 @@ final readonly class OAuthCallbackController
 
     public function __invoke(string $provider, Request $request): Response
     {
+        $this->validateParameters($request);
+
+        $commandResponse = $this->dispatchCommand($provider, $request);
+
+        $response = new JsonResponse(
+            $this->buildResponseBody($commandResponse),
+        );
+
+        $response->headers->set('Cache-Control', 'no-store');
+        $response->headers->set('Pragma', 'no-cache');
+        $this->attachAuthCookie($commandResponse, $response);
+
+        return $response;
+    }
+
+    private function validateParameters(Request $request): void
+    {
         $code = $request->query->getString('code');
         $state = $request->query->getString('state');
         $flowBindingToken = $request->cookies->getString(
@@ -36,37 +54,40 @@ final readonly class OAuthCallbackController
         if ($code === '' || $state === '' || $flowBindingToken === '') {
             throw new MissingOAuthParametersException();
         }
+    }
 
+    private function dispatchCommand(
+        string $provider,
+        Request $request,
+    ): HandleOAuthCallbackResponse {
         $command = new HandleOAuthCallbackCommand(
             $provider,
-            $code,
-            $state,
-            $flowBindingToken,
+            $request->query->getString('code'),
+            $request->query->getString('state'),
+            $request->cookies->getString(OAuthFlowCookieFactory::COOKIE_NAME),
             $request->getClientIp() ?? '0.0.0.0',
             $request->headers->get('User-Agent', ''),
         );
 
         $this->commandBus->dispatch($command);
 
-        $commandResponse = $command->getResponse();
+        return $command->getResponse();
+    }
 
-        $response = new JsonResponse(
-            $this->buildResponseBody($commandResponse),
-        );
-
-        $response->headers->set('Cache-Control', 'no-store');
-        $response->headers->set('Pragma', 'no-cache');
-
-        if (!$commandResponse->isTwoFactorEnabled()) {
-            $accessToken = $commandResponse->getAccessToken();
-            if ($accessToken !== null && $accessToken !== '') {
-                $response->headers->setCookie(
-                    $this->authCookieFactory->create($accessToken, false)
-                );
-            }
+    private function attachAuthCookie(
+        HandleOAuthCallbackResponse $commandResponse,
+        Response $response,
+    ): void {
+        if ($commandResponse->isTwoFactorEnabled()) {
+            return;
         }
 
-        return $response;
+        $accessToken = $commandResponse->getAccessToken();
+        if ($accessToken !== null && $accessToken !== '') {
+            $response->headers->setCookie(
+                $this->authCookieFactory->create($accessToken, false)
+            );
+        }
     }
 
     /**
@@ -77,31 +98,46 @@ final readonly class OAuthCallbackController
     private function buildResponseBody(
         HandleOAuthCallbackResponse $response,
     ): array {
-        $body = [
-            '2fa_enabled' => $response->isTwoFactorEnabled(),
-        ];
+        $body = ['2fa_enabled' => $response->isTwoFactorEnabled()];
 
         if ($response->isTwoFactorEnabled()) {
-            $pendingSessionId = $response->getPendingSessionId();
-
-            if ($pendingSessionId !== null) {
-                $body['pending_session_id'] = $pendingSessionId;
-            }
-
-            return $body;
+            return $this->buildTwoFactorBody($body, $response);
         }
 
+        return $this->buildDirectSignInBody($body, $response);
+    }
+
+    /**
+     * @param array<bool|string> $body
+     *
+     * @return array<bool|string>
+     */
+    private function buildTwoFactorBody(
+        array $body,
+        HandleOAuthCallbackResponse $response,
+    ): array {
+        $pendingSessionId = $response->getPendingSessionId();
+        if ($pendingSessionId !== null) {
+            $body['pending_session_id'] = $pendingSessionId;
+        }
+
+        return $body;
+    }
+
+    /**
+     * @param array<bool|string> $body
+     *
+     * @return array<bool|string>
+     */
+    private function buildDirectSignInBody(
+        array $body,
+        HandleOAuthCallbackResponse $response,
+    ): array {
         $accessToken = $response->getAccessToken();
         $refreshToken = $response->getRefreshToken();
 
-        if (
-            $accessToken === null || $accessToken === ''
-            || $refreshToken === null || $refreshToken === ''
-        ) {
-            throw new \LogicException(
-                'OAuth callback response missing access/refresh token'
-                . ' when 2FA is disabled.'
-            );
+        if ($accessToken === null || $accessToken === '' || $refreshToken === null || $refreshToken === '') {
+            throw new LogicException('OAuth callback response missing access/refresh token when 2FA is disabled.');
         }
 
         $body['access_token'] = $accessToken;
