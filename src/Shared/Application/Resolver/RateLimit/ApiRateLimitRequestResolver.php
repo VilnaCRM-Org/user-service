@@ -44,32 +44,44 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return list<array{name: string, key: string}>
      */
-    public function resolveEndpointLimiters(Request $request): array
-    {
+    public function resolveEndpointLimiters(
+        Request $request,
+    ): array {
         $path = $request->getPathInfo();
         $method = strtoupper($request->getMethod());
-        $targets = $this->resolveSingleEndpointLimiters($request, $path, $method);
-        $this->appendTargets($targets, $this->resolveUserMutationLimiters($path, $method));
-        $this->appendTargets($targets, $this->resolveResendConfirmationLimiters($request, $path, $method));
-        $this->appendTargets($targets, $this->resolveAuthenticatedSecurityLimiters($request, $path, $method));
-        $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
+        $args = [$request, $path, $method];
 
-        return $targets;
+        return $this->collectTargets($args);
     }
 
     /**
+     * @param array{Request, string, string} $args
+     *
      * @return list<array{name: string, key: string}>
      */
-    private function resolveSingleEndpointLimiters(Request $request, string $path, string $method): array
+    private function collectTargets(array $args): array
     {
-        return array_values(array_filter([
-            $this->resolveRegistrationLimiter($request, $path, $method),
-            $this->resolveTokenExchangeLimiter($request, $path, $method),
-            $this->resolveEmailConfirmationLimiter($request, $path, $method),
-            $this->resolveUserCollectionLimiter($request, $path, $method),
-            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
-            $this->resolveOAuthSocialLimiter($request, $path, $method),
+        [$request, $path, $method] = $args;
+        $single = array_values(array_filter([
+            $this->resolveRegistrationLimiter(...$args),
+            $this->resolveTokenExchangeLimiter(...$args),
+            $this->resolveEmailConfirmationLimiter(...$args),
+            $this->resolveUserCollectionLimiter(...$args),
+            $this->resolvePasswordResetConfirmLimiter(...$args),
+            $this->resolveOAuthSocialLimiter(...$args),
         ]));
+        $multi = [
+            $this->resolveUserMutationLimiters($path, $method),
+            $this->resolveResendConfirmationLimiters(...$args),
+            $this->resolveAuthenticatedSecurityLimiters(...$args),
+            $this->authTargetResolver->resolve($request),
+        ];
+
+        foreach ($multi as $group) {
+            $this->appendTargets($single, $group);
+        }
+
+        return $single;
     }
 
     /**

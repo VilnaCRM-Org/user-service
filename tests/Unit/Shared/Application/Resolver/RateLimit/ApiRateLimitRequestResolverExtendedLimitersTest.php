@@ -83,22 +83,6 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         self::assertNotContains('signout', $names);
     }
 
-    private function createResolverWithAuthenticatedSubject(
-        string $subject
-    ): ApiRateLimitRequestResolver {
-        $now = time();
-        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
-        $jwtConverter->method('decode')->willReturn([
-            'iss' => 'vilnacrm-user-service',
-            'aud' => 'vilnacrm-api',
-            'sub' => $subject,
-            'nbf' => $now - 10,
-            'exp' => $now + 900,
-        ]);
-
-        return $this->createRequestResolver($jwtConverter);
-    }
-
     public function testResolveEndpointLimitersForOAuthSocialInitiate(): void
     {
         $resolver = $this->createRequestResolver();
@@ -177,5 +161,21 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
 
         self::assertNotContains('oauth_social_initiate', $names);
         self::assertContains('oauth_social_callback', $names);
+    }
+
+    private function createResolverWithAuthenticatedSubject(
+        string $subject
+    ): ApiRateLimitRequestResolver {
+        $now = time();
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturn([
+            'iss' => 'vilnacrm-user-service',
+            'aud' => 'vilnacrm-api',
+            'sub' => $subject,
+            'nbf' => $now - 10,
+            'exp' => $now + 900,
+        ]);
+
+        return $this->createRequestResolver($jwtConverter);
     }
 }

@@ -136,8 +136,13 @@ final readonly class OAuthCallbackController
         $accessToken = $response->getAccessToken();
         $refreshToken = $response->getRefreshToken();
 
-        if ($accessToken === null || $accessToken === '' || $refreshToken === null || $refreshToken === '') {
-            throw new LogicException('OAuth callback response missing access/refresh token when 2FA is disabled.');
+        if (
+            $accessToken === null || $accessToken === ''
+            || $refreshToken === null || $refreshToken === ''
+        ) {
+            throw new LogicException(
+                'Missing access/refresh token when 2FA is disabled.'
+            );
         }
 
         $body['access_token'] = $accessToken;

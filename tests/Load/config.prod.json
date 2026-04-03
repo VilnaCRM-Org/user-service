@@ -404,6 +404,84 @@
         }
       }
     },
+    "oauthSocialInitiate": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 90,
+        "rps": 10,
+        "vus": 10,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 350,
+        "rps": 50,
+        "vus": 50,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 3500,
+        "rps": 150,
+        "vus": 150,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 8000,
+        "rps": 400,
+        "vus": 400,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
+    "oauthSocialCallback": {
+      "setupTimeoutInMinutes": 30,
+      "teardownTimeoutInMinutes": 30,
+      "smoke": {
+        "threshold": 90,
+        "rps": 10,
+        "vus": 10,
+        "duration": 10
+      },
+      "average": {
+        "threshold": 350,
+        "rps": 50,
+        "vus": 50,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "stress": {
+        "threshold": 3500,
+        "rps": 150,
+        "vus": 150,
+        "duration": {
+          "rise": 5,
+          "plateau": 20,
+          "fall": 5
+        }
+      },
+      "spike": {
+        "threshold": 8000,
+        "rps": 400,
+        "vus": 400,
+        "duration": {
+          "rise": 10,
+          "fall": 10
+        }
+      }
+    },
     "signin": {
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,

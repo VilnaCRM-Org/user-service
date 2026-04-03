@@ -169,7 +169,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->provider === $provider
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->provider === $provider
             ));
 
         $this->arrangeDirectSignIn();
@@ -177,35 +177,48 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->invokeController(provider: $provider);
     }
 
-    public function testInvokeDispatchesCommandWithQueryParams(): void
+    public function testInvokeDispatchesCommandWithCode(): void
     {
         $code = $this->faker->sha256();
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code
+            ));
+
+        $this->arrangeDirectSignIn();
+
+        $this->invokeController(code: $code);
+    }
+
+    public function testInvokeDispatchesCommandWithState(): void
+    {
         $state = $this->faker->sha256();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->state === $state
             ));
 
         $this->arrangeDirectSignIn();
 
-        $this->invokeController(code: $code, state: $state);
+        $this->invokeController(state: $state);
     }
 
-    public function testInvokeDispatchesCommandWithFlowBindingToken(): void
+    public function testInvokeDispatchesCommandWithFlowBinding(): void
     {
-        $flowBindingToken = $this->faker->sha256();
+        $token = $this->faker->sha256();
+        $check = static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $token;
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
-            ));
+            ->with($this->callback($check));
 
         $this->arrangeDirectSignIn();
 
-        $this->invokeController(flowBindingToken: $flowBindingToken);
+        $this->invokeController(flowBindingToken: $token);
     }
 
     private function arrangeDirectSignIn(): void
@@ -225,7 +238,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     ): void {
         $this->commandBus->method('dispatch')
             ->willReturnCallback(
-                function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
+                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
                     $command->setResponse($responseDto);
                 }
             );
