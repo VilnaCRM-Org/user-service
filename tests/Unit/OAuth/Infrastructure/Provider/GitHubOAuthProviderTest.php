@@ -143,6 +143,7 @@ final class GitHubOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame((string) $id, $profile->providerId);
+        $this->assertTrue($profile->emailVerified);
     }
 
     public function testFetchProfileUsesNicknameWhenNameIsNull(): void
@@ -157,6 +158,21 @@ final class GitHubOAuthProviderTest extends UnitTestCase
         $profile = $this->provider->fetchProfile($this->faker->sha256());
 
         $this->assertSame($nickname, $profile->name);
+    }
+
+    public function testFetchProfilePrefersNameOverNicknameWhenBothAreAvailable(): void
+    {
+        $name = $this->faker->name();
+        $nickname = $this->faker->userName();
+
+        $this->stubResourceOwner($name, $nickname, 123);
+        $this->stubEmailsEndpoint([
+            ['email' => $this->faker->safeEmail(), 'primary' => true, 'verified' => true],
+        ]);
+
+        $profile = $this->provider->fetchProfile($this->faker->sha256());
+
+        $this->assertSame($name, $profile->name);
     }
 
     public function testFetchProfileThrowsUnverifiedWhenNoVerifiedPrimaryEmail(): void

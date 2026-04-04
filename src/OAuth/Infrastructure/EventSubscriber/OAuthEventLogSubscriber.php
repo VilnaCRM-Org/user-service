@@ -19,11 +19,7 @@ final readonly class OAuthEventLogSubscriber implements DomainEventSubscriberInt
     {
         if ($event instanceof OAuthUserCreatedEvent) {
             $this->logUserCreated($event);
-
-            return;
-        }
-
-        if ($event instanceof OAuthUserSignedInEvent) {
+        } elseif ($event instanceof OAuthUserSignedInEvent) {
             $this->logUserSignedIn($event);
         }
     }

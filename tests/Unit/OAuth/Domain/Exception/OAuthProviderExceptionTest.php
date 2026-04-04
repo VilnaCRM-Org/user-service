@@ -21,6 +21,7 @@ final class OAuthProviderExceptionTest extends UnitTestCase
             sprintf('OAuth provider %s error: %s', $provider, $message),
             $exception->getMessage()
         );
+        $this->assertSame(0, $exception->getCode());
     }
 
     public function testPreviousExceptionIsPreserved(): void

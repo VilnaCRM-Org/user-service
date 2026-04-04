@@ -131,6 +131,27 @@ final class OAuthInitiateControllerTest extends UnitTestCase
         $this->invokeController($provider);
     }
 
+    public function testInvokeDispatchesExactAbsoluteCallbackUri(): void
+    {
+        $provider = $this->faker->word();
+        $expectedRedirectUri = sprintf(
+            'https://example.com/api/auth/social/%s/callback',
+            $provider,
+        );
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (
+                    InitiateOAuthCommand $cmd,
+                ): bool => $cmd->redirectUri === $expectedRedirectUri
+            ));
+
+        $this->arrangeCommandBus($this->faker->url());
+
+        $this->invokeController($provider);
+    }
+
     public function testInvokePropagatesUnsupportedProviderException(): void
     {
         $provider = $this->faker->word();

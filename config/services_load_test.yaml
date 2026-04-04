@@ -9,7 +9,7 @@ services:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
   App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
-    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
     arguments:
       $provider: '@oauth.github.provider_name'
       $emailAlwaysVerified: true
@@ -17,7 +17,7 @@ services:
     tags: ['app.oauth_provider']
 
   App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
-    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
     arguments:
       $provider: '@oauth.google.provider_name'
       $emailAlwaysVerified: true
@@ -25,7 +25,7 @@ services:
     tags: ['app.oauth_provider']
 
   App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
-    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
     arguments:
       $provider: '@oauth.facebook.provider_name'
       $emailAlwaysVerified: false
@@ -33,7 +33,7 @@ services:
     tags: ['app.oauth_provider']
 
   App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
-    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
     arguments:
       $provider: '@oauth.twitter.provider_name'
       $emailAlwaysVerified: false

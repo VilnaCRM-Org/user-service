@@ -73,6 +73,18 @@ COOKIE;
         );
     }
 
+    private function createFlowBindingCookieParameter(): Model\Parameter
+    {
+        return new Model\Parameter(
+            name: 'oauth_flow_binding',
+            in: 'cookie',
+            description: 'Short-lived flow-binding cookie created by the initiate endpoint.',
+            required: true,
+            schema: ['type' => 'string'],
+            example: 'abc123',
+        );
+    }
+
     /**
      * @return array<int, Model\Response>
      *
@@ -154,6 +166,7 @@ COOKIE;
             ' ',
             [
                 'Consumes the OAuth state, exchanges the provider code,',
+                'requires the flow-binding cookie from the initiate redirect,',
                 'and returns either tokens or a pending 2FA session.',
             ],
         );
@@ -168,6 +181,7 @@ COOKIE;
             $this->createProviderParameter(),
             $this->createCodeParameter(),
             $this->createStateParameter(),
+            $this->createFlowBindingCookieParameter(),
         ];
     }
 

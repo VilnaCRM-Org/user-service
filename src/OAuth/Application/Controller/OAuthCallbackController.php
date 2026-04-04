@@ -84,12 +84,12 @@ final readonly class OAuthCallbackController
             return;
         }
 
-        $accessToken = $commandResponse->getAccessToken();
-        if ($accessToken !== null && $accessToken !== '') {
-            $response->headers->setCookie(
-                $this->authCookieFactory->create($accessToken, false)
-            );
-        }
+        $response->headers->setCookie(
+            $this->authCookieFactory->create(
+                $this->requireAccessToken($commandResponse),
+                false
+            )
+        );
     }
 
     /**
@@ -135,21 +135,32 @@ final readonly class OAuthCallbackController
         array $body,
         HandleOAuthCallbackResponse $response,
     ): array {
-        $accessToken = $response->getAccessToken();
-        $refreshToken = $response->getRefreshToken();
+        $body['access_token'] = $this->requireAccessToken($response);
+        $body['refresh_token'] = $this->requireRefreshToken($response);
 
-        if (
-            $accessToken === null || $accessToken === ''
-            || $refreshToken === null || $refreshToken === ''
-        ) {
+        return $body;
+    }
+
+    private function requireAccessToken(
+        HandleOAuthCallbackResponse $response,
+    ): string {
+        return $this->requireToken($response->getAccessToken());
+    }
+
+    private function requireRefreshToken(
+        HandleOAuthCallbackResponse $response,
+    ): string {
+        return $this->requireToken($response->getRefreshToken());
+    }
+
+    private function requireToken(?string $token): string
+    {
+        if ($token === null || $token === '') {
             throw new LogicException(
                 'Missing access/refresh token when 2FA is disabled.'
             );
         }
 
-        $body['access_token'] = $accessToken;
-        $body['refresh_token'] = $refreshToken;
-
-        return $body;
+        return $token;
     }
 }

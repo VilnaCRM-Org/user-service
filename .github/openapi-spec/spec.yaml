@@ -744,7 +744,7 @@ paths:
                 status: 500
           headers: {  }
       summary: 'Handle social OAuth callback'
-      description: 'Consumes the OAuth state, exchanges the provider code, and returns either tokens or a pending 2FA session.'
+      description: 'Consumes the OAuth state, exchanges the provider code, requires the flow-binding cookie from the initiate redirect, and returns either tokens or a pending 2FA session.'
       parameters:
         -
           name: provider
@@ -784,6 +784,17 @@ paths:
           style: form
           explode: false
           example: state-123
+        -
+          name: oauth_flow_binding
+          in: cookie
+          description: 'Short-lived flow-binding cookie created by the initiate endpoint.'
+          required: true
+          deprecated: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          example: abc123
       security: []
   /api/oauth/authorize:
     summary: 'Requests for authorization code'

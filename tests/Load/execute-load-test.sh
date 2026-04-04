@@ -32,8 +32,15 @@ runAverage=$3
 runStress=$4
 runSpike=$5
 htmlPrefix=$6
+loadTestComposeProject=${LOAD_TEST_COMPOSE_PROJECT:-user-service-load-tests}
+loadTestApiHost=${LOAD_TEST_API_HOST:-localhost}
+loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
+loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
+composeCmd=(docker compose -p "$loadTestComposeProject" -f docker-compose.load-tests.yml)
 
-serviceToken=$(docker compose exec -T php bash tests/Load/generate-service-token.sh | tr -d '\r\n')
+serviceToken=$(
+  "${composeCmd[@]}" exec -T php sh /srv/app/tests/Load/generate-service-token.sh | tr -d '\r\n'
+)
 
 if [ -z "$serviceToken" ]; then
   echo "Error: failed to generate service token for load tests."
@@ -46,11 +53,11 @@ K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
     --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html'"
 
 if [[ $scenario != "createUser" && $scenario != "graphQLCreateUser" && $scenario != "createUserBatch" ]]; then
-  eval "$K6" /loadTests/utils/prepareUsers.js -e scenarioName="${scenario}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"
-  docker compose exec -T php bin/console app:load-test:attach-access-tokens
+  eval "$K6" /loadTests/utils/prepareUsers.js -e scenarioName="${scenario}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}" -e API_HOST="${loadTestApiHost}" -e API_PORT="${loadTestApiPort}" -e MAILCATCHER_PORT="${loadTestMailCatcherHttpPort}"
+  "${composeCmd[@]}" exec -T php bin/console app:load-test:attach-access-tokens
 fi
 
 scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)
 scriptRelPath="${scriptFile#./tests/Load/}"
 
-eval "$K6" "/loadTests/${scriptRelPath}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}"
+eval "$K6" "/loadTests/${scriptRelPath}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}" -e API_HOST="${loadTestApiHost}" -e API_PORT="${loadTestApiPort}" -e MAILCATCHER_PORT="${loadTestMailCatcherHttpPort}"

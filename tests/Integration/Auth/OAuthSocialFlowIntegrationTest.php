@@ -6,8 +6,8 @@ namespace App\Tests\Integration\Auth;
 
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
+use App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;

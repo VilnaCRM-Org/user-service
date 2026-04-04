@@ -10,9 +10,9 @@ const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 export const options = scenarioUtils.getOptions();
 
 function extractState(locationHeader) {
-  const location = new URL(locationHeader);
+  const stateMatch = `${locationHeader}`.match(/[?&]state=([^&]+)/);
 
-  return location.searchParams.get('state');
+  return stateMatch ? decodeURIComponent(stateMatch[1]) : null;
 }
 
 function extractCookie(setCookieHeader) {

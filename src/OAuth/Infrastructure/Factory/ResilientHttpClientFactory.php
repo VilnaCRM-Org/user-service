@@ -20,6 +20,7 @@ final class ResilientHttpClientFactory
         private readonly int $timeoutMs,
         private readonly int $maxRetries,
         private readonly HandlerStack $handlerStack,
+        private readonly int $retryDelayBaseMs = self::MILLISECONDS_PER_SECOND,
     ) {
     }
 
@@ -73,8 +74,10 @@ final class ResilientHttpClientFactory
 
     private function createRetryDelay(): callable
     {
-        return static function (int $retries): int {
-            return (int) (1000 * (2 ** $retries));
+        $retryDelayBaseMs = $this->retryDelayBaseMs;
+
+        return static function (int $retries) use ($retryDelayBaseMs): int {
+            return $retryDelayBaseMs * (2 ** $retries);
         };
     }
 }

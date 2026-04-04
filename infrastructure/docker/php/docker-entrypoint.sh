@@ -1,17 +1,29 @@
 #!/bin/sh
 set -e
 
-# Create required directories (needed when host volume is mounted)
 mkdir -p var/cache var/log
 
-if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
-	if [ "$APP_ENV" != 'prod' ]; then
+install_dependencies() {
+	if [ "$APP_ENV" != 'prod' ] && [ "$APP_ENV" != 'load_test' ]; then
 		composer install --prefer-dist --no-progress --no-interaction --ignore-platform-reqs --no-scripts
-	else
-	  composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
+		return
 	fi
 
-	# Check MongoDB connection (used for all persistence including OAuth2)
+	if [ "$APP_ENV" = 'load_test' ]; then
+		composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
+		return
+	fi
+
+	if [ -f vendor/autoload.php ]; then
+		return
+	fi
+
+	composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
+}
+
+if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
+	install_dependencies
+
 	if [ -n "${MONGODB_URL:-}" ] || grep -q '^MONGODB_URL=' .env 2>/dev/null; then
 		echo "Waiting for MongoDB to be ready..."
 		ATTEMPTS_LEFT_TO_REACH_MONGO=60
@@ -32,13 +44,12 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 		fi
 	fi
 
-		# Run composer auto-scripts after database connections are verified
-		composer run-script auto-scripts --no-interaction
-		php bin/console lexik:jwt:generate-keypair --skip-if-exists
-		if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then
-			chmod 600 config/jwt/private.pem
-			chmod 644 config/jwt/public.pem
-		fi
-
+	composer run-script auto-scripts --no-interaction
+	php bin/console lexik:jwt:generate-keypair --skip-if-exists
+	if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then
+		chmod 600 config/jwt/private.pem
+		chmod 644 config/jwt/public.pem
 	fi
+
+fi
 exec docker-php-entrypoint "$@"

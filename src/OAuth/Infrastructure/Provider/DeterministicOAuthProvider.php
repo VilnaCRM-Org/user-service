@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Shared\OAuth\Support;
+namespace App\OAuth\Infrastructure\Provider;
 
 use App\OAuth\Application\Provider\OAuthProviderInterface;
 use App\OAuth\Domain\Exception\OAuthEmailUnavailableException;
@@ -127,11 +127,12 @@ final readonly class DeterministicOAuthProvider implements OAuthProviderInterfac
 
     private function extractScenario(string $accessToken): string
     {
-        [, $scenario] = array_pad(
-            explode(':', $accessToken, 2),
-            2,
-            self::slugify((string) $this->provider),
-        );
+        $separatorPosition = strpos($accessToken, ':');
+        if ($separatorPosition === false) {
+            return self::slugify((string) $this->provider);
+        }
+
+        $scenario = substr($accessToken, $separatorPosition + 1);
 
         return rawurldecode($scenario);
     }
@@ -150,11 +151,7 @@ final readonly class DeterministicOAuthProvider implements OAuthProviderInterfac
 
     private static function slugify(string $value): string
     {
-        $normalized = preg_replace('/[^a-z0-9]+/i', '-', strtolower($value));
-        if (!is_string($normalized)) {
-            return 'oauth-user';
-        }
-
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', strtolower($value)) ?? '';
         $trimmed = trim($normalized, '-');
 
         return $trimmed !== '' ? $trimmed : 'oauth-user';

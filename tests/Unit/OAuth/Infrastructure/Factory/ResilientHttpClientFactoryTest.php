@@ -139,6 +139,25 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $this->assertEquals(8.0, $config['timeout']);
     }
 
+    public function testRetryDelayUsesExponentialBackoffMilliseconds(): void
+    {
+        $factory = new ResilientHttpClientFactory(
+            1500,
+            5000,
+            1,
+            HandlerStack::create(),
+            1,
+        );
+        $method = new \ReflectionMethod($factory, 'createRetryDelay');
+
+        /** @var callable(int): int $delay */
+        $delay = $method->invoke($factory);
+
+        $this->assertSame(1, $delay(0));
+        $this->assertSame(2, $delay(1));
+        $this->assertSame(4, $delay(2));
+    }
+
     private function createResilientClient(
         MockHandler $mock,
         int $maxRetries,
@@ -149,6 +168,7 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
             5000,
             $maxRetries,
             $stack,
+            1,
         );
 
         return $factory->create();

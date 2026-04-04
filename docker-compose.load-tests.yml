@@ -1,5 +1,101 @@
 services:
   php:
+    build:
+      context: .
+      target: frankenphp_prod
+      args:
+        SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+        STABILITY: ${STABILITY:-stable}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    command:
+      - frankenphp
+      - run
+      - --config
+      - /etc/caddy/Caddyfile
+    ports:
+      - target: 8081
+        published: ${LOAD_TEST_API_PORT:-18081}
+        protocol: tcp
+    volumes:
+      - ./:/srv/app
+      - /srv/app/vendor
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./infrastructure/docker/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint:ro
+      - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
     environment:
       APP_ENV: load_test
       CADDY_PHP_APP_ENV: load_test
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      LOAD_TEST_API_PORT: ${LOAD_TEST_API_PORT:-18081}
+      SERVER_NAME: :80
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1',
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 60s
+
+  database:
+    image: mongo:8.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secret}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mongosh',
+          '-u',
+          '${MONGODB_USER:-root}',
+          '-p',
+          '${MONGODB_PASSWORD:-secret}',
+          '--authenticationDatabase',
+          'admin',
+          '--eval',
+          'db.runCommand({ ping: 1 }).ok',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8.0.0-alpine
+
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - '${LOAD_TEST_MAILCATCHER_SMTP_PORT:-1125}:1025'
+      - '${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}:1080'
+
+  localstack:
+    image: localstack/localstack:3.4.0
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+    volumes:
+      - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://localhost:4566/_localstack/health | grep -q "\"sqs\": \"running\""',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mongodb_data:

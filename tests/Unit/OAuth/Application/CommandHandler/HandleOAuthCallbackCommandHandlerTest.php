@@ -71,8 +71,10 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
     public function testInvokeDirectSignInForExistingUser(): void
     {
         $user = $this->createUser();
+        $command = $this->createCommand(ipAddress: '203.0.113.10', userAgent: 'OAuth Test Agent');
 
         $this->arrangeCommonMocks($user, false);
+        $this->expectDirectSignInSessionCreation($user, $command);
 
         $this->oAuthPublisher->expects($this->never())
             ->method('publishUserCreated');
@@ -86,7 +88,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
                 $this->isType('string'),
             );
 
-        $command = $this->createCommand();
         $this->createHandler()->__invoke($command);
 
         $response = $command->getResponse();
@@ -122,6 +123,8 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         $user->setTwoFactorEnabled(true);
 
         $this->arrangeCommonMocks($user, false);
+        $this->sessionFactory->expects($this->never())
+            ->method('create');
 
         $this->pendingTwoFactorRepo->expects($this->once())
             ->method('save');
@@ -188,6 +191,26 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         $this->oAuthProvider = $this->createMock(OAuthProviderInterface::class);
     }
 
+    private function expectDirectSignInSessionCreation(
+        User $user,
+        HandleOAuthCallbackCommand $command,
+    ): void {
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->with(
+                $this->identicalTo($user),
+                $command->ipAddress,
+                $command->userAgent,
+                false,
+                $this->isInstanceOf(DateTimeImmutable::class),
+            )
+            ->willReturn(new IssuedSession(
+                (string) new Ulid(),
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+            ));
+    }
+
     private function arrangeCommonMocks(
         User $user,
         bool $newlyCreated,
@@ -236,15 +259,17 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
             ->willReturn(new OAuthResolvedUser($user, $newlyCreated));
     }
 
-    private function createCommand(): HandleOAuthCallbackCommand
-    {
+    private function createCommand(
+        ?string $ipAddress = null,
+        ?string $userAgent = null,
+    ): HandleOAuthCallbackCommand {
         return new HandleOAuthCallbackCommand(
             $this->providerName,
             $this->faker->sha256(),
             $this->faker->sha256(),
             $this->faker->sha256(),
-            $this->faker->ipv4(),
-            $this->faker->userAgent(),
+            $ipAddress ?? $this->faker->ipv4(),
+            $userAgent ?? $this->faker->userAgent(),
         );
     }
 
