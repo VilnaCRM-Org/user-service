@@ -1,5 +1,41 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
   App\Shared\Application\EventListener\ApiRateLimitListener:
     class: App\Shared\Application\EventListener\UnlimitedApiRateLimitListener
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
+  App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.github.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.google.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.facebook.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.twitter.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']

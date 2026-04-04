@@ -512,6 +512,279 @@ paths:
       summary: 'Retrieves a HealthCheck resource.'
       description: 'Retrieves a HealthCheck resource.'
       parameters: []
+  '/api/auth/social/{provider}':
+    summary: 'Start social OAuth flow'
+    description: 'Redirects to the selected social provider.'
+    get:
+      operationId: oauth_social_initiate_get
+      tags:
+        - OAuth
+      responses:
+        '302':
+          description: 'Redirect to the external social provider.'
+          content:
+            application/json:
+              example: {  }
+          headers:
+            Location:
+              description: 'Provider authorization URL.'
+              schema:
+                type: string
+                format: uri
+              example: 'https://oauth.mock.example/github/authorize?state=abc123'
+            Set-Cookie:
+              description: 'Short-lived flow-binding cookie.'
+              schema:
+                type: string
+              example: 'oauth_flow_binding=abc123; Path=/api/auth/social; Secure; HttpOnly; SameSite=Lax'
+            Cache-Control:
+              description: 'Cache control policy.'
+              schema:
+                type: string
+              example: no-store
+        '400':
+          description: 'RFC 7807 problem response.'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                  error_code: { type: string }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+                  - error_code
+              example:
+                type: /errors/400
+                title: 'An error occurred'
+                detail: 'Unsupported OAuth provider "example".'
+                status: 400
+                error_code: unsupported_provider
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Start social OAuth flow'
+      description: 'Creates an OAuth state record, sets the flow-binding cookie, and redirects the client to the selected provider.'
+      parameters:
+        -
+          name: provider
+          in: path
+          description: 'Supported social OAuth provider.'
+          required: true
+          deprecated: false
+          schema:
+            type: string
+            enum:
+              - github
+              - google
+              - facebook
+              - twitter
+          style: simple
+          explode: false
+          example: github
+      security: []
+  '/api/auth/social/{provider}/callback':
+    summary: 'Handle social OAuth callback'
+    description: 'Completes the social OAuth sign-in flow.'
+    get:
+      operationId: oauth_social_callback_get
+      tags:
+        - OAuth
+      responses:
+        '200':
+          description: 'Direct sign-in or pending 2FA response.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  2fa_enabled: { type: boolean }
+                  access_token: { type: string }
+                  refresh_token: { type: string }
+                  pending_session_id: { type: string }
+                required:
+                  - 2fa_enabled
+              example:
+                2fa_enabled: false
+                access_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+                refresh_token: refresh-token-123
+          headers:
+            Set-Cookie:
+              description: 'Issued when 2FA is not required.'
+              schema:
+                type: string
+              example: '__Host-auth_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9; Path=/; Secure; HttpOnly; SameSite=Lax'
+            Cache-Control:
+              description: 'Cache control policy.'
+              schema:
+                type: string
+              example: no-store
+            Pragma:
+              description: 'Legacy cache control policy.'
+              schema:
+                type: string
+              example: no-cache
+        '400':
+          description: 'RFC 7807 problem response.'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                  error_code: { type: string }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+                  - error_code
+              example:
+                type: /errors/400
+                title: 'An error occurred'
+                detail: 'Provider mismatch: expected github, got google'
+                status: 400
+                error_code: provider_mismatch
+        '422':
+          description: 'RFC 7807 problem response.'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                  error_code: { type: string }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+                  - error_code
+              example:
+                type: /errors/422
+                title: 'An error occurred'
+                detail: 'Invalid or already consumed OAuth state'
+                status: 422
+                error_code: invalid_state
+        '503':
+          description: 'RFC 7807 problem response.'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                  error_code: { type: string }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+                  - error_code
+              example:
+                type: /errors/503
+                title: 'An error occurred'
+                detail: 'OAuth provider github error: Mock provider token exchange failed.'
+                status: 503
+                error_code: provider_unavailable
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Handle social OAuth callback'
+      description: 'Consumes the OAuth state, exchanges the provider code, and returns either tokens or a pending 2FA session.'
+      parameters:
+        -
+          name: provider
+          in: path
+          description: 'Supported social OAuth provider.'
+          required: true
+          deprecated: false
+          schema:
+            type: string
+            enum:
+              - github
+              - google
+              - facebook
+              - twitter
+          style: simple
+          explode: false
+          example: github
+        -
+          name: code
+          in: query
+          description: 'Authorization code received from the provider.'
+          required: true
+          deprecated: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          example: provider-code-123
+        -
+          name: state
+          in: query
+          description: 'OAuth state value received from the provider.'
+          required: true
+          deprecated: false
+          schema:
+            type: string
+          style: form
+          explode: false
+          example: state-123
+      security: []
   /api/oauth/authorize:
     summary: 'Requests for authorization code'
     description: 'Requests for authorization code'

@@ -25,6 +25,14 @@ services:
   App\Tests\Shared\Auth\Factory\TestAccessTokenFactory:
     public: true
 
+  App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher:
+    decorates: App\OAuth\Infrastructure\Publisher\OAuthPublisher
+    arguments:
+      $inner: '@App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher.inner'
+    public: true
+
+  App\OAuth\Infrastructure\Publisher\OAuthPublisherInterface: '@App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher'
+
   App\Tests\Behat\Support\RecordingLogger:
     decorates: monolog.logger
     arguments:
@@ -34,3 +42,35 @@ services:
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
     exclude: '../tests/Behat/Support/*'
+
+  App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.github.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.google.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.facebook.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
+    class: App\Tests\Shared\OAuth\Support\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.twitter.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']

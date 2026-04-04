@@ -64,18 +64,59 @@ final class OAuthPublisherTest extends UnitTestCase
         $email = $this->faker->safeEmail();
         $provider = $this->faker->word();
         $sessionId = $this->faker->uuid();
+        $this->arrangeSignedInPublishExpectation($userId, $email, $provider, $sessionId);
+        $this->publisher->publishUserSignedIn($userId, $email, $provider, $sessionId);
+    }
+
+    private function arrangeSignedInPublishExpectation(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+    ): void {
         $eventId = $this->faker->uuid();
-
-        $this->eventIdFactory->method('generate')
-            ->willReturn($eventId);
-
-        $event = new OAuthUserSignedInEvent(
+        $event = $this->createSignedInEvent(
             $userId,
             $email,
             $provider,
             $sessionId,
-            $eventId
+            $eventId,
         );
+        $this->expectSignedInEventToBePublished(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+            $event,
+        );
+    }
+
+    private function createSignedInEvent(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+        string $eventId,
+    ): OAuthUserSignedInEvent {
+        return new OAuthUserSignedInEvent(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+        );
+    }
+
+    private function expectSignedInEventToBePublished(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+        string $eventId,
+        OAuthUserSignedInEvent $event,
+    ): void {
+        $this->eventIdFactory->method('generate')->willReturn($eventId);
 
         $this->oAuthEventFactory->expects($this->once())
             ->method('createUserSignedIn')
@@ -83,13 +124,7 @@ final class OAuthPublisherTest extends UnitTestCase
             ->willReturn($event);
 
         $this->eventBus->expects($this->once())
-            ->method('publish')->with($event);
-
-        $this->publisher->publishUserSignedIn(
-            $userId,
-            $email,
-            $provider,
-            $sessionId
-        );
+            ->method('publish')
+            ->with($event);
     }
 }

@@ -12,6 +12,7 @@ use App\OAuth\Domain\Exception\MissingOAuthParametersException;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
+use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -210,7 +211,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeDispatchesCommandWithFlowBinding(): void
     {
         $token = $this->faker->sha256();
-        $check = static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $token;
+        $check = static fn (
+            HandleOAuthCallbackCommand $cmd,
+        ): bool => $cmd->flowBindingToken === $token;
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
@@ -219,6 +222,18 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->arrangeDirectSignIn();
 
         $this->invokeController(flowBindingToken: $token);
+    }
+
+    public function testInvokeThrowsWhenDirectSignInTokensAreMissing(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Missing access/refresh token when 2FA is disabled.'
+        );
+
+        $this->arrangeCommandBus(new HandleOAuthCallbackResponse(false));
+
+        $this->invokeController();
     }
 
     private function arrangeDirectSignIn(): void
@@ -238,7 +253,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     ): void {
         $this->commandBus->method('dispatch')
             ->willReturnCallback(
-                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
+                static function (
+                    HandleOAuthCallbackCommand $command
+                ) use ($responseDto): void {
                     $command->setResponse($responseDto);
                 }
             );
@@ -280,15 +297,19 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, bool|string>
      */
     private function decodeResponse(Response $response): array
     {
-        return json_decode(
+        $payload = json_decode(
             (string) $response->getContent(),
             true,
             512,
-            JSON_THROW_ON_ERROR
+            JSON_THROW_ON_ERROR,
         );
+
+        $this->assertIsArray($payload);
+
+        return $payload;
     }
 }
