@@ -7,6 +7,7 @@ namespace App\Tests\Unit\OAuth\Application\CommandHandler;
 use App\OAuth\Application\Collection\OAuthProviderCollection;
 use App\OAuth\Application\Command\InitiateOAuthCommand;
 use App\OAuth\Application\CommandHandler\InitiateOAuthCommandHandler;
+use App\OAuth\Application\DTO\InitiateOAuthResponse;
 use App\OAuth\Application\Provider\OAuthProviderInterface;
 use App\OAuth\Application\Provider\OAuthProviderRegistry;
 use App\OAuth\Domain\Repository\OAuthStateRepositoryInterface;
@@ -37,34 +38,46 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
-        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
         $this->oAuthProvider->method('getAuthorizationUrl')
             ->willReturn($authUrl);
-        $this->expectStateSavedForRedirect($redirectUri, $capturedPayload);
+
+        $this->stateRepository->expects($this->once())
+            ->method('save')
+            ->with(
+                $this->isType('string'),
+                $this->isInstanceOf(OAuthStatePayload::class),
+                $this->isType('int'),
+            );
 
         $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
         $this->createHandler()->__invoke($command);
 
-        $this->assertInstanceOf(OAuthStatePayload::class, $capturedPayload);
-        $this->assertAuthorizationResponse($command, $authUrl, $capturedPayload);
+        $response = $command->getResponse();
+        $this->assertSame($authUrl, $response->authorizationUrl);
+        $this->assertNotEmpty($response->state);
+        $this->assertNotEmpty($response->flowBindingToken);
     }
 
     public function testInvokeWithPkceProviderGeneratesCodeChallenge(): void
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
-        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
-        $this->expectPkceAuthorizationUrl($authUrl, $capturedPayload);
-        $this->expectCapturedStatePayload($capturedPayload);
+        $this->oAuthProvider->expects($this->once())
+            ->method('getAuthorizationUrl')
+            ->with(
+                $this->isType('string'),
+                $this->logicalNot($this->isNull()),
+            )
+            ->willReturn($authUrl);
+
+        $this->stateRepository->method('save');
 
         $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
         $this->createHandler()->__invoke($command);
-
-        $this->assertInstanceOf(OAuthStatePayload::class, $capturedPayload);
     }
 
     public function testInvokeWithoutPkcePassesNullCodeChallenge(): void
@@ -109,6 +122,19 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
         $this->createHandler()->__invoke($command);
     }
 
+    public function testInvokeGeneratesExpectedTokenLengthsAndPkceChallenge(): void
+    {
+        $redirectUri = $this->faker->url();
+        $capture = [];
+
+        $this->arrangeInitiationCapture($capture);
+
+        $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
+        $this->createHandler()->__invoke($command);
+
+        $this->assertInitiationCapture($command->getResponse(), $capture, $redirectUri);
+    }
+
     private function createHandler(): InitiateOAuthCommandHandler
     {
         $registry = new OAuthProviderRegistry(
@@ -121,133 +147,175 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
         );
     }
 
-    private function isHexTokenWithExpectedLength(string $token): bool
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function arrangeInitiationCapture(array &$capture): void
     {
-        return strlen($token) === 64 && ctype_xdigit($token);
+        $this->oAuthProvider->method('supportsPkce')->willReturn(true);
+        $this->arrangeAuthorizationUrlCapture($capture);
+        $this->arrangeStateRepositoryCapture($capture);
     }
 
-    private function expectPkceAuthorizationUrl(
-        string $authUrl,
-        ?OAuthStatePayload &$capturedPayload,
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function assertInitiationCapture(
+        InitiateOAuthResponse $response,
+        array $capture,
+        string $redirectUri,
     ): void {
+        $payload = $this->extractCapturedPayload($capture);
+
+        $this->assertGeneratedResponseMetadata($response, $capture);
+        $this->assertCapturedPayload($payload, $response, $redirectUri, $capture);
+        $this->assertCapturedCodeChallenge($payload->codeVerifier, $capture);
+    }
+
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function arrangeAuthorizationUrlCapture(array &$capture): void
+    {
         $this->oAuthProvider->expects($this->once())
             ->method('getAuthorizationUrl')
             ->with(
-                $this->isType('string'),
-                $this->callback(
-                    function (?string $codeChallenge) use (&$capturedPayload): bool {
-                        return $this->matchesPkceChallenge(
-                            $codeChallenge,
-                            $capturedPayload,
-                        );
-                    }
-                ),
+                $this->captureState($capture, 'authorization_state'),
+                $this->captureNonNullChallenge($capture),
             )
-            ->willReturn($authUrl);
+            ->willReturn($this->faker->url());
     }
 
-    private function expectCapturedStatePayload(
-        ?OAuthStatePayload &$capturedPayload,
-    ): void {
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function arrangeStateRepositoryCapture(array &$capture): void
+    {
         $this->stateRepository->expects($this->once())
             ->method('save')
             ->with(
-                $this->isType('string'),
-                $this->callback(
-                    static function (OAuthStatePayload $payload) use (
-                        &$capturedPayload
-                    ): bool {
-                        $capturedPayload = $payload;
-
-                        return true;
-                    }
-                ),
-                $this->isType('int'),
+                $this->captureState($capture, 'state'),
+                $this->capturePayload($capture),
+                $this->captureTtl($capture),
             );
     }
 
-    private function matchesPkceChallenge(
-        ?string $codeChallenge,
-        ?OAuthStatePayload $capturedPayload,
-    ): bool {
-        if (!is_string($codeChallenge) || $capturedPayload === null) {
-            return false;
-        }
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function assertGeneratedResponseMetadata(
+        InitiateOAuthResponse $response,
+        array $capture,
+    ): void {
+        $this->assertSame(64, strlen($response->state));
+        $this->assertSame(64, strlen($response->flowBindingToken));
+        $this->assertSame($response->state, $capture['state']);
+        $this->assertSame($response->state, $capture['authorization_state']);
+        $this->assertSame(600, $capture['ttl']);
+    }
 
-        return $codeChallenge === rtrim(
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function assertCapturedPayload(
+        OAuthStatePayload $payload,
+        InitiateOAuthResponse $response,
+        string $redirectUri,
+        array $capture,
+    ): void {
+        $this->assertSame($this->providerName, $payload->provider);
+        $this->assertSame($redirectUri, $payload->redirectUri);
+        $this->assertSame(64, strlen($payload->codeVerifier));
+        $this->assertSame(hash('sha256', $response->flowBindingToken), $payload->flowBindingHash);
+        $this->assertSame($capture['payload'], $payload);
+    }
+
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function assertCapturedCodeChallenge(
+        string $codeVerifier,
+        array $capture,
+    ): void {
+        $expectedCodeChallenge = rtrim(
             strtr(
-                base64_encode(
-                    hash(
-                        'sha256',
-                        $capturedPayload->codeVerifier,
-                        true,
-                    )
-                ),
+                base64_encode(hash('sha256', $codeVerifier, true)),
                 '+/',
                 '-_'
             ),
             '='
-        )
-            && !str_contains($codeChallenge, '=')
-            && !str_contains($codeChallenge, '+')
-            && !str_contains($codeChallenge, '/');
+        );
+
+        $this->assertSame($expectedCodeChallenge, $capture['code_challenge']);
+        $this->assertStringNotContainsString('=', (string) $capture['code_challenge']);
     }
 
-    private function expectStateSavedForRedirect(
-        string $redirectUri,
-        ?OAuthStatePayload &$capturedPayload,
-    ): void {
-        $this->stateRepository->expects($this->once())
-            ->method('save')
-            ->with(
-                $this->callback(
-                    fn (string $state): bool => $this->isHexTokenWithExpectedLength($state)
-                ),
-                $this->callback(
-                    function (OAuthStatePayload $payload) use (
-                        $redirectUri,
-                        &$capturedPayload,
-                    ): bool {
-                        $capturedPayload = $payload;
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function extractCapturedPayload(array $capture): OAuthStatePayload
+    {
+        $this->assertInstanceOf(OAuthStatePayload::class, $capture['payload']);
 
-                        return $this->matchesStoredRedirectPayload(
-                            $payload,
-                            $redirectUri,
-                        );
-                    }
-                ),
-                $this->isType('int'),
-            );
+        return $capture['payload'];
     }
 
-    private function assertAuthorizationResponse(
-        InitiateOAuthCommand $command,
-        string $authUrl,
-        OAuthStatePayload $capturedPayload,
-    ): void {
-        $response = $command->getResponse();
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function captureState(
+        array &$capture,
+        string $key,
+    ): \PHPUnit\Framework\Constraint\Callback {
+        return $this->callback(
+            static function (string $state) use (&$capture, $key): bool {
+                $capture[$key] = $state;
 
-        $this->assertSame($authUrl, $response->authorizationUrl);
-        $this->assertNotEmpty($response->state);
-        $this->assertNotEmpty($response->flowBindingToken);
-        $this->assertTrue(
-            $this->isHexTokenWithExpectedLength($response->state)
-        );
-        $this->assertTrue(
-            $this->isHexTokenWithExpectedLength($response->flowBindingToken)
-        );
-        $this->assertSame(
-            hash('sha256', $response->flowBindingToken),
-            $capturedPayload->flowBindingHash,
+                return true;
+            }
         );
     }
 
-    private function matchesStoredRedirectPayload(
-        OAuthStatePayload $payload,
-        string $redirectUri,
-    ): bool {
-        return $payload->redirectUri === $redirectUri
-            && $this->isHexTokenWithExpectedLength($payload->codeVerifier)
-            && $this->isHexTokenWithExpectedLength($payload->flowBindingHash);
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function captureNonNullChallenge(
+        array &$capture,
+    ): \PHPUnit\Framework\Constraint\Callback {
+        return $this->callback(
+            static function (?string $challenge) use (&$capture): bool {
+                $capture['code_challenge'] = $challenge;
+
+                return $challenge !== null;
+            }
+        );
+    }
+
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function capturePayload(array &$capture): \PHPUnit\Framework\Constraint\Callback
+    {
+        return $this->callback(
+            static function (OAuthStatePayload $payload) use (&$capture): bool {
+                $capture['payload'] = $payload;
+
+                return true;
+            }
+        );
+    }
+
+    /**
+     * @param array<string, int|OAuthStatePayload|string|null> $capture
+     */
+    private function captureTtl(array &$capture): \PHPUnit\Framework\Constraint\Callback
+    {
+        return $this->callback(
+            static function (int $ttl) use (&$capture): bool {
+                $capture['ttl'] = $ttl;
+
+                return true;
+            }
+        );
     }
 }

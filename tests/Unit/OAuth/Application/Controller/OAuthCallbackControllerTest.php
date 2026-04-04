@@ -418,13 +418,6 @@ final class OAuthCallbackControllerTest extends UnitTestCase
 
     /**
      * @return array<string, bool|string>
-     *
-     * @phpstan-return array{
-     *     2fa_enabled: bool,
-     *     access_token?: string,
-     *     refresh_token?: string,
-     *     pending_session_id?: string
-     * }
      */
     private function decodeResponse(Response $response): array
     {

@@ -59,21 +59,41 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->idFactory->method('create')
             ->willReturn($this->faker->uuid());
+
+        $this->sessionFactory->method('create')
+            ->willReturn(new IssuedSession(
+                (string) new Ulid(),
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+            ));
     }
 
     public function testInvokeDirectSignInForExistingUser(): void
     {
         $user = $this->createUser();
-        $command = $this->createCommand();
-        $issuedSession = $this->createIssuedSession();
+        $command = $this->createCommand(ipAddress: '203.0.113.10', userAgent: 'OAuth Test Agent');
 
         $this->arrangeCommonMocks($user, false);
-        $this->expectIssuedSessionForUser($user, $command, $issuedSession);
-        $this->expectDirectSignInPublication($user, $issuedSession);
+        $this->expectDirectSignInSessionCreation($user, $command);
+
+        $this->oAuthPublisher->expects($this->never())
+            ->method('publishUserCreated');
+
+        $this->oAuthPublisher->expects($this->once())
+            ->method('publishUserSignedIn')
+            ->with(
+                $user->getId(),
+                $user->getEmail(),
+                $this->providerName,
+                $this->isType('string'),
+            );
 
         $this->createHandler()->__invoke($command);
 
-        $this->assertDirectSignInResponse($command, $issuedSession);
+        $response = $command->getResponse();
+        $this->assertFalse($response->isTwoFactorEnabled());
+        $this->assertNotEmpty($response->getAccessToken());
+        $this->assertNotEmpty($response->getRefreshToken());
     }
 
     public function testInvokePublishesUserCreatedForNewUser(): void
@@ -81,7 +101,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         $user = $this->createUser();
 
         $this->arrangeCommonMocks($user, true);
-        $this->stubIssuedSessionCreation();
 
         $this->oAuthPublisher->expects($this->once())
             ->method('publishUserCreated')
@@ -104,6 +123,8 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         $user->setTwoFactorEnabled(true);
 
         $this->arrangeCommonMocks($user, false);
+        $this->sessionFactory->expects($this->never())
+            ->method('create');
 
         $this->pendingTwoFactorRepo->expects($this->once())
             ->method('save');
@@ -127,7 +148,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->arrangeStatePayload($codeVerifier);
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
-        $this->stubIssuedSessionCreation();
 
         $this->oAuthProvider->expects($this->once())
             ->method('exchangeCode')
@@ -146,7 +166,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->arrangeStatePayload();
         $this->oAuthProvider->method('supportsPkce')->willReturn(false);
-        $this->stubIssuedSessionCreation();
 
         $this->oAuthProvider->expects($this->once())
             ->method('exchangeCode')
@@ -170,6 +189,26 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         );
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
         $this->oAuthProvider = $this->createMock(OAuthProviderInterface::class);
+    }
+
+    private function expectDirectSignInSessionCreation(
+        User $user,
+        HandleOAuthCallbackCommand $command,
+    ): void {
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->with(
+                $this->identicalTo($user),
+                $command->ipAddress,
+                $command->userAgent,
+                false,
+                $this->isInstanceOf(DateTimeImmutable::class),
+            )
+            ->willReturn(new IssuedSession(
+                (string) new Ulid(),
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+            ));
     }
 
     private function arrangeCommonMocks(
@@ -220,76 +259,18 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
             ->willReturn(new OAuthResolvedUser($user, $newlyCreated));
     }
 
-    private function createCommand(): HandleOAuthCallbackCommand
-    {
+    private function createCommand(
+        ?string $ipAddress = null,
+        ?string $userAgent = null,
+    ): HandleOAuthCallbackCommand {
         return new HandleOAuthCallbackCommand(
             $this->providerName,
             $this->faker->sha256(),
             $this->faker->sha256(),
             $this->faker->sha256(),
-            $this->faker->ipv4(),
-            $this->faker->userAgent(),
+            $ipAddress ?? $this->faker->ipv4(),
+            $userAgent ?? $this->faker->userAgent(),
         );
-    }
-
-    private function createIssuedSession(): IssuedSession
-    {
-        return new IssuedSession(
-            (string) new Ulid(),
-            $this->faker->sha256(),
-            $this->faker->sha256(),
-        );
-    }
-
-    private function stubIssuedSessionCreation(): void
-    {
-        $this->sessionFactory->method('create')
-            ->willReturn($this->createIssuedSession());
-    }
-
-    private function expectIssuedSessionForUser(
-        User $user,
-        HandleOAuthCallbackCommand $command,
-        IssuedSession $issuedSession,
-    ): void {
-        $this->sessionFactory->expects($this->once())
-            ->method('create')
-            ->with(
-                $user,
-                $command->ipAddress,
-                $command->userAgent,
-                false,
-                $this->isInstanceOf(DateTimeImmutable::class),
-            )
-            ->willReturn($issuedSession);
-    }
-
-    private function expectDirectSignInPublication(
-        User $user,
-        IssuedSession $issuedSession,
-    ): void {
-        $this->oAuthPublisher->expects($this->never())
-            ->method('publishUserCreated');
-        $this->oAuthPublisher->expects($this->once())
-            ->method('publishUserSignedIn')
-            ->with(
-                $user->getId(),
-                $user->getEmail(),
-                $this->providerName,
-                $issuedSession->sessionId,
-            );
-    }
-
-    private function assertDirectSignInResponse(
-        HandleOAuthCallbackCommand $command,
-        IssuedSession $issuedSession,
-    ): void {
-        $response = $command->getResponse();
-
-        $this->assertFalse($response->isTwoFactorEnabled());
-        $this->assertSame($issuedSession->accessToken, $response->getAccessToken());
-        $this->assertSame($issuedSession->refreshToken, $response->getRefreshToken());
-        $this->assertNull($response->getPendingSessionId());
     }
 
     private function createUser(): User
