@@ -16,6 +16,9 @@ final class OAuth2GrantType extends Type
 
     public const NAME = 'oauth2_grant';
 
+    private const ERROR_MSG =
+        'OAuth2GrantType expects an array of stringable values.';
+
     /**
      * @return array<string>|null
      *
@@ -33,17 +36,10 @@ final class OAuth2GrantType extends Type
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException(
-                'OAuth2GrantType expects an array of stringable values.'
-            );
+            throw new InvalidArgumentException(self::ERROR_MSG);
         }
 
-        $normalizer = new StringableArrayNormalizer();
-
-        return $normalizer->normalize(
-            $value,
-            'OAuth2GrantType expects an array of stringable values.'
-        );
+        return $this->normalizer()->normalize($value, self::ERROR_MSG);
     }
 
     /**
@@ -66,10 +62,9 @@ final class OAuth2GrantType extends Type
             throw new InvalidArgumentException('OAuth2GrantType expects an array of strings.');
         }
 
-        return array_map(
-            static fn (string $item): Grant => new Grant($item),
-            $value
-        );
+        $factory = $this->grantFactory();
+
+        return array_map($factory, $value);
     }
 
     /**
@@ -94,5 +89,18 @@ final class OAuth2GrantType extends Type
             . 'throw new \InvalidArgumentException('
             . '"OAuth2GrantType expects an array of stringable values."); '
             . '}';
+    }
+
+    /**
+     * @return callable(string): Grant
+     */
+    private function grantFactory(): callable
+    {
+        return static fn (string $item): Grant => new Grant($item);
+    }
+
+    private function normalizer(): StringableArrayNormalizer
+    {
+        return new StringableArrayNormalizer();
     }
 }

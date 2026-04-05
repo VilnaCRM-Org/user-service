@@ -16,6 +16,9 @@ final class OAuth2RedirectUriType extends Type
 
     public const NAME = 'oauth2_redirect_uri';
 
+    private const ERROR_MSG =
+        'OAuth2RedirectUriType expects an array of stringable values.';
+
     /**
      * @return array<string>|null
      *
@@ -33,17 +36,10 @@ final class OAuth2RedirectUriType extends Type
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException(
-                'OAuth2RedirectUriType expects an array of stringable values.'
-            );
+            throw new InvalidArgumentException(self::ERROR_MSG);
         }
 
-        $normalizer = new StringableArrayNormalizer();
-
-        return $normalizer->normalize(
-            $value,
-            'OAuth2RedirectUriType expects an array of stringable values.'
-        );
+        return $this->normalizer()->normalize($value, self::ERROR_MSG);
     }
 
     /**
@@ -68,10 +64,9 @@ final class OAuth2RedirectUriType extends Type
             );
         }
 
-        return array_map(
-            static fn (string $item): RedirectUri => new RedirectUri($item),
-            $value
-        );
+        $factory = $this->redirectUriFactory();
+
+        return array_map($factory, $value);
     }
 
     /**
@@ -96,5 +91,18 @@ final class OAuth2RedirectUriType extends Type
             . 'throw new \InvalidArgumentException('
             . '"OAuth2RedirectUriType expects an array of stringable values."); '
             . '}';
+    }
+
+    /**
+     * @return callable(string): RedirectUri
+     */
+    private function redirectUriFactory(): callable
+    {
+        return static fn (string $item): RedirectUri => new RedirectUri($item);
+    }
+
+    private function normalizer(): StringableArrayNormalizer
+    {
+        return new StringableArrayNormalizer();
     }
 }

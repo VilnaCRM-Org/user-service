@@ -7,7 +7,6 @@ namespace App\Shared\Application\EventListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use LogicException;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -21,8 +20,8 @@ final readonly class ApiRateLimitListener
      */
     public function __construct(
         private array $limiterFactories,
-        private ApiRateLimitRequestResolver $requestMatcher = new ApiRateLimitRequestResolver(),
-        private LoggerInterface $logger = new NullLogger(),
+        private ApiRateLimitRequestResolver $requestMatcher,
+        private LoggerInterface $logger,
     ) {
     }
 

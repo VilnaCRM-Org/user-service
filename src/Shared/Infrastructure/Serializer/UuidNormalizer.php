@@ -10,6 +10,9 @@ use InvalidArgumentException;
 
 final class UuidNormalizer
 {
+    /**
+     * @param array<string, scalar|null>|bool|float|int|object|string $value
+     */
     public function toDatabaseValue(
         array|bool|float|int|object|string $value
     ): string {
@@ -25,6 +28,9 @@ final class UuidNormalizer
         return (string) $uuid;
     }
 
+    /**
+     * @param array<string, scalar|null>|bool|float|int|object|string $value
+     */
     public function toUuid(array|bool|float|int|object|string $value): Uuid
     {
         if ($value instanceof Uuid) {

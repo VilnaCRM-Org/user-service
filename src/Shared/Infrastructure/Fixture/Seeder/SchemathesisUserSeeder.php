@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Fixture\Seeder;
 
 use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -67,7 +68,7 @@ final readonly class SchemathesisUserSeeder
     public function seedUsers(): array
     {
         $users = $this->prepareUsers();
-        $this->userRepository->saveBatch(array_values($users));
+        $this->userRepository->saveBatch(new UserCollection(array_values($users)));
 
         return $users;
     }

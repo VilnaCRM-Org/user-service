@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClientTestCase
@@ -12,7 +11,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
     public function testResolveClientIdReturnsValueFromJsonPayload(): void
     {
         $clientId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/token',
             'POST',
@@ -29,7 +28,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
     public function testResolveClientIdReturnsValueFromFormPayload(): void
     {
         $clientId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/token',
             'POST',
@@ -47,7 +46,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
     {
         $clientId = $this->faker->userName();
         $secret = $this->faker->password();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set(
             'Authorization',
@@ -61,7 +60,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
     {
         $clientIdFromJson = $this->faker->uuid();
         $clientIdFromBasicAuth = $this->faker->userName();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/token',
             'POST',
@@ -81,7 +80,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
 
     public function testResolveClientIdReturnsAnonymousWhenNoClientIdPresent(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'GET');
 
         self::assertSame('anonymous', $resolver->resolveClientId($request));
@@ -89,7 +88,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
 
     public function testResolveClientIdReturnsAnonymousWhenBasicAuthHasEmptyClientId(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set('Authorization', 'Basic ' . base64_encode(':only-secret'));
 
@@ -98,7 +97,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
 
     public function testResolveClientIdReturnsAnonymousWhenBasicAuthIsInvalidBase64(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set('Authorization', 'Basic not!valid!base64!!!');
 
@@ -107,7 +106,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
 
     public function testResolveClientIdReturnsAnonymousWhenAuthorizationIsNotBasic(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
@@ -117,7 +116,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
     public function testResolveClientIdHandlesBasicAuthWithoutColon(): void
     {
         $clientId = $this->faker->userName();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId));
 
@@ -126,7 +125,7 @@ final class ApiRateLimitClientIdentityResolverClientIdTest extends RateLimitClie
 
     public function testResolveClientIdReturnsAnonymousWhenBasicAuthDecodesToEmptyString(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/token', 'POST');
         $request->headers->set('Authorization', 'Basic ' . base64_encode(''));
 

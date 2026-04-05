@@ -7,7 +7,9 @@ namespace App\Shared\Application\OpenApi\Extractor;
 final class ArrayExampleValueExtractor
 {
     /**
-     * @param array<string|array<true>>|string $example
+     * @param array<string|array<string, string|bool>>|string $example
+     *
+     * @return array<string, string|bool>|string|int|bool|null
      *
      * @psalm-param 'string'|array{0?: 'first', 1?: 'second', a?: array{nested: true}} $example
      */

@@ -6,6 +6,9 @@ namespace App\Shared\Infrastructure\Observability\Formatter;
 
 use App\Shared\Infrastructure\Observability\ValueObject\EmfPayload;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * AWS EMF Log Formatter
@@ -15,15 +18,17 @@ use Psr\Log\LoggerInterface;
 final readonly class EmfLogFormatter
 {
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private SerializerInterface $serializer,
     ) {
     }
 
     public function format(EmfPayload $payload): string
     {
         try {
-            return json_encode($payload, JSON_THROW_ON_ERROR) . "\n";
-        } catch (\JsonException $e) {
+            return $this->serializer->serialize($payload, JsonEncoder::FORMAT)
+                . "\n";
+        } catch (NotEncodableValueException|\JsonException $e) {
             $this->logger->error('Failed to encode EMF payload', [
                 'exception' => $e->getMessage(),
             ]);

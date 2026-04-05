@@ -53,16 +53,19 @@ final readonly class CallableFirstParameterExtractor
     }
 
     /**
-     * @psalm-return \Closure(array, DomainEventSubscriberInterface):array
+     * @psalm-return \Closure(array<string, list<DomainEventSubscriberInterface>>, DomainEventSubscriberInterface):array<string, list<DomainEventSubscriberInterface>>
      */
     private function pipedCallablesReducer(): \Closure
     {
         return static fn (
+            /** @var array<string, list<DomainEventSubscriberInterface>> $subscribers */
             array $subscribers,
             DomainEventSubscriberInterface $subscriber
         ): array => array_reduce(
             $subscriber->subscribedTo(),
+            /** @psalm-suppress ForbiddenCode - typed via outer @psalm-return */
             static fn (
+                /** @var array<string, list<DomainEventSubscriberInterface>> $carry */
                 array $carry,
                 string $event
             ) => self::addSubscriberToEvent($carry, $event, $subscriber),
@@ -71,11 +74,9 @@ final readonly class CallableFirstParameterExtractor
     }
 
     /**
-     * @param array<DomainEventSubscriberInterface> $subscribers
+     * @param array<string, list<DomainEventSubscriberInterface>> $subscribers
      *
-     * @return array<DomainEventSubscriberInterface>
-     *
-     * @psalm-return array<DomainEventSubscriberInterface>
+     * @return array<string, list<DomainEventSubscriberInterface>>
      */
     private static function addSubscriberToEvent(
         array $subscribers,

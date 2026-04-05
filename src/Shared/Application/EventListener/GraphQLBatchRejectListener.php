@@ -8,6 +8,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Rejects GraphQL batch requests (JSON arrays) to prevent rate limit bypass.
@@ -23,6 +27,11 @@ final readonly class GraphQLBatchRejectListener
     private const GRAPHQL_PATH = '/api/graphql';
     private const BATCH_REJECT_DETAIL =
         'GraphQL batch requests are not allowed. Use individual requests (OWASP API2:2023).';
+
+    public function __construct(
+        private SerializerInterface $serializer,
+    ) {
+    }
 
     public function __invoke(RequestEvent $event): void
     {
@@ -54,8 +63,12 @@ final readonly class GraphQLBatchRejectListener
     private function isBatchRequest(string $content): bool
     {
         try {
-            $decoded = json_decode($content, true, 512, \JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+            $decoded = $this->serializer->decode(
+                $content,
+                JsonEncoder::FORMAT,
+                [JsonDecode::ASSOCIATIVE => true],
+            );
+        } catch (NotEncodableValueException) {
             return false;
         }
 

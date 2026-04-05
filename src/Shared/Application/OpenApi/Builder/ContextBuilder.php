@@ -62,7 +62,7 @@ final readonly class ContextBuilder
 
     /**
      * @param array<string, array<string, string|int>> $properties
-     * @param array<string, string|int|array|bool> $example
+     * @param array<string, string|int|array<string, string>|bool> $example
      * @param array<int, string> $required
      *
      * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|string>|bool|int|string>|bool|int|string>>>
@@ -116,7 +116,7 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @return array<string, string|int|array|bool>
+     * @return array<string, string|int|array<string, string>|bool>
      */
     private function collectExamples(array $params): array
     {
@@ -131,10 +131,13 @@ final readonly class ContextBuilder
 
         $combined = array_combine($names, $examples);
 
-        return array_filter(
+        /** @var array<string, string|int|array<string, string>|bool> $filtered */
+        $filtered = array_filter(
             $combined,
             static fn (mixed $value) => $value !== null
         );
+
+        return $filtered;
     }
 
     /**
@@ -158,11 +161,11 @@ final readonly class ContextBuilder
     }
 
     /**
-     * @param array<int|string, array|string|int|bool> $values
+     * @param array<int|string, array<string, string>|string|int|bool> $values
      *
-     * @return array<array|bool|int|string>|null
+     * @return array<array<string, string>|bool|int|string>|null
      *
-     * @psalm-return array<int|string, array|bool|int|string>|null
+     * @psalm-return array<int|string, array<string, string>|bool|int|string>|null
      */
     private function emptyArrayToNull(array $values): ?array
     {

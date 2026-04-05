@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -153,11 +154,9 @@ final class CachedUserRepository implements UserRepositoryInterface
 
     /**
      * Delegate batch save to inner repository (no caching on writes)
-     *
-     * @param array<User> $users
      */
     #[\Override]
-    public function saveBatch(array $users): void
+    public function saveBatch(UserCollection $users): void
     {
         $this->inner->saveBatch($users);
     }
@@ -166,11 +165,9 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Delegate batch delete to inner repository (no invalidation here)
      *
      * Cache invalidation is handled via UserDeletedEvent subscribers.
-     *
-     * @param array<User> $users
      */
     #[\Override]
-    public function deleteBatch(array $users): void
+    public function deleteBatch(UserCollection $users): void
     {
         $this->inner->deleteBatch($users);
     }

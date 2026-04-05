@@ -27,8 +27,8 @@ final class TwoFactorRecoveryResponseContext implements Context
     ): void {
         $user = $this->requireUser($email);
 
-        Assert::assertSame(
-            [],
+        Assert::assertCount(
+            0,
             $this->recoveryCodeRepository->findByUserId($user->getId())
         );
     }
@@ -77,7 +77,9 @@ final class TwoFactorRecoveryResponseContext implements Context
         Assert::assertIsArray($previousCodes);
 
         $user = $this->requireUser($this->resolveScenarioEmail());
-        $currentCodes = $this->recoveryCodeRepository->findByUserId($user->getId());
+        $currentCodes = iterator_to_array(
+            $this->recoveryCodeRepository->findByUserId($user->getId())
+        );
 
         foreach ($previousCodes as $previousCode) {
             Assert::assertIsString($previousCode);

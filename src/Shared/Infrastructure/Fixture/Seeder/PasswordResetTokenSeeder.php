@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Fixture\Seeder;
 
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
@@ -28,22 +29,18 @@ final readonly class PasswordResetTokenSeeder
 
     /**
      * @param array<int,string> $tokenValues
-     *
-     * @return array<PasswordResetTokenInterface>
-     *
-     * @psalm-return list{0?: PasswordResetTokenInterface,...}
      */
     private function prepareTokens(
         UserInterface $user,
         array $tokenValues
-    ): array {
+    ): PasswordResetTokenCollection {
         $tokens = [];
 
         foreach ($tokenValues as $tokenValue) {
             $tokens[] = $this->prepareToken($user, $tokenValue);
         }
 
-        return $tokens;
+        return new PasswordResetTokenCollection(...$tokens);
     }
 
     private function prepareToken(

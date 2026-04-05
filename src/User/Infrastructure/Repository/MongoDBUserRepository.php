@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -61,20 +62,14 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         return $this->find($id);
     }
 
-    /**
-     * @param array<User> $users
-     */
     #[\Override]
-    public function saveBatch(array $users): void
+    public function saveBatch(UserCollection $users): void
     {
         $this->persistUsersInBatch($users);
     }
 
-    /**
-     * @param array<User> $users
-     */
     #[\Override]
-    public function deleteBatch(array $users): void
+    public function deleteBatch(UserCollection $users): void
     {
         $this->removeUsersInBatch($users);
     }
@@ -88,12 +83,9 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             ->execute();
     }
 
-    /**
-     * @param array<User> $users
-     */
-    private function persistUsersInBatch(array $users): void
+    private function persistUsersInBatch(UserCollection $users): void
     {
-        $usersForPersistence = array_values($users);
+        $usersForPersistence = $users->users;
 
         array_walk(
             $usersForPersistence,
@@ -111,12 +103,9 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         $this->documentManager->clear();
     }
 
-    /**
-     * @param array<User> $users
-     */
-    private function removeUsersInBatch(array $users): void
+    private function removeUsersInBatch(UserCollection $users): void
     {
-        $usersForRemoval = array_values($users);
+        $usersForRemoval = $users->users;
 
         array_walk(
             $usersForRemoval,

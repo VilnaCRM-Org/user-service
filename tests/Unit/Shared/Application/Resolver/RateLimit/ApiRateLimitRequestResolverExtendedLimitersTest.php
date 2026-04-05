@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
 use App\Shared\Application\Converter\JwtTokenConverterInterface;
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
-use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
+final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitClientTestCase
 {
     public function testResolveEndpointLimitersForPasswordResetConfirmPath(): void
     {
-        $resolver = new ApiRateLimitRequestResolver();
+        $resolver = $this->createRequestResolver();
         $clientIp = $this->faker->ipv4();
         $request = Request::create(
             '/api/reset-password/confirm',
@@ -76,7 +74,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
 
     public function testResolveEndpointLimitersSkipsSignoutWhenNotAuthenticated(): void
     {
-        $resolver = new ApiRateLimitRequestResolver();
+        $resolver = $this->createRequestResolver();
         $request = Request::create('/api/signout', 'POST');
 
         $limiters = $resolver->resolveEndpointLimiters($request);
@@ -98,8 +96,6 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends UnitTestCase
             'exp' => $now + 900,
         ]);
 
-        return new ApiRateLimitRequestResolver(
-            new ApiRateLimitClientIdentityResolver($jwtConverter)
-        );
+        return $this->createRequestResolver($jwtConverter);
     }
 }

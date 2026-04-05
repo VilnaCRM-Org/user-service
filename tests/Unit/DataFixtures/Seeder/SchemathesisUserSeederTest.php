@@ -11,6 +11,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\Shared\Application\Command\Fixture\HashingPasswordHasherFactory;
 use App\Tests\Unit\Shared\Application\Command\Fixture\InMemoryUserRepository;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
@@ -106,7 +107,7 @@ final class SchemathesisUserSeederTest extends UnitTestCase
         $repository->expects($this->once())
             ->method('saveBatch')
             ->with($this->callback(
-                static fn (array $users): bool => array_is_list($users)
+                static fn (UserCollection $users): bool => array_is_list($users->users)
             ));
 
         $seeder = new SchemathesisUserSeeder(

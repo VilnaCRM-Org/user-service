@@ -8,6 +8,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Validator\TOTPValidatorInterface;
 use App\User\Application\Validator\TwoFactorCodeValidator;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
+use App\User\Domain\Collection\RecoveryCodeCollection;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -99,7 +100,7 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $this->recoveryCodeRepository->method('findByUserId')
             ->with($userId)
-            ->willReturn([$recoveryCode]);
+            ->willReturn(new RecoveryCodeCollection($recoveryCode));
         $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(true);
 
         $this->verifier->verifyAndConsumeOrFail($user, $plainCode);
@@ -120,7 +121,7 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $this->recoveryCodeRepository->method('findByUserId')
             ->with($userId)
-            ->willReturn([$recoveryCode]);
+            ->willReturn(new RecoveryCodeCollection($recoveryCode));
         $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(true);
 
         $this->verifier->consumeRecoveryCodeOrFail($user, $plainCode);
@@ -138,7 +139,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $recoveryCode->method('isUsed')->willReturn(false);
         $recoveryCode->method('matchesCode')->willReturn(false);
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$recoveryCode]);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn(new RecoveryCodeCollection($recoveryCode));
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
@@ -206,7 +209,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $recoveryCode->method('isUsed')->willReturn(false);
         $recoveryCode->method('matchesCode')->willReturn(true);
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$recoveryCode]);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn(new RecoveryCodeCollection($recoveryCode));
         $this->recoveryCodeRepository
             ->expects($this->never())
             ->method('markAsUsedIfUnused');
@@ -223,7 +228,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $user = $this->createUserMockWithId($userId);
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([]);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn(new RecoveryCodeCollection());
 
         $result = $this->verifier->verifyAndResolveMethod($user, $plainCode);
 
@@ -254,7 +261,7 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $this->recoveryCodeRepository->method('findByUserId')
             ->with($userId)
-            ->willReturn([$usedCode, $unusedCode1, $unusedCode2]);
+            ->willReturn(new RecoveryCodeCollection($usedCode, $unusedCode1, $unusedCode2));
 
         $this->assertSame(2, $this->verifier->countRemainingCodes($userId));
     }
@@ -266,7 +273,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $usedCode = $this->createMock(RecoveryCode::class);
         $usedCode->method('isUsed')->willReturn(true);
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$usedCode]);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn(new RecoveryCodeCollection($usedCode));
 
         $this->assertSame(0, $this->verifier->countRemainingCodes($userId));
     }
@@ -304,8 +313,13 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $validCode->method('matchesCode')->with($plainCode)->willReturn(true);
         $validCode->method('getId')->willReturn($this->faker->uuid());
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$usedCode, $validCode]);
-        $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(true);
+        $codes = new RecoveryCodeCollection($usedCode, $validCode);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn($codes);
+        $this->recoveryCodeRepository
+            ->method('markAsUsedIfUnused')
+            ->willReturn(true);
 
         $this->verifier->verifyAndConsumeOrFail($user, $plainCode);
         $this->addToAssertionCount(1);
@@ -323,8 +337,12 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $code->method('matchesCode')->willReturn(true);
         $code->method('getId')->willReturn($this->faker->uuid());
 
-        $this->recoveryCodeRepository->method('findByUserId')->willReturn([$code]);
-        $this->recoveryCodeRepository->method('markAsUsedIfUnused')->willReturn(false);
+        $this->recoveryCodeRepository
+            ->method('findByUserId')
+            ->willReturn(new RecoveryCodeCollection($code));
+        $this->recoveryCodeRepository
+            ->method('markAsUsedIfUnused')
+            ->willReturn(false);
 
         $this->expectException(UnauthorizedHttpException::class);
 

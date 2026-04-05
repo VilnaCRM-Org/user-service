@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
@@ -36,15 +37,12 @@ final class MongoDBAuthSessionRepository extends ServiceDocumentRepository imple
         return $this->find($id);
     }
 
-    /**
-     * @return array<AuthSession>
-     */
     #[\Override]
-    public function findByUserId(string $userId): array
+    public function findByUserId(string $userId): AuthSessionCollection
     {
         $result = $this->findBy(['userId' => $userId]);
 
-        return array_values($result);
+        return new AuthSessionCollection(...array_values($result));
     }
 
     #[\Override]

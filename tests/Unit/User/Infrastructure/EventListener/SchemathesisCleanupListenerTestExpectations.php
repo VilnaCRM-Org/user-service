@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\EventListener;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserDeletedEvent;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
@@ -66,21 +67,18 @@ final class SchemathesisCleanupListenerTestExpectations
      */
     public function expectBatchDeleteAndEvents(array $users): void
     {
-        $this->expectBatchDelete($users);
+        $this->expectBatchDelete();
         $this->expectUuidFactoryCreates(count($users));
         $events = $this->createEvents($users);
         $this->expectEventFactory($users, $events);
         $this->expectEventBus($events);
     }
 
-    /**
-     * @param array<int, UserInterface> $users
-     */
-    private function expectBatchDelete(array $users): void
+    private function expectBatchDelete(): void
     {
         $this->repository->expects($this->testCase->once())
             ->method('deleteBatch')
-            ->with($users);
+            ->with($this->testCase->isInstanceOf(UserCollection::class));
     }
 
     private function expectUuidFactoryCreates(int $count): void

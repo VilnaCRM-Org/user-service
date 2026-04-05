@@ -42,6 +42,9 @@ services:
     App\Shared\Application\QueryParameter\QueryParameterRule:
       tags: ['app.query_parameter_rule']
 
+    App\OAuth\Application\Provider\OAuthProviderInterface:
+      tags: ['app.oauth_provider']
+
   App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus:
     arguments:
       - '@App\Shared\Infrastructure\Bus\MessageBusFactory'
@@ -75,6 +78,11 @@ services:
       - !tagged_iterator 'app.openapi_endpoint_factory'
       - '%env(API_URL)%'
     autoconfigure: false
+
+  App\OAuth\Application\Collection\OAuthProviderCollection:
+    factory: ['@App\OAuth\Application\Factory\OAuthProviderCollectionFactory', 'create']
+    arguments:
+      $providers: !tagged_iterator 'app.oauth_provider'
 
   App\Shared\Application\EventListener\RequestBodySizeLimitListener:
     arguments:
@@ -283,8 +291,14 @@ services:
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Factory\AuthCookieFactoryInterface: '@App\User\Application\Factory\AuthCookieFactory'
+  App\OAuth\Application\Factory\OAuthProviderCollectionFactoryInterface: '@App\OAuth\Application\Factory\OAuthProviderCollectionFactory'
   App\User\Application\Validator\TwoFactorCodeValidatorInterface: '@App\User\Application\Validator\TwoFactorCodeValidator'
   App\User\Application\Factory\RecoveryCodeBatchFactoryInterface: '@App\User\Infrastructure\Factory\RecoveryCodeBatchFactory'
+  App\User\Domain\Factory\Event\RefreshTokenEventFactoryInterface: '@App\User\Domain\Factory\Event\RefreshTokenEventFactory'
+  App\User\Domain\Factory\Event\SessionRevocationEventFactoryInterface: '@App\User\Domain\Factory\Event\SessionRevocationEventFactory'
+  App\User\Domain\Factory\Event\SignInEventFactoryInterface: '@App\User\Domain\Factory\Event\SignInEventFactory'
+  App\User\Domain\Factory\Event\TwoFactorEventFactoryInterface: '@App\User\Domain\Factory\Event\TwoFactorEventFactory'
+  App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface: '@App\User\Domain\Factory\Event\UserUpdateEventFactory'
   App\User\Infrastructure\Publisher\TwoFactorPublisherInterface: '@App\User\Infrastructure\Publisher\TwoFactorPublisher'
   App\User\Application\Factory\IssuedSessionFactoryInterface: '@App\User\Application\Factory\IssuedSessionFactory'
   App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
@@ -365,6 +379,17 @@ services:
         credentials:
           key: '%env(AWS_SQS_KEY)%'
           secret: '%env(AWS_SQS_SECRET)%'
+
+  # OAuth Social Sign-In
+  oauth.redis_connection:
+    class: \Redis
+    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+    arguments:
+      - '%env(REDIS_URL)%'
+
+  App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
+    arguments:
+      $oauthRedis: '@oauth.redis_connection'
 
   # OAuth ODM Persistence Managers
   App\OAuth\Infrastructure\Adapter\AccessTokenManager:

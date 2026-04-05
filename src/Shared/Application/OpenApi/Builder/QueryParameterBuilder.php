@@ -10,6 +10,9 @@ use App\Shared\Application\OpenApi\Enum\Requirement;
 
 final class QueryParameterBuilder
 {
+    /**
+     * @param list<string>|null $enum
+     */
     public function build(
         string $name,
         string $description,
