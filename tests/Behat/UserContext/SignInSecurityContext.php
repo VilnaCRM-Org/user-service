@@ -25,6 +25,7 @@ final class SignInSecurityContext implements Context
         private readonly UserContextAuthServices $auth,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private readonly RecoveryCodeRepositoryInterface $recoveryCodeRepository,
+        private readonly DocumentManagerResetter $documentManagerResetter,
     ) {
     }
 
@@ -102,14 +103,7 @@ final class SignInSecurityContext implements Context
     public function userWithEmailShouldHaveTwoFactorDisabled(
         string $email
     ): void {
-        $user = $this->userManagement
-            ->userRepository->findByEmail($email);
-        if ($user === null) {
-            throw new \RuntimeException(
-                "User with email {$email} not found"
-            );
-        }
-
+        $user = $this->requireUser($email);
         Assert::assertFalse($user->isTwoFactorEnabled());
     }
 
@@ -119,14 +113,7 @@ final class SignInSecurityContext implements Context
     public function userWithEmailShouldHaveTwoFactorEnabled(
         string $email
     ): void {
-        $user = $this->userManagement
-            ->userRepository->findByEmail($email);
-        if ($user === null) {
-            throw new \RuntimeException(
-                "User with email {$email} not found"
-            );
-        }
-
+        $user = $this->requireUser($email);
         Assert::assertTrue($user->isTwoFactorEnabled());
         Assert::assertNotNull($user->getTwoFactorSecret());
     }
@@ -307,6 +294,8 @@ final class SignInSecurityContext implements Context
 
     private function requireUser(string $email): User
     {
+        $this->documentManagerResetter->clear();
+
         $user = $this->userManagement
             ->userRepository->findByEmail($email);
         if ($user === null) {

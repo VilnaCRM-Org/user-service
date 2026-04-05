@@ -9,4 +9,10 @@ final class EmptyInput extends RequestInput
     public function __construct()
     {
     }
+
+    #[\Override]
+    public function getJson(): string
+    {
+        return '{}';
+    }
 }
