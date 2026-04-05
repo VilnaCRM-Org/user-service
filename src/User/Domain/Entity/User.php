@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Entity;
 
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Domain\ValueObject\UuidInterface;
 use App\User\Domain\Event\UserConfirmedEvent;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
 use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
 class User implements UserInterface
@@ -124,32 +124,26 @@ class User implements UserInterface
         return $userConfirmedEventFactory->create($token, $eventID);
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent>
-     *
-     * @psalm-return array{0?: \App\User\Domain\Event\EmailChangedEvent|\App\User\Domain\Event\PasswordChangedEvent}
-     */
     #[\Override]
     public function update(
         UserUpdate $updateData,
         string $hashedNewPassword,
         string $eventID,
-        EmailChangedEventFactoryInterface $emailChangedEventFactory,
-        PasswordChangedEventFactoryInterface $passwordChangedEventFactory,
-    ): array {
-        $events = [];
+        UserUpdateEventFactoryInterface $userUpdateEventFactory,
+    ): DomainEventCollection {
+        $events = new DomainEventCollection();
 
-        $events += $this->processNewEmail(
+        $events = $events->merge($this->processNewEmail(
             $updateData->newEmail,
             $eventID,
-            $emailChangedEventFactory
-        );
-        $events += $this->processNewPassword(
+            $userUpdateEventFactory
+        ));
+        $events = $events->merge($this->processNewPassword(
             $updateData->newPassword,
             $updateData->oldPassword,
             $eventID,
-            $passwordChangedEventFactory
-        );
+            $userUpdateEventFactory
+        ));
 
         $this->initials = $updateData->newInitials;
         $this->password = $hashedNewPassword;
@@ -200,44 +194,43 @@ class User implements UserInterface
         $this->twoFactorSecret = $twoFactorSecret;
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\EmailChangedEvent>
-     *
-     * @psalm-return list{0?: \App\User\Domain\Event\EmailChangedEvent}
-     */
     private function processNewEmail(
         string $newEmail,
         string $eventID,
-        EmailChangedEventFactoryInterface $emailChangedEventFactory,
-    ): array {
-        $events = [];
-        if ($newEmail !== $this->email) {
-            $oldEmail = $this->email;
-            $this->email = $newEmail;
-            $this->confirmed = false;
-            $events[] =
-                $emailChangedEventFactory->create($this, $oldEmail, $eventID);
+        UserUpdateEventFactoryInterface $userUpdateEventFactory,
+    ): DomainEventCollection {
+        if ($newEmail === $this->email) {
+            return new DomainEventCollection();
         }
 
-        return $events;
+        $oldEmail = $this->email;
+        $this->email = $newEmail;
+        $this->confirmed = false;
+
+        return new DomainEventCollection(
+            $userUpdateEventFactory->createEmailChanged(
+                $this,
+                $oldEmail,
+                $eventID
+            )
+        );
     }
 
-    /**
-     * @return array<\App\User\Domain\Event\PasswordChangedEvent>
-     *
-     * @psalm-return list{0?: \App\User\Domain\Event\PasswordChangedEvent}
-     */
     private function processNewPassword(
         string $newPassword,
         string $oldPassword,
         string $eventID,
-        PasswordChangedEventFactoryInterface $passwordChangedEventFactory
-    ): array {
-        $events = [];
-        if ($newPassword !== $oldPassword) {
-            $events[] =
-                $passwordChangedEventFactory->create($this->email, $eventID);
+        UserUpdateEventFactoryInterface $userUpdateEventFactory
+    ): DomainEventCollection {
+        if ($newPassword === $oldPassword) {
+            return new DomainEventCollection();
         }
-        return $events;
+
+        return new DomainEventCollection(
+            $userUpdateEventFactory->createPasswordChanged(
+                $this->email,
+                $eventID
+            )
+        );
     }
 }

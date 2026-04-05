@@ -14,10 +14,8 @@ final readonly class ApiRateLimitRequestResolver
     private const SIGNOUT_ALL_PATH = '/api/signout/all';
 
     public function __construct(
-        private ApiRateLimitClientIdentityResolver $clientIdentityResolver =
-            new ApiRateLimitClientIdentityResolver(),
-        private ApiRateLimitAuthTargetResolver $authTargetResolver =
-            new ApiRateLimitAuthTargetResolver(),
+        private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
+        private ApiRateLimitAuthTargetResolver $authTargetResolver,
     ) {
     }
 

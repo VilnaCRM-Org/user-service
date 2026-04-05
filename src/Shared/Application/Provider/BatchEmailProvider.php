@@ -57,6 +57,12 @@ final class BatchEmailProvider
     {
         return array_reduce(
             $entries,
+            /**
+             * @param array{0: list<string>, 1: bool} $carry
+             * @param array<string, string|null>|object|string|int|float|bool|null $entry
+             *
+             * @return array{0: list<string>, 1: bool}
+             */
             function (array $carry, array|object|string|int|float|bool|null $entry): array {
                 if (!is_array($entry)) {
                     $carry[1] = true;

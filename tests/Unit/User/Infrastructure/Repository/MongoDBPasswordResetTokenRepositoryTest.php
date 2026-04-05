@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository;
@@ -150,10 +151,10 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
 
     public function testSaveBatch(): void
     {
-        $tokens = [
+        $tokens = new PasswordResetTokenCollection(
             $this->createMock(PasswordResetTokenInterface::class),
             $this->createMock(PasswordResetTokenInterface::class),
-        ];
+        );
 
         $this->documentManager->expects($this->exactly(2))
             ->method('persist');

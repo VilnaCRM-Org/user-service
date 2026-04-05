@@ -16,6 +16,9 @@ final class OAuth2ScopeType extends Type
 
     public const NAME = 'oauth2_scope';
 
+    private const ERROR_MSG =
+        'OAuth2ScopeType expects an array of stringable values.';
+
     /**
      * @return array<string>|null
      *
@@ -33,17 +36,10 @@ final class OAuth2ScopeType extends Type
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException(
-                'OAuth2ScopeType expects an array of stringable values.'
-            );
+            throw new InvalidArgumentException(self::ERROR_MSG);
         }
 
-        $normalizer = new StringableArrayNormalizer();
-
-        return $normalizer->normalize(
-            $value,
-            'OAuth2ScopeType expects an array of stringable values.'
-        );
+        return $this->normalizer()->normalize($value, self::ERROR_MSG);
     }
 
     /**
@@ -66,10 +62,9 @@ final class OAuth2ScopeType extends Type
             throw new InvalidArgumentException('OAuth2ScopeType expects an array of strings.');
         }
 
-        return array_map(
-            static fn (string $item): Scope => new Scope($item),
-            $value
-        );
+        $factory = $this->scopeFactory();
+
+        return array_map($factory, $value);
     }
 
     /**
@@ -94,5 +89,18 @@ final class OAuth2ScopeType extends Type
             . 'throw new \InvalidArgumentException('
             . '"OAuth2ScopeType expects an array of stringable values."); '
             . '}';
+    }
+
+    /**
+     * @return callable(string): Scope
+     */
+    private function scopeFactory(): callable
+    {
+        return static fn (string $item): Scope => new Scope($item);
+    }
+
+    private function normalizer(): StringableArrayNormalizer
+    {
+        return new StringableArrayNormalizer();
     }
 }

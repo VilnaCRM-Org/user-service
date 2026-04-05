@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\DTO\RegisterUserBatchCommandResponse;
@@ -35,19 +35,20 @@ final readonly class RegisterUserBatchCommandHandler implements
 
     public function __invoke(RegisterUserBatchCommand $command): void
     {
-        $usersToPersist = [];
+        $userCollection = new UserCollection();
         $returnedUsers = [];
-        $events = [];
+        $events = new DomainEventCollection();
 
         foreach ($command->users as $user) {
-            $returnedUsers[] = $this->processUser(
+            [$processedUser, $events, $userCollection] = $this->processUser(
                 $user,
                 $events,
-                $usersToPersist
+                $userCollection
             );
+            $returnedUsers[] = $processedUser;
         }
 
-        $this->persistUsersIfNeeded($usersToPersist);
+        $this->persistUsersIfNeeded($userCollection);
 
         $command->setResponse(new RegisterUserBatchCommandResponse(
             new UserCollection($returnedUsers)
@@ -58,18 +59,18 @@ final readonly class RegisterUserBatchCommandHandler implements
 
     /**
      * @param array<string> $user
-     * @param array<DomainEvent> $events
-     * @param array<UserInterface> $usersToPersist
+     *
+     * @return array{UserInterface, DomainEventCollection, UserCollection}
      */
     private function processUser(
         array $user,
-        array &$events,
-        array &$usersToPersist
-    ): UserInterface {
+        DomainEventCollection $events,
+        UserCollection $usersToPersist
+    ): array {
         $existingUser = $this->userRepository->findByEmail($user['email']);
 
         if ($existingUser !== null) {
-            return $existingUser;
+            return [$existingUser, $events, $usersToPersist];
         }
 
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);
@@ -81,32 +82,27 @@ final readonly class RegisterUserBatchCommandHandler implements
                 $this->uuidFactory->create()
             )
         );
-        $usersToPersist[] = $createdUser;
-        $events[] = $this->registeredEventFactory->create(
+        $usersToPersist->add($createdUser);
+        $events = $events->add($this->registeredEventFactory->create(
             $createdUser,
             (string) $this->uuidFactory->create()
-        );
-        return $createdUser;
+        ));
+
+        return [$createdUser, $events, $usersToPersist];
     }
 
-    /**
-     * @param array<UserInterface> $users
-     */
-    private function persistUsersIfNeeded(array $users): void
+    private function persistUsersIfNeeded(UserCollection $users): void
     {
-        if ($users === []) {
+        if ($users->count() === 0) {
             return;
         }
 
         $this->userRepository->saveBatch($users);
     }
 
-    /**
-     * @param array<DomainEvent> $events
-     */
-    private function publishEventsIfNeeded(array $events): void
+    private function publishEventsIfNeeded(DomainEventCollection $events): void
     {
-        if ($events === []) {
+        if ($events->isEmpty()) {
             return;
         }
 

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLimitClientTestCase
 {
     public function testResolveUserSubjectReturnsNullWhenNoJwtDecoder(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
@@ -20,7 +19,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolveUserSubjectReturnsNullWhenNoBearerToken(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
 
         self::assertNull($resolver->resolveUserSubject($request));
@@ -31,7 +30,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
         $token = $this->faker->sha256();
         $this->jwtConverter->method('decode')->willReturn(null);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -45,7 +44,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -59,7 +58,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
         $payload['sub'] = 99999;
         $this->jwtConverter->method('decode')->willReturn($payload);
 
-        $resolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createClientIdentityResolver($this->jwtConverter);
         $request = Request::create('/api/users', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
 
@@ -68,7 +67,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolvePayloadValueReturnsNullForEmptyBody(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/users', 'POST', [], [], [], [], '');
 
         self::assertNull($resolver->resolvePayloadValue($request, ['email']));
@@ -76,7 +75,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolvePayloadValueReturnsNullForWhitespaceOnlyBody(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/users', 'POST', [], [], [], [], '   ');
 
         self::assertNull($resolver->resolvePayloadValue($request, ['email']));
@@ -85,7 +84,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolvePayloadValueReturnsValueFromJsonBody(): void
     {
         $value = $this->faker->word();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -102,7 +101,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolvePayloadValueReturnsValueFromFormBody(): void
     {
         $value = $this->faker->word();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -118,7 +117,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolvePayloadValueReturnsNullWhenKeyNotFound(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -135,7 +134,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolvePayloadValueReturnsFirstMatchingKey(): void
     {
         $firstValue = $this->faker->word();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -155,7 +154,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolvePayloadValueFallsBackToSecondKey(): void
     {
         $secondValue = $this->faker->word();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -173,7 +172,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
     public function testResolvePayloadValueIgnoresEmptyStringValues(): void
     {
         $fallback = $this->faker->word();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -189,7 +188,7 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
 
     public function testResolvePayloadValueReturnsNullWhenJsonValueIsNotString(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/users',
             'POST',
@@ -198,6 +197,22 @@ final class ApiRateLimitClientIdentityResolverPayloadSubjectTest extends RateLim
             [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode(['my_key' => 42], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertNull($resolver->resolvePayloadValue($request, ['my_key']));
+    }
+
+    public function testResolvePayloadValueReturnsNullWhenJsonPayloadIsScalar(): void
+    {
+        $resolver = $this->createClientIdentityResolver();
+        $request = Request::create(
+            '/api/users',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode($this->faker->word(), JSON_THROW_ON_ERROR)
         );
 
         self::assertNull($resolver->resolvePayloadValue($request, ['my_key']));

@@ -18,9 +18,8 @@ final readonly class ApiRateLimitAuthTargetResolver
     ];
 
     public function __construct(
-        private ?PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository = null,
-        private ApiRateLimitClientIdentityResolver $clientIdentityResolver =
-            new ApiRateLimitClientIdentityResolver(),
+        private ?PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
+        private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
     ) {
     }
 

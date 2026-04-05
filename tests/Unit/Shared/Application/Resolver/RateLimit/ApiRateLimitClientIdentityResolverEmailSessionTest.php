@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimitClientTestCase
@@ -12,7 +11,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     public function testResolveSignInEmailReturnsNormalizedEmailFromJsonPayload(): void
     {
         $email = '  ' . strtoupper($this->faker->email()) . '  ';
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin',
             'POST',
@@ -29,7 +28,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     public function testResolveSignInEmailReturnsNormalizedEmailFromFormPayload(): void
     {
         $rawEmail = 'USER@Example.COM';
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin',
             'POST',
@@ -45,7 +44,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
 
     public function testResolveSignInEmailTrimsWhitespace(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin',
             'POST',
@@ -61,7 +60,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
 
     public function testResolveSignInEmailReturnsNullWhenEmailMissing(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/signin', 'POST');
 
         self::assertNull($resolver->resolveSignInEmail($request));
@@ -69,7 +68,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
 
     public function testResolveSignInEmailReturnsNullWhenBodyIsEmpty(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/signin', 'POST', [], [], [], [], '');
 
         self::assertNull($resolver->resolveSignInEmail($request));
@@ -78,7 +77,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     public function testResolvePendingSessionIdReturnsCamelCaseKey(): void
     {
         $sessionId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -95,7 +94,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     public function testResolvePendingSessionIdReturnsSnakeCaseKey(): void
     {
         $sessionId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -113,7 +112,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     {
         $camelId = $this->faker->uuid();
         $snakeId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -132,7 +131,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
 
     public function testResolvePendingSessionIdReturnsNullWhenMissing(): void
     {
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create('/api/signin/2fa', 'POST');
 
         self::assertNull($resolver->resolvePendingSessionId($request));
@@ -141,7 +140,7 @@ final class ApiRateLimitClientIdentityResolverEmailSessionTest extends RateLimit
     public function testResolvePendingSessionIdFromFormPayload(): void
     {
         $sessionId = $this->faker->uuid();
-        $resolver = new ApiRateLimitClientIdentityResolver();
+        $resolver = $this->createClientIdentityResolver();
         $request = Request::create(
             '/api/signin/2fa',
             'POST',

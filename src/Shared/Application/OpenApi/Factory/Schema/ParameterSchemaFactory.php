@@ -22,7 +22,8 @@ final readonly class ParameterSchemaFactory
             return $this->arraySchemaFactory->create($param);
         }
 
-        return array_filter(
+        /** @var array<string, string|int|array<string>|list<string>> $filtered */
+        $filtered = array_filter(
             [
                 'type' => $param->type,
                 'maxLength' => $param->maxLength,
@@ -32,5 +33,7 @@ final readonly class ParameterSchemaFactory
             ],
             static fn ($value) => $value !== null
         );
+
+        return $filtered;
     }
 }

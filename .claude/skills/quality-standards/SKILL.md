@@ -42,13 +42,14 @@ Understand quality metrics and route to appropriate specialized skill for fixes.
 
 ### Other Tools
 
-| Tool      | Metric          | Required | Fix With                                         |
-| --------- | --------------- | -------- | ------------------------------------------------ |
-| Deptrac   | Violations      | 0        | [deptrac-fixer](../deptrac-fixer/SKILL.md)       |
-| Psalm     | Errors          | 0        | Fix reported issues                              |
-| Psalm     | Security Issues | 0        | Fix tainted flows                                |
-| Infection | MSI             | 100%     | [testing-workflow](../testing-workflow/SKILL.md) |
-| PHPUnit   | Coverage        | 100%     | [testing-workflow](../testing-workflow/SKILL.md) |
+| Tool      | Metric          | Required | Fix With                                                                                    |
+| --------- | --------------- | -------- | ------------------------------------------------------------------------------------------- |
+| Deptrac   | Violations      | 0        | [deptrac-fixer](../deptrac-fixer/SKILL.md)                                                  |
+| Psalm     | Errors          | 0        | Fix reported issues                                                                         |
+| Psalm     | ForbiddenCode   | 0        | Use Symfony Serializer and follow the architecture guards documented in `code-organization` |
+| Psalm     | Security Issues | 0        | Fix tainted flows                                                                           |
+| Infection | MSI             | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
+| PHPUnit   | Coverage        | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
 
 ## Quick Reference Commands
 

@@ -10,6 +10,9 @@ use Symfony\Component\Validator\Constraint;
 #[\Attribute]
 final class CreateUserBatch extends Constraint
 {
+    /**
+     * @param array<string>|null $groups
+     */
     public function __construct(
         ?array $groups = null,
         mixed $payload = null,

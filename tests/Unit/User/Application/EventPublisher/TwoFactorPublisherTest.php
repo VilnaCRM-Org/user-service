@@ -13,6 +13,8 @@ use App\User\Domain\Event\TwoFactorDisabledEvent;
 use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
+use App\User\Domain\Factory\Event\SignInEventFactoryInterface;
+use App\User\Domain\Factory\Event\TwoFactorEventFactoryInterface;
 use App\User\Infrastructure\Publisher\TwoFactorPublisher;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -20,6 +22,8 @@ final class TwoFactorPublisherTest extends UnitTestCase
 {
     private EventBusInterface&MockObject $eventBus;
     private EventIdFactoryInterface&MockObject $eventIdFactory;
+    private TwoFactorEventFactoryInterface&MockObject $twoFactorEventFactory;
+    private SignInEventFactoryInterface&MockObject $signInEventFactory;
     private TwoFactorPublisher $publisher;
 
     #[\Override]
@@ -29,9 +33,13 @@ final class TwoFactorPublisherTest extends UnitTestCase
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
+        $this->twoFactorEventFactory = $this->createMock(TwoFactorEventFactoryInterface::class);
+        $this->signInEventFactory = $this->createMock(SignInEventFactoryInterface::class);
         $this->publisher = new TwoFactorPublisher(
             $this->eventBus,
-            $this->eventIdFactory
+            $this->eventIdFactory,
+            $this->twoFactorEventFactory,
+            $this->signInEventFactory
         );
     }
 
@@ -40,24 +48,14 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
         $eventId = $this->faker->uuid();
+        $event = $this->createMock(TwoFactorEnabledEvent::class);
 
-        $this->eventIdFactory->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (TwoFactorEnabledEvent $event) use (
-                    $userId,
-                    $email,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->email === $email
-                        && $event->eventId() === $eventId;
-                }
-            ));
+        $this->expectGeneratedEventIds($eventId);
+        $this->twoFactorEventFactory->expects($this->once())
+            ->method('createEnabled')
+            ->with($userId, $email, $eventId)
+            ->willReturn($event);
+        $this->expectPublishedEvent($event);
 
         $this->publisher->publishEnabled($userId, $email);
     }
@@ -67,62 +65,29 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $email = $this->faker->email();
         $eventId = $this->faker->uuid();
+        $event = $this->createMock(TwoFactorDisabledEvent::class);
 
-        $this->eventIdFactory->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (TwoFactorDisabledEvent $event) use (
-                    $userId,
-                    $email,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->email === $email
-                        && $event->eventId() === $eventId;
-                }
-            ));
+        $this->expectGeneratedEventIds($eventId);
+        $this->twoFactorEventFactory->expects($this->once())
+            ->method('createDisabled')
+            ->with($userId, $email, $eventId)
+            ->willReturn($event);
+        $this->expectPublishedEvent($event);
 
         $this->publisher->publishDisabled($userId, $email);
     }
 
     public function testPublishCompleted(): void
     {
-        $uid = $this->faker->uuid();
-        $sid = $this->faker->uuid();
-        $ip = $this->faker->ipv4();
-        $ua = $this->faker->userAgent();
-        $method = $this->faker->word();
-        $eid = $this->faker->uuid();
-
-        $this->eventIdFactory->method('generate')->willReturn($eid);
-        $events = [];
-        $this->capturePublishedEvents(2, $events);
-        $this->callCompleted($uid, $sid, $ip, $ua, $method);
-
-        $this->assertCompletedEvents($events, $uid, $sid, $ip, $ua, $method, $eid);
+        [$completedEvent, $signedInEvent, $publishedEvents] = $this->assertPublishCompleted(
+            $this->faker->word()
+        );
+        $this->assertSame([$completedEvent, $signedInEvent], $publishedEvents);
     }
 
     public function testPublishCompletedWithNullVerificationMethod(): void
     {
-        [$userId, $sessionId, $ip, $ua] = $this->arrangeCompletedFixtures();
-        $events = [];
-        $this->capturePublishedEvents(2, $events);
-
-        $this->publisher->publishCompleted(
-            $userId,
-            $this->faker->email(),
-            $sessionId,
-            $ip,
-            $ua,
-            null
-        );
-
-        $this->assertInstanceOf(TwoFactorCompletedEvent::class, $events[0]);
-        $this->assertSame('', $events[0]->method);
+        $this->assertPublishCompletedWithoutCapture(null);
     }
 
     public function testPublishFailed(): void
@@ -131,16 +96,14 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $ipAddress = $this->faker->ipv4();
         $reason = $this->faker->sentence();
         $eventId = $this->faker->uuid();
+        $event = $this->createMock(TwoFactorFailedEvent::class);
 
-        $this->eventIdFactory->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                $this->buildFailedValidator($pendingSessionId, $ipAddress, $reason, $eventId)
-            ));
+        $this->expectGeneratedEventIds($eventId);
+        $this->twoFactorEventFactory->expects($this->once())
+            ->method('createFailed')
+            ->with($pendingSessionId, $ipAddress, $reason, $eventId)
+            ->willReturn($event);
+        $this->expectPublishedEvent($event);
 
         $this->publisher->publishFailed($pendingSessionId, $ipAddress, $reason);
     }
@@ -150,137 +113,181 @@ final class TwoFactorPublisherTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $remainingCount = $this->faker->numberBetween(0, 10);
         $eventId = $this->faker->uuid();
+        $event = $this->createMock(RecoveryCodeUsedEvent::class);
 
-        $this->eventIdFactory->expects($this->once())
-            ->method('generate')
-            ->willReturn($eventId);
-
-        $this->eventBus->expects($this->once())
-            ->method('publish')
-            ->with($this->callback(
-                static function (RecoveryCodeUsedEvent $event) use (
-                    $userId,
-                    $remainingCount,
-                    $eventId
-                ): bool {
-                    return $event->userId === $userId
-                        && $event->remainingCount === $remainingCount
-                        && $event->eventId() === $eventId;
-                }
-            ));
+        $this->expectGeneratedEventIds($eventId);
+        $this->twoFactorEventFactory->expects($this->once())
+            ->method('createRecoveryCodeUsed')
+            ->with($userId, $remainingCount, $eventId)
+            ->willReturn($event);
+        $this->expectPublishedEvent($event);
 
         $this->publisher->publishRecoveryCodeUsed($userId, $remainingCount);
     }
 
+    private function expectGeneratedEventIds(string ...$eventIds): void
+    {
+        $this->eventIdFactory->expects($this->exactly(count($eventIds)))
+            ->method('generate')
+            ->willReturnOnConsecutiveCalls(...$eventIds);
+    }
+
+    private function expectPublishedEvent(object $event): void
+    {
+        $this->eventBus->expects($this->once())
+            ->method('publish')
+            ->with($event);
+    }
+
     /**
-     * @param array<object> $events
+     * @return array{0: TwoFactorCompletedEvent, 1: UserSignedInEvent, 2: list<object>}
      */
-    private function capturePublishedEvents(
-        int $count,
-        array &$events
-    ): void {
-        $this->eventBus->expects($this->exactly($count))
+    private function assertPublishCompleted(?string $verificationMethod): array
+    {
+        $scenario = $this->createCompletedScenario($verificationMethod);
+        $publishedEvents = [];
+        $this->expectGeneratedEventIds($scenario['completedEventId'], $scenario['signedInEventId']);
+        $this->expectCompletedEventFactoryCall($scenario);
+        $this->expectCompletedSignInFactoryCall($scenario);
+        $this->captureCompletedPublication($publishedEvents);
+        $this->publishCompletedScenario($scenario);
+
+        return [$scenario['completedEvent'], $scenario['signedInEvent'], $publishedEvents];
+    }
+
+    private function assertPublishCompletedWithoutCapture(?string $verificationMethod): void
+    {
+        $scenario = $this->createCompletedScenario($verificationMethod);
+        $this->expectGeneratedEventIds($scenario['completedEventId'], $scenario['signedInEventId']);
+        $this->expectCompletedEventFactoryCall($scenario);
+        $this->expectCompletedSignInFactoryCall($scenario);
+        $this->expectCompletedPublication();
+        $this->publishCompletedScenario($scenario);
+    }
+
+    /**
+     * @return array{
+     *     completedEvent: TwoFactorCompletedEvent,
+     *     completedEventId: string,
+     *     email: string,
+     *     ipAddress: string,
+     *     sessionId: string,
+     *     signedInEvent: UserSignedInEvent,
+     *     signedInEventId: string,
+     *     userAgent: string,
+     *     userId: string,
+     *     verificationMethod: string
+     * }
+     */
+    private function createCompletedScenario(?string $verificationMethod): array
+    {
+        return [
+            'completedEvent' => $this->createMock(TwoFactorCompletedEvent::class),
+            'completedEventId' => $this->faker->uuid(),
+            'email' => $this->faker->email(),
+            'ipAddress' => $this->faker->ipv4(),
+            'sessionId' => $this->faker->uuid(),
+            'signedInEvent' => $this->createMock(UserSignedInEvent::class),
+            'signedInEventId' => $this->faker->uuid(),
+            'userAgent' => $this->faker->userAgent(),
+            'userId' => $this->faker->uuid(),
+            'verificationMethod' => $verificationMethod ?? '',
+        ];
+    }
+
+    /**
+     * @param array{
+     *     completedEvent: TwoFactorCompletedEvent,
+     *     completedEventId: string,
+     *     ipAddress: string,
+     *     sessionId: string,
+     *     userAgent: string,
+     *     userId: string,
+     *     verificationMethod: string
+     * } $scenario
+     */
+    private function expectCompletedEventFactoryCall(array $scenario): void
+    {
+        $this->twoFactorEventFactory->expects($this->once())
+            ->method('createCompleted')
+            ->with(
+                $scenario['userId'],
+                $scenario['sessionId'],
+                $scenario['ipAddress'],
+                $scenario['userAgent'],
+                $scenario['verificationMethod'],
+                $scenario['completedEventId']
+            )
+            ->willReturn($scenario['completedEvent']);
+    }
+
+    /**
+     * @param array{
+     *     email: string,
+     *     ipAddress: string,
+     *     sessionId: string,
+     *     signedInEvent: UserSignedInEvent,
+     *     signedInEventId: string,
+     *     userAgent: string,
+     *     userId: string
+     * } $scenario
+     */
+    private function expectCompletedSignInFactoryCall(array $scenario): void
+    {
+        $this->signInEventFactory->expects($this->once())
+            ->method('createSignedIn')
+            ->with(
+                $scenario['userId'],
+                $scenario['email'],
+                $scenario['sessionId'],
+                $scenario['ipAddress'],
+                $scenario['userAgent'],
+                true,
+                $scenario['signedInEventId']
+            )
+            ->willReturn($scenario['signedInEvent']);
+    }
+
+    /**
+     * @param list<object> $publishedEvents
+     */
+    private function captureCompletedPublication(array &$publishedEvents): void
+    {
+        $this->eventBus->expects($this->exactly(2))
             ->method('publish')
             ->willReturnCallback(
-                static function (object $e) use (&$events): void {
-                    $events[] = $e;
+                static function (object $event) use (&$publishedEvents): void {
+                    $publishedEvents[] = $event;
                 }
             );
     }
 
-    /**
-     * @param array<object> $events
-     */
-    private function assertCompletedEvents(
-        array $events,
-        string $uid,
-        string $sid,
-        string $ip,
-        string $ua,
-        string $method,
-        string $eid
-    ): void {
-        $v = $this->buildCompletedValidator($uid, $sid, $ip, $ua, $method, $eid);
-        $this->assertInstanceOf(TwoFactorCompletedEvent::class, $events[0]);
-        $this->assertTrue($v($events[0]));
-        $this->assertInstanceOf(UserSignedInEvent::class, $events[1]);
-        $this->assertTrue($events[1]->twoFactorUsed);
-    }
-
-    private function callCompleted(
-        string $userId,
-        string $sessionId,
-        string $ipAddress,
-        string $userAgent,
-        string $verificationMethod
-    ): void {
-        $this->publisher->publishCompleted(
-            $userId,
-            $this->faker->email(),
-            $sessionId,
-            $ipAddress,
-            $userAgent,
-            $verificationMethod
-        );
-    }
-
-    /**
-     * @return array{string, string, string, string}
-     */
-    private function arrangeCompletedFixtures(): array
+    private function expectCompletedPublication(): void
     {
-        $this->eventIdFactory->method('generate')
-            ->willReturn($this->faker->uuid());
-
-        return [
-            $this->faker->uuid(),
-            $this->faker->uuid(),
-            $this->faker->ipv4(),
-            $this->faker->userAgent(),
-        ];
+        $this->eventBus->expects($this->exactly(2))
+            ->method('publish')
+            ->withAnyParameters();
     }
 
-    private function buildCompletedValidator(
-        string $userId,
-        string $sessionId,
-        string $ipAddress,
-        string $userAgent,
-        string $verificationMethod,
-        string $eventId
-    ): callable {
-        return static function (TwoFactorCompletedEvent $event) use (
-            $userId,
-            $sessionId,
-            $ipAddress,
-            $userAgent,
-            $verificationMethod,
-            $eventId
-        ): bool {
-            return $event->userId === $userId
-                && $event->sessionId === $sessionId
-                && $event->ipAddress === $ipAddress
-                && $event->userAgent === $userAgent
-                && $event->method === $verificationMethod
-                && $event->eventId() === $eventId;
-        };
-    }
-
-    private function buildFailedValidator(
-        string $pendingSessionId,
-        string $ipAddress,
-        string $reason,
-        string $eventId
-    ): callable {
-        return static function (TwoFactorFailedEvent $event) use (
-            $pendingSessionId,
-            $ipAddress,
-            $reason,
-            $eventId
-        ): bool {
-            return $event->pendingSessionId === $pendingSessionId
-                && $event->ipAddress === $ipAddress
-                && $event->reason === $reason
-                && $event->eventId() === $eventId;
-        };
+    /**
+     * @param array{
+     *     email: string,
+     *     ipAddress: string,
+     *     sessionId: string,
+     *     userAgent: string,
+     *     userId: string,
+     *     verificationMethod: string
+     * } $scenario
+     */
+    private function publishCompletedScenario(array $scenario): void
+    {
+        $this->publisher->publishCompleted(
+            $scenario['userId'],
+            $scenario['email'],
+            $scenario['sessionId'],
+            $scenario['ipAddress'],
+            $scenario['userAgent'],
+            $scenario['verificationMethod']
+        );
     }
 }

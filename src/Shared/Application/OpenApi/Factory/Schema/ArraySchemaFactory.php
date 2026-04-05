@@ -32,7 +32,9 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return array<string>
+     * @param array<string|array<string, string|bool>>|bool|int|string|null $example
+     *
+     * @return array{type: 'object'|'string'}
      *
      * @psalm-return array{type: 'object'|'string'}
      */

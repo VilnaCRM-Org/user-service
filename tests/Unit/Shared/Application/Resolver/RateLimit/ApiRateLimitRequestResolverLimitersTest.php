@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
 use App\Shared\Application\Converter\JwtTokenConverterInterface;
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
-use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
+final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestCase
 {
     private ApiRateLimitRequestResolver $resolver;
 
@@ -19,7 +17,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->resolver = new ApiRateLimitRequestResolver();
+        $this->resolver = $this->createRequestResolver();
     }
 
     public function testResolveGlobalLimiterReturnsAnonymousWhenNoAuth(): void
@@ -46,9 +44,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends UnitTestCase
         ]);
 
         $clientIp = $this->faker->ipv4();
-        $resolver = new ApiRateLimitRequestResolver(
-            new ApiRateLimitClientIdentityResolver($jwtConverter)
-        );
+        $resolver = $this->createRequestResolver($jwtConverter);
         $request = Request::create('/api/users', 'GET', [], [], [], ['REMOTE_ADDR' => $clientIp]);
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 

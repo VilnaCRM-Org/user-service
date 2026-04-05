@@ -11,9 +11,7 @@ final class ObjectMethodEmailExtractor implements BatchEmailExtractor
     }
 
     /**
-     * @param array|int|object|string|null $entry
-     *
-     * @psalm-param 123|array|object|string|null $entry
+     * @param array<string, string|null>|int|object|string|null $entry
      */
     #[\Override]
     public function extract(mixed $entry): ?string

@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
-use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetResolverTestCase
 {
     public function testResolveReturnsEmptyArrayForUnrelatedPath(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/users', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
@@ -20,7 +18,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyArrayForGetRequest(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/signin', 'GET');
 
         self::assertSame([], $resolver->resolve($request));
@@ -29,7 +27,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     public function testResolveSignInLimitersReturnsIpLimiterWhenNoEmailInBody(): void
     {
         $clientIp = $this->faker->ipv4();
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/signin', 'POST', [], [], [], ['REMOTE_ADDR' => $clientIp]);
 
         $result = $resolver->resolve($request);
@@ -43,7 +41,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->email();
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create(
             '/api/signin',
             'POST',
@@ -65,7 +63,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveSignInLimitersUsesDefaultIpWhenClientIpIsNull(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/signin', 'POST', [], [], [], ['REMOTE_ADDR' => '']);
 
         $result = $resolver->resolve($request);
@@ -76,7 +74,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyArrayForPutSignIn(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/signin', 'PUT');
 
         self::assertSame([], $resolver->resolve($request));
@@ -84,7 +82,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyArrayForDeleteSignIn(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/signin', 'DELETE');
 
         self::assertSame([], $resolver->resolve($request));
@@ -93,7 +91,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     public function testResolveSignInTwoFactorReturnsIpLimiterWithNoPendingSessionId(): void
     {
         $clientIp = $this->faker->ipv4();
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -114,7 +112,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
     {
         $clientIp = $this->faker->ipv4();
         $sessionId = $this->faker->uuid();
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -137,7 +135,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $sessionId = $this->faker->uuid();
         $this->pendingTwoFactorRepository->method('findById')->with($sessionId)->willReturn(null);
 
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = Request::create(
             '/api/signin/2fa',
             'POST',
@@ -162,7 +160,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
         $this->stubPendingSession($sessionId, $userId);
 
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = $this->createCamelCaseTwoFaRequest($clientIp, $sessionId);
 
         $result = $resolver->resolve($request);
@@ -182,7 +180,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
         $this->stubPendingSession($sessionId, $userId);
 
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = $this->createSnakeCaseTwoFaRequest($clientIp, $sessionId);
 
         $result = $resolver->resolve($request);
@@ -199,8 +197,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/setup', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
@@ -219,8 +217,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/confirm', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
@@ -239,8 +237,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/disable', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
@@ -254,7 +252,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyForTwoFaSetupWhenNotAuthenticated(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/2fa/setup', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
@@ -262,7 +260,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyForTwoFaConfirmWhenNotAuthenticated(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/2fa/confirm', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
@@ -270,7 +268,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveReturnsEmptyForTwoFaDisableWhenNotAuthenticated(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver();
+        $resolver = $this->createAuthTargetResolver();
         $request = Request::create('/api/2fa/disable', 'POST');
 
         self::assertSame([], $resolver->resolve($request));
@@ -283,8 +281,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/setup', 'GET');
         $request->headers->set('Authorization', 'Bearer ' . $token);
@@ -299,8 +297,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         $this->jwtConverter->method('decode')
             ->willReturn($this->buildValidPayload(['sub' => $subject]));
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver);
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(null, $clientIdentityResolver);
 
         $request = Request::create('/api/2fa/unknown', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $token);
@@ -310,7 +308,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
     public function testResolveSignInTwoFactorReturnsEmptyForGetMethod(): void
     {
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = Request::create('/api/signin/2fa', 'GET');
 
         self::assertSame([], $resolver->resolve($request));
@@ -329,8 +327,8 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
         $this->stubPendingSession($sessionId, $userId);
 
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver($this->jwtConverter);
-        $resolver = new ApiRateLimitAuthTargetResolver(
+        $clientIdentityResolver = $this->createClientIdentityResolver($this->jwtConverter);
+        $resolver = $this->createAuthTargetResolver(
             $this->pendingTwoFactorRepository,
             $clientIdentityResolver
         );
@@ -352,7 +350,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
 
         $this->stubPendingSession($sessionId, '');
 
-        $resolver = new ApiRateLimitAuthTargetResolver($this->pendingTwoFactorRepository);
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
         $request = $this->createCamelCaseTwoFaRequest($clientIp, $sessionId);
 
         $result = $resolver->resolve($request);

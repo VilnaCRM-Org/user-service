@@ -5,24 +5,31 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\GraphQLBatchRejectListener;
-use PHPUnit\Framework\TestCase;
+use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * @covers \App\Shared\Application\EventListener\GraphQLBatchRejectListener
  */
-final class GraphQLBatchRejectListenerTest extends TestCase
+final class GraphQLBatchRejectListenerTest extends UnitTestCase
 {
     private GraphQLBatchRejectListener $listener;
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->listener = new GraphQLBatchRejectListener();
+        parent::setUp();
+
+        $this->listener = new GraphQLBatchRejectListener(
+            $this->createJsonSerializer(),
+        );
     }
 
     public function testRejectsBatchRequestsWith400(): void
@@ -40,6 +47,22 @@ final class GraphQLBatchRejectListenerTest extends TestCase
         $data = json_decode($response->getContent(), true);
         $this->assertSame('about:blank', $data['type'] ?? null);
         $this->assertStringContainsString('batch', strtolower($data['detail'] ?? ''));
+    }
+
+    public function testRejectsBatchRequestsUsingAssociativeDecodeContext(): void
+    {
+        $body = json_encode([
+            ['query' => '{ __typename }'],
+            ['query' => '{ __typename }'],
+        ], JSON_THROW_ON_ERROR);
+        $listener = new GraphQLBatchRejectListener(
+            $this->createBatchDecodingSerializer($body),
+        );
+        $event = $this->createGraphqlRequestEvent('/api/graphql', 'POST', $body);
+
+        $listener($event);
+
+        $this->assertBadRequestResponse($event);
     }
 
     public function testAllowsSingleGraphqlRequests(): void
@@ -123,5 +146,30 @@ final class GraphQLBatchRejectListenerTest extends TestCase
             $request,
             HttpKernelInterface::MAIN_REQUEST
         );
+    }
+
+    private function createBatchDecodingSerializer(string $body): Serializer
+    {
+        $serializer = $this->createMock(Serializer::class);
+        $serializer
+            ->expects($this->once())
+            ->method('decode')
+            ->with(
+                $body,
+                JsonEncoder::FORMAT,
+                [JsonDecode::ASSOCIATIVE => true]
+            )
+            ->willReturn([
+                ['query' => '{ __typename }'],
+                ['query' => '{ __typename }'],
+            ]);
+
+        return $serializer;
+    }
+
+    private function assertBadRequestResponse(RequestEvent $event): void
+    {
+        $this->assertTrue($event->hasResponse());
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $event->getResponse()->getStatusCode());
     }
 }

@@ -56,8 +56,7 @@ final class PathParametersTransformerTest extends UnitTestCase
     public function testTransformOperationWithNonArrayParametersReturnsOperation(): void
     {
         $operation = new Operation();
-
-        $transformer = new PathParametersTransformer();
+        $transformer = new PathParametersTransformer(new PathParameterTransformer());
 
         $method = new \ReflectionMethod(PathParametersTransformer::class, 'transformOperation');
         $this->makeAccessible($method);
@@ -69,7 +68,7 @@ final class PathParametersTransformerTest extends UnitTestCase
 
     public function testTransformOperationReturnsNullForMissingOperation(): void
     {
-        $transformer = new PathParametersTransformer();
+        $transformer = new PathParametersTransformer(new PathParameterTransformer());
 
         $method = new \ReflectionMethod(PathParametersTransformer::class, 'transformOperation');
         $this->makeAccessible($method);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Infrastructure\Repository\MongoDBAuthSessionRepository;
 use DateTimeImmutable;
@@ -90,7 +91,8 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
             ->willReturn($sessions);
 
         $result = $repository->findByUserId($userId);
-        $this->assertSame($sessions, $result);
+        $this->assertInstanceOf(AuthSessionCollection::class, $result);
+        $this->assertCount(2, $result);
     }
 
     public function testDelete(): void

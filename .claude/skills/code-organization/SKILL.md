@@ -152,22 +152,54 @@ When creating or reviewing a class, verify:
 - ❌ **Namespace mismatches** - Must match directory structure
 - ❌ **Ad-hoc directory/class type inventions** - Use established patterns only; NEVER create new directories without explicit user approval
 - ❌ **Autonomous directory creation** - Agent must NEVER create a new class-type directory on its own; any new directory must follow a well-known software engineering pattern and be approved by the user
+- ❌ **Constructor defaults that instantiate collaborators** - Inject dependencies instead of using `new` in `__construct(...)` defaults. Psalm architecture guards enforce this in `src/`.
+- ❌ **Direct `new OAuthProvider(...)` in production code** - Use `OAuthProvider::fromString()` instead. Psalm architecture guards enforce this in `src/`.
+- ✅ **`new StringableArrayNormalizer()` in Doctrine types** - Allowed because Doctrine types cannot use constructor DI.
+- ❌ **Direct instantiation of reviewed collections/events in production code** - Use dedicated factory classes such as `OAuthProviderCollectionFactory`, `SignInEventFactory`, `SessionRevocationEventFactory`, `TwoFactorEventFactory`, and `RefreshTokenEventFactory`. Psalm architecture guards enforce this in `src/`.
+- ❌ **Plain `json_encode`/`json_decode`** - Use Symfony `SerializerInterface` for serialization/deserialization. Psalm `forbiddenFunctions` enforce this in `src/`; tests are excluded.
+- ❌ **Untyped `array` in method signatures** - Always specify the array's content type via docblock (`list<string>`, `array<string, int>`) or use a typed collection class. Psalm architecture guards flag bare `array` type hints without generic type info in `src/` (excluding DoctrineType and Collection directories).
+- ❌ **Bare `array`, `list`, or `iterable` collections of domain objects** - Use typed collection classes instead of bare arrays. Psalm architecture guards enforce this **repo-wide** in `src/` (not just OAuth). Enforced types and their collections:
+  - `OAuthProvider`/`OAuthProviderInterface` → `OAuthProviderCollection`
+  - `User`/`UserInterface` → `UserCollection`
+  - `RecoveryCode` → `RecoveryCodeCollection`
+  - `AuthSession` → `AuthSessionCollection`
+  - `PasswordResetTokenInterface` → `PasswordResetTokenCollection`
+  - `DomainEvent` → `DomainEventCollection`
+  - Internal storage inside collection classes may still use `array`.
 
 ## Factory Pattern (Maintainability & Flexibility)
 
-> **Use factories when creating typed classes with dependencies or configuration**
+> **Avoid hardcoded `new ClassName()` in production source code — use factory methods or Factory classes**
 
-### When Factories Are REQUIRED (Production Code)
+### Factory Methods on Value Objects
+
+Value objects SHOULD provide static factory methods as named constructors:
+
+```php
+// ❌ BAD: Direct instantiation in production code
+$provider = new OAuthProvider($value);
+
+// ✅ GOOD: Factory method
+$provider = OAuthProvider::fromString($value);
+```
+
+Factory methods (`fromString()`, `fromArray()`, `create()`) are the **preferred** way to instantiate value objects outside of their own class. The constructor remains public for use within named constructors and tests.
+
+Collections and domain events should follow a different rule in production code: use dedicated Factory classes instead of adding static convenience constructors just to avoid `new`.
+
+### When Factory Classes Are REQUIRED (Production Code)
 
 1. Objects with injected dependencies (timestamp providers, config, etc.)
 2. Objects requiring complex construction logic
 3. Objects needing different implementations per environment
 4. Objects created from external input (DTOs, metrics, etc.)
 
-### When Factories Are OPTIONAL (Tests)
+### When Direct `new` Is ACCEPTABLE
 
-- Tests can instantiate objects directly for simplicity
-- Test-specific factories can be created for reusable fixtures
+- Inside factory methods and Factory classes (that's their purpose)
+- In test code (simplicity over abstraction)
+- For framework-required patterns (e.g., `throw new InvalidArgumentException()`)
+- Inside the value object's own named constructors
 
 ### Factory Benefits
 
@@ -208,18 +240,19 @@ public function emit(BusinessMetric $metric): void
 
 ## Type Safety: Classes Over Arrays
 
-> **Prefer typed classes and collections over arrays for structured data**
+> **Arrays are NOT allowed for collections that already have a dedicated collection type. Use the collection class instead.**
 
-Arrays lack type safety and self-documentation. Use concrete classes instead.
+Arrays lack type safety and self-documentation. Use concrete classes instead. Current CI guards specifically block bare OAuth provider collections in production code, including iterable-based variants.
 
 ### Array vs Class Comparison
 
-| Pattern       | Bad (Array)                               | Good (Class)                                |
-| ------------- | ----------------------------------------- | ------------------------------------------- |
-| Configuration | `['endpoint' => 'X', 'operation' => 'Y']` | `new EndpointOperationDimensions('X', 'Y')` |
-| Return data   | `return ['name' => $n, 'value' => $v]`    | `return new MetricData($n, $v)`             |
-| Method params | `function emit(array $metrics)`           | `function emit(MetricCollection $metrics)`  |
-| Events data   | `['type' => 'created', 'id' => $id]`      | `new CustomerCreatedEvent($id)`             |
+| Pattern       | Bad (Array)                               | Good (Class)                                 |
+| ------------- | ----------------------------------------- | -------------------------------------------- |
+| Configuration | `['endpoint' => 'X', 'operation' => 'Y']` | `new EndpointOperationDimensions('X', 'Y')`  |
+| Return data   | `return ['name' => $n, 'value' => $v]`    | `return new MetricData($n, $v)`              |
+| Method params | `function emit(array $metrics)`           | `function emit(MetricCollection $metrics)`   |
+| Events data   | `['type' => 'created', 'id' => $id]`      | `new CustomerCreatedEvent($id)`              |
+| Registry      | `private array $providers`                | `private OAuthProviderCollection $providers` |
 
 ### Benefits of Typed Classes
 
@@ -409,6 +442,59 @@ grep -r "private.*\$converter;" src/  # Find vague names
 make deptrac  # Must show 0 violations
 ```
 
+## Symfony Service Configuration: No Redundant Wiring
+
+> **Do not add explicit interface aliases in `services.yaml` when Symfony autowiring can resolve them automatically.**
+
+### Rule
+
+When an interface has **exactly one implementation** in `src/`, Symfony autowiring automatically aliases the interface to that implementation. Do NOT add a manual alias — it is redundant.
+
+### When an Explicit Alias IS Required
+
+- The interface has **multiple implementations** (e.g., `UserRepositoryInterface` → `CachedUserRepository` vs `MongoDBUserRepository`)
+- The implementation lives **outside** the autowired `src/` resource (e.g., a third-party bundle class)
+- You need to alias to a **different** implementation than what autowiring would pick
+
+### When an Explicit Alias is REDUNDANT (remove it)
+
+- Only one class in `src/` implements the interface
+- Both the interface and implementation are covered by the `App\:` resource in `services.yaml`
+
+### Example
+
+```yaml
+# ❌ REDUNDANT: Only one implementation exists — autowiring handles this
+App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface:
+  alias: App\OAuth\Infrastructure\Repository\MongoDBSocialIdentityRepository
+
+# ✅ REQUIRED: Two implementations exist — must disambiguate
+App\User\Domain\Repository\UserRepositoryInterface:
+  alias: App\User\Infrastructure\Repository\CachedUserRepository
+```
+
+### Explicit Constructor Arguments Are Still Needed
+
+Even when the alias is redundant, you may still need an explicit service definition for **constructor arguments** that autowiring cannot resolve (e.g., non-type-hinted parameters, named service references):
+
+```yaml
+# ✅ NEEDED: $oauthRedis is a named Redis connection, not autowirable
+App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
+  arguments:
+    $oauthRedis: '@oauth.redis_connection'
+# ❌ NOT NEEDED: the interface alias (autowiring resolves it)
+# App\OAuth\Domain\Repository\OAuthStateRepositoryInterface:
+#   alias: App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository
+```
+
+### Verification
+
+```bash
+# Check that autowiring resolves the interface correctly
+docker compose exec php bin/console debug:container <InterfaceName>
+# Should show "This service is a private alias for the service <Implementation>"
+```
+
 ## Constraints (Never Do This)
 
 **NEVER**:
@@ -419,8 +505,14 @@ make deptrac  # Must show 0 violations
 - Create "Helper" or "Util" classes (extract specific responsibilities)
 - Allow namespace to mismatch directory structure
 - Use arrays for structured data when typed classes would be appropriate
+- Use untyped `array` in method signatures — always specify content type via docblock or use collection classes
+- Use `array` type for collections of domain/application objects — use typed collections
+- Use `json_encode`/`json_decode` — use Symfony `SerializerInterface` (enforced by Psalm `forbiddenFunctions` in `src/`)
+- Use constructor defaults that instantiate collaborators — inject the dependency instead
+- Use direct `new OAuthProvider(...)` in production code — use `OAuthProvider::fromString()`
 - Inject cross-cutting concerns (metrics, logging) into command handlers
 - Create complex objects directly without factories in production code
+- Add redundant interface aliases in `services.yaml` when autowiring resolves them
 
 **ALWAYS**:
 
@@ -430,7 +522,11 @@ make deptrac  # Must show 0 violations
 - Ensure namespace matches directory structure exactly
 - Extract specific responsibilities from Helper/Util classes
 - Prefer typed classes over arrays for structured data
-- Use collections instead of arrays of objects
+- Always specify array content types in method signatures (e.g. `list<string>`, `array<string, int>`)
+- Use typed collection classes instead of arrays of objects
+- Use Symfony `SerializerInterface` instead of `json_encode`/`json_decode`
+- Inject dependencies instead of instantiating constructor defaults
+- Use `OAuthProvider::fromString()` instead of direct `new OAuthProvider(...)`
 - Use event subscribers for cross-cutting concerns
 - Use factories for complex object creation in production code
 

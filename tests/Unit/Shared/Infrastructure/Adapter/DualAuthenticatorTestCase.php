@@ -63,7 +63,10 @@ abstract class DualAuthenticatorTestCase extends UnitTestCase
     protected function createPassportFactory(): AccessTokenPassportFactory
     {
         return new AccessTokenPassportFactory(
-            new AccessTokenValidator($this->jwtEncoder),
+            new AccessTokenValidator(
+                $this->createJsonSerializer(),
+                $this->jwtEncoder,
+            ),
             new AccessTokenUserResolver(
                 $this->userRepository,
                 $this->userTransformer,

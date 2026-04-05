@@ -10,6 +10,7 @@ final readonly class UserPatchPayloadValidator
 {
     private const IMMUTABLE_FIELDS = ['email', 'initials', 'newPassword'];
 
+    /** @param array<string, scalar|null>|null $payload */
     public function ensureNoExplicitNulls(?array $payload): void
     {
         if ($payload === null) {

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
-use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-final class ApiRateLimitRequestResolverSupportsTest extends UnitTestCase
+final class ApiRateLimitRequestResolverSupportsTest extends RateLimitClientTestCase
 {
     private ApiRateLimitRequestResolver $resolver;
 
@@ -17,7 +16,7 @@ final class ApiRateLimitRequestResolverSupportsTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->resolver = new ApiRateLimitRequestResolver();
+        $this->resolver = $this->createRequestResolver();
     }
 
     public function testSupportsReturnsFalseForNonApiPath(): void

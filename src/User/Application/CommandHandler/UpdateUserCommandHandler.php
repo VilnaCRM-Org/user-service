@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Domain\Collection\DomainEventCollection;
 use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
-use App\User\Domain\Event\AllSessionsRevokedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\UserUpdatedEventFactoryInterface;
+use App\User\Domain\Factory\Event\SessionRevocationEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -28,9 +26,8 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         private AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private EventIdFactoryInterface $eventIdFactory,
         private UserRepositoryInterface $userRepository,
-        private EmailChangedEventFactoryInterface $emailChangedEventFactory,
-        private PasswordChangedEventFactoryInterface $passwordChangedFactory,
-        private UserUpdatedEventFactoryInterface $userUpdatedEventFactory,
+        private SessionRevocationEventFactoryInterface $sessionRevocationEventFactory,
+        private UserUpdateEventFactoryInterface $userUpdateEventFactory,
     ) {
     }
 
@@ -46,10 +43,7 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
         $this->eventBus->publish(...$finalEvents);
     }
 
-    /**
-     * @return list<DomainEvent>
-     */
-    private function applyUpdate(UpdateUserCommand $command, string $eventId): array
+    private function applyUpdate(UpdateUserCommand $command, string $eventId): DomainEventCollection
     {
         $user = $command->user;
         $previousEmail = $user->getEmail();
@@ -59,32 +53,24 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             $command->updateData,
             $hashedPassword,
             $eventId,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedFactory
+            $this->userUpdateEventFactory
         );
 
         $this->userRepository->save($user);
 
-        $events[] = $this->userUpdatedEventFactory->create(
+        return $events->add($this->userUpdateEventFactory->createUserUpdated(
             $user,
             $previousEmail !== $user->getEmail() ? $previousEmail : null,
             $eventId
-        );
-
-        return $events;
+        ));
     }
 
-    /**
-     * @param list<\App\Shared\Domain\Bus\Event\DomainEvent> $events
-     *
-     * @return list<\App\Shared\Domain\Bus\Event\DomainEvent>
-     */
     private function appendRevocationEvent(
         UpdateUserCommand $command,
         string $userId,
-        array $events,
+        DomainEventCollection $events,
         string $eventId
-    ): array {
+    ): DomainEventCollection {
         if ($command->updateData->newPassword === $command->updateData->oldPassword) {
             return $events;
         }
@@ -93,14 +79,13 @@ final readonly class UpdateUserCommandHandler implements CommandHandlerInterface
             $userId,
             $command->currentSessionId
         );
-        $events[] = new AllSessionsRevokedEvent(
+
+        return $events->add($this->sessionRevocationEventFactory->createAllSessionsRevoked(
             $userId,
             'password_change',
             $revokedCount,
             $eventId
-        );
-
-        return $events;
+        ));
     }
 
     private function revokeOtherSessions(string $userId, string $currentSessionId): int

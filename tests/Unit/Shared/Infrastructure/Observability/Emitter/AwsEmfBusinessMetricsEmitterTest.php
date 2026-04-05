@@ -23,6 +23,10 @@ use App\Tests\Unit\Shared\Application\Observability\Metric\TestOrdersPlacedMetri
 use App\Tests\Unit\Shared\Application\Observability\Metric\TestOrderValueMetric;
 use App\Tests\Unit\UnitTestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validation;
 
 final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
@@ -126,7 +130,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $formatterLogger = $this->createMock(LoggerInterface::class);
         $emitter = new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
 
@@ -149,7 +153,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $formatterLogger = $this->createMock(LoggerInterface::class);
         $emitter = new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
 
@@ -210,9 +214,14 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
 
         return new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
+    }
+
+    private function createEmfSerializer(): SerializerInterface
+    {
+        return new Serializer([new JsonSerializableNormalizer()], [new JsonEncoder()]);
     }
 
     private function createPayloadFactory(string $namespace): EmfPayloadFactory

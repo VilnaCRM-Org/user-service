@@ -176,6 +176,10 @@ Cache invalidation follows **AP from CAP theorem** - we prioritize:
 ```php
 final readonly class CacheKeyBuilder
 {
+    public function __construct(private SerializerInterface $serializer)
+    {
+    }
+
     public function build(string $namespace, string ...$parts): string
     {
         return $namespace . '.' . implode('.', $parts);
@@ -201,7 +205,7 @@ final readonly class CacheKeyBuilder
         return $this->build(
             'customer',
             'collection',
-            hash('sha256', json_encode($filters, \JSON_THROW_ON_ERROR))
+            hash('sha256', $this->serializer->encode($filters, JsonEncoder::FORMAT))
         );
     }
 

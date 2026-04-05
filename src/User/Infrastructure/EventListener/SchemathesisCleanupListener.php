@@ -6,7 +6,7 @@ namespace App\User\Infrastructure\EventListener;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
-use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
@@ -59,15 +59,13 @@ final class SchemathesisCleanupListener
             return;
         }
 
-        $this->userRepository->deleteBatch($users);
-        $this->publishUserDeletedEvents($users);
-        $this->cache->invalidateTags($this->buildInvalidationTags($users));
+        $collection = new UserCollection($users);
+        $this->userRepository->deleteBatch($collection);
+        $this->publishUserDeletedEvents($collection);
+        $this->cache->invalidateTags($this->buildInvalidationTags($collection));
     }
 
-    /**
-     * @param array<int, UserInterface> $users
-     */
-    private function publishUserDeletedEvents(array $users): void
+    private function publishUserDeletedEvents(UserCollection $users): void
     {
         foreach ($users as $user) {
             $this->eventBus->publish(
@@ -80,13 +78,11 @@ final class SchemathesisCleanupListener
     }
 
     /**
-     * @param array<int, UserInterface> $users
-     *
      * @return array<string>
      *
      * @psalm-return list{0: string, 1?: string,...}
      */
-    private function buildInvalidationTags(array $users): array
+    private function buildInvalidationTags(UserCollection $users): array
     {
         $tagsToInvalidate = ['user.collection'];
 

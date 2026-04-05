@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\UserCollection;
+
 final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepositoryTestCase
 {
     public function testSaveDelegatesToInnerRepository(): void
@@ -32,10 +34,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
     public function testSaveBatchDelegatesToInnerRepository(): void
     {
-        $users = [
+        $users = new UserCollection([
             $this->createUserMock($this->faker->uuid(), $this->faker->email()),
             $this->createUserMock($this->faker->uuid(), $this->faker->email()),
-        ];
+        ]);
 
         $this->innerRepository
             ->expects($this->once())
@@ -47,10 +49,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
-        $users = [
+        $users = new UserCollection([
             $this->createUserMock($this->faker->uuid(), $this->faker->email()),
             $this->createUserMock($this->faker->uuid(), $this->faker->email()),
-        ];
+        ]);
 
         $this->innerRepository
             ->expects($this->once())

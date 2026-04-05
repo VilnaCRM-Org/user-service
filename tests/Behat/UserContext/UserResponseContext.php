@@ -201,6 +201,14 @@ final class UserResponseContext implements Context
     }
 
     /**
+     * @Then the response JSON should not have field :field
+     */
+    public function theResponseJsonShouldNotHaveField(string $field): void
+    {
+        $this->assertJsonFieldIsAbsent($this->parseJsonResponse(), $field);
+    }
+
+    /**
      * @Then the response should not set auth cookie
      */
     public function theResponseShouldNotSetAuthCookie(): void
@@ -288,6 +296,26 @@ final class UserResponseContext implements Context
         Assert::assertIsArray($decoded);
 
         return $decoded;
+    }
+
+    /**
+     * @param array<array-key, array|bool|float|int|string|null> $payload
+     */
+    private function assertJsonFieldIsAbsent(array $payload, string $field): void
+    {
+        foreach ($payload as $key => $value) {
+            Assert::assertNotSame(
+                $field,
+                (string) $key,
+                sprintf('The response unexpectedly contains field "%s".', $field)
+            );
+
+            if (!is_array($value)) {
+                continue;
+            }
+
+            $this->assertJsonFieldIsAbsent($value, $field);
+        }
     }
 
     private function assertNoSchemaInResponse(string $responseContent): void

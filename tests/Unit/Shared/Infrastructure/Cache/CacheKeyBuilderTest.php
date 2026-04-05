@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Cache;
 
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
-use PHPUnit\Framework\TestCase;
+use App\Tests\Unit\UnitTestCase;
 
-final class CacheKeyBuilderTest extends TestCase
+final class CacheKeyBuilderTest extends UnitTestCase
 {
     private CacheKeyBuilder $builder;
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->builder = new CacheKeyBuilder();
+        parent::setUp();
+
+        $this->builder = new CacheKeyBuilder($this->createJsonSerializer());
     }
 
     public function testBuildUserKey(): void

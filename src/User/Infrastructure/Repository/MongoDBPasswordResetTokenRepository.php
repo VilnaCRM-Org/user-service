@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
@@ -66,11 +67,8 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
             ->execute();
     }
 
-    /**
-     * @param array<PasswordResetTokenInterface> $tokens
-     */
     #[\Override]
-    public function saveBatch(array $tokens): void
+    public function saveBatch(PasswordResetTokenCollection $tokens): void
     {
         foreach ($tokens as $token) {
             $this->documentManager->persist($token);

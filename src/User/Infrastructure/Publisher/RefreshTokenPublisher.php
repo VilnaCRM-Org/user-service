@@ -6,8 +6,7 @@ namespace App\User\Infrastructure\Publisher;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Factory\EventIdFactoryInterface;
-use App\User\Domain\Event\RefreshTokenRotatedEvent;
-use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
+use App\User\Domain\Factory\Event\RefreshTokenEventFactoryInterface;
 
 /**
  * @psalm-api
@@ -17,13 +16,14 @@ final readonly class RefreshTokenPublisher implements RefreshTokenPublisherInter
     public function __construct(
         private EventBusInterface $eventBus,
         private EventIdFactoryInterface $eventIdFactory,
+        private RefreshTokenEventFactoryInterface $refreshTokenEventFactory,
     ) {
     }
 
     #[\Override]
     public function publishTokenRotated(string $sessionId, string $userId): void
     {
-        $this->eventBus->publish(new RefreshTokenRotatedEvent(
+        $this->eventBus->publish($this->refreshTokenEventFactory->createRotated(
             $sessionId,
             $userId,
             $this->eventIdFactory->generate()
@@ -37,7 +37,7 @@ final readonly class RefreshTokenPublisher implements RefreshTokenPublisherInter
         string $ipAddress,
         string $reason
     ): void {
-        $this->eventBus->publish(new RefreshTokenTheftDetectedEvent(
+        $this->eventBus->publish($this->refreshTokenEventFactory->createTheftDetected(
             $sessionId,
             $userId,
             $ipAddress,

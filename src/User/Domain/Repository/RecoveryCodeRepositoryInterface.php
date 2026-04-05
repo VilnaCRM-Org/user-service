@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Repository;
 
+use App\User\Domain\Collection\RecoveryCodeCollection;
 use App\User\Domain\Entity\RecoveryCode;
 use DateTimeImmutable;
 
@@ -13,10 +14,7 @@ interface RecoveryCodeRepositoryInterface
 
     public function findById(string $id): ?RecoveryCode;
 
-    /**
-     * @return array<RecoveryCode>
-     */
-    public function findByUserId(string $userId): array;
+    public function findByUserId(string $userId): RecoveryCodeCollection;
 
     public function markAsUsedIfUnused(string $id, DateTimeImmutable $usedAt): bool;
 
