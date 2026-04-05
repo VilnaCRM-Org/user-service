@@ -17,8 +17,8 @@ final readonly class RedisDatabaseMirror
 
     public function mirrorDefaultLimiterStateToHttpDatabase(): void
     {
-        $sourceRedis = $this->connection(0);
-        $targetRedis = $this->connection(1);
+        $sourceRedis = $this->connection(1);
+        $targetRedis = $this->connection(0);
 
         foreach ($this->stringKeys($sourceRedis) as $key) {
             $this->copyKey($sourceRedis, $targetRedis, $key);

@@ -16,11 +16,6 @@
     }
     {$CADDY_EXTRA_CONFIG}
 
-    # AC: NFR-39 - limit request body size to prevent memory exhaustion
-    request_body {
-        max_size 64KB
-    }
-
     root * /srv/app/public
     encode zstd gzip
     header -Server

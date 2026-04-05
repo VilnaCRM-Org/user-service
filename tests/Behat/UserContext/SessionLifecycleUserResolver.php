@@ -43,7 +43,7 @@ final readonly class SessionLifecycleUserResolver
     private function createUser(string $email): User
     {
         $faker = Factory::create();
-        $password = $faker->password;
+        $password = $faker->password();
         $uuid = $this->userManagement->uuidFactory->create();
         $userId = $this->userManagement->transformer
             ->transformFromSymfonyUuid($uuid);

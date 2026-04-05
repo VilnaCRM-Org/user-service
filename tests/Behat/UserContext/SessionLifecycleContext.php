@@ -433,12 +433,18 @@ final class SessionLifecycleContext implements Context
     /**
      * @param array<string, list<string>> $headers
      *
-     * @return array<string, string>
+     * @return array<string, list<string>|string>
      */
     private function flattenHeaders(array $headers): array
     {
         $flattenedHeaders = [];
         foreach ($headers as $name => $values) {
+            if (strtolower($name) === 'set-cookie') {
+                $flattenedHeaders[$name] = $values;
+
+                continue;
+            }
+
             $flattenedHeaders[$name] = implode(', ', $values);
         }
 
