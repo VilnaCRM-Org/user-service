@@ -70,9 +70,9 @@ final class SessionLifecycleContext implements Context
         string $id,
         int $count
     ): void {
-        $this->userResolver->resolveByIdentifier($id);
+        $user = $this->userResolver->resolveByIdentifier($id);
         $this->createSessionsForUser(
-            $id,
+            $user->getId(),
             $count
         );
     }
