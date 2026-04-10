@@ -41,6 +41,13 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         new ResilientHttpClientFactory(1500, 5000, -1, HandlerStack::create());
     }
 
+    public function testConstructorAllowsZeroMaxRetries(): void
+    {
+        $factory = new ResilientHttpClientFactory(1500, 5000, 0, HandlerStack::create());
+
+        $this->assertInstanceOf(ResilientHttpClientFactory::class, $factory);
+    }
+
     public function testCreateBuildsIndependentHandlerPerClient(): void
     {
         $baseStack = HandlerStack::create();
