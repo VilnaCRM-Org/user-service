@@ -71,11 +71,13 @@ final class GitHubOAuthProvider implements OAuthProviderInterface
         ?string $codeVerifier,
     ): string {
         try {
+            $github = clone $this->github;
+
             if ($codeVerifier !== null) {
-                $this->github->setPkceCode($codeVerifier);
+                $github->setPkceCode($codeVerifier);
             }
 
-            $token = $this->github->getAccessToken(
+            $token = $github->getAccessToken(
                 'authorization_code',
                 ['code' => $code],
             );

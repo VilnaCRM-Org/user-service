@@ -129,6 +129,20 @@ final class GoogleOAuthProviderTest extends UnitTestCase
         $this->provider->exchangeCode('invalid_code', null);
     }
 
+    public function testExchangeCodeThrowsOAuthProviderExceptionOnUnexpectedFailure(): void
+    {
+        $exception = new \RuntimeException('transport error');
+        $this->google->method('getAccessToken')->willThrowException($exception);
+
+        try {
+            $this->provider->exchangeCode($this->faker->sha256(), null);
+            $this->fail('Expected OAuthProviderException to be thrown.');
+        } catch (OAuthProviderException $caught) {
+            $this->assertSame($exception, $caught->getPrevious());
+            $this->assertStringContainsString('transport error', $caught->getMessage());
+        }
+    }
+
     public function testFetchProfileReturnsProfileWithVerifiedEmail(): void
     {
         $email = $this->faker->safeEmail();
