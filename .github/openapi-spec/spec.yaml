@@ -610,7 +610,7 @@ paths:
             enum:
               - code
           style: form
-          explode: false
+          explode: true
           example: code
         -
           name: client_id
@@ -623,7 +623,7 @@ paths:
             type: string
             minLength: 1
           style: form
-          explode: false
+          explode: true
           example: dc0bc6323f16fecd4224a3860ca894c5
         -
           name: redirect_uri
@@ -636,7 +636,7 @@ paths:
             type: string
             minLength: 1
           style: form
-          explode: false
+          explode: true
           example: 'https://example.com'
         -
           name: scope
@@ -649,7 +649,7 @@ paths:
             type: string
             minLength: 1
           style: form
-          explode: false
+          explode: true
           example: 'profile email'
         -
           name: state
@@ -662,7 +662,7 @@ paths:
             type: string
             minLength: 1
           style: form
-          explode: false
+          explode: true
           example: af0ifjsldkj
   /api/oauth/token:
     summary: 'Requests for access token'
@@ -915,7 +915,7 @@ paths:
             default: 1
             minimum: 1
           style: form
-          explode: false
+          explode: true
         -
           name: itemsPerPage
           in: query
@@ -929,7 +929,7 @@ paths:
             minimum: 1
             maximum: 100
           style: form
-          explode: false
+          explode: true
     post:
       operationId: create_http
       tags:
@@ -2465,7 +2465,7 @@ components:
                   format: iri-reference
               example:
                 '@id': string
-                type: string
+                '@type': string
                 first: string
                 last: string
                 previous: string

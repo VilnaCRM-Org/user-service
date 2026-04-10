@@ -69,6 +69,11 @@ final class UserGraphQLRequestExecutor
             );
         }
 
+        $clientIpAddress = $this->userOperationsState->clientIpAddress;
+        if (is_string($clientIpAddress) && $clientIpAddress !== '') {
+            $headers['REMOTE_ADDR'] = $clientIpAddress;
+        }
+
         return $headers;
     }
 

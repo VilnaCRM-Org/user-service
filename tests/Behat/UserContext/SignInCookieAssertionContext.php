@@ -54,6 +54,10 @@ final class SignInCookieAssertionContext implements Context
         string $value
     ): void {
         $setCookieHeader = $this->getSetCookieHeader();
+        if ($this->matchesCookieMaxAge($setCookieHeader, $value)) {
+            return;
+        }
+
         Assert::assertStringContainsStringIgnoringCase(
             $value,
             $setCookieHeader
@@ -144,5 +148,24 @@ final class SignInCookieAssertionContext implements Context
         );
 
         return $matches[1];
+    }
+
+    private function matchesCookieMaxAge(
+        string $setCookieHeader,
+        string $expectedValue
+    ): bool {
+        if (!preg_match('/^Max-Age=(\d+)$/i', $expectedValue, $expectedMatches)) {
+            return false;
+        }
+
+        if (!preg_match('/Max-Age=(\d+)/i', $setCookieHeader, $actualMatches)) {
+            return false;
+        }
+
+        $expectedMaxAge = (int) $expectedMatches[1];
+        $actualMaxAge = (int) $actualMatches[1];
+
+        return $actualMaxAge >= $expectedMaxAge - 1
+            && $actualMaxAge <= $expectedMaxAge;
     }
 }

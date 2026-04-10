@@ -139,6 +139,10 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
+  App\Shared\Application\EventListener\MethodNotAllowedResponseListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: 0 }
+
   App\Shared\Application\EventListener\ApiRateLimitListener:
     arguments:
       $limiterFactories:
@@ -474,7 +478,6 @@ services:
     arguments:
       $twitter: '@oauth.twitter.league_provider'
       $provider: '@oauth.twitter.provider_name'
-
   App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
     arguments:
       $oauthRedis: '@oauth.redis_connection'
