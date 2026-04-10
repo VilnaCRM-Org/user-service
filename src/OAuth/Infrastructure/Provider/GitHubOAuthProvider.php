@@ -9,7 +9,6 @@ use App\OAuth\Domain\Exception\OAuthProviderException;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Github;
 use League\OAuth2\Client\Token\AccessToken;
 
@@ -82,7 +81,7 @@ final class GitHubOAuthProvider implements OAuthProviderInterface
             );
 
             return $token->getToken();
-        } catch (IdentityProviderException $e) {
+        } catch (\Throwable $e) {
             throw new OAuthProviderException(
                 self::PROVIDER_NAME,
                 $e->getMessage(),
