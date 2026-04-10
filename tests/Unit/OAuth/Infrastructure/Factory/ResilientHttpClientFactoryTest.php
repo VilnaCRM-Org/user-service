@@ -17,6 +17,30 @@ use GuzzleHttp\Psr7\Response;
 
 final class ResilientHttpClientFactoryTest extends UnitTestCase
 {
+    public function testConstructorRejectsNonPositiveConnectTimeout(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('connectTimeoutMs must be greater than 0.');
+
+        new ResilientHttpClientFactory(0, 5000, 1, HandlerStack::create());
+    }
+
+    public function testConstructorRejectsNonPositiveTimeout(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('timeoutMs must be greater than 0.');
+
+        new ResilientHttpClientFactory(1500, 0, 1, HandlerStack::create());
+    }
+
+    public function testConstructorRejectsNegativeMaxRetries(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('maxRetries must be greater than or equal to 0.');
+
+        new ResilientHttpClientFactory(1500, 5000, -1, HandlerStack::create());
+    }
+
     public function testCreateBuildsIndependentHandlerPerClient(): void
     {
         $baseStack = HandlerStack::create();
