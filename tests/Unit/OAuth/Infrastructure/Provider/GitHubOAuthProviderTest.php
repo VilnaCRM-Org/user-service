@@ -130,9 +130,10 @@ final class GitHubOAuthProviderTest extends UnitTestCase
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
+        $nickname = $this->faker->userName();
         $id = $this->faker->randomNumber(5);
 
-        $this->stubResourceOwner($name, null, $id);
+        $this->stubResourceOwner($name, $nickname, $id);
         $this->stubEmailsEndpoint([
             ['email' => $email, 'primary' => true, 'verified' => true],
         ]);
@@ -143,6 +144,7 @@ final class GitHubOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame((string) $id, $profile->providerId);
+        $this->assertTrue($profile->emailVerified);
     }
 
     public function testFetchProfileUsesNicknameWhenNameIsNull(): void

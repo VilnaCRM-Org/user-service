@@ -74,7 +74,7 @@ final class ResilientHttpClientFactory
     private function createRetryDelay(): callable
     {
         return static function (int $retries): int {
-            return (int) (1000 * (2 ** $retries));
+            return self::MILLISECONDS_PER_SECOND * (2 ** $retries);
         };
     }
 }

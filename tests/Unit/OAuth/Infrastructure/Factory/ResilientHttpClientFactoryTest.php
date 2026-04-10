@@ -12,7 +12,6 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
@@ -23,15 +22,33 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $baseStack = HandlerStack::create();
         $factory = new ResilientHttpClientFactory(1500, 5000, 1, $baseStack);
 
-        $first = $factory->create();
-        $second = $factory->create();
+        $first = $this->assertClient($factory->create());
+        $second = $this->assertClient($factory->create());
 
-        /** @var Client $first */
-        /** @var Client $second */
         $this->assertNotSame(
             $first->getConfig('handler'),
             $second->getConfig('handler'),
         );
+    }
+
+    public function testRetryDelayUsesExponentialBackoffInMilliseconds(): void
+    {
+        $factory = new ResilientHttpClientFactory(
+            1500,
+            5000,
+            1,
+            HandlerStack::create(),
+        );
+
+        $method = new \ReflectionMethod(ResilientHttpClientFactory::class, 'createRetryDelay');
+        $this->makeAccessible($method);
+
+        $delay = $method->invoke($factory);
+
+        $this->assertIsCallable($delay);
+        $this->assertSame(1000, $delay(0));
+        $this->assertSame(2000, $delay(1));
+        $this->assertSame(4000, $delay(2));
     }
 
     public function testCreateReturnsGuzzleClient(): void
@@ -153,5 +170,12 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         );
 
         return $factory->create();
+    }
+
+    private function assertClient(ClientInterface $client): Client
+    {
+        $this->assertInstanceOf(Client::class, $client);
+
+        return $client;
     }
 }
