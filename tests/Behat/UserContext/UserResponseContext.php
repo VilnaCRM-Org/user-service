@@ -5,15 +5,27 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\HttpFoundation\Response;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
-/**
- */
 final class UserResponseContext implements Context
 {
+    private RestContext $restContext;
+
     public function __construct(
         private UserOperationsState $state,
     ) {
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -21,7 +33,7 @@ final class UserResponseContext implements Context
      */
     public function userShouldBeTimedOut(): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = $this->parseJsonResponse();
         Assert::assertStringContainsString(
             'Cannot send new email till',
             $data['detail']
@@ -33,7 +45,7 @@ final class UserResponseContext implements Context
      */
     public function theErrorMessageShouldBe(string $errorMessage): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = $this->parseJsonResponse();
         Assert::assertEquals($errorMessage, $data['detail']);
     }
 
@@ -42,7 +54,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseStatusCodeShouldBe(string $statusCode): void
     {
-        Assert::assertEquals($statusCode, $this->state->response->getStatusCode());
+        Assert::assertEquals($statusCode, (string) $this->getStatusCode());
     }
 
     /**
@@ -50,10 +62,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseStatusCodeShouldNotBe(string $statusCode): void
     {
-        Assert::assertNotEquals(
-            $statusCode,
-            (string) $this->state->response->getStatusCode()
-        );
+        Assert::assertNotEquals($statusCode, (string) $this->getStatusCode());
     }
 
     /**
@@ -62,7 +71,7 @@ final class UserResponseContext implements Context
     public function theResponseShouldBeRfcProblemJson(string $rfc): void
     {
         Assert::assertSame('7807', $rfc);
-        $response = $this->state->response;
+        $response = $this->getResponse();
         Assert::assertNotNull($response);
         $contentType = $response->headers->get('Content-Type');
         Assert::assertIsString($contentType);
@@ -73,7 +82,7 @@ final class UserResponseContext implements Context
         $content = $response->getContent();
         Assert::assertIsString($content);
         Assert::assertNotSame('', $content);
-        $decoded = json_decode($content, true);
+        $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         Assert::assertIsArray($decoded);
         Assert::assertArrayHasKey('title', $decoded);
         Assert::assertArrayHasKey('detail', $decoded);
@@ -85,8 +94,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseBodyShouldContain(string $text): void
     {
-        Assert::assertNotNull($this->state->response);
-        Assert::assertStringContainsString($text, (string) $this->state->response->getContent());
+        Assert::assertStringContainsString($text, $this->getResponseContent());
     }
 
     /**
@@ -94,7 +102,7 @@ final class UserResponseContext implements Context
      */
     public function theViolationShouldBe(string $violation): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = $this->parseJsonResponse();
         Assert::assertEquals(
             $violation,
             $data['violations'][$this->state->violationNum]['message']
@@ -107,8 +115,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldContainAListOfUsers(): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
-        Assert::assertIsArray($data);
+        Assert::assertIsArray($this->parseJsonResponse());
     }
 
     /**
@@ -118,7 +125,7 @@ final class UserResponseContext implements Context
         string $email,
         string $initials
     ): void {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = $this->parseJsonResponse();
         Assert::assertArrayHasKey('id', $data);
         Assert::assertArrayHasKey('email', $data);
         Assert::assertEquals($email, $data['email']);
@@ -133,7 +140,7 @@ final class UserResponseContext implements Context
      */
     public function userWithIdShouldBeReturned(string $id): void
     {
-        $data = json_decode($this->state->response->getContent(), true);
+        $data = $this->parseJsonResponse();
         Assert::assertArrayHasKey('id', $data);
         Assert::assertEquals($id, $data['id']);
         Assert::assertArrayHasKey('email', $data);
@@ -147,10 +154,9 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldContain(string $text): void
     {
-        $responseContent = $this->state->response->getContent();
         Assert::assertStringContainsString(
             $text,
-            $responseContent,
+            $this->getResponseContent(),
             "The response does not contain the expected text: '{$text}'."
         );
     }
@@ -160,7 +166,7 @@ final class UserResponseContext implements Context
      */
     public function theUserShouldHaveFieldSetTo(string $field, string $value): void
     {
-        $responseData = json_decode((string) $this->state->response->getContent(), true);
+        $responseData = $this->parseJsonResponse();
 
         Assert::assertIsArray($responseData);
         $resolvedField = $this->resolveUserField($field, $responseData);
@@ -180,12 +186,13 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldNotContain(string $text): void
     {
-        $responseContent = $this->state->response->getContent();
+        $responseContent = $this->getResponseContent();
         $normalizedText = trim($text, "\"'");
         if ($normalizedText === '__schema') {
             $this->assertNoSchemaInResponse($responseContent);
             return;
         }
+
         Assert::assertStringNotContainsString(
             $normalizedText,
             $responseContent,
@@ -198,10 +205,7 @@ final class UserResponseContext implements Context
      */
     public function theResponseJsonShouldNotHaveField(string $field): void
     {
-        $decoded = json_decode($this->state->response->getContent(), true);
-
-        Assert::assertIsArray($decoded);
-        $this->assertJsonFieldIsAbsent($decoded, $field);
+        $this->assertJsonFieldIsAbsent($this->parseJsonResponse(), $field);
     }
 
     /**
@@ -209,10 +213,12 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldNotSetAuthCookie(): void
     {
-        $cookies = $this->state->response->headers->getCookies();
+        $response = $this->getResponse();
+        Assert::assertNotNull($response);
+
         $authCookieNames = array_map(
             static fn ($cookie): string => $cookie->getName(),
-            $cookies
+            $response->headers->getCookies()
         );
 
         Assert::assertNotContains('__Host-auth_token', $authCookieNames);
@@ -223,10 +229,12 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldSetAuthCookie(): void
     {
-        $cookies = $this->state->response->headers->getCookies();
+        $response = $this->getResponse();
+        Assert::assertNotNull($response);
+
         $authCookieNames = array_map(
             static fn ($cookie): string => $cookie->getName(),
-            $cookies
+            $response->headers->getCookies()
         );
 
         Assert::assertContains('__Host-auth_token', $authCookieNames);
@@ -237,7 +245,7 @@ final class UserResponseContext implements Context
      */
     public function iStoreThePendingSessionIdFromTheResponse(): void
     {
-        $responseData = json_decode((string) $this->state->response->getContent(), true);
+        $responseData = json_decode($this->getResponseContent(), true);
         $pendingSessionId = is_array($responseData)
             ? ($responseData['pending_session_id'] ?? '')
             : '';
@@ -248,6 +256,47 @@ final class UserResponseContext implements Context
         $this->state->pendingSessionId = $pendingSessionId;
     }
 
+    private function getStatusCode(): int
+    {
+        $response = $this->getResponse();
+        if ($response instanceof Response) {
+            return $response->getStatusCode();
+        }
+
+        return $this->restContext->getMink()->getSession()->getStatusCode();
+    }
+
+    private function getResponseContent(): string
+    {
+        $response = $this->getResponse();
+        if ($response instanceof Response) {
+            return (string) $response->getContent();
+        }
+
+        return $this->restContext
+            ->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+    }
+
+    private function getResponse(): ?Response
+    {
+        $response = $this->state->response;
+
+        return $response instanceof Response ? $response : null;
+    }
+
+    /**
+     * @return array<string, array<string>|bool|float|int|string|null>
+     */
+    private function parseJsonResponse(): array
+    {
+        $decoded = json_decode($this->getResponseContent(), true, 512, JSON_THROW_ON_ERROR);
+        Assert::assertIsArray($decoded);
+
+        return $decoded;
+    }
     /**
      * @param array<array-key, array|bool|float|int|string|null> $payload
      */
@@ -268,9 +317,8 @@ final class UserResponseContext implements Context
         }
     }
 
-    private function assertNoSchemaInResponse(
-        string $responseContent
-    ): void {
+    private function assertNoSchemaInResponse(string $responseContent): void
+    {
         $decodedResponse = json_decode($responseContent, true);
         if (
             is_array($decodedResponse)
@@ -290,12 +338,12 @@ final class UserResponseContext implements Context
      */
     private function resolveUserField(string $field, array $responseData): string
     {
-        $candidates = $this->buildFieldCandidates($field);
-        foreach ($candidates as $candidate) {
+        foreach ($this->buildFieldCandidates($field) as $candidate) {
             if (array_key_exists($candidate, $responseData)) {
                 return $candidate;
             }
         }
+
         throw new \RuntimeException(sprintf(
             'Field "%s" was not found in response keys: %s',
             $field,
@@ -320,6 +368,7 @@ final class UserResponseContext implements Context
                 (string) preg_replace('/[A-Z]/', '_$0', $field)
             );
         }
+
         return $candidates;
     }
 }
