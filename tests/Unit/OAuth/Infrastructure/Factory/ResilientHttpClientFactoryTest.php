@@ -80,6 +80,8 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $this->assertSame(1000, $delay(0));
         $this->assertSame(2000, $delay(1));
         $this->assertSame(4000, $delay(2));
+        $this->assertSame(8000, $delay(4));
+        $this->assertSame(8000, $delay(8));
     }
 
     public function testCreateReturnsGuzzleClient(): void

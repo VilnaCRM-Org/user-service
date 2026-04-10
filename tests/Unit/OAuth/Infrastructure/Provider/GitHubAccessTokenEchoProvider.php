@@ -9,12 +9,16 @@ use League\OAuth2\Client\Token\AccessToken;
 
 final class GitHubAccessTokenEchoProvider extends Github
 {
-    public function __construct()
-    {
+    public function __construct(
+        string $clientId,
+        string $clientSecret,
+        string $redirectUri,
+        private readonly string $fallbackToken,
+    ) {
         parent::__construct([
-            'clientId' => 'client-id',
-            'clientSecret' => 'client-secret',
-            'redirectUri' => 'https://example.com/callback',
+            'clientId' => $clientId,
+            'clientSecret' => $clientSecret,
+            'redirectUri' => $redirectUri,
         ]);
     }
 
@@ -26,7 +30,7 @@ final class GitHubAccessTokenEchoProvider extends Github
     public function getAccessToken($grant, array $options = []): AccessToken
     {
         return new AccessToken([
-            'access_token' => $this->getPkceCode() ?? 'no-verifier',
+            'access_token' => $this->getPkceCode() ?? $this->fallbackToken,
         ]);
     }
 }

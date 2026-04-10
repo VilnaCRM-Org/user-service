@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 final class ResilientHttpClientFactory
 {
     private const MILLISECONDS_PER_SECOND = 1000;
+    private const MAX_RETRY_DELAY_MS = 8000;
 
     public function __construct(
         private readonly int $connectTimeoutMs,
@@ -86,7 +87,9 @@ final class ResilientHttpClientFactory
     private function createRetryDelay(): callable
     {
         return static function (int $retries): int {
-            return self::MILLISECONDS_PER_SECOND * (2 ** $retries);
+            $delayMs = self::MILLISECONDS_PER_SECOND * (2 ** $retries);
+
+            return min(self::MAX_RETRY_DELAY_MS, $delayMs);
         };
     }
 }

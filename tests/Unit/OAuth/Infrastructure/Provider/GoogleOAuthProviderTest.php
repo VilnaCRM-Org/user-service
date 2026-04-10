@@ -118,6 +118,8 @@ final class GoogleOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeThrowsOAuthProviderExceptionOnFailure(): void
     {
+        $invalidCode = $this->faker->sha256();
+
         $this->google->method('getAccessToken')
             ->willThrowException(
                 new IdentityProviderException('invalid_grant', 400, [])
@@ -126,12 +128,13 @@ final class GoogleOAuthProviderTest extends UnitTestCase
         $this->expectException(OAuthProviderException::class);
         $this->expectExceptionMessageMatches('/google/');
 
-        $this->provider->exchangeCode('invalid_code', null);
+        $this->provider->exchangeCode($invalidCode, null);
     }
 
     public function testExchangeCodeThrowsOAuthProviderExceptionOnUnexpectedFailure(): void
     {
-        $exception = new \RuntimeException('transport error');
+        $errorMessage = $this->faker->sentence();
+        $exception = new \RuntimeException($errorMessage);
         $this->google->method('getAccessToken')->willThrowException($exception);
 
         try {
@@ -139,7 +142,7 @@ final class GoogleOAuthProviderTest extends UnitTestCase
             $this->fail('Expected OAuthProviderException to be thrown.');
         } catch (OAuthProviderException $caught) {
             $this->assertSame($exception, $caught->getPrevious());
-            $this->assertStringContainsString('transport error', $caught->getMessage());
+            $this->assertStringContainsString($errorMessage, $caught->getMessage());
         }
     }
 
@@ -206,6 +209,7 @@ final class GoogleOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeWithoutPkceVerifier(): void
     {
+        $code = $this->faker->sha256();
         $expectedToken = $this->faker->sha256();
 
         $accessToken = $this->createMock(AccessToken::class);
@@ -214,23 +218,32 @@ final class GoogleOAuthProviderTest extends UnitTestCase
         $this->google->expects($this->never())->method('setPkceCode');
         $this->google->method('getAccessToken')->willReturn($accessToken);
 
-        $token = $this->provider->exchangeCode('code', null);
+        $token = $this->provider->exchangeCode($code, null);
 
         $this->assertSame($expectedToken, $token);
     }
 
     public function testExchangeCodeDoesNotLeakPkceVerifierBetweenCalls(): void
     {
-        $provider = $this->createStatelessExchangeProvider();
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+        $fallbackToken = $this->faker->sha256();
+        $provider = $this->createStatelessExchangeProvider($fallbackToken);
 
-        $this->assertSame('verifier-1', $provider->exchangeCode('code-1', 'verifier-1'));
-        $this->assertSame('no-verifier', $provider->exchangeCode('code-2', null));
+        $this->assertSame($firstVerifier, $provider->exchangeCode($firstCode, $firstVerifier));
+        $this->assertSame($fallbackToken, $provider->exchangeCode($secondCode, null));
     }
 
-    private function createStatelessExchangeProvider(): GoogleOAuthProvider
+    private function createStatelessExchangeProvider(string $fallbackToken): GoogleOAuthProvider
     {
         return new GoogleOAuthProvider(
-            new GoogleAccessTokenEchoProvider(),
+            new GoogleAccessTokenEchoProvider(
+                $this->faker->slug(),
+                $this->faker->slug(),
+                $this->faker->url(),
+                $fallbackToken,
+            ),
             OAuthProvider::fromString('google'),
         );
     }
