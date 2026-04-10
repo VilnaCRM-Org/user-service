@@ -221,29 +221,17 @@ final class GoogleOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeDoesNotLeakPkceVerifierBetweenCalls(): void
     {
-        $provider = new GoogleOAuthProvider(
-            new class extends Google {
-                public function __construct()
-                {
-                    parent::__construct([
-                        'clientId' => 'client-id',
-                        'clientSecret' => 'client-secret',
-                        'redirectUri' => 'https://example.com/callback',
-                    ]);
-                }
-
-                #[\Override]
-                public function getAccessToken($grant, array $options = [])
-                {
-                    return new AccessToken([
-                        'access_token' => $this->getPkceCode() ?? 'no-verifier',
-                    ]);
-                }
-            },
-            OAuthProvider::fromString('google'),
-        );
+        $provider = $this->createStatelessExchangeProvider();
 
         $this->assertSame('verifier-1', $provider->exchangeCode('code-1', 'verifier-1'));
         $this->assertSame('no-verifier', $provider->exchangeCode('code-2', null));
+    }
+
+    private function createStatelessExchangeProvider(): GoogleOAuthProvider
+    {
+        return new GoogleOAuthProvider(
+            new GoogleAccessTokenEchoProvider(),
+            OAuthProvider::fromString('google'),
+        );
     }
 }
