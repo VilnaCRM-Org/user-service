@@ -478,6 +478,10 @@ services:
     arguments:
       $twitter: '@oauth.twitter.league_provider'
       $provider: '@oauth.twitter.provider_name'
+
+  App\OAuth\Application\CommandHandler\InitiateOAuthCommandHandler:
+    arguments:
+      $oauthStateTtlSeconds: '%env(int:OAUTH_STATE_TTL_SECONDS)%'
   App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
     arguments:
       $oauthRedis: '@oauth.redis_connection'
