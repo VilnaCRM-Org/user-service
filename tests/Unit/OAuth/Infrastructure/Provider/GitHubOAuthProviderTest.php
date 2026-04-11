@@ -117,22 +117,39 @@ final class GitHubOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeThrowsOAuthProviderExceptionOnFailure(): void
     {
+        $invalidCode = $this->faker->sha256();
         $this->github->method('getAccessToken')
             ->willThrowException(new IdentityProviderException('bad_code', 400, []));
 
         $this->expectException(OAuthProviderException::class);
         $this->expectExceptionMessageMatches('/github/');
 
-        $this->provider->exchangeCode('invalid_code', null);
+        $this->provider->exchangeCode($invalidCode, null);
+    }
+
+    public function testExchangeCodeThrowsOAuthProviderExceptionOnUnexpectedFailure(): void
+    {
+        $errorMessage = $this->faker->sentence();
+        $exception = new \RuntimeException($errorMessage);
+        $this->github->method('getAccessToken')->willThrowException($exception);
+
+        try {
+            $this->provider->exchangeCode($this->faker->sha256(), null);
+            $this->fail('Expected OAuthProviderException to be thrown.');
+        } catch (OAuthProviderException $caught) {
+            $this->assertSame($exception, $caught->getPrevious());
+            $this->assertStringContainsString($errorMessage, $caught->getMessage());
+        }
     }
 
     public function testFetchProfileReturnsProfileWithVerifiedEmail(): void
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
+        $nickname = $this->faker->userName();
         $id = $this->faker->randomNumber(5);
 
-        $this->stubResourceOwner($name, null, $id);
+        $this->stubResourceOwner($name, $nickname, $id);
         $this->stubEmailsEndpoint([
             ['email' => $email, 'primary' => true, 'verified' => true],
         ]);
@@ -143,13 +160,15 @@ final class GitHubOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame((string) $id, $profile->providerId);
+        $this->assertTrue($profile->emailVerified);
     }
 
     public function testFetchProfileUsesNicknameWhenNameIsNull(): void
     {
         $nickname = $this->faker->userName();
+        $id = $this->faker->numberBetween(100, 99999);
 
-        $this->stubResourceOwner(null, $nickname, 123);
+        $this->stubResourceOwner(null, $nickname, $id);
         $this->stubEmailsEndpoint([
             ['email' => $this->faker->safeEmail(), 'primary' => true, 'verified' => true],
         ]);
@@ -161,7 +180,11 @@ final class GitHubOAuthProviderTest extends UnitTestCase
 
     public function testFetchProfileThrowsUnverifiedWhenNoVerifiedPrimaryEmail(): void
     {
-        $this->stubResourceOwner('Test', null, 1);
+        $this->stubResourceOwner(
+            $this->faker->name(),
+            null,
+            $this->faker->numberBetween(100, 99999),
+        );
         $this->stubEmailsEndpoint([
             ['email' => $this->faker->safeEmail(), 'primary' => true, 'verified' => false],
         ]);
@@ -174,7 +197,11 @@ final class GitHubOAuthProviderTest extends UnitTestCase
 
     public function testFetchProfileThrowsUnverifiedWhenNoEmails(): void
     {
-        $this->stubResourceOwner('Test', null, 1);
+        $this->stubResourceOwner(
+            $this->faker->name(),
+            null,
+            $this->faker->numberBetween(100, 99999),
+        );
         $this->stubEmailsEndpoint([]);
 
         $this->expectException(UnverifiedProviderEmailException::class);
@@ -195,6 +222,7 @@ final class GitHubOAuthProviderTest extends UnitTestCase
 
     public function testExchangeCodeWithoutPkceVerifier(): void
     {
+        $code = $this->faker->sha256();
         $expectedToken = $this->faker->sha256();
 
         $accessToken = $this->createMock(AccessToken::class);
@@ -203,7 +231,32 @@ final class GitHubOAuthProviderTest extends UnitTestCase
         $this->github->expects($this->never())->method('setPkceCode');
         $this->github->method('getAccessToken')->willReturn($accessToken);
 
-        $this->assertSame($expectedToken, $this->provider->exchangeCode('code', null));
+        $this->assertSame($expectedToken, $this->provider->exchangeCode($code, null));
+    }
+
+    public function testExchangeCodeDoesNotLeakPkceVerifierBetweenCalls(): void
+    {
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+        $fallbackToken = $this->faker->sha256();
+        $provider = $this->createStatelessExchangeProvider($fallbackToken);
+
+        $this->assertSame($firstVerifier, $provider->exchangeCode($firstCode, $firstVerifier));
+        $this->assertSame($fallbackToken, $provider->exchangeCode($secondCode, null));
+    }
+
+    private function createStatelessExchangeProvider(string $fallbackToken): GitHubOAuthProvider
+    {
+        return new GitHubOAuthProvider(
+            new GitHubAccessTokenEchoProvider(
+                $this->faker->slug(),
+                $this->faker->slug(),
+                $this->faker->url(),
+                $fallbackToken,
+            ),
+            OAuthProvider::fromString('github'),
+        );
     }
 
     private function stubResourceOwner(

@@ -65,4 +65,121 @@ final class PendingTwoFactorContext implements Context
             TOTP::create(self::DEFAULT_TOTP_SECRET)->now()
         );
     }
+
+    /**
+     * @Given completing 2FA with pending session :pendingSessionId and code :code
+     * @Given completing 2FA with pending_session_id :pendingSessionId and code :code
+     */
+    public function completingTwoFactorWithPendingSessionAndCode(
+        string $pendingSessionId,
+        string $code
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $pendingSessionId,
+            $code
+        );
+    }
+
+    /**
+     * @Given completing 2FA with stored pending session and code :code
+     * @Given completing 2FA with the stored pending_session_id and code :code
+     */
+    public function completingTwoFactorWithStoredPendingSessionAndCode(
+        string $code
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $this->resolveStoredPendingSessionId(),
+            $code
+        );
+    }
+
+    /**
+     * @Given completing 2FA with stored pending session and secret :secret
+     */
+    public function completingTwoFactorWithStoredPendingSessionAndSecret(
+        string $secret
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $this->resolveStoredPendingSessionId(),
+            TOTP::create($secret)->now()
+        );
+    }
+
+    /**
+     * @Given completing 2FA with stored pending_session_id :key and a valid TOTP code
+     */
+    public function completingTwoFactorWithStoredPendingSessionIdAndValidTotpCode(
+        string $key
+    ): void {
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $this->resolveStoredPendingSessionIdByKey($key),
+            TOTP::create(self::DEFAULT_TOTP_SECRET)->now()
+        );
+    }
+
+    private function resolveStoredPendingSessionId(): string
+    {
+        if (
+            is_string($this->state->pendingSessionId)
+            && $this->state->pendingSessionId !== ''
+        ) {
+            return $this->state->pendingSessionId;
+        }
+
+        $pendingSessionId = $this->extractPendingSessionId(
+            $this->decodePendingSessionResponse()
+        );
+        $this->state->pendingSessionId = $pendingSessionId;
+
+        return $pendingSessionId;
+    }
+
+    private function resolveStoredPendingSessionIdByKey(string $key): string
+    {
+        $pendingSessionId = $this->state->{$key};
+        if (is_string($pendingSessionId) && $pendingSessionId !== '') {
+            return $pendingSessionId;
+        }
+
+        throw new \RuntimeException(
+            sprintf('Stored pending_session_id "%s" is missing.', $key)
+        );
+    }
+
+    /**
+     * @return array<string, array<string>|int|string>
+     */
+    private function decodePendingSessionResponse(): array
+    {
+        $responseContent = $this->state->response?->getContent();
+        if (!is_string($responseContent) || $responseContent === '') {
+            throw new \RuntimeException(
+                'No response body available to extract pending_session_id.'
+            );
+        }
+
+        $responseData = json_decode($responseContent, true);
+        if (!is_array($responseData)) {
+            throw new \RuntimeException(
+                'pending_session_id is missing in the latest response.'
+            );
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * @param array<string, array<string>|int|string> $responseData
+     */
+    private function extractPendingSessionId(array $responseData): string
+    {
+        $pendingSessionId = $responseData['pending_session_id'] ?? '';
+        if (!is_string($pendingSessionId) || $pendingSessionId === '') {
+            throw new \RuntimeException(
+                'pending_session_id is missing in the latest response.'
+            );
+        }
+
+        return $pendingSessionId;
+    }
 }

@@ -6,6 +6,7 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Faker\Factory;
 use Faker\Generator;
@@ -15,17 +16,27 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class HealthCheckContext implements Context
 {
     private bool $kernelDirty = false;
-    private KernelInterface $kernel;
+    private RestContext $restContext;
     private Generator $faker;
 
-    public function __construct(KernelInterface $kernel)
-    {
-        $this->kernel = $kernel;
+    public function __construct(
+        private readonly KernelInterface $kernel,
+    ) {
         $this->faker = Factory::create();
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -48,9 +59,7 @@ final class HealthCheckContext implements Context
             }
         };
 
-        $failingCache = new TraceableAdapter($failingPool);
-
-        $this->replaceService('cache.app', $failingCache);
+        $this->replaceService('cache.app', new TraceableAdapter($failingPool));
     }
 
     /**
@@ -61,8 +70,7 @@ final class HealthCheckContext implements Context
         $this->rebootKernelIfNeeded();
         $documentManager = $this->getDocumentManager();
 
-        $mongoUri = sprintf('mongodb://%s', $this->faker->ipv4());
-        $failingClient = new class($mongoUri) extends Client {
+        $failingClient = new class(sprintf('mongodb://%s', $this->faker->ipv4())) extends Client {
             /**
              * @return never
              */
@@ -82,8 +90,15 @@ final class HealthCheckContext implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $failingSqsClient = $this->createFailingSqsClient();
-        $this->replaceService(SqsClient::class, $failingSqsClient);
+        $this->replaceService(SqsClient::class, $this->createFailingSqsClient());
+    }
+
+    /**
+     * @Then print last response
+     */
+    public function printLastResponse(): void
+    {
+        echo 'Response content: ' . $this->getResponseContent() . "\n";
     }
 
     /**
@@ -97,6 +112,15 @@ final class HealthCheckContext implements Context
 
         $this->kernel->reboot(null);
         $this->kernelDirty = false;
+    }
+
+    private function getResponseContent(): string
+    {
+        return $this->restContext
+            ->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
     }
 
     private function createFailingSqsClient(): SqsClient

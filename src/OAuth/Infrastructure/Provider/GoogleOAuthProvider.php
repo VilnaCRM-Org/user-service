@@ -9,7 +9,6 @@ use App\OAuth\Domain\Exception\OAuthProviderException;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Google;
 use League\OAuth2\Client\Provider\GoogleUser;
 use League\OAuth2\Client\Token\AccessToken;
@@ -72,17 +71,19 @@ final class GoogleOAuthProvider implements OAuthProviderInterface
         ?string $codeVerifier,
     ): string {
         try {
+            $google = clone $this->google;
+
             if ($codeVerifier !== null) {
-                $this->google->setPkceCode($codeVerifier);
+                $google->setPkceCode($codeVerifier);
             }
 
-            $token = $this->google->getAccessToken(
+            $token = $google->getAccessToken(
                 'authorization_code',
                 ['code' => $code],
             );
 
             return $token->getToken();
-        } catch (IdentityProviderException $e) {
+        } catch (\Throwable $e) {
             throw new OAuthProviderException(
                 self::PROVIDER_NAME,
                 $e->getMessage(),

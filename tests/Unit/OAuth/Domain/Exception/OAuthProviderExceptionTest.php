@@ -21,15 +21,18 @@ final class OAuthProviderExceptionTest extends UnitTestCase
             sprintf('OAuth provider %s error: %s', $provider, $message),
             $exception->getMessage()
         );
+        $this->assertSame(0, $exception->getCode());
     }
 
     public function testPreviousExceptionIsPreserved(): void
     {
-        $previous = new RuntimeException('upstream');
+        $provider = $this->faker->word();
+        $message = $this->faker->sentence();
+        $previous = new RuntimeException($this->faker->sentence());
 
         $exception = new OAuthProviderException(
-            'github',
-            'connection failed',
+            $provider,
+            $message,
             $previous,
         );
 

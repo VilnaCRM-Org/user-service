@@ -136,11 +136,13 @@ final class TwitterOAuthProviderTest extends UnitTestCase
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
+        $username = $this->faker->userName();
         $id = $this->faker->uuid();
 
         $owner = $this->createMock(TwitterUser::class);
         $owner->method('getEmail')->willReturn($email);
         $owner->method('getName')->willReturn($name);
+        $owner->method('getUsername')->willReturn($username);
         $owner->method('getId')->willReturn($id);
 
         $this->twitter->method('getResourceOwner')->willReturn($owner);
