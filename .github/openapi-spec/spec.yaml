@@ -522,9 +522,6 @@ paths:
       responses:
         '302':
           description: 'Redirect to the external social provider.'
-          content:
-            application/json:
-              example: {  }
           headers:
             Location:
               description: 'Provider authorization URL.'
@@ -621,14 +618,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  2fa_enabled: { type: boolean }
-                  access_token: { type: string }
-                  refresh_token: { type: string }
-                  pending_session_id: { type: string }
-                required:
-                  - 2fa_enabled
+                oneOf:
+                  - { type: object, properties: { 2fa_enabled: { type: boolean, enum: [false] }, access_token: { type: string }, refresh_token: { type: string } }, required: [2fa_enabled, access_token, refresh_token] }
+                  - { type: object, properties: { 2fa_enabled: { type: boolean, enum: [true] }, pending_session_id: { type: string } }, required: [2fa_enabled, pending_session_id] }
               example:
                 2fa_enabled: false
                 access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
