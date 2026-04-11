@@ -119,7 +119,6 @@ final class GoogleOAuthProviderTest extends UnitTestCase
     public function testExchangeCodeThrowsOAuthProviderExceptionOnFailure(): void
     {
         $invalidCode = $this->faker->sha256();
-
         $this->google->method('getAccessToken')
             ->willThrowException(
                 new IdentityProviderException('invalid_grant', 400, [])

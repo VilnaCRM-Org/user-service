@@ -47,7 +47,6 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
 
         $this->assertInstanceOf(ResilientHttpClientFactory::class, $factory);
     }
-
     public function testCreateBuildsIndependentHandlerPerClient(): void
     {
         $baseStack = HandlerStack::create();
@@ -83,7 +82,6 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $this->assertSame(8000, $delay(4));
         $this->assertSame(8000, $delay(8));
     }
-
     public function testCreateReturnsGuzzleClient(): void
     {
         $factory = new ResilientHttpClientFactory(

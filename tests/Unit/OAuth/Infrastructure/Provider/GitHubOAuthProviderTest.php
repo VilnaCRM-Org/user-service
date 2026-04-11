@@ -118,7 +118,6 @@ final class GitHubOAuthProviderTest extends UnitTestCase
     public function testExchangeCodeThrowsOAuthProviderExceptionOnFailure(): void
     {
         $invalidCode = $this->faker->sha256();
-
         $this->github->method('getAccessToken')
             ->willThrowException(new IdentityProviderException('bad_code', 400, []));
 

@@ -297,6 +297,7 @@ final class UserResponseContext implements Context
 
         return $decoded;
     }
+
     /**
      * @param array<array-key, array|bool|float|int|string|null> $payload
      */
