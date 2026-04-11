@@ -197,11 +197,20 @@ final class OAuthInitiateControllerTest extends UnitTestCase
      */
     private function createInitiateResponseCallback(string $authUrl): \Closure
     {
-        return static function (InitiateOAuthCommand $command) use ($authUrl): void {
+        $state = $this->faker->sha256();
+        $flowBindingToken = $this->faker->sha256();
+
+        return static function (
+            InitiateOAuthCommand $command,
+        ) use (
+            $authUrl,
+            $state,
+            $flowBindingToken,
+        ): void {
             $command->setResponse(new InitiateOAuthResponse(
                 $authUrl,
-                'state',
-                'flow-binding-token',
+                $state,
+                $flowBindingToken,
             ));
         };
     }
