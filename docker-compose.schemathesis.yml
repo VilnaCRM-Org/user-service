@@ -23,11 +23,7 @@ services:
       FRANKENPHP_CONFIG: import worker.Caddyfile
       SERVER_NAME: :80
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1',
-        ]
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']
       interval: 10s
       timeout: 3s
       retries: 6
