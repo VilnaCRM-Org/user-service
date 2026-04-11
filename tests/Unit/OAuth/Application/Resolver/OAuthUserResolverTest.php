@@ -328,7 +328,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->passwordHasher->method('hash')
             ->willReturn($this->faker->sha256());
 
-        $profile = $this->createProfile($email, null, false);
+        $profile = $this->createUnverifiedProfile($email);
         $result = $this->resolver->resolve($provider, $profile);
 
         $this->assertTrue($result->newlyCreated);
@@ -344,9 +344,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->passwordHasher->method('hash')
             ->willReturn($this->faker->sha256());
 
-        $profile = $this->createProfile(
-            $this->faker->safeEmail(), null, false
-        );
+        $profile = $this->createUnverifiedProfile($this->faker->safeEmail());
         $result = $this->resolver->resolve($provider, $profile);
 
         $this->assertTrue($result->newlyCreated);
@@ -378,13 +376,24 @@ final class OAuthUserResolverTest extends UnitTestCase
     private function createProfile(
         string $email,
         ?string $providerId = null,
-        bool $emailVerified = true,
     ): OAuthUserProfile {
         return new OAuthUserProfile(
             $email,
             $this->faker->name(),
             $providerId ?? $this->faker->uuid(),
-            $emailVerified,
+            true,
+        );
+    }
+
+    private function createUnverifiedProfile(
+        string $email,
+        ?string $providerId = null,
+    ): OAuthUserProfile {
+        return new OAuthUserProfile(
+            $email,
+            $this->faker->name(),
+            $providerId ?? $this->faker->uuid(),
+            false,
         );
     }
 
