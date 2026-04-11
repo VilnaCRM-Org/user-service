@@ -105,7 +105,7 @@ final class OAuthInitiateControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (InitiateOAuthCommand $cmd): bool => $cmd->provider === $provider
+                static fn (InitiateOAuthCommand $cmd): bool => $cmd->provider === $provider
             ));
 
         $this->arrangeCommandBus($this->faker->url());
@@ -120,7 +120,7 @@ final class OAuthInitiateControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (InitiateOAuthCommand $cmd): bool => str_contains(
+                static fn (InitiateOAuthCommand $cmd): bool => str_contains(
                     $cmd->redirectUri,
                     '/api/auth/social/' . $provider . '/callback'
                 )
@@ -168,7 +168,7 @@ final class OAuthInitiateControllerTest extends UnitTestCase
     }
 
     /**
-     * @param Cookie[] $cookies
+     * @param array<Cookie> $cookies
      */
     private function findCookieByName(
         array $cookies,

@@ -8,12 +8,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RetryMiddleware;
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 final class ResilientHttpClientFactory
 {
     private const MILLISECONDS_PER_SECOND = 1000;
+    private const MAX_RETRY_DELAY_MS = 8000;
 
     public function __construct(
         private readonly int $connectTimeoutMs,
@@ -21,6 +23,17 @@ final class ResilientHttpClientFactory
         private readonly int $maxRetries,
         private readonly HandlerStack $handlerStack,
     ) {
+        if ($connectTimeoutMs <= 0) {
+            throw new InvalidArgumentException('connectTimeoutMs must be greater than 0.');
+        }
+
+        if ($timeoutMs <= 0) {
+            throw new InvalidArgumentException('timeoutMs must be greater than 0.');
+        }
+
+        if ($maxRetries < 0) {
+            throw new InvalidArgumentException('maxRetries must be greater than or equal to 0.');
+        }
     }
 
     public function create(): ClientInterface
@@ -74,7 +87,9 @@ final class ResilientHttpClientFactory
     private function createRetryDelay(): callable
     {
         return static function (int $retries): int {
-            return (int) (1000 * (2 ** $retries));
+            $delayMs = self::MILLISECONDS_PER_SECOND * (2 ** $retries);
+
+            return min(self::MAX_RETRY_DELAY_MS, $delayMs);
         };
     }
 }

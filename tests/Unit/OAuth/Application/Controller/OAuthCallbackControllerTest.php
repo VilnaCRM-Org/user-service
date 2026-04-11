@@ -169,7 +169,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->provider === $provider
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->provider === $provider
             ));
 
         $this->arrangeDirectSignIn();
@@ -185,7 +185,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
             ));
 
         $this->arrangeDirectSignIn();
@@ -200,7 +200,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
             ));
 
         $this->arrangeDirectSignIn();
@@ -225,7 +225,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     ): void {
         $this->commandBus->method('dispatch')
             ->willReturnCallback(
-                function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
+                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
                     $command->setResponse($responseDto);
                 }
             );

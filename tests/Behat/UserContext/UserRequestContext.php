@@ -4,31 +4,47 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
-use App\Tests\Behat\UserContext\Input\CompleteTwoFactorInput;
 use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
+use App\Tests\Behat\UserContext\Input\RawBodyInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
-use OTPHP\TOTP;
-use Symfony\Component\HttpFoundation\Request;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
+use Behat\Mink\Driver\BrowserKitDriver;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserRequestContext implements Context
 {
+    private const CONTENT_TYPES = [
+        'PATCH' => 'application/merge-patch+json',
+    ];
+
     private UrlResolver $urlResolver;
     private RequestBodySerializer $bodySerializer;
+    private RestContext $restContext;
 
     public function __construct(
         private UserOperationsState $state,
-        private readonly KernelInterface $kernel,
-        SerializerInterface $serializer,
+        SerializerInterface $serializer
     ) {
         $this->urlResolver = new UrlResolver();
         $this->bodySerializer = new RequestBodySerializer($serializer);
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
+        $this->restContext->getMink()->getSession()->restart();
     }
 
     /**
@@ -93,69 +109,14 @@ final class UserRequestContext implements Context
     }
 
     /**
-     * @Given completing 2FA with pending session :pendingSessionId and code :code
-     * @Given completing 2FA with pending_session_id :pendingSessionId and code :code
-     */
-    public function completingTwoFactorWithPendingSessionAndCode(
-        string $pendingSessionId,
-        string $code
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $pendingSessionId,
-            $code
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending session and code :code
-     * @Given completing 2FA with the stored pending_session_id and code :code
-     */
-    public function completingTwoFactorWithStoredPendingSessionAndCode(
-        string $code
-    ): void {
-        $pendingSessionId = $this->resolveStoredPendingSessionId();
-
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $pendingSessionId,
-            $code
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending session and secret :secret
-     */
-    public function completingTwoFactorWithStoredPendingSessionAndSecret(
-        string $secret
-    ): void {
-        $pendingSessionId = $this->resolveStoredPendingSessionId();
-        $code = $this->generateTotpCode($secret);
-
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $pendingSessionId,
-            $code
-        );
-    }
-
-    /**
-     * @Given completing 2FA with stored pending_session_id :key and a valid TOTP code
-     */
-    public function completingTwoFactorWithStoredPendingSessionIdAndValidTotpCode(
-        string $key
-    ): void {
-        $this->state->requestBody = new CompleteTwoFactorInput(
-            $this->resolveStoredPendingSessionIdByKey($key),
-            $this->generateTotpCode('JBSWY3DPEHPK3PXP')
-        );
-    }
-
-    /**
      * @Given I have completed 2FA setup
      */
     public function iHaveCompletedTwoFactorSetup(): void
     {
         $this->requestSendTo('POST', '/api/2fa/setup');
+
         $response = $this->state->response;
-        if ($response === null || $response->getStatusCode() !== Response::HTTP_OK) {
+        if (!$response instanceof Response || $response->getStatusCode() !== Response::HTTP_OK) {
             throw new \RuntimeException(sprintf(
                 '2FA setup failed with status %s.',
                 (string) ($response?->getStatusCode() ?? 'no response')
@@ -187,13 +148,20 @@ final class UserRequestContext implements Context
         string $initials,
         string $password
     ): void {
-        $this->state->requestBody->addUser(
-            [
-                'email' => $email,
-                'initials' => $initials,
-                'password' => $password,
-            ]
-        );
+        if (!$this->state->requestBody instanceof CreateUserBatchInput) {
+            throw new RuntimeException(
+                sprintf(
+                    'requestBody must be initialized with "%s" before calling addUser().',
+                    'Given sending a batch of users'
+                )
+            );
+        }
+
+        $this->state->requestBody->addUser([
+            'email' => $email,
+            'initials' => $initials,
+            'password' => $password,
+        ]);
     }
 
     /**
@@ -226,24 +194,21 @@ final class UserRequestContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
-        $this->urlResolver->setCurrentUserEmail($this->state->currentUserEmail);
-        $processedPath = $this->urlResolver->resolve($path);
-        $headers = $this->buildRequestHeaders($method);
-        $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
+        $method = strtoupper($method);
+        $processedPath = $this->processRequestPath($path);
         $startedAt = microtime(true);
 
-        $this->state->response = $this->kernel->handle(
-            Request::create(
-                $processedPath,
-                $method,
-                [],
-                [],
-                [],
-                $headers,
-                $requestBody
-            )
-        );
-        $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
+        if ($this->isRequestBodyMethod($method)) {
+            $requestBody = $this->bodySerializer->serialize(
+                $this->state->requestBody,
+                $method
+            );
+            $this->sendRequestWithBody($method, $processedPath, $requestBody);
+        } else {
+            $this->sendRequestWithoutBody($method, $processedPath);
+        }
+
+        $this->captureLastResponse($startedAt);
     }
 
     /**
@@ -253,132 +218,124 @@ final class UserRequestContext implements Context
     public function getRequestIsSendToTheCurrentUserEndpoint(): void
     {
         $currentUserEmail = $this->state->currentUserEmail;
-
         if (!is_string($currentUserEmail) || $currentUserEmail === '') {
-            throw new \RuntimeException(
-                'Current user is not set for this scenario.'
-            );
+            throw new \RuntimeException('Current user is not set for this scenario.');
         }
 
         $this->requestSendTo(
             'GET',
-            sprintf(
-                '/api/users/%s',
-                UserContext::getUserIdByEmail($currentUserEmail)
-            )
+            sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
         );
+    }
+
+    private function processRequestPath(string $path): string
+    {
+        $this->urlResolver->setCurrentUserEmail($this->state->currentUserEmail);
+
+        return $this->urlResolver->resolve($path);
     }
 
     /**
      * @return array<string, string>
      */
-    private function buildRequestHeaders(string $method): array
+    private function buildHeaders(string $method): array
     {
         $headers = [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
-            'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
+            'Accept' => 'application/json',
+            'Accept-Language' => $this->state->language,
         ];
+
+        if ($this->isRequestBodyMethod($method)) {
+            $headers['Content-Type'] = $this->getContentTypeForMethod($method);
+        }
 
         $userAgent = $this->state->userAgentHeader;
         if (is_string($userAgent) && $userAgent !== '') {
-            $headers['HTTP_USER_AGENT'] = $userAgent;
+            $headers['User-Agent'] = $userAgent;
         }
 
         $this->appendAuthorizationHeader($headers);
         $this->appendAuthCookieHeader($headers);
         $this->appendOriginHeader($headers);
+        $this->appendClientIpHeader($headers);
 
         return $headers;
+    }
+
+    private function isRequestBodyMethod(string $method): bool
+    {
+        return in_array($method, ['POST', 'PUT', 'PATCH'], true);
     }
 
     private function getContentTypeForMethod(string $method): string
     {
         $requestBody = $this->state->requestBody;
         if (
-            $requestBody instanceof
-            \App\Tests\Behat\UserContext\Input\RawBodyInput
+            $requestBody instanceof RawBodyInput
             && is_string($requestBody->getContentType())
             && $requestBody->getContentType() !== ''
         ) {
             return $requestBody->getContentType();
         }
 
-        return $method === 'PATCH'
-            ? 'application/merge-patch+json'
-            : 'application/json';
+        return self::CONTENT_TYPES[$method] ?? 'application/json';
     }
 
-    private function resolveStoredPendingSessionId(): string
-    {
-        if (
-            is_string($this->state->pendingSessionId)
-            && $this->state->pendingSessionId !== ''
-        ) {
-            return $this->state->pendingSessionId;
-        }
+    private function sendRequestWithBody(
+        string $method,
+        string $path,
+        string $body
+    ): void {
+        $this->addHeaders($this->buildHeaders($method));
 
-        $responseData = $this->decodePendingSessionResponse();
-        $pendingSessionId = $this->extractPendingSessionId($responseData);
-
-        $this->state->pendingSessionId = $pendingSessionId;
-
-        return $pendingSessionId;
+        $pyStringBody = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestToWithBody($method, $path, $pyStringBody);
     }
 
-    private function resolveStoredPendingSessionIdByKey(string $key): string
+    private function sendRequestWithoutBody(string $method, string $path): void
     {
-        $pendingSessionId = $this->state->{$key};
-        if (
-            is_string($pendingSessionId)
-            && $pendingSessionId !== ''
-        ) {
-            return $pendingSessionId;
-        }
+        $this->resetBodyHeaders();
+        $this->addHeaders($this->buildHeaders($method));
+        $this->restContext->iSendARequestTo($method, $path);
+    }
 
-        throw new \RuntimeException(
-            sprintf(
-                'Stored pending_session_id "%s" is missing.',
-                $key
-            )
-        );
+    private function resetBodyHeaders(): void
+    {
+        $this->restContext
+            ->getMink()
+            ->getSession()
+            ->setRequestHeader('Content-Type', '');
     }
 
     /**
-     * @return array<string, array<string>|int|string>
+     * @param array<string, string> $headers
      */
-    private function decodePendingSessionResponse(): array
+    private function addHeaders(array $headers): void
     {
-        $responseContent = $this->state->response?->getContent();
-        if (!is_string($responseContent) || $responseContent === '') {
-            throw new \RuntimeException(
-                'No response body available to extract pending_session_id.'
-            );
+        foreach ($headers as $name => $value) {
+            $this->restContext->iAddHeaderEqualTo($name, $value);
         }
-
-        $responseData = json_decode($responseContent, true);
-        if (!is_array($responseData)) {
-            throw new \RuntimeException(
-                'pending_session_id is missing in the latest response.'
-            );
-        }
-
-        return $responseData;
     }
 
-    /**
-     * @param array<string, array<string>|int|string> $responseData
-     */
-    private function extractPendingSessionId(array $responseData): string
+    private function captureLastResponse(float $startedAt): void
     {
-        $pendingSessionId = $responseData['pending_session_id'] ?? '';
-        if (!is_string($pendingSessionId) || $pendingSessionId === '') {
-            throw new \RuntimeException(
-                'pending_session_id is missing in the latest response.'
-            );
+        $session = $this->restContext->getMink()->getSession();
+        $statusCode = $session->getStatusCode();
+        $content = $session->getPage()->getContent();
+        $headers = [];
+
+        $driver = $session->getDriver();
+        if ($driver instanceof BrowserKitDriver) {
+            $browserKitResponse = $driver->getClient()->getResponse();
+            if ($browserKitResponse !== null) {
+                $statusCode = $browserKitResponse->getStatusCode();
+                $content = $browserKitResponse->getContent();
+                $headers = $browserKitResponse->getHeaders();
+            }
         }
 
-        return $pendingSessionId;
+        $this->state->response = new Response($content, $statusCode, $headers);
+        $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
     }
 
     /**
@@ -388,10 +345,7 @@ final class UserRequestContext implements Context
     {
         $accessToken = $this->state->accessToken;
         if (is_string($accessToken) && $accessToken !== '') {
-            $headers['HTTP_AUTHORIZATION'] = sprintf(
-                'Bearer %s',
-                $accessToken
-            );
+            $headers['Authorization'] = sprintf('Bearer %s', $accessToken);
         }
     }
 
@@ -406,10 +360,7 @@ final class UserRequestContext implements Context
             && is_string($authCookieToken)
             && $authCookieToken !== ''
         ) {
-            $headers['HTTP_COOKIE'] = sprintf(
-                '__Host-auth_token=%s',
-                $authCookieToken
-            );
+            $headers['Cookie'] = sprintf('__Host-auth_token=%s', $authCookieToken);
         }
     }
 
@@ -420,22 +371,20 @@ final class UserRequestContext implements Context
     {
         $originHeader = $this->state->originHeader;
         if (is_string($originHeader) && $originHeader !== '') {
-            $headers['HTTP_ORIGIN'] = $originHeader;
+            $headers['Origin'] = $originHeader;
             $this->state->originHeader = '';
-        }
-
-        $clientIpAddress = $this->state->clientIpAddress
-            ?? $this->state->expectedIpAddress;
-        if (
-            is_string($clientIpAddress)
-            && $clientIpAddress !== ''
-        ) {
-            $headers['REMOTE_ADDR'] = $clientIpAddress;
         }
     }
 
-    private function generateTotpCode(string $secret): string
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendClientIpHeader(array &$headers): void
     {
-        return TOTP::create($secret)->now();
+        $clientIpAddress = $this->state->clientIpAddress
+            ?? $this->state->expectedIpAddress;
+        if (is_string($clientIpAddress) && $clientIpAddress !== '') {
+            $headers['X-Forwarded-For'] = $clientIpAddress;
+        }
     }
 }

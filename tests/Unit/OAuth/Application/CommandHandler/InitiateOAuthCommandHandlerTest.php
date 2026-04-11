@@ -37,46 +37,34 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
+        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
         $this->oAuthProvider->method('getAuthorizationUrl')
             ->willReturn($authUrl);
-
-        $this->stateRepository->expects($this->once())
-            ->method('save')
-            ->with(
-                $this->isType('string'),
-                $this->isInstanceOf(OAuthStatePayload::class),
-                $this->isType('int'),
-            );
+        $this->expectStateSavedForRedirect($redirectUri, $capturedPayload);
 
         $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
         $this->createHandler()->__invoke($command);
 
-        $response = $command->getResponse();
-        $this->assertSame($authUrl, $response->authorizationUrl);
-        $this->assertNotEmpty($response->state);
-        $this->assertNotEmpty($response->flowBindingToken);
+        $this->assertInstanceOf(OAuthStatePayload::class, $capturedPayload);
+        $this->assertAuthorizationResponse($command, $authUrl, $capturedPayload);
     }
 
     public function testInvokeWithPkceProviderGeneratesCodeChallenge(): void
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
+        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
-        $this->oAuthProvider->expects($this->once())
-            ->method('getAuthorizationUrl')
-            ->with(
-                $this->isType('string'),
-                $this->logicalNot($this->isNull()),
-            )
-            ->willReturn($authUrl);
-
-        $this->stateRepository->method('save');
+        $this->expectPkceAuthorizationUrl($authUrl, $capturedPayload);
+        $this->expectCapturedStatePayload($capturedPayload);
 
         $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
         $this->createHandler()->__invoke($command);
+
+        $this->assertInstanceOf(OAuthStatePayload::class, $capturedPayload);
     }
 
     public function testInvokeWithoutPkcePassesNullCodeChallenge(): void
@@ -131,5 +119,135 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
             $registry,
             $this->stateRepository,
         );
+    }
+
+    private function isHexTokenWithExpectedLength(string $token): bool
+    {
+        return strlen($token) === 64 && ctype_xdigit($token);
+    }
+
+    private function expectPkceAuthorizationUrl(
+        string $authUrl,
+        ?OAuthStatePayload &$capturedPayload,
+    ): void {
+        $this->oAuthProvider->expects($this->once())
+            ->method('getAuthorizationUrl')
+            ->with(
+                $this->isType('string'),
+                $this->callback(
+                    function (?string $codeChallenge) use (&$capturedPayload): bool {
+                        return $this->matchesPkceChallenge(
+                            $codeChallenge,
+                            $capturedPayload,
+                        );
+                    }
+                ),
+            )
+            ->willReturn($authUrl);
+    }
+
+    private function expectCapturedStatePayload(
+        ?OAuthStatePayload &$capturedPayload,
+    ): void {
+        $this->stateRepository->expects($this->once())
+            ->method('save')
+            ->with(
+                $this->isType('string'),
+                $this->callback(
+                    static function (OAuthStatePayload $payload) use (
+                        &$capturedPayload
+                    ): bool {
+                        $capturedPayload = $payload;
+
+                        return true;
+                    }
+                ),
+                $this->isType('int'),
+            );
+    }
+
+    private function matchesPkceChallenge(
+        ?string $codeChallenge,
+        ?OAuthStatePayload $capturedPayload,
+    ): bool {
+        if (!is_string($codeChallenge) || $capturedPayload === null) {
+            return false;
+        }
+
+        return $codeChallenge === rtrim(
+            strtr(
+                base64_encode(
+                    hash(
+                        'sha256',
+                        $capturedPayload->codeVerifier,
+                        true,
+                    )
+                ),
+                '+/',
+                '-_'
+            ),
+            '='
+        )
+            && !str_contains($codeChallenge, '=')
+            && !str_contains($codeChallenge, '+')
+            && !str_contains($codeChallenge, '/');
+    }
+
+    private function expectStateSavedForRedirect(
+        string $redirectUri,
+        ?OAuthStatePayload &$capturedPayload,
+    ): void {
+        $this->stateRepository->expects($this->once())
+            ->method('save')
+            ->with(
+                $this->callback(
+                    fn (string $state): bool => $this->isHexTokenWithExpectedLength($state)
+                ),
+                $this->callback(
+                    function (OAuthStatePayload $payload) use (
+                        $redirectUri,
+                        &$capturedPayload,
+                    ): bool {
+                        $capturedPayload = $payload;
+
+                        return $this->matchesStoredRedirectPayload(
+                            $payload,
+                            $redirectUri,
+                        );
+                    }
+                ),
+                $this->isType('int'),
+            );
+    }
+
+    private function assertAuthorizationResponse(
+        InitiateOAuthCommand $command,
+        string $authUrl,
+        OAuthStatePayload $capturedPayload,
+    ): void {
+        $response = $command->getResponse();
+
+        $this->assertSame($authUrl, $response->authorizationUrl);
+        $this->assertNotEmpty($response->state);
+        $this->assertNotEmpty($response->flowBindingToken);
+        $this->assertTrue(
+            $this->isHexTokenWithExpectedLength($response->state)
+        );
+        $this->assertTrue(
+            $this->isHexTokenWithExpectedLength($response->flowBindingToken)
+        );
+        $this->assertSame(
+            hash('sha256', $response->flowBindingToken),
+            $capturedPayload->flowBindingHash,
+        );
+    }
+
+    private function matchesStoredRedirectPayload(
+        OAuthStatePayload $payload,
+        string $redirectUri,
+    ): bool {
+        return $payload->redirectUri === $redirectUri
+            && $this->isHexTokenWithExpectedLength($payload->codeVerifier)
+            && $this->isHexTokenWithExpectedLength($payload->flowBindingHash);
     }
 }

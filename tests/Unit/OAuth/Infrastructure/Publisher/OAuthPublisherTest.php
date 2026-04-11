@@ -45,7 +45,9 @@ final class OAuthPublisherTest extends UnitTestCase
 
         $event = new OAuthUserCreatedEvent($userId, $email, $provider, $eventId);
 
-        $this->eventIdFactory->method('generate')->willReturn($eventId);
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
         $this->oAuthEventFactory->expects($this->once())
             ->method('createUserCreated')
             ->with($userId, $email, $provider, $eventId)
@@ -64,32 +66,147 @@ final class OAuthPublisherTest extends UnitTestCase
         $email = $this->faker->safeEmail();
         $provider = $this->faker->word();
         $sessionId = $this->faker->uuid();
-        $eventId = $this->faker->uuid();
 
-        $this->eventIdFactory->method('generate')
-            ->willReturn($eventId);
-
-        $event = new OAuthUserSignedInEvent(
+        $this->expectSignedInPublication(
             $userId,
             $email,
             $provider,
             $sessionId,
-            $eventId
         );
 
+        $this->publisher->publishUserSignedIn($userId, $email, $provider, $sessionId);
+    }
+
+    public function testPublishUserCreatedDoesNotPublishWhenEventIdGenerationFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $email = $this->faker->safeEmail();
+        $provider = $this->faker->word();
+        $exception = new \RuntimeException($this->faker->sentence());
+
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willThrowException($exception);
+        $this->oAuthEventFactory->expects($this->never())
+            ->method('createUserCreated');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+
+        $this->expectExceptionObject($exception);
+
+        $this->publisher->publishUserCreated($userId, $email, $provider);
+    }
+
+    public function testPublishUserSignedInDoesNotPublishWhenEventFactoryFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $email = $this->faker->safeEmail();
+        $provider = $this->faker->word();
+        $sessionId = $this->faker->uuid();
+        $eventId = $this->faker->uuid();
+        $exception = new \RuntimeException($this->faker->sentence());
+
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
+        $this->expectSignedInEventFactoryFailure(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+            $exception,
+        );
+        $this->expectNoPublishedEvents();
+
+        $this->expectExceptionObject($exception);
+
+        $this->publisher->publishUserSignedIn($userId, $email, $provider, $sessionId);
+    }
+
+    private function createSignedInEvent(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+        string $eventId,
+    ): OAuthUserSignedInEvent {
+        return new OAuthUserSignedInEvent(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+        );
+    }
+
+    private function expectSignedInPublication(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+    ): void {
+        $eventId = $this->faker->uuid();
+        $event = $this->createSignedInEvent(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+        );
+
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
+        $this->expectSignedInEventFactory(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
+            $eventId,
+            $event,
+        );
+        $this->expectEventPublished($event);
+    }
+
+    private function expectSignedInEventFactory(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+        string $eventId,
+        OAuthUserSignedInEvent $event,
+    ): void {
         $this->oAuthEventFactory->expects($this->once())
             ->method('createUserSignedIn')
             ->with($userId, $email, $provider, $sessionId, $eventId)
             ->willReturn($event);
+    }
 
+    private function expectSignedInEventFactoryFailure(
+        string $userId,
+        string $email,
+        string $provider,
+        string $sessionId,
+        string $eventId,
+        \RuntimeException $exception,
+    ): void {
+        $this->oAuthEventFactory->expects($this->once())
+            ->method('createUserSignedIn')
+            ->with($userId, $email, $provider, $sessionId, $eventId)
+            ->willThrowException($exception);
+    }
+
+    private function expectEventPublished(object $event): void
+    {
         $this->eventBus->expects($this->once())
-            ->method('publish')->with($event);
+            ->method('publish')
+            ->with($event);
+    }
 
-        $this->publisher->publishUserSignedIn(
-            $userId,
-            $email,
-            $provider,
-            $sessionId
-        );
+    private function expectNoPublishedEvents(): void
+    {
+        $this->eventBus->expects($this->never())
+            ->method('publish');
     }
 }

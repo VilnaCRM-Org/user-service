@@ -139,6 +139,10 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
+  App\Shared\Application\EventListener\MethodNotAllowedResponseListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: 0 }
+
   App\Shared\Application\EventListener\ApiRateLimitListener:
     arguments:
       $limiterFactories:
@@ -492,7 +496,6 @@ services:
   App\OAuth\Application\CommandHandler\InitiateOAuthCommandHandler:
     arguments:
       $oauthStateTtlSeconds: '%env(int:OAUTH_STATE_TTL_SECONDS)%'
-
   App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
     arguments:
       $oauthRedis: '@oauth.redis_connection'
