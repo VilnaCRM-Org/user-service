@@ -771,7 +771,7 @@ paths:
           schema:
             type: string
           style: form
-          explode: false
+          explode: true
           example: provider-code-123
         -
           name: state
@@ -782,7 +782,7 @@ paths:
           schema:
             type: string
           style: form
-          explode: false
+          explode: true
           example: state-123
         -
           name: oauth_flow_binding
@@ -793,7 +793,7 @@ paths:
           schema:
             type: string
           style: form
-          explode: false
+          explode: true
           example: abc123
       security: []
   /api/oauth/authorize:
