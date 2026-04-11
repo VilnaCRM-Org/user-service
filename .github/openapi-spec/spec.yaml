@@ -600,9 +600,9 @@ paths:
           schema:
             type: string
             enum:
+              - facebook
               - github
               - google
-              - facebook
               - twitter
           style: simple
           explode: false
@@ -660,11 +660,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   status: { type: integer }
-                  error_code:
-                    type: string
-                    enum:
-                      - invalid_state
-                      - provider_email_unavailable
+                  error_code: { type: string }
                 required:
                   - type
                   - title
@@ -688,7 +684,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   status: { type: integer }
-                  error_code: { type: string }
+                  error_code: { type: string, enum: [invalid_state, provider_email_unavailable] }
                 required:
                   - type
                   - title
@@ -759,9 +755,9 @@ paths:
           schema:
             type: string
             enum:
+              - facebook
               - github
               - google
-              - facebook
               - twitter
           style: simple
           explode: false
