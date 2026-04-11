@@ -18,7 +18,6 @@ services:
     resource: '../src/'
     exclude:
       - '../src/Shared/Kernel.php'
-      - '../src/OAuth/Infrastructure/Provider/DeterministicOAuthProvider.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -139,6 +138,10 @@ services:
   App\Shared\Application\EventListener\MethodNotAllowedListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
+  App\Shared\Application\EventListener\MethodNotAllowedResponseListener:
+    tags:
+      - { name: kernel.event_listener, event: kernel.response, priority: 0 }
 
   App\Shared\Application\EventListener\ApiRateLimitListener:
     arguments:
@@ -493,7 +496,6 @@ services:
   App\OAuth\Application\CommandHandler\InitiateOAuthCommandHandler:
     arguments:
       $oauthStateTtlSeconds: '%env(int:OAUTH_STATE_TTL_SECONDS)%'
-
   App\OAuth\Infrastructure\Repository\RedisOAuthStateRepository:
     arguments:
       $oauthRedis: '@oauth.redis_connection'

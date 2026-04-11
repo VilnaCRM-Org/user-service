@@ -19,6 +19,7 @@ final class TokenResponseContext implements Context
         private UserOperationsState $state,
         private readonly AuthRefreshTokenRepositoryInterface $authRefreshTokenRepository,
         private readonly AuthSessionRepositoryInterface $authSessionRepository,
+        private readonly DocumentManagerResetter $documentManagerResetter,
     ) {
     }
 
@@ -164,6 +165,8 @@ final class TokenResponseContext implements Context
      */
     public function theOldRefreshTokenShouldBeMarkedAsRotated(): void
     {
+        $this->documentManagerResetter->clear();
+
         $tokenValue = $this->resolveScenarioToken(
             [
                 'originalRefreshToken',
@@ -184,6 +187,8 @@ final class TokenResponseContext implements Context
      */
     public function theEntireSessionShouldBeRevoked(): void
     {
+        $this->documentManagerResetter->clear();
+
         $tokenValue = $this->resolveScenarioToken(
             [
                 'rotatedRefreshToken',
@@ -262,6 +267,8 @@ final class TokenResponseContext implements Context
 
     private function assertStoredRefreshTokenIsRevoked(string $key): void
     {
+        $this->documentManagerResetter->clear();
+
         $storedTokens = $this->state->storedRefreshTokens;
         Assert::assertIsArray($storedTokens);
         Assert::assertArrayHasKey($key, $storedTokens);

@@ -17,15 +17,43 @@ use GuzzleHttp\Psr7\Response;
 
 final class ResilientHttpClientFactoryTest extends UnitTestCase
 {
+    public function testConstructorRejectsNonPositiveConnectTimeout(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('connectTimeoutMs must be greater than 0.');
+
+        new ResilientHttpClientFactory(0, 5000, 1, HandlerStack::create());
+    }
+
+    public function testConstructorRejectsNonPositiveTimeout(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('timeoutMs must be greater than 0.');
+
+        new ResilientHttpClientFactory(1500, 0, 1, HandlerStack::create());
+    }
+
+    public function testConstructorRejectsNegativeMaxRetries(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('maxRetries must be greater than or equal to 0.');
+
+        new ResilientHttpClientFactory(1500, 5000, -1, HandlerStack::create());
+    }
+
+    public function testConstructorAllowsZeroMaxRetries(): void
+    {
+        $factory = new ResilientHttpClientFactory(1500, 5000, 0, HandlerStack::create());
+
+        $this->assertInstanceOf(ResilientHttpClientFactory::class, $factory);
+    }
     public function testCreateBuildsIndependentHandlerPerClient(): void
     {
         $baseStack = HandlerStack::create();
         $factory = new ResilientHttpClientFactory(1500, 5000, 1, $baseStack);
 
-        /** @var Client $first */
-        $first = $factory->create();
-        /** @var Client $second */
-        $second = $factory->create();
+        $first = $this->assertClient($factory->create());
+        $second = $this->assertClient($factory->create());
 
         $this->assertNotSame(
             $first->getConfig('handler'),
@@ -33,6 +61,27 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         );
     }
 
+    public function testRetryDelayUsesExponentialBackoffInMilliseconds(): void
+    {
+        $factory = new ResilientHttpClientFactory(
+            1500,
+            5000,
+            1,
+            HandlerStack::create(),
+        );
+
+        $method = new \ReflectionMethod(ResilientHttpClientFactory::class, 'createRetryDelay');
+        $this->makeAccessible($method);
+
+        $delay = $method->invoke($factory);
+
+        $this->assertIsCallable($delay);
+        $this->assertSame(1000, $delay(0));
+        $this->assertSame(2000, $delay(1));
+        $this->assertSame(4000, $delay(2));
+        $this->assertSame(8000, $delay(4));
+        $this->assertSame(8000, $delay(8));
+    }
     public function testCreateReturnsGuzzleClient(): void
     {
         $factory = new ResilientHttpClientFactory(
@@ -139,25 +188,6 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $this->assertEquals(8.0, $config['timeout']);
     }
 
-    public function testRetryDelayUsesExponentialBackoffMilliseconds(): void
-    {
-        $factory = new ResilientHttpClientFactory(
-            1500,
-            5000,
-            1,
-            HandlerStack::create(),
-            1,
-        );
-        $method = new \ReflectionMethod($factory, 'createRetryDelay');
-
-        /** @var callable(int): int $delay */
-        $delay = $method->invoke($factory);
-
-        $this->assertSame(1, $delay(0));
-        $this->assertSame(2, $delay(1));
-        $this->assertSame(4, $delay(2));
-    }
-
     private function createResilientClient(
         MockHandler $mock,
         int $maxRetries,
@@ -168,9 +198,15 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
             5000,
             $maxRetries,
             $stack,
-            1,
         );
 
         return $factory->create();
+    }
+
+    private function assertClient(ClientInterface $client): Client
+    {
+        $this->assertInstanceOf(Client::class, $client);
+
+        return $client;
     }
 }

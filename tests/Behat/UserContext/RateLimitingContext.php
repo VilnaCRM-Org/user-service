@@ -15,7 +15,6 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 final readonly class RateLimitingContext implements Context
 {
-    private const IP_ADDRESS = '127.0.0.1';
     private const DEFAULT_PENDING_SESSION_ID = 'some-session';
 
     public function __construct(
@@ -24,6 +23,7 @@ final readonly class RateLimitingContext implements Context
         private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private ApiRateLimiterCollection $apiLimiters,
         private AuthRateLimiterCollection $authLimiters,
+        private RedisDatabaseMirror $redisDatabaseMirror,
     ) {
     }
 
@@ -291,7 +291,10 @@ final readonly class RateLimitingContext implements Context
         string $key,
         int $count
     ): void {
-        $limiter->create($key)->consume($count);
+        for ($i = 0; $i < $count; ++$i) {
+            $limiter->create($key)->consume();
+        }
+        $this->redisDatabaseMirror->mirrorDefaultLimiterStateToHttpDatabase();
     }
 
     private function buildUserKey(string $userId): string
@@ -306,6 +309,9 @@ final readonly class RateLimitingContext implements Context
 
     private function buildIpKey(): string
     {
-        return sprintf('ip:%s', self::IP_ADDRESS);
+        $clientIpAddress = '::1';
+        $this->state->clientIpAddress = $clientIpAddress;
+
+        return sprintf('ip:%s', $clientIpAddress);
     }
 }

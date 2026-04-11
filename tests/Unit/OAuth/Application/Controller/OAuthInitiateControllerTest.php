@@ -131,23 +131,12 @@ final class OAuthInitiateControllerTest extends UnitTestCase
         $this->invokeController($provider);
     }
 
-    public function testInvokeDispatchesExactAbsoluteCallbackUri(): void
+    public function testInvokeDispatchesCommandWithAbsoluteRedirectUri(): void
     {
         $provider = $this->faker->word();
-        $expectedRedirectUri = sprintf(
-            'https://example.com/api/auth/social/%s/callback',
-            $provider,
-        );
+        $authUrl = $this->faker->url();
 
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (
-                    InitiateOAuthCommand $cmd,
-                ): bool => $cmd->redirectUri === $expectedRedirectUri
-            ));
-
-        $this->arrangeCommandBus($this->faker->url());
+        $this->expectDispatchWithAbsoluteRedirectUri($provider, $authUrl);
 
         $this->invokeController($provider);
     }
@@ -174,6 +163,63 @@ final class OAuthInitiateControllerTest extends UnitTestCase
                     $this->faker->sha256(),
                 ));
             });
+    }
+
+    private function expectDispatchWithAbsoluteRedirectUri(
+        string $provider,
+        string $authUrl,
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                $this->createRedirectUriMatcher($provider),
+            ))
+            ->willReturnCallback($this->createInitiateResponseCallback($authUrl));
+    }
+
+    /**
+     * @return \Closure(InitiateOAuthCommand): bool
+     */
+    private function createRedirectUriMatcher(string $provider): \Closure
+    {
+        $expectedRedirectUri = sprintf(
+            'https://example.com/api/auth/social/%s/callback',
+            $provider,
+        );
+
+        return function (InitiateOAuthCommand $command) use ($expectedRedirectUri): bool {
+            return $this->commandHasRedirectUri($command, $expectedRedirectUri);
+        };
+    }
+
+    /**
+     * @return \Closure(InitiateOAuthCommand): void
+     */
+    private function createInitiateResponseCallback(string $authUrl): \Closure
+    {
+        $state = $this->faker->sha256();
+        $flowBindingToken = $this->faker->sha256();
+
+        return static function (
+            InitiateOAuthCommand $command,
+        ) use (
+            $authUrl,
+            $state,
+            $flowBindingToken,
+        ): void {
+            $command->setResponse(new InitiateOAuthResponse(
+                $authUrl,
+                $state,
+                $flowBindingToken,
+            ));
+        };
+    }
+
+    private function commandHasRedirectUri(
+        InitiateOAuthCommand $command,
+        string $expectedRedirectUri,
+    ): bool {
+        return $command->redirectUri === $expectedRedirectUri;
     }
 
     private function invokeController(?string $provider = null): Response

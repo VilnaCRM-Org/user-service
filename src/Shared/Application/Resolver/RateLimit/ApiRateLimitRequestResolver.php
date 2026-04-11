@@ -44,44 +44,41 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return list<array{name: string, key: string}>
      */
-    public function resolveEndpointLimiters(
-        Request $request,
-    ): array {
+    public function resolveEndpointLimiters(Request $request): array
+    {
         $path = $request->getPathInfo();
         $method = strtoupper($request->getMethod());
-        $args = [$request, $path, $method];
+        $targets = $this->resolveSingleEndpointLimiters($request, $path, $method);
+        $this->appendTargets($targets, $this->resolveUserMutationLimiters($path, $method));
+        $this->appendTargets(
+            $targets,
+            $this->resolveResendConfirmationLimiters($request, $path, $method)
+        );
+        $this->appendTargets(
+            $targets,
+            $this->resolveAuthenticatedSecurityLimiters($request, $path, $method)
+        );
+        $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
 
-        return $this->collectTargets($args);
+        return $targets;
     }
 
     /**
-     * @param array{Request, string, string} $args
-     *
      * @return list<array{name: string, key: string}>
      */
-    private function collectTargets(array $args): array
-    {
-        [$request, $path, $method] = $args;
-        $single = array_values(array_filter([
-            $this->resolveRegistrationLimiter(...$args),
-            $this->resolveTokenExchangeLimiter(...$args),
-            $this->resolveEmailConfirmationLimiter(...$args),
-            $this->resolveUserCollectionLimiter(...$args),
-            $this->resolvePasswordResetConfirmLimiter(...$args),
-            $this->resolveOAuthSocialLimiter(...$args),
+    private function resolveSingleEndpointLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
+        return array_values(array_filter([
+            $this->resolveRegistrationLimiter($request, $path, $method),
+            $this->resolveTokenExchangeLimiter($request, $path, $method),
+            $this->resolveEmailConfirmationLimiter($request, $path, $method),
+            $this->resolveUserCollectionLimiter($request, $path, $method),
+            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
+            $this->resolveOAuthSocialLimiter($request, $path, $method),
         ]));
-        $multi = [
-            $this->resolveUserMutationLimiters($path, $method),
-            $this->resolveResendConfirmationLimiters(...$args),
-            $this->resolveAuthenticatedSecurityLimiters(...$args),
-            $this->authTargetResolver->resolve($request),
-        ];
-
-        foreach ($multi as $group) {
-            $this->appendTargets($single, $group);
-        }
-
-        return $single;
     }
 
     /**
@@ -123,7 +120,10 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<array<string>>
      *
-     * @psalm-return list{0?: array{name: 'resend_confirmation', key: string}, 1?: array{name: 'resend_confirmation_target', key: string}}
+     * @psalm-return list{
+     *     0?: array{name: 'resend_confirmation', key: string},
+     *     1?: array{name: 'resend_confirmation_target', key: string}
+     * }
      */
     private function resolveResendConfirmationLimiters(
         Request $request,

@@ -35,6 +35,9 @@ final class UserContext implements Context
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
         $this->cachePool->clear();
+        self::$lastPasswordResetToken = '';
+        self::$userIdsByEmail = [];
+        self::$currentTokenUserEmail = '';
         $this->rateLimiterCachePool->clear();
     }
 

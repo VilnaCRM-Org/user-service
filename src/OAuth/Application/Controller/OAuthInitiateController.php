@@ -10,12 +10,10 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 
 /**
  * @psalm-api
  */
-#[AsController]
 final readonly class OAuthInitiateController
 {
     public function __construct(

@@ -14,12 +14,10 @@ use LogicException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\AsController;
 
 /**
  * @psalm-api
  */
-#[AsController]
 final readonly class OAuthCallbackController
 {
     public function __construct(
@@ -84,12 +82,12 @@ final readonly class OAuthCallbackController
             return;
         }
 
-        $response->headers->setCookie(
-            $this->authCookieFactory->create(
-                $this->requireAccessToken($commandResponse),
-                false
-            )
-        );
+        $accessToken = $commandResponse->getAccessToken();
+        if ($accessToken !== null && $accessToken !== '') {
+            $response->headers->setCookie(
+                $this->authCookieFactory->create($accessToken, false)
+            );
+        }
     }
 
     /**
@@ -135,32 +133,23 @@ final readonly class OAuthCallbackController
         array $body,
         HandleOAuthCallbackResponse $response,
     ): array {
-        $body['access_token'] = $this->requireAccessToken($response);
-        $body['refresh_token'] = $this->requireRefreshToken($response);
+        $accessToken = $response->getAccessToken();
+        $refreshToken = $response->getRefreshToken();
 
-        return $body;
-    }
-
-    private function requireAccessToken(
-        HandleOAuthCallbackResponse $response,
-    ): string {
-        return $this->requireToken($response->getAccessToken());
-    }
-
-    private function requireRefreshToken(
-        HandleOAuthCallbackResponse $response,
-    ): string {
-        return $this->requireToken($response->getRefreshToken());
-    }
-
-    private function requireToken(?string $token): string
-    {
-        if ($token === null || $token === '') {
+        if (
+            $accessToken === null
+            || $accessToken === ''
+            || $refreshToken === null
+            || $refreshToken === ''
+        ) {
             throw new LogicException(
-                'Missing access/refresh token when 2FA is disabled.'
+                'OAuth callback response missing access/refresh token when 2FA is disabled.'
             );
         }
 
-        return $token;
+        $body['access_token'] = $accessToken;
+        $body['refresh_token'] = $refreshToken;
+
+        return $body;
     }
 }
