@@ -45,7 +45,9 @@ final class OAuthPublisherTest extends UnitTestCase
 
         $event = new OAuthUserCreatedEvent($userId, $email, $provider, $eventId);
 
-        $this->eventIdFactory->method('generate')->willReturn($eventId);
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
         $this->oAuthEventFactory->expects($this->once())
             ->method('createUserCreated')
             ->with($userId, $email, $provider, $eventId)
@@ -66,7 +68,8 @@ final class OAuthPublisherTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $eventId = $this->faker->uuid();
 
-        $this->eventIdFactory->method('generate')
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
             ->willReturn($eventId);
 
         $event = new OAuthUserSignedInEvent(
@@ -83,6 +86,55 @@ final class OAuthPublisherTest extends UnitTestCase
 
         $this->publisher->publishUserSignedIn(
             $userId, $email, $provider, $sessionId
+        );
+    }
+
+    public function testPublishUserCreatedDoesNotPublishWhenEventIdGenerationFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $email = $this->faker->safeEmail();
+        $provider = $this->faker->word();
+        $exception = new \RuntimeException($this->faker->sentence());
+
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willThrowException($exception);
+        $this->oAuthEventFactory->expects($this->never())
+            ->method('createUserCreated');
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+
+        $this->expectExceptionObject($exception);
+
+        $this->publisher->publishUserCreated($userId, $email, $provider);
+    }
+
+    public function testPublishUserSignedInDoesNotPublishWhenEventFactoryFails(): void
+    {
+        $userId = $this->faker->uuid();
+        $email = $this->faker->safeEmail();
+        $provider = $this->faker->word();
+        $sessionId = $this->faker->uuid();
+        $eventId = $this->faker->uuid();
+        $exception = new \RuntimeException($this->faker->sentence());
+
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
+        $this->oAuthEventFactory->expects($this->once())
+            ->method('createUserSignedIn')
+            ->with($userId, $email, $provider, $sessionId, $eventId)
+            ->willThrowException($exception);
+        $this->eventBus->expects($this->never())
+            ->method('publish');
+
+        $this->expectExceptionObject($exception);
+
+        $this->publisher->publishUserSignedIn(
+            $userId,
+            $email,
+            $provider,
+            $sessionId,
         );
     }
 }

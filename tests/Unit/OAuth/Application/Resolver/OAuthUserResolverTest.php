@@ -16,6 +16,7 @@ use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
@@ -118,6 +119,31 @@ final class OAuthUserResolverTest extends UnitTestCase
         );
 
         $this->assertGreaterThan($createdAt, $identity->getLastUsedAt());
+    }
+
+    public function testResolveThrowsWhenIdentityUserCannotBeFound(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $providerId = $this->faker->uuid();
+        $userId = $this->faker->uuid();
+        $identity = $this->createIdentity($provider, $providerId, $userId);
+
+        $this->socialIdentityRepo->method('findByProviderAndProviderId')
+            ->with($provider, $providerId)
+            ->willReturn($identity);
+        $this->socialIdentityRepo->expects($this->once())
+            ->method('save')
+            ->with($identity);
+        $this->userRepo->method('findById')
+            ->with($userId)
+            ->willReturn(null);
+
+        $this->expectException(UserNotFoundException::class);
+
+        $this->resolver->resolve(
+            $provider,
+            $this->createProfile($this->faker->safeEmail(), $providerId)
+        );
     }
 
     public function testResolveAutoLinksExistingUserByEmail(): void

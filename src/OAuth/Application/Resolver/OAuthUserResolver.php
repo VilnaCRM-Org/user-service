@@ -14,6 +14,7 @@ use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 
@@ -63,8 +64,11 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
         $identity->touchLastUsed(new DateTimeImmutable());
         $this->socialIdentityRepository->save($identity);
 
-        /** @var User $user */
         $user = $this->userRepository->findById($identity->getUserId());
+
+        if (!$user instanceof User) {
+            throw new UserNotFoundException();
+        }
 
         return new OAuthResolvedUser($user, false);
     }
