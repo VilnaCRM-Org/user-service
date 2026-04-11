@@ -85,9 +85,13 @@ services:
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider'
 
-  App\Shared\Application\Provider\OAuthSupportedProvidersProvider:
+  App\Shared\Application\Collection\OAuthProviderNameCollection:
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider_name'
+
+  App\Shared\Application\Provider\OAuthSupportedProvidersProvider:
+    arguments:
+      $providers: '@App\Shared\Application\Collection\OAuthProviderNameCollection'
 
   App\Shared\Application\EventListener\RequestBodySizeLimitListener:
     arguments:

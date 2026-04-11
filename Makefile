@@ -29,11 +29,15 @@ COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
+EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=load_test php
+EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
+SYMFONY_LOAD_TEST_ENV = $(EXEC_PHP_LOAD_TEST_ENV) bin/console
+SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
 BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
@@ -192,6 +196,16 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
+
+setup-load-test-db: ## Create database for load testing purposes
+	$(SYMFONY_LOAD_TEST_ENV) c:c
+	$(SYMFONY_LOAD_TEST_ENV_NODEBUG) c:c
+	@echo "Recreating MongoDB schema for load testing..."
+	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
+	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Seeding test OAuth client..."
+	$(SYMFONY_LOAD_TEST_ENV) app:seed-test-oauth-client
+	@echo "✅ Load-test database ready"
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 

@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Provider;
 
-use App\OAuth\Domain\ValueObject\OAuthProvider;
+use App\Shared\Application\Collection\OAuthProviderNameCollection;
 
 final readonly class OAuthSupportedProvidersProvider
 {
     /** @var list<string> */
     private array $supportedProviders;
 
-    /**
-     * @param iterable<OAuthProvider> $providers
-     */
-    public function __construct(iterable $providers)
+    public function __construct(OAuthProviderNameCollection $providers)
     {
-        $this->supportedProviders = array_map(
-            static fn (OAuthProvider $provider): string => (string) $provider,
-            iterator_to_array($providers, false),
-        );
+        $this->supportedProviders = $providers->names();
     }
 
     /**

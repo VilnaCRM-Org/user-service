@@ -8,6 +8,7 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\OpenApi;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
+use App\Shared\Application\Collection\OAuthProviderNameCollection;
 use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthSocialInitiateEndpointFactory;
 use App\Shared\Application\Provider\OAuthSupportedProvidersProvider;
 use App\Tests\Unit\UnitTestCase;
@@ -37,9 +38,11 @@ final class OAuthSocialInitiateEndpointFactoryTest extends UnitTestCase
     private function createSupportedProvidersProvider(): OAuthSupportedProvidersProvider
     {
         return new OAuthSupportedProvidersProvider(
-            array_map(
-                static fn (string $name): OAuthProvider => OAuthProvider::fromString($name),
-                ['github', 'google', 'facebook', 'twitter'],
+            new OAuthProviderNameCollection(
+                array_map(
+                    static fn (string $name): OAuthProvider => OAuthProvider::fromString($name),
+                    ['github', 'google', 'facebook', 'twitter'],
+                ),
             ),
         );
     }
