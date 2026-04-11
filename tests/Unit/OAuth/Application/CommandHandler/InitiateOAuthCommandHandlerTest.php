@@ -37,6 +37,7 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
+        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
         $this->oAuthProvider->method('getAuthorizationUrl')
@@ -45,8 +46,23 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
         $this->stateRepository->expects($this->once())
             ->method('save')
             ->with(
-                $this->isType('string'),
-                $this->isInstanceOf(OAuthStatePayload::class),
+                $this->callback(function (string $state): bool {
+                    return $this->isHexTokenWithExpectedLength($state);
+                }),
+                $this->callback(function (OAuthStatePayload $payload) use (
+                    $redirectUri,
+                    &$capturedPayload,
+                ): bool {
+                    $capturedPayload = $payload;
+
+                    return $payload->redirectUri === $redirectUri
+                        && $this->isHexTokenWithExpectedLength(
+                            $payload->codeVerifier
+                        )
+                        && $this->isHexTokenWithExpectedLength(
+                            $payload->flowBindingHash
+                        );
+                }),
                 $this->isType('int'),
             );
 
@@ -57,23 +73,71 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
         $this->assertSame($authUrl, $response->authorizationUrl);
         $this->assertNotEmpty($response->state);
         $this->assertNotEmpty($response->flowBindingToken);
+        $this->assertNotNull($capturedPayload);
+        $this->assertTrue(
+            $this->isHexTokenWithExpectedLength($response->state)
+        );
+        $this->assertTrue(
+            $this->isHexTokenWithExpectedLength($response->flowBindingToken)
+        );
+        $this->assertSame(
+            hash('sha256', $response->flowBindingToken),
+            $capturedPayload->flowBindingHash,
+        );
     }
 
     public function testInvokeWithPkceProviderGeneratesCodeChallenge(): void
     {
         $redirectUri = $this->faker->url();
         $authUrl = $this->faker->url();
+        $capturedPayload = null;
 
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
         $this->oAuthProvider->expects($this->once())
             ->method('getAuthorizationUrl')
             ->with(
                 $this->isType('string'),
-                $this->logicalNot($this->isNull()),
+                $this->callback(function (?string $codeChallenge) use (
+                    &$capturedPayload
+                ): bool {
+                    if (!is_string($codeChallenge) || $capturedPayload === null) {
+                        return false;
+                    }
+
+                    return $codeChallenge === rtrim(
+                        strtr(
+                            base64_encode(
+                                hash(
+                                    'sha256',
+                                    $capturedPayload->codeVerifier,
+                                    true,
+                                )
+                            ),
+                            '+/',
+                            '-_'
+                        ),
+                        '='
+                    )
+                        && !str_contains($codeChallenge, '=')
+                        && !str_contains($codeChallenge, '+')
+                        && !str_contains($codeChallenge, '/');
+                }),
             )
             ->willReturn($authUrl);
 
-        $this->stateRepository->method('save');
+        $this->stateRepository->expects($this->once())
+            ->method('save')
+            ->with(
+                $this->isType('string'),
+                $this->callback(function (OAuthStatePayload $payload) use (
+                    &$capturedPayload
+                ): bool {
+                    $capturedPayload = $payload;
+
+                    return true;
+                }),
+                $this->isType('int'),
+            );
 
         $command = new InitiateOAuthCommand($this->providerName, $redirectUri);
         $this->createHandler()->__invoke($command);
@@ -131,5 +195,10 @@ final class InitiateOAuthCommandHandlerTest extends UnitTestCase
             $registry,
             $this->stateRepository,
         );
+    }
+
+    private function isHexTokenWithExpectedLength(string $token): bool
+    {
+        return strlen($token) === 64 && ctype_xdigit($token);
     }
 }

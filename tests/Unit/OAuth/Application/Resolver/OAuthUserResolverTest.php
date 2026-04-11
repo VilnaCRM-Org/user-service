@@ -87,6 +87,39 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->assertFalse($result->newlyCreated);
     }
 
+    public function testResolveUpdatesIdentityLastUsedAtWhenIdentityExists(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $providerId = $this->faker->uuid();
+        $userId = $this->faker->uuid();
+        $createdAt = new DateTimeImmutable('-1 day');
+        $identity = new SocialIdentity(
+            $this->faker->uuid(),
+            $provider,
+            $providerId,
+            $userId,
+            $createdAt,
+        );
+        $user = $this->createUser($this->faker->safeEmail());
+
+        $this->socialIdentityRepo->method('findByProviderAndProviderId')
+            ->with($provider, $providerId)
+            ->willReturn($identity);
+        $this->userRepo->method('findById')
+            ->with($userId)
+            ->willReturn($user);
+        $this->socialIdentityRepo->expects($this->once())
+            ->method('save')
+            ->with($identity);
+
+        $this->resolver->resolve(
+            $provider,
+            $this->createProfile($this->faker->safeEmail(), $providerId)
+        );
+
+        $this->assertGreaterThan($createdAt, $identity->getLastUsedAt());
+    }
+
     public function testResolveAutoLinksExistingUserByEmail(): void
     {
         $provider = OAuthProvider::fromString($this->faker->word());
@@ -153,6 +186,35 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->assertTrue($result->user->isConfirmed());
     }
 
+    public function testResolveCreatesNewUserWithTrimmedMultibyteInitials(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $hashedPassword = $this->faker->sha256();
+        $name = '  АБВГ  ';
+
+        $this->arrangeNoIdentityMatch();
+        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->with($this->callback(
+                fn (string $password): bool => strlen($password) === 64
+                    && ctype_xdigit($password)
+            ))
+            ->willReturn($hashedPassword);
+
+        $result = $this->resolver->resolve(
+            $provider,
+            new OAuthUserProfile(
+                $this->faker->safeEmail(),
+                $name,
+                $this->faker->uuid(),
+                true,
+            )
+        );
+
+        $this->assertSame('АБ', $result->user->getInitials());
+    }
+
     public function testResolveUsesEmailPrefixWhenNameIsEmpty(): void
     {
         $provider = OAuthProvider::fromString($this->faker->word());
@@ -178,6 +240,52 @@ final class OAuthUserResolverTest extends UnitTestCase
             2
         );
         $this->assertSame($expected, $result->user->getInitials());
+    }
+
+    public function testResolveUsesEmailPrefixWhenNameContainsOnlyWhitespace(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $email = 'ж@example.com';
+
+        $this->arrangeNoIdentityMatch();
+        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->method('hash')
+            ->willReturn($this->faker->sha256());
+
+        $result = $this->resolver->resolve(
+            $provider,
+            new OAuthUserProfile(
+                $email,
+                '   ',
+                $this->faker->uuid(),
+                true,
+            )
+        );
+
+        $this->assertSame('ж', $result->user->getInitials());
+    }
+
+    public function testResolveUsesMultibyteEmailPrefixWhenNameIsBlank(): void
+    {
+        $provider = OAuthProvider::fromString($this->faker->word());
+        $email = 'жя@example.com';
+
+        $this->arrangeNoIdentityMatch();
+        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->passwordHasher->method('hash')
+            ->willReturn($this->faker->sha256());
+
+        $result = $this->resolver->resolve(
+            $provider,
+            new OAuthUserProfile(
+                $email,
+                '',
+                $this->faker->uuid(),
+                true,
+            )
+        );
+
+        $this->assertSame('жя', $result->user->getInitials());
     }
 
     public function testResolveSkipsAutoLinkWhenEmailNotVerified(): void

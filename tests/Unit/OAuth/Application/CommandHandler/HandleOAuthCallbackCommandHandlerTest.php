@@ -71,8 +71,23 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
     public function testInvokeDirectSignInForExistingUser(): void
     {
         $user = $this->createUser();
+        $command = $this->createCommand();
 
         $this->arrangeCommonMocks($user, false);
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->with(
+                $user,
+                $command->ipAddress,
+                $command->userAgent,
+                false,
+                $this->isInstanceOf(DateTimeImmutable::class),
+            )
+            ->willReturn(new IssuedSession(
+                (string) new Ulid(),
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+            ));
 
         $this->oAuthPublisher->expects($this->never())
             ->method('publishUserCreated');
@@ -86,7 +101,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
                 $this->isType('string'),
             );
 
-        $command = $this->createCommand();
         $this->createHandler()->__invoke($command);
 
         $response = $command->getResponse();
