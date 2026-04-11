@@ -8,9 +8,9 @@ use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\OpenApi;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
-use App\Shared\Application\Collection\OAuthProviderNameCollection;
 use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthSocialCallbackEndpointFactory;
 use App\Shared\Application\Provider\OAuthSupportedProvidersProvider;
+use App\Shared\Domain\Collection\OAuthProviderNameCollection;
 use App\Tests\Unit\UnitTestCase;
 
 final class OAuthSocialCallbackEndpointFactoryTest extends UnitTestCase

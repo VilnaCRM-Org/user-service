@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Collection;
+namespace App\Tests\Unit\Shared\Domain\Collection;
 
 use App\OAuth\Domain\ValueObject\OAuthProvider;
-use App\Shared\Application\Collection\OAuthProviderNameCollection;
+use App\Shared\Domain\Collection\OAuthProviderNameCollection;
 use App\Tests\Unit\UnitTestCase;
 
 final class OAuthProviderNameCollectionTest extends UnitTestCase

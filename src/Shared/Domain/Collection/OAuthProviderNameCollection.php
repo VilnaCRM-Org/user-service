@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Collection;
+namespace App\Shared\Domain\Collection;
 
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use ArrayIterator;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Provider;
 
-use App\Shared\Application\Collection\OAuthProviderNameCollection;
+use App\Shared\Domain\Collection\OAuthProviderNameCollection;
 
 final readonly class OAuthSupportedProvidersProvider
 {
