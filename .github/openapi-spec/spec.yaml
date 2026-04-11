@@ -600,9 +600,9 @@ paths:
           schema:
             type: string
             enum:
-              - facebook
               - github
               - google
+              - facebook
               - twitter
           style: simple
           explode: false
@@ -755,9 +755,9 @@ paths:
           schema:
             type: string
             enum:
-              - facebook
               - github
               - google
+              - facebook
               - twitter
           style: simple
           explode: false
