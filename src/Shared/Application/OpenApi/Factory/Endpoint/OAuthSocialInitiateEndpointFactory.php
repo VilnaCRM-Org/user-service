@@ -6,7 +6,7 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\OpenApi;
-use App\OAuth\Application\Provider\OAuthProviderRegistry;
+use App\Shared\Application\Provider\OAuthSupportedProvidersProvider;
 use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -23,11 +23,11 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
 
     public function __construct(
         string $apiPrefix,
-        OAuthProviderRegistry $providerRegistry,
+        OAuthSupportedProvidersProvider $supportedProvidersProvider,
     )
     {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
-        $this->supportedProviders = $providerRegistry->supportedProviders();
+        $this->supportedProviders = $supportedProvidersProvider->supportedProviders();
     }
 
     #[\Override]

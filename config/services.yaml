@@ -85,6 +85,10 @@ services:
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider'
 
+  App\Shared\Application\Provider\OAuthSupportedProvidersProvider:
+    arguments:
+      $providers: !tagged_iterator 'app.oauth_provider_name'
+
   App\Shared\Application\EventListener\RequestBodySizeLimitListener:
     arguments:
       $maxBodySizeBytes: '%env(int:REQUEST_BODY_MAX_SIZE_BYTES)%'
@@ -421,6 +425,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['github']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
     arguments:
@@ -439,6 +444,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['google']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
     arguments:
@@ -458,6 +464,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['facebook']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
     arguments:
@@ -476,6 +483,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['twitter']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
     arguments:
