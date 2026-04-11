@@ -47,22 +47,8 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
 
-        $this->idFactory->method('create')
-            ->willReturnCallback(fn () => $this->faker->uuid());
-
-        $this->eventIdFactory->method('generate')
-            ->willReturnCallback(fn () => $this->faker->uuid());
-
-        $this->resolver = new OAuthUserResolver(
-            $this->socialIdentityRepo,
-            $this->userRepo,
-            $this->idFactory,
-            new OAuthUserFactory(
-                $this->passwordHasher,
-                $this->eventIdFactory,
-                $this->uuidTransformer,
-            ),
-        );
+        $this->configureFactories();
+        $this->resolver = $this->createResolver();
     }
 
     public function testResolveReturnsExistingUserWhenIdentityExists(): void
@@ -406,6 +392,34 @@ final class OAuthUserResolverTest extends UnitTestCase
     private function createProvider(): OAuthProvider
     {
         return OAuthProvider::fromString($this->faker->word());
+    }
+
+    private function configureFactories(): void
+    {
+        $this->idFactory->method('create')
+            ->willReturnCallback(fn () => $this->faker->uuid());
+
+        $this->eventIdFactory->method('generate')
+            ->willReturnCallback(fn () => $this->faker->uuid());
+    }
+
+    private function createResolver(): OAuthUserResolver
+    {
+        return new OAuthUserResolver(
+            $this->socialIdentityRepo,
+            $this->userRepo,
+            $this->idFactory,
+            $this->createOAuthUserFactory(),
+        );
+    }
+
+    private function createOAuthUserFactory(): OAuthUserFactory
+    {
+        return new OAuthUserFactory(
+            $this->passwordHasher,
+            $this->eventIdFactory,
+            $this->uuidTransformer,
+        );
     }
 
     private function createUser(string $email): User
