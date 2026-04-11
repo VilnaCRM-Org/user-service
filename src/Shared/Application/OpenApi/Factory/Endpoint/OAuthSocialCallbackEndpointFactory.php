@@ -129,6 +129,9 @@ COOKIE;
         );
     }
 
+    /**
+     * @param list<string> $supportedErrorCodes
+     */
     private function createProblemResponse(
         int $status,
         string $detail,
@@ -288,6 +291,9 @@ COOKIE;
         ];
     }
 
+    /**
+     * @param list<string> $supportedErrorCodes
+     */
     private function createProblemMediaType(
         int $status,
         string $detail,
