@@ -136,90 +136,24 @@ final class OAuthCallbackControllerEdgeCaseTest extends UnitTestCase
 
     public function testInvokeDispatchesCommandWithFallbackIpAddress(): void
     {
-        $provider = $this->faker->word();
-        $code = $this->faker->sha256();
-        $state = $this->faker->sha256();
-        $flowBindingToken = $this->faker->sha256();
-        $request = Request::create(
-            sprintf(
-                'https://example.com/api/auth/social/%s/callback?code=%s&state=%s',
-                $provider,
-                $code,
-                $state,
-            ),
-            'GET',
-        );
-        $request->cookies->set(
-            OAuthFlowCookieFactory::COOKIE_NAME,
-            $flowBindingToken,
-        );
+        $request = $this->createCallbackRequest();
         $request->server->remove('REMOTE_ADDR');
 
-        $responseDto = new HandleOAuthCallbackResponse(
-            false,
-            $this->faker->sha256(),
-            $this->faker->sha256(),
-        );
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $command): bool =>
-                    $command->ipAddress === '0.0.0.0'
-            ))
-            ->willReturnCallback(
-                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
-                    $command->setResponse($responseDto);
-                }
-            );
+        $this->expectDispatchWithIpAddress('0.0.0.0');
         $this->arrangeAuthCookie();
 
-        ($this->controller)($provider, $request);
+        ($this->controller)($this->extractProviderFromRequest($request), $request);
     }
 
     public function testInvokeDispatchesCommandWithActualClientIpAddress(): void
     {
-        $provider = $this->faker->word();
-        $code = $this->faker->sha256();
-        $state = $this->faker->sha256();
-        $flowBindingToken = $this->faker->sha256();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            sprintf(
-                'https://example.com/api/auth/social/%s/callback?code=%s&state=%s',
-                $provider,
-                $code,
-                $state,
-            ),
-            'GET',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp],
-        );
-        $request->cookies->set(
-            OAuthFlowCookieFactory::COOKIE_NAME,
-            $flowBindingToken,
-        );
+        $request = $this->createCallbackRequest($clientIp);
 
-        $responseDto = new HandleOAuthCallbackResponse(
-            false,
-            $this->faker->sha256(),
-            $this->faker->sha256(),
-        );
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $command): bool =>
-                    $command->ipAddress === $clientIp
-            ))
-            ->willReturnCallback(
-                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
-                    $command->setResponse($responseDto);
-                }
-            );
+        $this->expectDispatchWithIpAddress($clientIp);
         $this->arrangeAuthCookie();
 
-        ($this->controller)($provider, $request);
+        ($this->controller)($this->extractProviderFromRequest($request), $request);
     }
 
     public function testInvokeThrowsWhenDirectSignInAccessTokenIsEmpty(): void
@@ -322,7 +256,14 @@ final class OAuthCallbackControllerEdgeCaseTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, bool|string>
+     *
+     * @phpstan-return array{
+     *     2fa_enabled: bool,
+     *     access_token?: string,
+     *     refresh_token?: string,
+     *     pending_session_id?: string
+     * }
      */
     private function decodeResponse(Response $response): array
     {
@@ -332,5 +273,60 @@ final class OAuthCallbackControllerEdgeCaseTest extends UnitTestCase
             512,
             JSON_THROW_ON_ERROR
         );
+    }
+
+    private function createCallbackRequest(?string $clientIp = null): Request
+    {
+        $provider = $this->faker->word();
+        $request = Request::create(
+            sprintf(
+                'https://example.com/api/auth/social/%s/callback?code=%s&state=%s',
+                $provider,
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+            ),
+            'GET',
+            [],
+            [],
+            [],
+            $clientIp === null ? [] : ['REMOTE_ADDR' => $clientIp],
+        );
+        $request->cookies->set(
+            OAuthFlowCookieFactory::COOKIE_NAME,
+            $this->faker->sha256(),
+        );
+
+        return $request;
+    }
+
+    private function expectDispatchWithIpAddress(string $expectedIpAddress): void
+    {
+        $responseDto = new HandleOAuthCallbackResponse(
+            false,
+            $this->faker->sha256(),
+            $this->faker->sha256(),
+        );
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (HandleOAuthCallbackCommand $command): bool => $command->ipAddress === $expectedIpAddress
+            ))
+            ->willReturnCallback(
+                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
+                    $command->setResponse($responseDto);
+                }
+            );
+    }
+
+    private function extractProviderFromRequest(Request $request): string
+    {
+        $provider = basename((string) dirname($request->getPathInfo()));
+
+        if ($provider === '' || $provider === '.') {
+            throw new LogicException('Request provider must be a non-empty string.');
+        }
+
+        return $provider;
     }
 }

@@ -134,29 +134,9 @@ final class OAuthInitiateControllerTest extends UnitTestCase
     public function testInvokeDispatchesCommandWithAbsoluteRedirectUri(): void
     {
         $provider = $this->faker->word();
-        $expectedRedirectUri = sprintf(
-            'https://example.com/api/auth/social/%s/callback',
-            $provider,
-        );
         $authUrl = $this->faker->url();
 
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (InitiateOAuthCommand $command): bool =>
-                    $command->redirectUri === $expectedRedirectUri
-            ))
-            ->willReturnCallback(
-                static function (InitiateOAuthCommand $command) use ($authUrl): void {
-                    $command->setResponse(
-                        new InitiateOAuthResponse(
-                            $authUrl,
-                            'state',
-                            'flow-binding-token',
-                        )
-                    );
-                }
-            );
+        $this->expectDispatchWithAbsoluteRedirectUri($provider, $authUrl);
 
         $this->invokeController($provider);
     }
@@ -183,6 +163,31 @@ final class OAuthInitiateControllerTest extends UnitTestCase
                     $this->faker->sha256(),
                 ));
             });
+    }
+
+    private function expectDispatchWithAbsoluteRedirectUri(
+        string $provider,
+        string $authUrl,
+    ): void {
+        $expectedRedirectUri = sprintf(
+            'https://example.com/api/auth/social/%s/callback',
+            $provider,
+        );
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                static fn (InitiateOAuthCommand $command): bool => $command->redirectUri === $expectedRedirectUri
+            ))
+            ->willReturnCallback(
+                static function (InitiateOAuthCommand $command) use ($authUrl): void {
+                    $command->setResponse(new InitiateOAuthResponse(
+                        $authUrl,
+                        'state',
+                        'flow-binding-token',
+                    ));
+                }
+            );
     }
 
     private function invokeController(?string $provider = null): Response

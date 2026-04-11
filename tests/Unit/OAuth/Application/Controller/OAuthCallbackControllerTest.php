@@ -194,8 +194,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool =>
-                    $cmd->code === $code && $cmd->state === $state
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
             ));
 
         $this->arrangeDirectSignIn();
@@ -210,8 +209,7 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool =>
-                    $cmd->flowBindingToken === $flowBindingToken
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
             ));
 
         $this->arrangeDirectSignIn();
@@ -278,7 +276,14 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, bool|string>
+     *
+     * @phpstan-return array{
+     *     2fa_enabled: bool,
+     *     access_token?: string,
+     *     refresh_token?: string,
+     *     pending_session_id?: string
+     * }
      */
     private function decodeResponse(Response $response): array
     {
