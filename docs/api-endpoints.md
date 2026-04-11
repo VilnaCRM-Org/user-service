@@ -31,7 +31,7 @@ The REST API also exposes two public social sign-in endpoints:
 - `GET /api/auth/social/{provider}` starts the flow, creates the OAuth state, sets the `oauth_flow_binding` cookie, and redirects the client to the selected provider.
 - `GET /api/auth/social/{provider}/callback` validates the callback and returns either access and refresh tokens or a `pending_session_id` when 2FA is enabled.
 
-Supported providers are `github`, `google`, `facebook`, and `twitter`.
+Supported providers are GitHub, Google, Facebook, and Twitter.
 
 ## GraphQL specification
 

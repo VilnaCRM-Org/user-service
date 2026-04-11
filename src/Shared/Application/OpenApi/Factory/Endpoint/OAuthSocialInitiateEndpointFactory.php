@@ -6,6 +6,7 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\OpenApi;
+use App\OAuth\Application\Provider\OAuthProviderRegistry;
 use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -15,18 +16,18 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
         = 'oauth_flow_binding=abc123; Path=/api/auth/social; Secure; HttpOnly; SameSite=Lax';
     private const LOCATION_EXAMPLE
         = 'https://oauth.mock.example/github/authorize?state=abc123';
-    private const SUPPORTED_PROVIDERS = [
-        'github',
-        'google',
-        'facebook',
-        'twitter',
-    ];
 
     private string $endpointUri = '/auth/social/{provider}';
+    /** @var list<string> */
+    private array $supportedProviders;
 
-    public function __construct(string $apiPrefix)
+    public function __construct(
+        string $apiPrefix,
+        OAuthProviderRegistry $providerRegistry,
+    )
     {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
+        $this->supportedProviders = $providerRegistry->supportedProviders();
     }
 
     #[\Override]
@@ -44,7 +45,7 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
             required: true,
             schema: [
                 'type' => 'string',
-                'enum' => self::SUPPORTED_PROVIDERS,
+                'enum' => $this->supportedProviders,
             ],
             example: 'github',
         );

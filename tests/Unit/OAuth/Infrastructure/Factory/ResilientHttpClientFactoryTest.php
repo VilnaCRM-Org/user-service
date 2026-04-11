@@ -47,6 +47,15 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
 
         $this->assertInstanceOf(ResilientHttpClientFactory::class, $factory);
     }
+
+    public function testConstructorRejectsNonPositiveRetryDelayBase(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('retryDelayBaseMs must be greater than 0.');
+
+        new ResilientHttpClientFactory(1500, 5000, 1, HandlerStack::create(), 0);
+    }
+
     public function testCreateBuildsIndependentHandlerPerClient(): void
     {
         $baseStack = HandlerStack::create();
@@ -82,6 +91,7 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
         $this->assertSame(8000, $delay(4));
         $this->assertSame(8000, $delay(8));
     }
+
     public function testCreateReturnsGuzzleClient(): void
     {
         $factory = new ResilientHttpClientFactory(
@@ -197,6 +207,7 @@ final class ResilientHttpClientFactoryTest extends UnitTestCase
             HandlerStack::create(),
             1,
         );
+
         $method = new \ReflectionMethod($factory, 'createRetryDelay');
 
         /** @var callable(int): int $delay */

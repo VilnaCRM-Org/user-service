@@ -7,6 +7,10 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Endpoint;
 use ApiPlatform\OpenApi\Model\PathItem;
 use ApiPlatform\OpenApi\Model\Paths;
 use ApiPlatform\OpenApi\OpenApi;
+use App\OAuth\Application\Collection\OAuthProviderCollection;
+use App\OAuth\Application\Provider\OAuthProviderInterface;
+use App\OAuth\Application\Provider\OAuthProviderRegistry;
+use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\Shared\Application\OpenApi\Factory\Endpoint\OAuthSocialInitiateEndpointFactory;
 use App\Tests\Unit\UnitTestCase;
 
@@ -25,7 +29,29 @@ final class OAuthSocialInitiateEndpointFactoryTest extends UnitTestCase
                 $this->isInstanceOf(PathItem::class),
             );
 
-        $factory = new OAuthSocialInitiateEndpointFactory(getenv('API_PREFIX'));
+        $factory = new OAuthSocialInitiateEndpointFactory(
+            (string) getenv('API_PREFIX'),
+            $this->createProviderRegistry(),
+        );
         $factory->createEndpoint($openApi);
+    }
+
+    private function createProviderRegistry(): OAuthProviderRegistry
+    {
+        $providers = array_map(
+            fn (string $name): OAuthProviderInterface => $this->createProvider($name),
+            ['github', 'google', 'facebook', 'twitter'],
+        );
+
+        return new OAuthProviderRegistry(new OAuthProviderCollection(...$providers));
+    }
+
+    private function createProvider(string $name): OAuthProviderInterface
+    {
+        $provider = $this->createMock(OAuthProviderInterface::class);
+        $provider->method('getProvider')
+            ->willReturn(OAuthProvider::fromString($name));
+
+        return $provider;
     }
 }

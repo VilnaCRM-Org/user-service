@@ -631,14 +631,14 @@ paths:
                   - 2fa_enabled
               example:
                 2fa_enabled: false
-                access_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
-                refresh_token: refresh-token-123
+                access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
           headers:
             Set-Cookie:
               description: 'Issued when 2FA is not required.'
               schema:
                 type: string
-              example: '__Host-auth_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9; Path=/; Secure; HttpOnly; SameSite=Lax'
+              example: '__Host-auth_token=<ACCESS_TOKEN_PLACEHOLDER>; Path=/; Secure; HttpOnly; SameSite=Lax'
             Cache-Control:
               description: 'Cache control policy.'
               schema:
@@ -660,7 +660,11 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   status: { type: integer }
-                  error_code: { type: string }
+                  error_code:
+                    type: string
+                    enum:
+                      - invalid_state
+                      - provider_email_unavailable
                 required:
                   - type
                   - title

@@ -324,19 +324,25 @@ final class OAuthSocialFlowIntegrationTest extends AuthIntegrationTestCase
         bool $twoFactorEnabled,
         bool $confirmed,
     ): User {
+        $password = sprintf(
+            '%sAa1!',
+            $this->faker->regexify('[A-Za-z0-9]{12}')
+        );
+        $twoFactorSecret = $twoFactorEnabled
+            ? $this->faker->regexify('[A-Z2-7]{16}')
+            : null;
+
         $user = $this->userFactory->create(
             $email,
             $this->faker->lexify('??'),
-            'PassWORD!123',
+            $password,
             $this->uuidTransformer->transformFromString($this->faker->uuid()),
         );
 
         $this->assertInstanceOf(User::class, $user);
         $user->setConfirmed($confirmed);
         $user->setTwoFactorEnabled($twoFactorEnabled);
-        $user->setTwoFactorSecret(
-            $twoFactorEnabled ? 'JBSWY3DPEHPK3PXP' : null,
-        );
+        $user->setTwoFactorSecret($twoFactorSecret);
         $this->userRepository->save($user);
 
         return $user;

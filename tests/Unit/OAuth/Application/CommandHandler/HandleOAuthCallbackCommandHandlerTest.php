@@ -59,13 +59,6 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->idFactory->method('create')
             ->willReturn($this->faker->uuid());
-
-        $this->sessionFactory->method('create')
-            ->willReturn(new IssuedSession(
-                (string) new Ulid(),
-                $this->faker->sha256(),
-                $this->faker->sha256(),
-            ));
     }
 
     public function testInvokeDirectSignInForExistingUser(): void
@@ -101,6 +94,7 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
         $user = $this->createUser();
 
         $this->arrangeCommonMocks($user, true);
+        $this->stubDirectSignInSessionCreation();
 
         $this->oAuthPublisher->expects($this->once())
             ->method('publishUserCreated')
@@ -148,6 +142,7 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->arrangeStatePayload($codeVerifier);
         $this->oAuthProvider->method('supportsPkce')->willReturn(true);
+        $this->stubDirectSignInSessionCreation();
 
         $this->oAuthProvider->expects($this->once())
             ->method('exchangeCode')
@@ -166,6 +161,7 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
 
         $this->arrangeStatePayload();
         $this->oAuthProvider->method('supportsPkce')->willReturn(false);
+        $this->stubDirectSignInSessionCreation();
 
         $this->oAuthProvider->expects($this->once())
             ->method('exchangeCode')
@@ -204,11 +200,13 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
                 false,
                 $this->isInstanceOf(DateTimeImmutable::class),
             )
-            ->willReturn(new IssuedSession(
-                (string) new Ulid(),
-                $this->faker->sha256(),
-                $this->faker->sha256(),
-            ));
+            ->willReturn($this->createIssuedSession());
+    }
+
+    private function stubDirectSignInSessionCreation(): void
+    {
+        $this->sessionFactory->method('create')
+            ->willReturn($this->createIssuedSession());
     }
 
     private function arrangeCommonMocks(
@@ -280,6 +278,15 @@ final class HandleOAuthCallbackCommandHandlerTest extends UnitTestCase
             $this->faker->firstName(),
             $this->faker->password(),
             $this->uuidTransformer->transformFromString($this->faker->uuid()),
+        );
+    }
+
+    private function createIssuedSession(): IssuedSession
+    {
+        return new IssuedSession(
+            (string) new Ulid(),
+            $this->faker->sha256(),
+            $this->faker->sha256(),
         );
     }
 

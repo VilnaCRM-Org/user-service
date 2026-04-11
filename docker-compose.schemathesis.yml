@@ -38,7 +38,7 @@ services:
   localstack:
     image: localstack/localstack:3.4.0
     ports:
-      - '${LOCALSTACK_PORT}:4566'
+      - '${LOCALSTACK_PORT:-4566}:4566'
     environment:
       - SERVICES=sqs
       - DEBUG=1

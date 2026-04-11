@@ -35,6 +35,10 @@ final class ResilientHttpClientFactory
         if ($maxRetries < 0) {
             throw new InvalidArgumentException('maxRetries must be greater than or equal to 0.');
         }
+
+        if ($retryDelayBaseMs <= 0) {
+            throw new InvalidArgumentException('retryDelayBaseMs must be greater than 0.');
+        }
     }
 
     public function create(): ClientInterface

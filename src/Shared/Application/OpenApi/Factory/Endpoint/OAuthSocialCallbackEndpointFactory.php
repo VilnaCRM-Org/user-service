@@ -6,26 +6,33 @@ namespace App\Shared\Application\OpenApi\Factory\Endpoint;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\OpenApi;
+use App\OAuth\Application\Provider\OAuthProviderRegistry;
 use ArrayObject;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class OAuthSocialCallbackEndpointFactory implements EndpointFactoryInterface
 {
+    private const ACCESS_TOKEN_PLACEHOLDER = '<ACCESS_TOKEN_PLACEHOLDER>';
+    private const REFRESH_TOKEN_PLACEHOLDER = '<REFRESH_TOKEN_PLACEHOLDER>';
     private const AUTH_COOKIE_EXAMPLE = <<<'COOKIE'
-__Host-auth_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9; Path=/; Secure; HttpOnly; SameSite=Lax
+__Host-auth_token=<ACCESS_TOKEN_PLACEHOLDER>; Path=/; Secure; HttpOnly; SameSite=Lax
 COOKIE;
-    private const SUPPORTED_PROVIDERS = [
-        'github',
-        'google',
-        'facebook',
-        'twitter',
+    private const UNPROCESSABLE_ENTITY_ERROR_CODES = [
+        'invalid_state',
+        'provider_email_unavailable',
     ];
 
     private string $endpointUri = '/auth/social/{provider}/callback';
+    /** @var list<string> */
+    private array $supportedProviders;
 
-    public function __construct(string $apiPrefix)
+    public function __construct(
+        string $apiPrefix,
+        OAuthProviderRegistry $providerRegistry,
+    )
     {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
+        $this->supportedProviders = $providerRegistry->supportedProviders();
     }
 
     #[\Override]
@@ -43,7 +50,7 @@ COOKIE;
             required: true,
             schema: [
                 'type' => 'string',
-                'enum' => self::SUPPORTED_PROVIDERS,
+                'enum' => $this->supportedProviders,
             ],
             example: 'github',
         );
@@ -103,6 +110,7 @@ COOKIE;
                 HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
                 'Invalid or already consumed OAuth state',
                 'invalid_state',
+                self::UNPROCESSABLE_ENTITY_ERROR_CODES,
             ),
             HttpResponse::HTTP_SERVICE_UNAVAILABLE => $this->createProblemResponse(
                 HttpResponse::HTTP_SERVICE_UNAVAILABLE,
@@ -125,6 +133,7 @@ COOKIE;
         int $status,
         string $detail,
         string $errorCode,
+        array $supportedErrorCodes = [],
     ): Model\Response {
         return new Model\Response(
             description: 'RFC 7807 problem response.',
@@ -133,6 +142,7 @@ COOKIE;
                     $status,
                     $detail,
                     $errorCode,
+                    $supportedErrorCodes,
                 ),
             ]),
         );
@@ -216,8 +226,8 @@ COOKIE;
     {
         return [
             '2fa_enabled' => false,
-            'access_token' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9',
-            'refresh_token' => 'refresh-token-123',
+            'access_token' => self::ACCESS_TOKEN_PLACEHOLDER,
+            'refresh_token' => self::REFRESH_TOKEN_PLACEHOLDER,
         ];
     }
 
@@ -282,15 +292,24 @@ COOKIE;
         int $status,
         string $detail,
         string $errorCode,
+        array $supportedErrorCodes = [],
     ): Model\MediaType {
         return new Model\MediaType(
-            schema: $this->createProblemSchema(),
+            schema: $this->createProblemSchema($supportedErrorCodes),
             example: $this->createProblemExample($status, $detail, $errorCode),
         );
     }
 
-    private function createProblemSchema(): ArrayObject
+    /**
+     * @param list<string> $supportedErrorCodes
+     */
+    private function createProblemSchema(array $supportedErrorCodes = []): ArrayObject
     {
+        $errorCodeSchema = ['type' => 'string'];
+        if ($supportedErrorCodes !== []) {
+            $errorCodeSchema['enum'] = $supportedErrorCodes;
+        }
+
         return new ArrayObject([
             'type' => 'object',
             'properties' => [
@@ -298,7 +317,7 @@ COOKIE;
                 'title' => ['type' => 'string'],
                 'detail' => ['type' => 'string'],
                 'status' => ['type' => 'integer'],
-                'error_code' => ['type' => 'string'],
+                'error_code' => $errorCodeSchema,
             ],
             'required' => ['type', 'title', 'detail', 'status', 'error_code'],
         ]);

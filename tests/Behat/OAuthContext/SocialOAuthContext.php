@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\OAuthContext;
 
+use App\OAuth\Application\Factory\OAuthFlowCookieFactory;
 use App\Tests\Behat\UserContext\UserOperationsState;
 use Behat\Behat\Context\Context;
 use PHPUnit\Framework\Assert;
@@ -12,8 +13,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 final class SocialOAuthContext implements Context
 {
-    private const FLOW_COOKIE_NAME = 'oauth_flow_binding';
-
     public function __construct(
         private readonly UserOperationsState $state,
         private readonly KernelInterface $kernel,
@@ -99,7 +98,7 @@ final class SocialOAuthContext implements Context
             $this->buildCallbackPath($provider, $code, $state),
             'GET',
             [],
-            [self::FLOW_COOKIE_NAME => $cookie],
+            [OAuthFlowCookieFactory::COOKIE_NAME => $cookie],
             [],
             $this->createServerParameters(),
         );
