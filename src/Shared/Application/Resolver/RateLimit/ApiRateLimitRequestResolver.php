@@ -50,8 +50,14 @@ final readonly class ApiRateLimitRequestResolver
         $method = strtoupper($request->getMethod());
         $targets = $this->resolveSingleEndpointLimiters($request, $path, $method);
         $this->appendTargets($targets, $this->resolveUserMutationLimiters($path, $method));
-        $this->appendTargets($targets, $this->resolveResendConfirmationLimiters($request, $path, $method));
-        $this->appendTargets($targets, $this->resolveAuthenticatedSecurityLimiters($request, $path, $method));
+        $this->appendTargets(
+            $targets,
+            $this->resolveResendConfirmationLimiters($request, $path, $method)
+        );
+        $this->appendTargets(
+            $targets,
+            $this->resolveAuthenticatedSecurityLimiters($request, $path, $method)
+        );
         $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
 
         return $targets;
@@ -60,8 +66,11 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return list<array{name: string, key: string}>
      */
-    private function resolveSingleEndpointLimiters(Request $request, string $path, string $method): array
-    {
+    private function resolveSingleEndpointLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
         return array_values(array_filter([
             $this->resolveRegistrationLimiter($request, $path, $method),
             $this->resolveTokenExchangeLimiter($request, $path, $method),
@@ -111,7 +120,10 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<array<string>>
      *
-     * @psalm-return list{0?: array{name: 'resend_confirmation', key: string}, 1?: array{name: 'resend_confirmation_target', key: string}}
+     * @psalm-return list{
+     *     0?: array{name: 'resend_confirmation', key: string},
+     *     1?: array{name: 'resend_confirmation_target', key: string}
+     * }
      */
     private function resolveResendConfirmationLimiters(
         Request $request,

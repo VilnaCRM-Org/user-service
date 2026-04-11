@@ -144,6 +144,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingCode(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
+        $this->expectExceptionMessage(
+            'Missing required OAuth parameters: code, state, or flow-binding cookie'
+        );
 
         $this->invokeController(code: '');
     }
@@ -151,6 +154,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingState(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
+        $this->expectExceptionMessage(
+            'Missing required OAuth parameters: code, state, or flow-binding cookie'
+        );
 
         $this->invokeController(state: '');
     }
@@ -158,6 +164,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingCookie(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
+        $this->expectExceptionMessage(
+            'Missing required OAuth parameters: code, state, or flow-binding cookie'
+        );
 
         $this->invokeController(flowBindingToken: '');
     }
@@ -185,7 +194,8 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
+                static fn (HandleOAuthCallbackCommand $cmd): bool =>
+                    $cmd->code === $code && $cmd->state === $state
             ));
 
         $this->arrangeDirectSignIn();
@@ -200,7 +210,8 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
+                static fn (HandleOAuthCallbackCommand $cmd): bool =>
+                    $cmd->flowBindingToken === $flowBindingToken
             ));
 
         $this->arrangeDirectSignIn();
