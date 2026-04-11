@@ -24,10 +24,10 @@ services:
       SERVER_NAME: :80
     healthcheck:
       test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']
-      interval: 10s
-      timeout: 3s
-      retries: 6
-      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 120s
 
   mailer:
     image: schickling/mailcatcher

@@ -211,14 +211,41 @@ COOKIE;
     private function createSuccessSchema(): ArrayObject
     {
         return new ArrayObject([
+            'oneOf' => [
+                $this->createDirectSignInSuccessSchema(),
+                $this->createPendingTwoFactorSuccessSchema(),
+            ],
+        ]);
+    }
+
+    private function createDirectSignInSuccessSchema(): ArrayObject
+    {
+        return new ArrayObject([
             'type' => 'object',
             'properties' => [
-                '2fa_enabled' => ['type' => 'boolean'],
+                '2fa_enabled' => [
+                    'type' => 'boolean',
+                    'enum' => [false],
+                ],
                 'access_token' => ['type' => 'string'],
                 'refresh_token' => ['type' => 'string'],
+            ],
+            'required' => ['2fa_enabled', 'access_token', 'refresh_token'],
+        ]);
+    }
+
+    private function createPendingTwoFactorSuccessSchema(): ArrayObject
+    {
+        return new ArrayObject([
+            'type' => 'object',
+            'properties' => [
+                '2fa_enabled' => [
+                    'type' => 'boolean',
+                    'enum' => [true],
+                ],
                 'pending_session_id' => ['type' => 'string'],
             ],
-            'required' => ['2fa_enabled'],
+            'required' => ['2fa_enabled', 'pending_session_id'],
         ]);
     }
 

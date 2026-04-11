@@ -73,7 +73,6 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
         return new Model\Response(
             description: 'Redirect to the external social provider.',
             headers: $this->createRedirectHeaders(),
-            content: $this->createEmptyJsonContent(),
         );
     }
 
@@ -185,15 +184,6 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
             'schema' => ['type' => 'string'],
             'example' => 'no-store',
         ];
-    }
-
-    private function createEmptyJsonContent(): ArrayObject
-    {
-        return new ArrayObject([
-            'application/json' => new Model\MediaType(
-                example: new ArrayObject(),
-            ),
-        ]);
     }
 
     private function createProblemMediaType(
