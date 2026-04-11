@@ -190,12 +190,15 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     {
         $code = $this->faker->sha256();
         $state = $this->faker->sha256();
+        $matchesQueryParams = function (
+            HandleOAuthCallbackCommand $command,
+        ) use ($code, $state): bool {
+            return $this->commandHasQueryParameters($command, $code, $state);
+        };
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code && $cmd->state === $state
-            ));
+            ->with($this->callback($matchesQueryParams));
 
         $this->arrangeDirectSignIn();
 
@@ -205,12 +208,18 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeDispatchesCommandWithFlowBindingToken(): void
     {
         $flowBindingToken = $this->faker->sha256();
+        $matchesFlowBindingToken = function (
+            HandleOAuthCallbackCommand $command,
+        ) use ($flowBindingToken): bool {
+            return $this->commandHasFlowBindingToken(
+                $command,
+                $flowBindingToken,
+            );
+        };
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->flowBindingToken === $flowBindingToken
-            ));
+            ->with($this->callback($matchesFlowBindingToken));
 
         $this->arrangeDirectSignIn();
 
@@ -273,6 +282,22 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         );
 
         return ($this->controller)($provider, $request);
+    }
+
+    private function commandHasQueryParameters(
+        HandleOAuthCallbackCommand $command,
+        string $expectedCode,
+        string $expectedState,
+    ): bool {
+        return $command->code === $expectedCode
+            && $command->state === $expectedState;
+    }
+
+    private function commandHasFlowBindingToken(
+        HandleOAuthCallbackCommand $command,
+        string $expectedFlowBindingToken,
+    ): bool {
+        return $command->flowBindingToken === $expectedFlowBindingToken;
     }
 
     /**

@@ -306,17 +306,27 @@ final class OAuthCallbackControllerEdgeCaseTest extends UnitTestCase
             $this->faker->sha256(),
             $this->faker->sha256(),
         );
+        $matchesIpAddress = function (
+            HandleOAuthCallbackCommand $command,
+        ) use ($expectedIpAddress): bool {
+            return $this->commandHasIpAddress($command, $expectedIpAddress);
+        };
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback(
-                static fn (HandleOAuthCallbackCommand $command): bool => $command->ipAddress === $expectedIpAddress
-            ))
+            ->with($this->callback($matchesIpAddress))
             ->willReturnCallback(
                 static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
                     $command->setResponse($responseDto);
                 }
             );
+    }
+
+    private function commandHasIpAddress(
+        HandleOAuthCallbackCommand $command,
+        string $expectedIpAddress,
+    ): bool {
+        return $command->ipAddress === $expectedIpAddress;
     }
 
     private function extractProviderFromRequest(Request $request): string

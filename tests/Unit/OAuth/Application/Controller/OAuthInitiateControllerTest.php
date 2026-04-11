@@ -169,25 +169,48 @@ final class OAuthInitiateControllerTest extends UnitTestCase
         string $provider,
         string $authUrl,
     ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback(
+                $this->createRedirectUriMatcher($provider),
+            ))
+            ->willReturnCallback($this->createInitiateResponseCallback($authUrl));
+    }
+
+    /**
+     * @return \Closure(InitiateOAuthCommand): bool
+     */
+    private function createRedirectUriMatcher(string $provider): \Closure
+    {
         $expectedRedirectUri = sprintf(
             'https://example.com/api/auth/social/%s/callback',
             $provider,
         );
 
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(
-                static fn (InitiateOAuthCommand $command): bool => $command->redirectUri === $expectedRedirectUri
-            ))
-            ->willReturnCallback(
-                static function (InitiateOAuthCommand $command) use ($authUrl): void {
-                    $command->setResponse(new InitiateOAuthResponse(
-                        $authUrl,
-                        'state',
-                        'flow-binding-token',
-                    ));
-                }
-            );
+        return function (InitiateOAuthCommand $command) use ($expectedRedirectUri): bool {
+            return $this->commandHasRedirectUri($command, $expectedRedirectUri);
+        };
+    }
+
+    /**
+     * @return \Closure(InitiateOAuthCommand): void
+     */
+    private function createInitiateResponseCallback(string $authUrl): \Closure
+    {
+        return static function (InitiateOAuthCommand $command) use ($authUrl): void {
+            $command->setResponse(new InitiateOAuthResponse(
+                $authUrl,
+                'state',
+                'flow-binding-token',
+            ));
+        };
+    }
+
+    private function commandHasRedirectUri(
+        InitiateOAuthCommand $command,
+        string $expectedRedirectUri,
+    ): bool {
+        return $command->redirectUri === $expectedRedirectUri;
     }
 
     private function invokeController(?string $provider = null): Response
