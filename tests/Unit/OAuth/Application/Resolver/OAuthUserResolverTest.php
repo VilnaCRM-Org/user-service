@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\OAuth\Application\Resolver;
 
+use App\OAuth\Application\Factory\OAuthUserFactory;
 use App\OAuth\Application\Resolver\OAuthUserResolver;
 use App\OAuth\Domain\Entity\SocialIdentity;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
@@ -54,10 +55,12 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->resolver = new OAuthUserResolver(
             $this->socialIdentityRepo,
             $this->userRepo,
-            $this->passwordHasher,
             $this->idFactory,
-            $this->eventIdFactory,
-            $this->uuidTransformer,
+            new OAuthUserFactory(
+                $this->passwordHasher,
+                $this->eventIdFactory,
+                $this->uuidTransformer,
+            ),
         );
     }
 
