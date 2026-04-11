@@ -12,6 +12,8 @@ final readonly class ApiRateLimitRequestResolver
     private const RECOVERY_CODES_PATH = '/api/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
     private const SIGNOUT_ALL_PATH = '/api/signout/all';
+    private const OAUTH_SOCIAL_INITIATE_PATTERN = '#^/api/auth/social/[^/]+$#';
+    private const OAUTH_SOCIAL_CALLBACK_PATTERN = '#^/api/auth/social/[^/]+/callback$#';
 
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
@@ -46,13 +48,7 @@ final readonly class ApiRateLimitRequestResolver
     {
         $path = $request->getPathInfo();
         $method = strtoupper($request->getMethod());
-        $targets = array_values(array_filter([
-            $this->resolveRegistrationLimiter($request, $path, $method),
-            $this->resolveTokenExchangeLimiter($request, $path, $method),
-            $this->resolveEmailConfirmationLimiter($request, $path, $method),
-            $this->resolveUserCollectionLimiter($request, $path, $method),
-            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
-        ]));
+        $targets = $this->resolveSingleEndpointLimiters($request, $path, $method);
         $this->appendTargets($targets, $this->resolveUserMutationLimiters($path, $method));
         $this->appendTargets(
             $targets,
@@ -65,6 +61,24 @@ final readonly class ApiRateLimitRequestResolver
         $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
 
         return $targets;
+    }
+
+    /**
+     * @return list<array{name: string, key: string}>
+     */
+    private function resolveSingleEndpointLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
+        return array_values(array_filter([
+            $this->resolveRegistrationLimiter($request, $path, $method),
+            $this->resolveTokenExchangeLimiter($request, $path, $method),
+            $this->resolveEmailConfirmationLimiter($request, $path, $method),
+            $this->resolveUserCollectionLimiter($request, $path, $method),
+            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
+            $this->resolveOAuthSocialLimiter($request, $path, $method),
+        ]));
     }
 
     /**
@@ -106,7 +120,10 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<array<string>>
      *
-     * @psalm-return list{0?: array{name: 'resend_confirmation', key: string}, 1?: array{name: 'resend_confirmation_target', key: string}}
+     * @psalm-return list{
+     *     0?: array{name: 'resend_confirmation', key: string},
+     *     1?: array{name: 'resend_confirmation_target', key: string}
+     * }
      */
     private function resolveResendConfirmationLimiters(
         Request $request,
@@ -261,6 +278,37 @@ final readonly class ApiRateLimitRequestResolver
         }
 
         return [['name' => $limiter, 'key' => $this->buildUserKey($subject)]];
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'oauth_social_callback'|'oauth_social_initiate', key: string}|null
+     */
+    private function resolveOAuthSocialLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        if ($method !== 'GET') {
+            return null;
+        }
+
+        if (preg_match(self::OAUTH_SOCIAL_CALLBACK_PATTERN, $path) === 1) {
+            return [
+                'name' => 'oauth_social_callback',
+                'key' => $this->buildIpKey($request),
+            ];
+        }
+
+        if (preg_match(self::OAUTH_SOCIAL_INITIATE_PATTERN, $path) === 1) {
+            return [
+                'name' => 'oauth_social_initiate',
+                'key' => $this->buildIpKey($request),
+            ];
+        }
+
+        return null;
     }
 
     private function resolveUserIdFromItemRoute(string $path): ?string

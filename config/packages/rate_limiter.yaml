@@ -207,3 +207,21 @@ framework:
           amount: '%env(int:SIGNOUT_ALL_RATE_LIMIT_MAX_REQUESTS)%',
         }
       cache_pool: 'cache.app'
+    oauth_social_initiate:
+      policy: 'token_bucket'
+      limit: '%env(int:OAUTH_SOCIAL_INITIATE_RATE_LIMIT_MAX_REQUESTS)%'
+      rate:
+        {
+          interval: '%env(string:OAUTH_SOCIAL_INITIATE_RATE_LIMIT_INTERVAL)%',
+          amount: '%env(int:OAUTH_SOCIAL_INITIATE_RATE_LIMIT_MAX_REQUESTS)%',
+        }
+      cache_pool: 'cache.app'
+    oauth_social_callback:
+      policy: 'token_bucket'
+      limit: '%env(int:OAUTH_SOCIAL_CALLBACK_RATE_LIMIT_MAX_REQUESTS)%'
+      rate:
+        {
+          interval: '%env(string:OAUTH_SOCIAL_CALLBACK_RATE_LIMIT_INTERVAL)%',
+          amount: '%env(int:OAUTH_SOCIAL_CALLBACK_RATE_LIMIT_MAX_REQUESTS)%',
+        }
+      cache_pool: 'cache.app'

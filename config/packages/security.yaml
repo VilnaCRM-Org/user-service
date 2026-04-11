@@ -4,6 +4,7 @@ security:
     - { path: ^/api/users$, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/users/confirm$, methods: [PATCH], roles: PUBLIC_ACCESS }
     - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
+    - { path: ^/api/auth/social, roles: PUBLIC_ACCESS }
     - { path: ^/api/signin, roles: PUBLIC_ACCESS }
     - { path: ^/api/token$, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/oauth/token$, methods: [POST], roles: PUBLIC_ACCESS }
