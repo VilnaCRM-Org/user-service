@@ -1,6 +1,5 @@
 ---
-stepsCompleted:
-  [init, current-state-discovery, risk-surface, candidate-flows, assumptions]
+stepsCompleted: [init, current-state-discovery, risk-surface, candidate-flows, assumptions]
 inputDocuments:
   [
     Dockerfile,

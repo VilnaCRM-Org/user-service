@@ -32,14 +32,14 @@ Rewrite the repository's BMAD planning artifacts so FrankenPHP worker mode is tr
 
 Delegated subagents were not used in this session because delegation was not explicitly authorized. The BMALPH command contract was still followed in the current session and the artifacts below map directly to the repository's BMALPH command names.
 
-| Phase | BMALPH command | Artifact | Owner | Validation rounds |
-| ----- | -------------- | -------- | ----- | ----------------- |
-| Research | `analyst` / `technical-research` | `research.md` | current session | 1 |
-| Brief | `create-brief` | `product-brief.md` | current session | 1 |
-| PRD | `create-prd` | `prd.md` | current session | 1 |
-| Architecture | `create-architecture` | `architecture.md` | current session | 1 |
-| Epics and stories | `create-epics-stories` | `epic.md`, `stories.md` | current session | 1 |
-| Readiness | `implementation-readiness` | `implementation-readiness.md` | current session | 1 |
+| Phase             | BMALPH command                   | Artifact                      | Owner           | Validation rounds |
+| ----------------- | -------------------------------- | ----------------------------- | --------------- | ----------------- |
+| Research          | `analyst` / `technical-research` | `research.md`                 | current session | 1                 |
+| Brief             | `create-brief`                   | `product-brief.md`            | current session | 1                 |
+| PRD               | `create-prd`                     | `prd.md`                      | current session | 1                 |
+| Architecture      | `create-architecture`            | `architecture.md`             | current session | 1                 |
+| Epics and stories | `create-epics-stories`           | `epic.md`, `stories.md`       | current session | 1                 |
+| Readiness         | `implementation-readiness`       | `implementation-readiness.md` | current session | 1                 |
 
 ## Key Decisions
 

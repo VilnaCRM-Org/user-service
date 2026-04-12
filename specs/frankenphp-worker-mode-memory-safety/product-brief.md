@@ -1,6 +1,5 @@
 ---
-stepsCompleted:
-  [init, problem-statement, goals, non-goals, scope, assumptions]
+stepsCompleted: [init, problem-statement, goals, non-goals, scope, assumptions]
 inputDocuments:
   [
     specs/frankenphp-worker-mode-memory-safety/research.md,

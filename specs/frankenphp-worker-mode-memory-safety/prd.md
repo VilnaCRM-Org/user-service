@@ -37,14 +37,14 @@ This PRD defines the planning requirements for a safe migration track. It focuse
 
 ## Success Criteria
 
-| ID | Criterion | Measurement | Target |
-| -- | --------- | ----------- | ------ |
-| SC-01 | Worker constraints are explicit | PRD, architecture, epics, and stories describe long-running worker behavior | Pass |
-| SC-02 | Risky services are auditable | A concrete audit inventory and checklist exist for mutable services | Pass |
-| SC-03 | Leak-test strategy is implementation-ready | Dedicated PHPUnit approach, packages, and target flows are defined | Pass |
-| SC-04 | CI gate is defined | Targeted retained-object leaks are CI-blocking for the migration track | Pass |
-| SC-05 | Rollout guardrails are explicit | Staging soak, rollback, `MAX_REQUESTS`, and restart observability are documented | Pass |
-| SC-06 | Baseline measurement is acknowledged | Specs require a baseline before numeric thresholds are adopted | Pass |
+| ID    | Criterion                                  | Measurement                                                                      | Target |
+| ----- | ------------------------------------------ | -------------------------------------------------------------------------------- | ------ |
+| SC-01 | Worker constraints are explicit            | PRD, architecture, epics, and stories describe long-running worker behavior      | Pass   |
+| SC-02 | Risky services are auditable               | A concrete audit inventory and checklist exist for mutable services              | Pass   |
+| SC-03 | Leak-test strategy is implementation-ready | Dedicated PHPUnit approach, packages, and target flows are defined               | Pass   |
+| SC-04 | CI gate is defined                         | Targeted retained-object leaks are CI-blocking for the migration track           | Pass   |
+| SC-05 | Rollout guardrails are explicit            | Staging soak, rollback, `MAX_REQUESTS`, and restart observability are documented | Pass   |
+| SC-06 | Baseline measurement is acknowledged       | Specs require a baseline before numeric thresholds are adopted                   | Pass   |
 
 ## Goals
 
@@ -108,36 +108,36 @@ This PRD defines the planning requirements for a safe migration track. It focuse
 
 ## Functional Requirements
 
-| ID | Requirement | Priority |
-| -- | ----------- | -------- |
-| FR-01 | The specs must state that FrankenPHP worker mode keeps the application booted across requests and therefore changes the runtime safety model. | P0 |
-| FR-02 | The specs must require explicit post-request cleanup and recommend `gc_collect_cycles()` in the worker loop. | P0 |
-| FR-03 | The specs must require a `MAX_REQUESTS` style worker restart fuse as an operational safeguard. | P0 |
-| FR-04 | The specs must require `ResetInterface` for services that accumulate request-derived or mutable state between requests. | P0 |
-| FR-05 | The specs must require an audit of singleton services that store arrays, entities, request objects, closures, callbacks, or caches on properties. | P0 |
-| FR-06 | The specs must define a service-migration checklist: identify state, classify it, redesign or reset it, then add leak-focused tests. | P0 |
-| FR-07 | The specs must define `shipmonk/memory-scanner` as the primary dev dependency for leak detection. | P0 |
-| FR-08 | The specs must define `KernelTestCase` and `WebTestCase` memory checks using `ObjectDeallocationCheckerKernelTestCaseTrait` where applicable. | P0 |
-| FR-09 | The specs must define `disableReboot()` repeated-request tests for selected flows and document the associated Symfony caveats. | P0 |
-| FR-10 | The specs must define targeted flows covering public read, authenticated read, Doctrine-heavy write, serializer-heavy response, error path, and shared-cache or OAuth flows. | P0 |
-| FR-11 | The specs must define CI failure behavior for confirmed retained-object leaks in targeted tests. | P0 |
-| FR-12 | The specs must document `memprof` as an optional deep-debug path for staging or local investigation. | P1 |
-| FR-13 | The specs must define a staged rollout path from planning to production. | P0 |
-| FR-14 | The specs must define rollback triggers based on unbounded memory growth, cross-request bleed, broken security or Doctrine reset behavior, and unstable worker restarts. | P0 |
+| ID    | Requirement                                                                                                                                                                  | Priority |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| FR-01 | The specs must state that FrankenPHP worker mode keeps the application booted across requests and therefore changes the runtime safety model.                                | P0       |
+| FR-02 | The specs must require explicit post-request cleanup and recommend `gc_collect_cycles()` in the worker loop.                                                                 | P0       |
+| FR-03 | The specs must require a `MAX_REQUESTS` style worker restart fuse as an operational safeguard.                                                                               | P0       |
+| FR-04 | The specs must require `ResetInterface` for services that accumulate request-derived or mutable state between requests.                                                      | P0       |
+| FR-05 | The specs must require an audit of singleton services that store arrays, entities, request objects, closures, callbacks, or caches on properties.                            | P0       |
+| FR-06 | The specs must define a service-migration checklist: identify state, classify it, redesign or reset it, then add leak-focused tests.                                         | P0       |
+| FR-07 | The specs must define `shipmonk/memory-scanner` as the primary dev dependency for leak detection.                                                                            | P0       |
+| FR-08 | The specs must define `KernelTestCase` and `WebTestCase` memory checks using `ObjectDeallocationCheckerKernelTestCaseTrait` where applicable.                                | P0       |
+| FR-09 | The specs must define `disableReboot()` repeated-request tests for selected flows and document the associated Symfony caveats.                                               | P0       |
+| FR-10 | The specs must define targeted flows covering public read, authenticated read, Doctrine-heavy write, serializer-heavy response, error path, and shared-cache or OAuth flows. | P0       |
+| FR-11 | The specs must define CI failure behavior for confirmed retained-object leaks in targeted tests.                                                                             | P0       |
+| FR-12 | The specs must document `memprof` as an optional deep-debug path for staging or local investigation.                                                                         | P1       |
+| FR-13 | The specs must define a staged rollout path from planning to production.                                                                                                     | P0       |
+| FR-14 | The specs must define rollback triggers based on unbounded memory growth, cross-request bleed, broken security or Doctrine reset behavior, and unstable worker restarts.     | P0       |
 
 ## Non-Functional Requirements
 
-| ID | Requirement | Category |
-| -- | ----------- | -------- |
-| NFR-01 | No numeric memory threshold may be declared before a repository baseline is established. | Measurement |
-| NFR-02 | Observability must distinguish normal warm-up from unbounded worker growth. | Observability |
-| NFR-03 | Worker restarts must be measurable or logged so restart loops are visible. | Operations |
-| NFR-04 | The memory-safety suite must integrate with existing PHPUnit workflows rather than introduce an unrelated runner. | Testing |
-| NFR-05 | Repeated-request functional tests must approximate same-kernel behavior using `disableReboot()` where that is the right fit. | Testing |
-| NFR-06 | The test design must acknowledge that `disableReboot()` changes security token storage and Doctrine behavior and may require test-environment adjustments. | Testing |
-| NFR-07 | `roave/no-leaks` must not be positioned as the primary migration solution. | Tooling |
-| NFR-08 | The rollout plan must start conservative and tune later based on evidence. | Operations |
-| NFR-09 | Planning artifacts must stay implementation-driving and specific to Symfony, FrankenPHP, and PHPUnit. | Documentation |
+| ID     | Requirement                                                                                                                                                | Category      |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| NFR-01 | No numeric memory threshold may be declared before a repository baseline is established.                                                                   | Measurement   |
+| NFR-02 | Observability must distinguish normal warm-up from unbounded worker growth.                                                                                | Observability |
+| NFR-03 | Worker restarts must be measurable or logged so restart loops are visible.                                                                                 | Operations    |
+| NFR-04 | The memory-safety suite must integrate with existing PHPUnit workflows rather than introduce an unrelated runner.                                          | Testing       |
+| NFR-05 | Repeated-request functional tests must approximate same-kernel behavior using `disableReboot()` where that is the right fit.                               | Testing       |
+| NFR-06 | The test design must acknowledge that `disableReboot()` changes security token storage and Doctrine behavior and may require test-environment adjustments. | Testing       |
+| NFR-07 | `roave/no-leaks` must not be positioned as the primary migration solution.                                                                                 | Tooling       |
+| NFR-08 | The rollout plan must start conservative and tune later based on evidence.                                                                                 | Operations    |
+| NFR-09 | Planning artifacts must stay implementation-driving and specific to Symfony, FrankenPHP, and PHPUnit.                                                      | Documentation |
 
 ## Acceptance Criteria
 

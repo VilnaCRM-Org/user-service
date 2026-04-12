@@ -29,29 +29,29 @@ revision: '1 - planning baseline'
 
 | Requirement | Epic 1 | Epic 2 | Epic 3 | Epic 4 |
 | ----------- | ------ | ------ | ------ | ------ |
-| FR-01 | x |  |  |  |
-| FR-02 | x |  |  | x |
-| FR-03 | x |  |  | x |
-| FR-04 |  | x | x |  |
-| FR-05 |  | x |  |  |
-| FR-06 |  | x | x |  |
-| FR-07 |  |  | x |  |
-| FR-08 |  |  | x |  |
-| FR-09 |  |  | x |  |
-| FR-10 |  |  | x |  |
-| FR-11 |  |  | x | x |
-| FR-12 |  |  | x | x |
-| FR-13 | x |  |  | x |
-| FR-14 | x |  |  | x |
-| NFR-01 |  |  |  | x |
-| NFR-02 | x |  |  | x |
-| NFR-03 | x |  |  | x |
-| NFR-04 |  |  | x |  |
-| NFR-05 |  |  | x |  |
-| NFR-06 |  |  | x |  |
-| NFR-07 | x |  |  |  |
-| NFR-08 | x |  |  | x |
-| NFR-09 | x |  |  |  |
+| FR-01       | x      |        |        |        |
+| FR-02       | x      |        |        | x      |
+| FR-03       | x      |        |        | x      |
+| FR-04       |        | x      | x      |        |
+| FR-05       |        | x      |        |        |
+| FR-06       |        | x      | x      |        |
+| FR-07       |        |        | x      |        |
+| FR-08       |        |        | x      |        |
+| FR-09       |        |        | x      |        |
+| FR-10       |        |        | x      |        |
+| FR-11       |        |        | x      | x      |
+| FR-12       |        |        | x      | x      |
+| FR-13       | x      |        |        | x      |
+| FR-14       | x      |        |        | x      |
+| NFR-01      |        |        |        | x      |
+| NFR-02      | x      |        |        | x      |
+| NFR-03      | x      |        |        | x      |
+| NFR-04      |        |        | x      |        |
+| NFR-05      |        |        | x      |        |
+| NFR-06      |        |        | x      |        |
+| NFR-07      | x      |        |        |        |
+| NFR-08      | x      |        |        | x      |
+| NFR-09      | x      |        |        |        |
 
 ## Epic 1: Worker-Mode Safety Foundations
 
