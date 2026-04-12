@@ -49,6 +49,18 @@ final class MemoryCoverageInventoryTest extends TestCase
 
     public function testImplementedMemoryCoveragePointsToRealTests(): void
     {
+        $implementedKeys = array_keys(MemoryCoverageInventory::IMPLEMENTED_MEMORY_TESTS);
+        sort($implementedKeys);
+
+        $expectedKeys = MemoryCoverageInventory::BASELINE_MEMORY_TESTS;
+        sort($expectedKeys);
+
+        self::assertSame(
+            $expectedKeys,
+            $implementedKeys,
+            'Implemented memory test map must cover the owned baseline inventory.'
+        );
+
         foreach (MemoryCoverageInventory::IMPLEMENTED_MEMORY_TESTS as $key => $coverage) {
             self::assertTrue(
                 method_exists($coverage['class'], $coverage['method']),

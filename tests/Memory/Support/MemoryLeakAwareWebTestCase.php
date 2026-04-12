@@ -19,7 +19,7 @@ abstract class MemoryLeakAwareWebTestCase extends WebTestCase
     #[\Override]
     protected function tearDown(): void
     {
-        if (static::$kernel !== null && $this->status()->isSuccess()) {
+        if (static::$kernel !== null) {
             $this->trackInitializedServicesForDeallocation();
         }
 

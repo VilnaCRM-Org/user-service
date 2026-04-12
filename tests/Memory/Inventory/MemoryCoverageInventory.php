@@ -89,6 +89,11 @@ final class MemoryCoverageInventory
         'user_operations',
     ];
 
+    public const BASELINE_MEMORY_TESTS = [
+        'feature:health_check',
+        'rest:health',
+    ];
+
     public const IMPLEMENTED_MEMORY_TESTS = [
         'feature:health_check' => [
             'class' => MemoryLeakToolingSmokeTest::class,
