@@ -17,12 +17,10 @@ abstract class MemoryLeakAwareWebTestCase extends WebTestCase
 {
     private ?ObjectDeallocationChecker $deallocationChecker = null;
 
-    protected function createMemoryClient(bool $disableReboot = true): KernelBrowser
+    protected function createMemoryClient(): KernelBrowser
     {
         $client = static::createClient();
-        if ($disableReboot) {
-            $client->disableReboot();
-        }
+        $client->disableReboot();
 
         return $client;
     }
