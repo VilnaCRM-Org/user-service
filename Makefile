@@ -198,6 +198,26 @@ behat: setup-test-db clear-test-expression-language-caches ## A php framework fo
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
+memory-tests: setup-test-db ## Run memory leak tests with 100% inventory coverage and owned-suite line coverage
+	@echo "Running memory leak tests with strict inventory and coverage requirements..."
+	@$(RUN_TESTS_COVERAGE) --configuration=phpunit.memory.xml.dist --testsuite=Memory 2>&1 | tee /tmp/phpunit_memory_output.txt
+	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_memory_output.txt; then \
+		echo "❌ MEMORY TEST FAILURE: Some memory tests failed"; \
+		exit 1; \
+	fi
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	if [ -n "$$coverage" ]; then \
+		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
+			echo "❌ MEMORY COVERAGE FAILURE: Owned memory-suite line coverage is $$coverage%, but 100% is required."; \
+			exit 1; \
+		else \
+			echo "✅ MEMORY COVERAGE SUCCESS: Owned memory-suite line coverage is $$coverage%"; \
+		fi; \
+	else \
+		echo "❌ ERROR: Could not parse memory-suite coverage from output"; \
+		exit 1; \
+	fi
+
 cache-performance-tests: setup-test-db ## Run cache performance integration tests
 	$(EXEC_ENV) $(PHPUNIT) tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php --testdox
 

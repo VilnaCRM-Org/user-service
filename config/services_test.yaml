@@ -3,6 +3,10 @@ services:
     alias: 'security.token_storage'
     public: true
 
+  Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface:
+    alias: 'services_resetter'
+    public: true
+
   App\Tests\Behat\UserContext\UserContext:
     arguments:
       $cachePool: '@cache.user'
