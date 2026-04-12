@@ -106,6 +106,28 @@ cs_git_remote_url_to_ssh() {
     esac
 }
 
+cs_has_ssh_credentials() {
+    if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
+        return 0
+    fi
+
+    if [ -n "${SSH_AUTH_SOCK:-}" ]; then
+        return 0
+    fi
+
+    for ssh_key_path in \
+        "${HOME}/.ssh/id_ed25519" \
+        "${HOME}/.ssh/id_rsa" \
+        "${HOME}/.ssh/id_ecdsa"
+    do
+        if [ -f "${ssh_key_path}" ]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 cs_align_git_remote_protocol() {
     local remote_name="${1:-origin}"
     local host="${2:-${GH_HOST:-github.com}}"

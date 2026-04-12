@@ -315,7 +315,9 @@ ensure_shell_sources_agent_secrets
 
 gh config set git_protocol "${GH_GIT_PROTOCOL}" --host "${GH_HOST}" >/dev/null 2>&1 || true
 gh config set prompt "${GH_PROMPT}" >/dev/null 2>&1 || true
-cs_align_git_remote_protocol origin "${GH_HOST}" "${GH_GIT_PROTOCOL}" >/dev/null 2>&1 || true
+if [ "${GH_GIT_PROTOCOL}" = "ssh" ] && cs_has_ssh_credentials; then
+    cs_align_git_remote_protocol origin "${GH_HOST}" "${GH_GIT_PROTOCOL}" >/dev/null 2>&1
+fi
 
 codex_version=""
 if [ "${codex_ready}" = true ]; then

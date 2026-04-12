@@ -1,7 +1,7 @@
 ---
 name: editorial-prose
 description: >
-  editorial prose. Use when the user asks about editorial prose.
+  Review and improve editorial prose quality and clarity. Use when the user asks for editorial prose review.
 metadata:
   managed-by: bmalph
 ---

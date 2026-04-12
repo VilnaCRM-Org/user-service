@@ -32,6 +32,14 @@ teardown() {
   unset BMALPH_ORIGINAL_HOME BMALPH_ORIGINAL_HOME_SET BMALPH_TEST_HOME CS_USER_NPM_GLOBAL_BIN
 }
 
+assert_bmalph_dry_run_output() {
+  if [[ "${output}" != *"[dry-run] Would perform the following actions:"* ]] && [[ "${output}" != *"bmalph is already initialized in this project."* ]]; then
+    echo "Unexpected BMALPH dry-run output:" >&3
+    printf '%s\n' "${output}" >&3
+    false
+  fi
+}
+
 @test "make help lists BMALPH targets" {
   run make help
   assert_success
@@ -75,11 +83,7 @@ teardown() {
   run make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true
   assert_success
   assert_output --partial "Running BMALPH init in"
-  if [[ "${output}" != *"[dry-run] Would perform the following actions:"* ]] && [[ "${output}" != *"bmalph is already initialized in this project."* ]]; then
-    echo "Unexpected bmalph-init output:" >&3
-    printf '%s\n' "${output}" >&3
-    false
-  fi
+  assert_bmalph_dry_run_output
 
   after_status="$(git status --short --untracked-files=all)"
   [ "${before_status}" = "${after_status}" ]
@@ -94,11 +98,7 @@ teardown() {
   run make bmalph-setup BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true
   assert_success
   assert_output --partial 'install-bmalph.sh --platform "codex" --init --dry-run'
-  if [[ "${output}" != *"[dry-run] Would perform the following actions:"* ]] && [[ "${output}" != *"bmalph is already initialized in this project."* ]]; then
-    echo "Unexpected bmalph-setup output:" >&3
-    printf '%s\n' "${output}" >&3
-    false
-  fi
+  assert_bmalph_dry_run_output
 
   after_status="$(git status --short --untracked-files=all)"
   [ "${before_status}" = "${after_status}" ]
@@ -117,12 +117,12 @@ teardown() {
     trap cleanup EXIT
 
     git -C "$repo_root" worktree add --detach "$tmpdir" HEAD >/dev/null
-	    rsync -a --delete \
-	      --exclude ".git" \
-	      --exclude "config/jwt" \
-	      --exclude "vendor" \
-	      --exclude "var" \
-	      --exclude "tests/CLI/bats/bats-support" \
+    rsync -a --delete \
+      --exclude ".git" \
+      --exclude "config/jwt" \
+      --exclude "vendor" \
+      --exclude "var" \
+      --exclude "tests/CLI/bats/bats-support" \
       --exclude "tests/CLI/bats/bats-assert" \
       "$repo_root/" "$tmpdir/"
     cd "$tmpdir"
@@ -142,7 +142,7 @@ teardown() {
 }
 
 @test "BMALPH generated paths stay ignored for local installs" {
-  run bash -lc 'grep -Fx ".ralph/" .gitignore && grep -Fx ".ralph/logs/" .gitignore && grep -Fx "_bmad/" .gitignore && grep -Fx "_bmad-output/" .gitignore'
+  run bash -lc 'grep -Fx "/.ralph/" .gitignore && grep -Fx "/.ralph/logs/" .gitignore && grep -Fx "/_bmad/" .gitignore && grep -Fx "/_bmad-output/" .gitignore'
   assert_success
 }
 
@@ -229,7 +229,7 @@ teardown() {
     grep -F "make bmalph-claude" CLAUDE.md
     grep -F "Preferred Codex trigger for this skill:" .claude/skills/AI-AGENT-GUIDE.md
     grep -F "Key trigger prompt" .claude/skills/README.md
-    grep -F "run the flow in the current session" .claude/skills/SKILL-DECISION-GUIDE.md
+    grep -F "Full BMALPH specs from short prompt" .claude/skills/SKILL-DECISION-GUIDE.md
   '
   assert_success
 }

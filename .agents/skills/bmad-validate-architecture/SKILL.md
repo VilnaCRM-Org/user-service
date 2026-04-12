@@ -1,7 +1,7 @@
 ---
 name: validate-architecture
 description: >
-  Guided Workflow to document technical decisions. Use when the user asks about validate architecture.
+  Validate architecture decisions for consistency and implementation readiness. Use when the user asks to validate architecture.
 metadata:
   managed-by: bmalph
 ---

@@ -48,6 +48,7 @@ Also, please install the [Coderabbit AI Plugin](https://www.coderabbit.ai/blog/w
 
 - For local BMALPH setup, run `make bmalph-codex` or `make bmalph-claude` from the repository root.
 - Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview BMALPH initialization without changing tracked files.
+- Run `make bmalph-setup` after previewing to write the BMALPH assets locally.
 - When you want a specs-first planning bundle from a short feature prompt, use the `bmad-autonomous-planning` skill after BMALPH assets are initialized locally.
 
 ### Version Control Configuration

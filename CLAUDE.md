@@ -40,6 +40,7 @@ Optional BMALPH setup:
 
 - `make bmalph-claude` installs and verifies the local Claude Code BMALPH flow.
 - `make bmalph-init BMALPH_PLATFORM=claude-code BMALPH_DRY_RUN=true` previews the local BMALPH workspace files before you write them.
+- Run `make bmalph-setup BMALPH_PLATFORM=claude-code` after previewing to write the BMALPH assets locally.
 
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 

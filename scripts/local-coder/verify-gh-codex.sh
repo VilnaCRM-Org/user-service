@@ -26,6 +26,8 @@ if [ -f "${HOME}/.config/openclaw/agent-secrets.env" ]; then
 fi
 
 cs_load_host_workspace_secrets
+cs_bmalph_load_defaults
+export PATH="${CS_USER_NPM_GLOBAL_BIN}:${PATH}"
 
 ORG="${1:-${WORKSPACE_GITHUB_ORG:-VilnaCRM-Org}}"
 : "${CODEX_SMOKE_MODEL:=}"

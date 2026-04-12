@@ -1,7 +1,7 @@
 ---
 name: validate-story
 description: >
-  Story cycle start: Prepare first found story in the sprint plan that is next, or if the command is run with a specific epic and story designation with context. Once complete, then VS then DS then CR then back to DS if needed or next CS or ER. Use when the user asks about validate story.
+  Story cycle start: prepare the next story from the sprint plan (or a specified epic/story with context), then run VS (Validation Step), DS (Design Step), CR (Code Review), return to DS if changes are needed, or proceed to CS (Customer Sign-off) or ER (Enrichment/Refinement). Use when the user asks about validate story.
 metadata:
   managed-by: bmalph
 ---

@@ -91,10 +91,7 @@ cs_verify_bmalph_dry_run() {
     tmp_output="$(mktemp)"
 
     # Remove temporary files created during dry-run verification.
-    cleanup() {
-        rm -rf "${tmp_project_dir}" "${tmp_output}"
-    }
-    trap cleanup RETURN
+    trap "trap - RETURN; rm -rf -- \"${tmp_project_dir}\" \"${tmp_output}\"" RETURN
 
     if ! bmalph -C "${tmp_project_dir}" init \
         --platform "${platform}" \

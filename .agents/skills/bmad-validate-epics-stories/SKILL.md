@@ -1,7 +1,7 @@
 ---
 name: validate-epics-stories
 description: >
-  Create the Epics and Stories Listing. Use when the user asks about validate epics stories.
+  Validate the Epics and Stories listing. Use when the user asks to validate epics stories.
 metadata:
   managed-by: bmalph
 ---

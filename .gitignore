@@ -56,12 +56,11 @@ coverage-html/
 ###< bats-core ###
 
 .phpunit.cache
-.ralph/
-.ralph/logs/
-_bmad/
-_bmad-output/
+/.ralph/
+/.ralph/logs/
+/_bmad/
+/_bmad-output/
 ###> league/oauth2-server-bundle ###
 /config/jwt/*.pem
 /config/reference.php
 ###< league/oauth2-server-bundle ###
-/_bmad/
