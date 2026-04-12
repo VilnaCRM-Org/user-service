@@ -40,6 +40,15 @@ final class OAuthProviderNameCollectionTest extends UnitTestCase
         );
     }
 
+    public function testEmptyCollectionReturnsNoNames(): void
+    {
+        $collection = new OAuthProviderNameCollection([]);
+
+        self::assertSame([], $collection->names());
+        self::assertCount(0, $collection);
+        self::assertSame([], iterator_to_array($collection));
+    }
+
     /**
      * @return \Generator<int, OAuthProvider>
      */
