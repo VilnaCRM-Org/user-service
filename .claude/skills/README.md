@@ -54,6 +54,33 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ## Available Skills
 
+### Autonomous BMALPH Planning (`bmad-autonomous-planning/`)
+
+**Purpose**: Create BMALPH-wrapped planning artifacts fully autonomously from a short task description
+
+**When activated**:
+
+- User wants BMAD specs without step-by-step interaction
+- Need a product brief, PRD, architecture, and epics/stories bundle for later implementation
+- Need optional GitHub issue or specs-only PR output from a planning run
+
+**What it does**:
+
+- Creates a focused planning bundle with research, brief, PRD, architecture, and epics/stories
+- Uses the repository's `bmalph` wrapper surface in `_bmad/COMMANDS.md` instead of dropping straight into raw workflow files
+- Runs each BMALPH planning stage through a dedicated subagent when subagents are available
+- Uses repository-aware validation loops without blocking on BMAD approval menus
+
+**Key trigger prompt**: `Use the bmad-autonomous-planning skill to plan a new feature and follow the repository's autonomous BMALPH planning workflow in the current session.`
+
+**Codex trigger path**:
+
+- Use the Codex wrapper at `.agents/skills/bmad-autonomous-planning/SKILL.md`
+- Run the planning flow in the current session
+- Do not rely on repo-local launcher scripts or `make` targets for this skill
+
+---
+
 ### 1. CI Workflow (`ci-workflow/`)
 
 **Purpose**: Run comprehensive CI checks before committing changes

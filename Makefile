@@ -72,6 +72,8 @@ COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
 
 GITHUB_HOST ?= github.com
 FORMAT ?= markdown
+BMALPH_PLATFORM ?= codex
+BMALPH_DRY_RUN ?= false
 
 define DOCKER_EXEC_WITH_ENV
 $(DOCKER_COMPOSE) exec -e $(1) php $(2)
@@ -96,6 +98,21 @@ help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
 	@grep -h -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
 
+
+bmalph-install: ## Install and verify BMALPH for BMALPH_PLATFORM=codex|claude-code
+	bash scripts/local-coder/install-bmalph.sh --platform "$(BMALPH_PLATFORM)"
+
+bmalph-codex: ## Install and verify BMALPH for Codex
+	@$(MAKE) bmalph-install BMALPH_PLATFORM=codex
+
+bmalph-claude: ## Install and verify BMALPH for Claude Code
+	@$(MAKE) bmalph-install BMALPH_PLATFORM=claude-code
+
+bmalph-init: ## Initialize BMALPH for current project; set BMALPH_DRY_RUN=true to preview safely
+	bash scripts/local-coder/install-bmalph.sh --platform "$(BMALPH_PLATFORM)" --init $(if $(filter true TRUE 1 yes YES,$(BMALPH_DRY_RUN)),--dry-run,)
+
+bmalph-setup: ## Install and initialize BMALPH for current project; defaults to BMALPH_PLATFORM=codex
+	@$(MAKE) bmalph-init BMALPH_PLATFORM="$(BMALPH_PLATFORM)" BMALPH_DRY_RUN="$(BMALPH_DRY_RUN)"
 
 
 ai-review-loop: ## Run local AI code review + fix loop (Codex default)

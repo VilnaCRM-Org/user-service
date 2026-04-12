@@ -24,8 +24,7 @@ final class OAuthSocialInitiateEndpointFactory implements EndpointFactoryInterfa
     public function __construct(
         string $apiPrefix,
         OAuthSupportedProvidersProvider $supportedProvidersProvider,
-    )
-    {
+    ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->supportedProviders = $supportedProvidersProvider->supportedProviders();
     }

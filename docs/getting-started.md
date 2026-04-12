@@ -88,6 +88,7 @@ This repository includes a ready-to-use devcontainer environment in `.devcontain
 - Docker support so all existing `make` commands continue to work
 - GitHub CLI (`gh`)
 - Codex CLI (`codex`)
+- BMALPH CLI (`bmalph`)
 - Bats CLI (`bats`) for `make bats`
 - Automatic bootstrap on create:
   - secure agent bootstrap (`scripts/local-coder/setup-secure-agent-env.sh`)
@@ -103,6 +104,7 @@ This repository includes a ready-to-use devcontainer environment in `.devcontain
 ```bash
 gh --version
 codex --version
+bmalph --version
 make help
 ```
 
@@ -133,6 +135,7 @@ gh auth setup-git
 Then run:
 
 ```bash
+make bmalph-codex
 bash scripts/local-coder/startup-smoke-tests.sh VilnaCRM-Org
 bash scripts/local-coder/verify-gh-codex.sh VilnaCRM-Org
 ```
@@ -142,6 +145,7 @@ bash scripts/local-coder/verify-gh-codex.sh VilnaCRM-Org
 - `gh` is authenticated
 - org repository listing works
 - `bats` CLI is available
+- `bmalph` is installed and its Codex dry-run init succeeds
 - `codex` can execute one non-interactive task
 
 `verify-gh-codex.sh` includes the Codex basic smoke check by default.
@@ -156,6 +160,21 @@ If you need to adjust autonomous Codex tool checks in a workspace, set overrides
 ```bash
 export CODEX_TOOL_SMOKE_MODE=enforce
 ```
+
+### BMALPH and BMAD planning
+
+Use the repository make targets to install or verify BMALPH manually:
+
+```bash
+make bmalph-codex
+make bmalph-claude
+make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true
+make bmalph-setup
+```
+
+For autonomous specs-first planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
+
+`bmalph init` writes local `_bmad/` and `.ralph/` assets into the workspace. Those directories are ignored in git here, so prefer the dry-run preview before enabling the local workflow files.
 
 ### Working in Local Coder Workspaces
 

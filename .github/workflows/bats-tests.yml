@@ -4,6 +4,19 @@ on:
   pull_request:
     paths:
       - 'Makefile'
+      - '.github/workflows/bats-tests.yml'
+      - '.devcontainer/**'
+      - '.agents/**'
+      - '.claude/skills/**'
+      - 'scripts/local-coder/**'
+      - 'tests/CLI/bats/**'
+      - 'README.md'
+      - 'docs/getting-started.md'
+      - 'docs/onboarding.md'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - '.gitignore'
+      - 'bmalph/**'
 
 jobs:
   bats_core_tests:
