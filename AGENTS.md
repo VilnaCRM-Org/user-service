@@ -24,6 +24,12 @@ After `make ci` and before committing/pushing or moving a PR from draft to ready
 3. If the loop applies fixes, re-run `make ci` and `make ai-review-loop` until it reports `PASS`.
 4. Requires Codex CLI support for `--output-last-message` (update Codex CLI if missing).
 
+### ✅ Optional BMALPH Setup When Needed
+
+1. Run `make bmalph-codex` or `make bmalph-claude` to install and verify BMALPH locally.
+2. Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview repository initialization safely.
+3. Use `make bmalph-setup` only when you intentionally want the local `_bmad/` and `.ralph/` workflow files in your workspace.
+
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 
 For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
@@ -251,6 +257,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **ci-workflow**: Run comprehensive CI checks
 - **code-review**: Retrieve and address PR comments
 - **testing-workflow**: Manage tests (unit, integration, E2E, mutation)
+- **bmad-autonomous-planning**: Generate BMALPH planning artifacts autonomously from a short task description
 - **implementing-ddd-architecture**: Design DDD patterns (entities, value objects, aggregates, CQRS)
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
@@ -410,6 +417,12 @@ config/
 - Domain: Entities/Aggregates, ValueObject, Event, Repository interfaces, Exception (no framework imports)
 - Application: Command, CommandHandler, DTO, EventSubscriber, Processor/Resolver (can use Symfony/API Platform)
 - Infrastructure: Repository implementations, XML mappings, framework integrations
+
+## BMAD-METHOD Integration
+
+BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace.
+
+For non-interactive planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session and let the main agent orchestrate BMALPH subagents without relying on repo-local launcher scripts.
 
 ## Quality Gates
 

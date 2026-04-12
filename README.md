@@ -64,6 +64,7 @@ This repository ships with a devcontainer setup that is intended to run inside a
 When a workspace is created, the setup script:
 
 - installs `codex` CLI
+- installs `bmalph` CLI when it is not already available
 - provides `gh` CLI
 - installs `bats` CLI for `make bats`
 - starts the Docker stack with `make start`
@@ -74,6 +75,7 @@ After startup, verify the environment:
 ```bash
 gh --version
 codex --version
+bmalph --version
 make help
 ```
 
@@ -100,6 +102,7 @@ What `startup-smoke-tests.sh` checks:
 - `gh` authentication is available
 - repository listing for `VilnaCRM-Org` works
 - `bats` CLI is available
+- `bmalph` is installed and its Codex dry-run init succeeds
 - `codex` can execute one non-interactive task
 
 Repository-tracked defaults for GitHub and Codex bootstrap are stored in:
@@ -114,8 +117,42 @@ What `verify-gh-codex.sh` checks:
 - repository listing for `VilnaCRM-Org` works
 - current PR checks can be queried via `gh`
 - current branch supports `git push --dry-run`
+- `bmalph` is installed and its Codex dry-run init succeeds
 - `codex` can run a basic non-interactive smoke task
 - tool-calling smoke checks are skipped by default and can be enforced when autonomous mode is explicitly enabled
+
+#### BMALPH for Codex and Claude
+
+The workspace bootstrap makes `bmalph` available for local agent workflows. You can also install or verify it manually from the repository root:
+
+```bash
+# Install and verify BMALPH for Codex
+make bmalph-codex
+
+# Install and verify BMALPH for Claude Code
+make bmalph-claude
+
+# Generic install target
+make bmalph-install BMALPH_PLATFORM=codex
+```
+
+To preview how BMALPH would initialize this repository without changing tracked files, run:
+
+```bash
+make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true
+make bmalph-init BMALPH_PLATFORM=claude-code BMALPH_DRY_RUN=true
+```
+
+To install and initialize BMALPH for the current project in one command, run:
+
+```bash
+make bmalph-setup
+make bmalph-setup BMALPH_PLATFORM=claude-code
+```
+
+For specs-only planning from a short feature description, use the `bmad-autonomous-planning` skill from your current AI agent session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
+
+`bmalph init` writes local BMAD/Ralph files such as `_bmad/` and `.ralph/`. Those generated directories are ignored in git for this repository, so use the dry-run first and initialize locally only when you want the tooling available in your workspace.
 
 Codex uses the local login profile when available, or `OPENAI_API_KEY` from workspace secrets as fallback.
 If you need autonomous tool execution in a workspace, set overrides before bootstrap:

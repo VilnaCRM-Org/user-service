@@ -7,6 +7,8 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 . "${ROOT_DIR}/scripts/local-coder/lib/github-auth.sh"
 # shellcheck source=scripts/local-coder/lib/workspace-secrets.sh
 . "${ROOT_DIR}/scripts/local-coder/lib/workspace-secrets.sh"
+# shellcheck source=scripts/local-coder/lib/bmalph.sh
+. "${ROOT_DIR}/scripts/local-coder/lib/bmalph.sh"
 
 SETTINGS_FILE="${ROOT_DIR}/.devcontainer/workspace-settings.env"
 if [ -f "${SETTINGS_FILE}" ]; then
@@ -33,6 +35,7 @@ cs_require_command gh
 cs_require_command jq
 cs_require_command codex
 cs_require_command bats
+cs_require_command bmalph
 
 echo "Checking GitHub authentication..."
 cs_ensure_gh_auth
@@ -110,6 +113,14 @@ echo "Git push dry-run ok for branch '${current_branch}'."
 
 echo "Checking Bats availability..."
 bats --version
+
+echo "Checking BMALPH availability..."
+bmalph --version
+cs_verify_bmalph_dry_run \
+    "${BMALPH_DEFAULT_PLATFORM:-codex}" \
+    "${BMALPH_DEFAULT_PROJECT_NAME:-user-service}" \
+    "${BMALPH_DEFAULT_PROJECT_DESCRIPTION:-VilnaCRM User Service}"
+echo "BMALPH Codex dry-run verification ok."
 
 # If Codex already has stored credentials, prefer that session over API-key auth.
 if codex login status >/dev/null 2>&1; then

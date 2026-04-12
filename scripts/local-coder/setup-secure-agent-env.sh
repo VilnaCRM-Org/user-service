@@ -7,6 +7,8 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 . "${ROOT_DIR}/scripts/local-coder/lib/github-auth.sh"
 # shellcheck source=scripts/local-coder/lib/workspace-secrets.sh
 . "${ROOT_DIR}/scripts/local-coder/lib/workspace-secrets.sh"
+# shellcheck source=scripts/local-coder/lib/bmalph.sh
+. "${ROOT_DIR}/scripts/local-coder/lib/bmalph.sh"
 
 SETTINGS_FILE="${ROOT_DIR}/.devcontainer/workspace-settings.env"
 if [ -f "${SETTINGS_FILE}" ]; then
@@ -247,6 +249,11 @@ EOM
     fi
 }
 
+ensure_bmalph_cli() {
+    export CS_USER_NPM_GLOBAL_BIN="${USER_NPM_GLOBAL_BIN}"
+    cs_ensure_bmalph_cli
+}
+
 cs_require_command gh
 if ! cs_ensure_gh_auth; then
     if [ "${USER_SERVICE_BOOTSTRAP_STRICT}" = "1" ] || [ "${USER_SERVICE_BOOTSTRAP_STRICT}" = "true" ]; then
@@ -293,16 +300,31 @@ EOM
     echo "Warning: Codex authentication is not configured; continuing without AI bootstrap." >&2
 fi
 
+bmalph_ready=false
+if command -v bmalph >/dev/null 2>&1; then
+    bmalph_ready=true
+elif ensure_bmalph_cli; then
+    bmalph_ready=true
+else
+    echo "Warning: BMALPH CLI is unavailable; continuing without BMALPH bootstrap." >&2
+fi
+
 configure_git_identity
 persist_agent_secrets_file
 ensure_shell_sources_agent_secrets
 
 gh config set git_protocol "${GH_GIT_PROTOCOL}" --host "${GH_HOST}" >/dev/null 2>&1 || true
 gh config set prompt "${GH_PROMPT}" >/dev/null 2>&1 || true
+cs_align_git_remote_protocol origin "${GH_HOST}" "${GH_GIT_PROTOCOL}" >/dev/null 2>&1 || true
 
 codex_version=""
 if [ "${codex_ready}" = true ]; then
     codex_version="$(codex --version 2>/dev/null || true)"
+fi
+
+bmalph_version=""
+if [ "${bmalph_ready}" = true ]; then
+    bmalph_version="$(bmalph --version 2>/dev/null || true)"
 fi
 
 echo "Secure agent environment is ready."
@@ -319,4 +341,13 @@ if [ "${codex_ready}" = true ]; then
     echo "  - npm package: ${CODEX_NPM_PACKAGE}"
 else
     echo "Codex configured: unavailable."
+fi
+if [ "${bmalph_ready}" = true ]; then
+    echo "BMALPH configured:"
+    echo "  - command: $(command -v bmalph)"
+    echo "  - version: ${bmalph_version:-unknown}"
+    echo "  - npm package: ${BMALPH_NPM_PACKAGE:-bmalph}"
+    echo "  - default platform: ${BMALPH_DEFAULT_PLATFORM:-codex}"
+else
+    echo "BMALPH configured: unavailable."
 fi

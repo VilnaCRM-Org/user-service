@@ -18,6 +18,7 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Fix complexity issues**     | `complexity-management`         | PHPInsights complexity score drops        |
 | **Run CI checks**             | `ci-workflow`                   | Before committing, validating changes     |
 | **Debug test failures**       | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
+| **Plan specs autonomously**   | `bmad-autonomous-planning`      | BMALPH-wrapped planning from a short task |
 | **Handle PR feedback**        | `code-review`                   | Processing code review comments           |
 | **Organize code structure**   | `code-organization`             | Directory placement, naming, type safety  |
 | **Create DDD patterns**       | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
@@ -34,6 +35,11 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 | **Architecture diagrams**     | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
 
 > For detailed flows and cross-agent guidance see `.claude/skills/AI-AGENT-GUIDE.md`.
+
+Optional BMALPH setup:
+
+- `make bmalph-claude` installs and verifies the local Claude Code BMALPH flow.
+- `make bmalph-init BMALPH_PLATFORM=claude-code BMALPH_DRY_RUN=true` previews the local BMALPH workspace files before you write them.
 
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 
