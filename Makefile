@@ -29,8 +29,8 @@ COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
-EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=load_test php
-EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
+EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
+EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
@@ -215,29 +215,31 @@ setup-load-test-db: ## Create database for load testing purposes
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
+LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
-	SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
-	SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
-	SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
-	SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
-	SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.

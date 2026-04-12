@@ -79,8 +79,14 @@ final class AuthGateOverheadIntegrationTest extends AuthIntegrationTestCase
         }
 
         sort($latenciesMs);
+        $count = count($latenciesMs);
+        $midpoint = intdiv($count, 2);
 
-        return $latenciesMs[(int) floor(count($latenciesMs) / 2)];
+        if ($count % 2 === 0) {
+            return ($latenciesMs[$midpoint - 1] + $latenciesMs[$midpoint]) / 2;
+        }
+
+        return $latenciesMs[$midpoint];
     }
 
     /**

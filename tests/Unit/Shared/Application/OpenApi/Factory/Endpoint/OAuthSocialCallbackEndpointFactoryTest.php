@@ -29,7 +29,7 @@ final class OAuthSocialCallbackEndpointFactoryTest extends UnitTestCase
             );
 
         $factory = new OAuthSocialCallbackEndpointFactory(
-            (string) getenv('API_PREFIX'),
+            '/api',
             $this->createSupportedProvidersProvider(),
         );
         $factory->createEndpoint($openApi);

@@ -12,21 +12,27 @@ final class OAuthProviderNameCollectionTest extends UnitTestCase
 {
     public function testNamesReturnsProviderNamesInOrder(): void
     {
+        $firstProviderName = $this->createProviderName();
+        $secondProviderName = $this->createProviderName();
         $collection = new OAuthProviderNameCollection([
-            OAuthProvider::fromString('github'),
-            OAuthProvider::fromString('google'),
+            OAuthProvider::fromString($firstProviderName),
+            OAuthProvider::fromString($secondProviderName),
         ]);
 
-        self::assertSame(['github', 'google'], $collection->names());
+        self::assertSame([$firstProviderName, $secondProviderName], $collection->names());
         self::assertCount(2, $collection);
     }
 
     public function testCollectionSupportsTraversableProviders(): void
     {
-        $collection = new OAuthProviderNameCollection($this->providers());
+        $firstProviderName = $this->createProviderName();
+        $secondProviderName = $this->createProviderName();
+        $collection = new OAuthProviderNameCollection(
+            $this->providers($firstProviderName, $secondProviderName),
+        );
 
         self::assertSame(
-            ['facebook', 'twitter'],
+            [$firstProviderName, $secondProviderName],
             array_map(
                 static fn (OAuthProvider $provider): string => (string) $provider,
                 iterator_to_array($collection),
@@ -37,9 +43,14 @@ final class OAuthProviderNameCollectionTest extends UnitTestCase
     /**
      * @return \Generator<int, OAuthProvider>
      */
-    private function providers(): \Generator
+    private function providers(string $firstProviderName, string $secondProviderName): \Generator
     {
-        yield OAuthProvider::fromString('facebook');
-        yield OAuthProvider::fromString('twitter');
+        yield OAuthProvider::fromString($firstProviderName);
+        yield OAuthProvider::fromString($secondProviderName);
+    }
+
+    private function createProviderName(): string
+    {
+        return strtolower($this->faker->unique()->lexify('provider????'));
     }
 }

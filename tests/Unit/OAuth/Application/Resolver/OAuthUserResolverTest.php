@@ -25,6 +25,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 final class OAuthUserResolverTest extends UnitTestCase
 {
+    private const MULTIBYTE_PREFIX = "\u{0104}\u{017E}";
+
     private SocialIdentityRepositoryInterface&MockObject $socialIdentityRepo;
     private UserRepositoryInterface&MockObject $userRepo;
     private PasswordHasherInterface&MockObject $passwordHasher;
@@ -184,7 +186,11 @@ final class OAuthUserResolverTest extends UnitTestCase
 
     public function testResolveUsesTrimmedMultibyteNameForInitials(): void
     {
-        $name = "  \u{0104}\u{017E}uolas  ";
+        $name = sprintf(
+            '  %s%s  ',
+            self::MULTIBYTE_PREFIX,
+            strtolower($this->faker->lexify('??????'))
+        );
         $result = $this->resolveNewUser(
             new OAuthUserProfile(
                 $this->faker->safeEmail(),
@@ -194,7 +200,7 @@ final class OAuthUserResolverTest extends UnitTestCase
             )
         );
 
-        $this->assertSame("\u{0104}\u{017E}", $result->user->getInitials());
+        $this->assertSame(self::MULTIBYTE_PREFIX, $result->user->getInitials());
     }
 
     public function testResolveUsesEmailPrefixWhenNameIsEmpty(): void
@@ -239,7 +245,11 @@ final class OAuthUserResolverTest extends UnitTestCase
 
     public function testResolveUsesWholeEmailWhenSeparatorIsMissing(): void
     {
-        $email = "\u{0104}\u{017E}user";
+        $email = sprintf(
+            '%s%s',
+            self::MULTIBYTE_PREFIX,
+            strtolower($this->faker->lexify('????'))
+        );
         $result = $this->resolveNewUser(
             new OAuthUserProfile(
                 $email,
@@ -249,7 +259,7 @@ final class OAuthUserResolverTest extends UnitTestCase
             )
         );
 
-        $this->assertSame("\u{0104}\u{017E}", $result->user->getInitials());
+        $this->assertSame(self::MULTIBYTE_PREFIX, $result->user->getInitials());
     }
 
     public function testResolveSkipsAutoLinkWhenEmailNotVerified(): void
