@@ -175,7 +175,7 @@ deptrac: ## Check directory structure
 deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
-behat: setup-test-db ## A php framework for autotesting business expectations
+behat: setup-test-db clear-test-expression-language-caches ## A php framework for autotesting business expectations
 	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
@@ -196,6 +196,12 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
+
+clear-test-expression-language-caches:
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.validator_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_is_granted_attribute_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_is_csrf_token_valid_attribute_expression_language
 
 setup-load-test-db: ## Create database for load testing purposes
 	$(SYMFONY_LOAD_TEST_ENV) c:c
