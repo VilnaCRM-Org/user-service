@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Memory\Support;
 
 use function in_array;
-
 use LogicException;
 use ShipMonk\MemoryScanner\ObjectDeallocationChecker;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -16,28 +15,6 @@ use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface;
 abstract class MemoryLeakAwareWebTestCase extends WebTestCase
 {
     private ?ObjectDeallocationChecker $deallocationChecker = null;
-
-    protected function createMemoryClient(): KernelBrowser
-    {
-        $client = static::createClient();
-        $client->disableReboot();
-
-        return $client;
-    }
-
-    protected function finishMemoryRequestCycle(): void
-    {
-        static::getContainer()->get(ServicesResetterInterface::class)->reset();
-        gc_collect_cycles();
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function getIgnoredServiceLeaks(): array
-    {
-        return [];
-    }
 
     #[\Override]
     protected function tearDown(): void
@@ -61,6 +38,28 @@ abstract class MemoryLeakAwareWebTestCase extends WebTestCase
             self::fail($deallocationChecker->explainLeaks($leakCauses));
             // @codeCoverageIgnoreEnd
         }
+    }
+
+    protected function createMemoryClient(): KernelBrowser
+    {
+        $client = static::createClient();
+        $client->disableReboot();
+
+        return $client;
+    }
+
+    protected function finishMemoryRequestCycle(): void
+    {
+        static::getContainer()->get(ServicesResetterInterface::class)->reset();
+        gc_collect_cycles();
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function getIgnoredServiceLeaks(): array
+    {
+        return [];
     }
 
     private function getDeallocationChecker(): ObjectDeallocationChecker

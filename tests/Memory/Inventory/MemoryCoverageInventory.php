@@ -8,9 +8,6 @@ final class MemoryCoverageInventory
 {
     public const INVENTORY_COVERAGE_THRESHOLD = 100;
 
-    /**
-     * @var list<string>
-     */
     public const REST_LOAD_SCENARIOS = [
         'cachePerformance',
         'confirmTwoFactor',
@@ -39,9 +36,6 @@ final class MemoryCoverageInventory
         'updateUser',
     ];
 
-    /**
-     * @var list<string>
-     */
     public const GRAPHQL_LOAD_SCENARIOS = [
         'graphQLCompleteTwoFactor',
         'graphQLConfirmPasswordReset',
@@ -63,9 +57,6 @@ final class MemoryCoverageInventory
         'graphQLUpdateUser',
     ];
 
-    /**
-     * @var list<string>
-     */
     public const BEHAT_FEATURES = [
         'account_lockout',
         'auth_gate',
@@ -98,9 +89,6 @@ final class MemoryCoverageInventory
         'user_operations',
     ];
 
-    /**
-     * @var array<string, array{class: class-string, method: non-empty-string}>
-     */
     public const IMPLEMENTED_MEMORY_TESTS = [
         'feature:health_check' => [
             'class' => MemoryLeakToolingSmokeTest::class,

@@ -7,6 +7,7 @@ namespace App\Tests\Memory\Inventory;
 use App\Tests\Memory\Support\MemoryInventoryCoverage;
 use App\Tests\Memory\Support\MemoryInventorySources;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class MemoryCoverageInventoryTest extends TestCase
 {
@@ -15,6 +16,17 @@ final class MemoryCoverageInventoryTest extends TestCase
         self::assertSame(100, MemoryInventoryCoverage::percentage([], []));
         self::assertSame([], MemoryInventoryCoverage::missing([], []));
         self::assertSame([], MemoryInventoryCoverage::unexpected([], []));
+    }
+
+    public function testPartialInventoryCoverageTruncatesInsteadOfRoundingUp(): void
+    {
+        self::assertSame(
+            66,
+            MemoryInventoryCoverage::percentage(
+                ['feature-a', 'feature-b', 'feature-c'],
+                ['feature-a', 'feature-b']
+            )
+        );
     }
 
     public function testBehatFeatureInventoryCoverageStaysAtOneHundredPercent(): void
@@ -48,6 +60,16 @@ final class MemoryCoverageInventoryTest extends TestCase
                 )
             );
         }
+    }
+
+    public function testInvalidGlobResultFallsBackToEmptyInventory(): void
+    {
+        $normalizeGlobResult = new ReflectionMethod(
+            MemoryInventorySources::class,
+            'normalizeGlobResult'
+        );
+
+        self::assertSame([], $normalizeGlobResult->invoke(null, false));
     }
 
     public function testRestLoadInventoryCoverageStaysAtOneHundredPercent(): void

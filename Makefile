@@ -200,10 +200,11 @@ integration-tests: setup-test-db ## Run integration tests
 
 memory-tests: setup-test-db ## Run memory leak tests with 100% inventory coverage and owned-suite line coverage
 	@echo "Running memory leak tests with strict inventory and coverage requirements..."
-	@$(RUN_TESTS_COVERAGE) --configuration=phpunit.memory.xml.dist --testsuite=Memory 2>&1 | tee /tmp/phpunit_memory_output.txt
-	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_memory_output.txt; then \
-		echo "❌ MEMORY TEST FAILURE: Some memory tests failed"; \
-		exit 1; \
+	@bash -o pipefail -c '$(RUN_TESTS_COVERAGE) --configuration=phpunit.memory.xml.dist --testsuite=Memory 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
+	phpunit_exit=$$?; \
+	if [ $$phpunit_exit -ne 0 ]; then \
+		echo "❌ MEMORY TEST FAILURE: PHPUnit exited with status $$phpunit_exit"; \
+		exit $$phpunit_exit; \
 	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \

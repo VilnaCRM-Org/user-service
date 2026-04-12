@@ -46,7 +46,7 @@ final class MemoryInventorySources
      */
     private static function collectBasenames(string $pattern, string $suffix): array
     {
-        $paths = glob($pattern) ?: [];
+        $paths = self::normalizeGlobResult(glob($pattern));
 
         $basenames = array_map(
             static fn (string $path): string => basename($path, $suffix),
@@ -56,5 +56,19 @@ final class MemoryInventorySources
         sort($basenames);
 
         return $basenames;
+    }
+
+    /**
+     * @param array<int, string>|false $paths
+     *
+     * @return list<string>
+     */
+    private static function normalizeGlobResult(array|false $paths): array
+    {
+        if ($paths === false) {
+            return [];
+        }
+
+        return array_values($paths);
     }
 }

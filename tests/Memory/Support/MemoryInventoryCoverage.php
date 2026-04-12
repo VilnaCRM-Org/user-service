@@ -18,8 +18,14 @@ final class MemoryInventoryCoverage
         }
 
         $matchedItems = array_intersect($expectedItems, self::normalize($accountedItems));
+        $matchedCount = count($matchedItems);
+        $expectedCount = count($expectedItems);
 
-        return (int) round((count($matchedItems) / count($expectedItems)) * 100);
+        if ($matchedCount === $expectedCount) {
+            return 100;
+        }
+
+        return (int) floor($matchedCount / $expectedCount * 100);
     }
 
     /**
