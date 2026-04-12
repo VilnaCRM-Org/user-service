@@ -9,6 +9,7 @@ cs_bmalph_load_defaults() {
     : "${BMALPH_DEFAULT_PLATFORM:=codex}"
     : "${BMALPH_DEFAULT_PROJECT_NAME:=user-service}"
     : "${BMALPH_DEFAULT_PROJECT_DESCRIPTION:=VilnaCRM User Service}"
+    : "${BMALPH_PLANNING_ARTIFACTS:=specs}"
     : "${CS_USER_NPM_GLOBAL_BIN:=${HOME}/.npm-global/bin}"
 }
 
@@ -108,4 +109,47 @@ cs_verify_bmalph_dry_run() {
         sed -n '1,160p' "${tmp_output}" >&2
         return 1
     fi
+}
+
+# Rewrite repo-specific BMAD config defaults after init or upgrade restores local files.
+cs_bmalph_configure_planning_artifacts() {
+    local target_dir="${1:?Missing project directory}"
+    local planning_artifacts="${2:-${BMALPH_PLANNING_ARTIFACTS:-specs}}"
+    local config_path="${target_dir}/_bmad/config.yaml"
+    local tmp_config
+
+    cs_bmalph_load_defaults
+
+    if [ ! -f "${config_path}" ]; then
+        return 0
+    fi
+
+    tmp_config="$(mktemp)"
+    trap "trap - RETURN; rm -f -- \"${tmp_config}\"" RETURN
+
+    awk -v value="${planning_artifacts}" '
+        BEGIN { found = 0 }
+        /^planning_artifacts:/ {
+            print "planning_artifacts: " value
+            found = 1
+            next
+        }
+        { print }
+        END {
+            if (found == 0) {
+                print "planning_artifacts: " value
+            }
+        }
+    ' "${config_path}" >"${tmp_config}"
+
+    mv "${tmp_config}" "${config_path}"
+
+    case "${planning_artifacts}" in
+        /*)
+            mkdir -p "${planning_artifacts}"
+            ;;
+        *)
+            mkdir -p "${target_dir}/${planning_artifacts}"
+            ;;
+    esac
 }

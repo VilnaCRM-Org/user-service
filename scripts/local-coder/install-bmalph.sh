@@ -240,6 +240,9 @@ EOM
     fi
 
     if [ "${dry_run}" != true ]; then
+        cs_bmalph_configure_planning_artifacts "${project_dir}"
+        echo "BMALPH planning artifacts configured:"
+        echo "  - planning_artifacts: ${BMALPH_PLANNING_ARTIFACTS:-specs}"
         restore_new_tracked_changes "${project_dir}" "${tracked_dirty_before}"
     fi
 else
