@@ -216,13 +216,15 @@ EOF
   run bash -lc '
     set -euo pipefail
     wrapper=".agents/skills/bmad-autonomous-planning/SKILL.md"
+    grep -F "This wrapper requires local BMALPH assets under \`_bmad/\`" "$wrapper"
+    grep -F "run \`make bmalph-setup\` first" "$wrapper"
+    grep -F "planning artifacts under \`specs/\`" "$wrapper"
     grep -F "repo-local bash" "$wrapper"
     grep -F "canonical planning contract" "$wrapper"
     grep -F "Run each BMALPH planning stage in a dedicated subagent" "$wrapper"
     grep -F "the main agent must decide the next step" "$wrapper"
     grep -F ".claude/skills/bmad-autonomous-planning/SKILL.md" "$wrapper"
     grep -F "Minimal Codex trigger example:" "$wrapper"
-    ! grep -F "make bmalph-setup" "$wrapper"
   '
   assert_success
 }

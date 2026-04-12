@@ -65,13 +65,13 @@ This PRD defines the planning requirements for a safe migration track. It focuse
 
 ### MVP for this planning track
 
-- Define the long-running worker problem statement.
-- Define service-audit rules for mutable singleton state.
-- Define post-request cleanup expectations, including `gc_collect_cycles()` in the worker loop.
-- Define a conservative `MAX_REQUESTS` worker restart fuse.
-- Define the primary memory-safety test package and Symfony/PHPUnit integration pattern.
-- Define targeted flows for repeated-request leak testing.
-- Define CI, staging soak, rollout, rollback, and risk gates.
+- Establish the long-running worker problem statement.
+- Specify service-audit rules for mutable singleton state.
+- Require post-request cleanup expectations, including `gc_collect_cycles()` in the worker loop.
+- Document a conservative `MAX_REQUESTS` worker restart fuse.
+- Select the primary memory-safety test package and Symfony/PHPUnit integration pattern.
+- Identify targeted flows for repeated-request leak testing.
+- Set CI, staging soak, rollout, rollback, and risk gates.
 
 ### Growth after planning
 
@@ -111,7 +111,7 @@ This PRD defines the planning requirements for a safe migration track. It focuse
 | ID    | Requirement                                                                                                                                                                  | Priority |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | FR-01 | The specs must state that FrankenPHP worker mode keeps the application booted across requests and therefore changes the runtime safety model.                                | P0       |
-| FR-02 | The specs must require explicit post-request cleanup and recommend `gc_collect_cycles()` in the worker loop.                                                                 | P0       |
+| FR-02 | The specs must require explicit post-request cleanup, including `gc_collect_cycles()` in the worker loop.                                                                    | P0       |
 | FR-03 | The specs must require a `MAX_REQUESTS` style worker restart fuse as an operational safeguard.                                                                               | P0       |
 | FR-04 | The specs must require `ResetInterface` for services that accumulate request-derived or mutable state between requests.                                                      | P0       |
 | FR-05 | The specs must require an audit of singleton services that store arrays, entities, request objects, closures, callbacks, or caches on properties.                            | P0       |

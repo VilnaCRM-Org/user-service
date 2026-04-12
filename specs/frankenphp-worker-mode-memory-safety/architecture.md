@@ -57,7 +57,7 @@ This design therefore treats worker mode as a first-class constraint, not as a d
 
 1. Terminate request work cleanly after each handled request.
 2. Execute explicit post-request cleanup hooks for stateful services.
-3. Recommend `gc_collect_cycles()` in the worker loop after each handled request as a pragmatic cleanup step.
+3. Call `gc_collect_cycles()` in the worker loop after each handled request as a pragmatic cleanup step.
 4. Configure a conservative `MAX_REQUESTS` style worker restart fuse so legacy or third-party leaks cannot grow forever.
 
 `MAX_REQUESTS` is a safety fuse. It is not proof that the service is safe, and it must not be used as a reason to skip retained-object fixes.
@@ -136,7 +136,7 @@ The design must therefore treat `disableReboot()` as an intentional test mode wi
 ### Required test scenarios
 
 1. Public simple read endpoint
-   - candidate: `GET /api/health-check`
+   - candidate: `GET /api/health`
 2. Authenticated endpoint
    - candidate: `GET /api/users/{id}`
 3. Doctrine ODM-heavy write endpoint

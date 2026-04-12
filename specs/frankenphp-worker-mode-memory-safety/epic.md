@@ -62,7 +62,7 @@ Engineers stop treating FrankenPHP worker mode as request-isolated PHP and inste
 ### Acceptance Criteria
 
 1. Specs state that the application is booted once and reused across requests.
-2. Specs require post-request cleanup and recommend `gc_collect_cycles()` in the worker loop.
+2. Specs require post-request cleanup, including `gc_collect_cycles()` in the worker loop.
 3. Specs define `MAX_REQUESTS` as a conservative safety fuse.
 4. Specs define rollout blockers and rollback triggers for memory and state issues.
 
@@ -89,7 +89,7 @@ The repository has an implementation-ready plan for PHPUnit memory-safety covera
 1. `shipmonk/memory-scanner` is the primary leak-detection package.
 2. `ObjectDeallocationCheckerKernelTestCaseTrait` is part of the planned integration strategy.
 3. Targeted flows cover public read, authenticated read, Doctrine-heavy write, serializer-heavy response, error path, and shared-cache or OAuth flows.
-4. `disableReboot()` based tests are planned with explicit caveats for security token storage and Doctrine ODM behavior.
+4. `disableReboot()`-based tests are planned with explicit caveats for security token storage and Doctrine ODM behavior.
 5. CI failure behavior is defined for confirmed retained-object leaks.
 
 ## Epic 4: Staging Soak and Operational Guardrails

@@ -58,7 +58,7 @@ so that runtime behavior does not rely on guesswork.
 ## Acceptance Criteria
 
 1. The implementation plan specifies post-request cleanup.
-2. The plan recommends `gc_collect_cycles()` in the worker loop.
+2. The plan requires `gc_collect_cycles()` in the worker loop.
 3. The plan defines a conservative `MAX_REQUESTS` style restart fuse for staging and early production.
 4. The plan states that `MAX_REQUESTS` is a safety fuse, not a replacement for fixing leaks.
 
@@ -114,7 +114,7 @@ so that memory regressions are caught in CI instead of staging or production.
 ## Acceptance Criteria
 
 1. `shipmonk/memory-scanner` is added as the primary dev dependency.
-2. The repository documents or implements shared helpers based on `ObjectDeallocationCheckerKernelTestCaseTrait`.
+2. The repository implements shared helpers based on `ObjectDeallocationCheckerKernelTestCaseTrait` and exercises them in at least one `KernelTestCase` or `WebTestCase`.
 3. The suite integrates with existing PHPUnit workflows.
 4. `roave/no-leaks` is not introduced as the primary migration solution.
 
@@ -178,7 +178,7 @@ so that the first rollout wave targets real application behavior.
 
 ## Tasks / Subtasks
 
-- [ ] Add a public read test for `GET /api/health-check`.
+- [ ] Add a public read test for `GET /api/health`.
 - [ ] Add an authenticated read test for `GET /api/users/{id}`.
 - [ ] Add write-path tests for `POST /api/users` and `PATCH /api/users/{id}`.
 - [ ] Add serializer-heavy coverage for `GET /api/users?page=1&itemsPerPage=50` and the GraphQL collection query.

@@ -39,12 +39,12 @@ The repository currently has performance evidence for FrankenPHP throughput and 
 ## What Is Missing Today
 
 - No planning artifacts define long-running worker constraints as first-class architecture requirements.
-- No planning artifacts define a mandatory post-request cleanup contract or a `gc_collect_cycles()` recommendation in the worker loop.
+- No planning artifacts define a mandatory post-request cleanup contract that includes `gc_collect_cycles()` in the worker loop.
 - No planning artifacts define a conservative `MAX_REQUESTS` style restart fuse for worker safety.
 - No repository evidence shows application services currently implementing `ResetInterface` for worker reuse.
 - No dedicated PHPUnit leak-detection package is installed.
 - No `KernelTestCase` or `WebTestCase` memory-safety suite exists.
-- No `disableReboot()` based repeated-request tests currently exist.
+- No `disableReboot()`-based repeated-request tests currently exist.
 - No rollout document explains how to distinguish expected warm-up from unbounded worker growth.
 
 ## High-Risk Service Categories In This Codebase
@@ -93,7 +93,7 @@ The planning bundle should cover real flows already present in the service inste
 
 ### Flow 1: Public simple read
 
-- `GET /api/health-check`
+- `GET /api/health`
 - Purpose: establish a low-complexity baseline for a worker that should not retain request objects or error context.
 
 ### Flow 2: Authenticated read through shared security services
