@@ -13,8 +13,11 @@ The canonical planning contract lives in
 `.claude/skills/bmad-autonomous-planning/SKILL.md`. This wrapper is only the
 Codex-specific handoff.
 
-If `_bmad/` is missing, stop and tell the user BMALPH assets must be initialized
-for the repository before this skill can run. Otherwise:
+This wrapper requires local BMALPH assets under `_bmad/`, which this repository intentionally keeps out of git.
+If `_bmad/` is missing in a fresh clone or workspace, run `make bmalph-setup` first.
+If BMALPH is already installed and you need to restore local files or reapply this repository's planning artifacts under `specs/`, rerun `make bmalph-setup`.
+
+After the local BMALPH assets are available:
 
 1. Read the local `bmalph` skill wrapper, `_bmad/COMMANDS.md`, and the resolved
    BMAD config file first.

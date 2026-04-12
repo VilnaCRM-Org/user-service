@@ -28,7 +28,8 @@ After `make ci` and before committing/pushing or moving a PR from draft to ready
 
 1. Run `make bmalph-codex` or `make bmalph-claude` to install and verify BMALPH locally.
 2. Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview repository initialization safely.
-3. Use `make bmalph-setup` only when you intentionally want the local `_bmad/` and `.ralph/` workflow files in your workspace.
+3. Use `make bmalph-setup` only when you intentionally want the local `_bmad/` and `.ralph/` workflow files in your workspace; it also configures planning artifacts under `specs/`.
+4. If you run `bmalph upgrade --force` directly, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
 
 ### ✅ Mandatory New Feature Verification Gate (ALL Skills)
 
@@ -420,7 +421,7 @@ config/
 
 ## BMAD-METHOD Integration
 
-BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace.
+BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace. This repository keeps BMAD planning artifacts under `specs/`, and `make bmalph-setup` reapplies that layout after local init or upgrade.
 
 For non-interactive planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session and let the main agent orchestrate BMALPH subagents without relying on repo-local launcher scripts.
 

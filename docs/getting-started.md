@@ -172,6 +172,8 @@ make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true
 make bmalph-setup
 ```
 
+This repository keeps BMAD planning artifacts under `specs/` instead of the upstream `_bmad-output/planning-artifacts` default. `make bmalph-setup` rewrites the local `_bmad/config.yaml` so planning runs use `specs/`; rerun it after any direct `bmalph upgrade --force` if you need to restore the repo defaults.
+
 For autonomous specs-first planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
 
 `bmalph init` writes local `_bmad/` and `.ralph/` assets into the workspace. Those directories are ignored in git here, so prefer the dry-run preview before enabling the local workflow files.
