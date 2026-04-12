@@ -236,7 +236,11 @@ final class OAuthUserResolverTest extends UnitTestCase
             )
         );
 
-        $localPart = strstr($email, '@', true) ?: $email;
+        $localPart = strstr($email, '@', true);
+        if ($localPart === false) {
+            $localPart = $email;
+        }
+
         $this->assertSame(
             mb_substr($localPart, 0, 2),
             $result->user->getInitials(),
