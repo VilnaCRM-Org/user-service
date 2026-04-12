@@ -5,12 +5,17 @@ include .env.test
 PROJECT       = user-service
 GIT_AUTHOR    = Kravalg
 LOAD_TEST_CONFIG = tests/Load/config.prod.json
+LOAD_TEST_COMPOSE_PROJECT ?= $(PROJECT)-load-tests
+LOAD_TEST_API_PORT ?= 18081
+LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
+LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
 
 # Executables: local only
 SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
-DOCKER_COMPOSE_LOAD_TEST = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.load-tests.yml
+DOCKER_COMPOSE_LOAD_TEST = LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_MAILCATCHER_SMTP_PORT=$(LOAD_TEST_MAILCATCHER_SMTP_PORT) LOAD_TEST_MAILCATCHER_HTTP_PORT=$(LOAD_TEST_MAILCATCHER_HTTP_PORT) $(DOCKER_COMPOSE) -p $(LOAD_TEST_COMPOSE_PROJECT) -f docker-compose.load-tests.yml
+DOCKER_COMPOSE_SCHEMATHESIS = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.schemathesis.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
 SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
@@ -19,15 +24,20 @@ SCHEMATHESIS_AUTH = $(SCHEMATHESIS_CLIENT_ID):$(SCHEMATHESIS_CLIENT_SECRET)
 
 # Executables
 EXEC_PHP      = $(DOCKER_COMPOSE) exec php
+EXEC_PHP_SCHEMATHESIS = $(DOCKER_COMPOSE_SCHEMATHESIS) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
+EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
+EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
 # Alias
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
+SYMFONY_LOAD_TEST_ENV = $(EXEC_PHP_LOAD_TEST_ENV) bin/console
+SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
 BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
@@ -165,7 +175,7 @@ deptrac: ## Check directory structure
 deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
-behat: setup-test-db ## A php framework for autotesting business expectations
+behat: setup-test-db clear-test-expression-language-caches ## A php framework for autotesting business expectations
 	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
@@ -187,39 +197,58 @@ setup-test-db: ## Create database for testing purposes
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
 
+clear-test-expression-language-caches:
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.validator_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_is_granted_attribute_expression_language
+	$(SYMFONY_TEST_ENV) cache:pool:clear cache.security_is_csrf_token_valid_attribute_expression_language
+
+setup-load-test-db: ## Create database for load testing purposes
+	$(SYMFONY_LOAD_TEST_ENV) c:c
+	$(SYMFONY_LOAD_TEST_ENV_NODEBUG) c:c
+	@echo "Recreating MongoDB schema for load testing..."
+	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
+	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Seeding test OAuth client..."
+	$(SYMFONY_LOAD_TEST_ENV) app:seed-test-oauth-client
+	@echo "✅ Load-test database ready"
+
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
+LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" --redirect-uri="$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
+
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
-	tests/Load/load-tests-prepare-oauth-client.sh $$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG)) $$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG)) --redirect-uri=$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-load-tests.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	tests/Load/execute-load-test.sh cachePerformance true false false false
 
 build-k6-docker:
@@ -328,17 +357,17 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
-	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.schemathesis.yml up --detach --wait php
-	$(EXEC_PHP) bin/console cache:clear
-	$(EXEC_PHP) bin/console app:seed-schemathesis-data
-	$(EXEC_PHP) bin/console cache:pool:clear cache.app
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	$(DOCKER_COMPOSE_SCHEMATHESIS) up --detach --wait php redis mailer localstack
+	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:clear
+	$(EXEC_PHP_SCHEMATHESIS) bin/console app:seed-schemathesis-data
+	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:pool:clear cache.app
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url http://localhost:8081 --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --exclude-operation-id oauth_social_initiate_get --exclude-operation-id oauth_social_callback_get --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
 	examples_exit=$$?; \
-	$(EXEC_PHP) bin/console app:seed-schemathesis-data; \
-	$(EXEC_PHP) bin/console cache:pool:clear cache.app; \
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url https://localhost --tls-verify=false --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
+	$(EXEC_PHP_SCHEMATHESIS) bin/console app:seed-schemathesis-data; \
+	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:pool:clear cache.app; \
+	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url http://localhost:8081 --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --exclude-operation-id oauth_social_initiate_get --exclude-operation-id oauth_social_callback_get --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
 	coverage_exit=$$?; \
-	$(DOCKER_COMPOSE) up --detach --wait php; \
+	$(DOCKER_COMPOSE) up --detach --wait php redis mailer localstack; \
 	$(EXEC_PHP) bin/console cache:clear; \
 	if [ $$examples_exit -ne 0 ] || [ $$coverage_exit -ne 0 ]; then exit 1; fi
 

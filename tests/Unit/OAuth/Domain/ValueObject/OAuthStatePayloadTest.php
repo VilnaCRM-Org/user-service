@@ -53,9 +53,10 @@ final class OAuthStatePayloadTest extends UnitTestCase
     public function testEqualsReturnsFalseForDifferentProvider(): void
     {
         $base = $this->createPayload();
+        $differentProvider = sprintf('%s-%s', $base->provider, $this->faker->lexify('????'));
 
         $other = new OAuthStatePayload(
-            $this->faker->word(),
+            $differentProvider,
             $base->codeVerifier,
             $base->flowBindingHash,
             $base->redirectUri,

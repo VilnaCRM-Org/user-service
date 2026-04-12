@@ -216,4 +216,23 @@ final class TwitterOAuthProviderTest extends UnitTestCase
 
         $this->assertSame($username, $profile->name);
     }
+
+    public function testFetchProfilePrefersNameOverUsernameWhenBothAreAvailable(): void
+    {
+        $email = $this->faker->safeEmail();
+        $name = $this->faker->name();
+        $username = $this->faker->userName();
+
+        $owner = $this->createMock(TwitterUser::class);
+        $owner->method('getEmail')->willReturn($email);
+        $owner->method('getName')->willReturn($name);
+        $owner->method('getUsername')->willReturn($username);
+        $owner->method('getId')->willReturn($this->faker->uuid());
+
+        $this->twitter->method('getResourceOwner')->willReturn($owner);
+
+        $profile = $this->provider->fetchProfile($this->faker->sha256());
+
+        $this->assertSame($name, $profile->name);
+    }
 }

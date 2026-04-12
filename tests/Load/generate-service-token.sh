@@ -1,7 +1,7 @@
-#!/bin/bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PRIVATE_KEY="${SCRIPT_DIR}/../../config/jwt/private.pem"
 
 if [ ! -f "$PRIVATE_KEY" ]; then

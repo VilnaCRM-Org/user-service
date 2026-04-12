@@ -18,6 +18,7 @@ services:
     resource: '../src/'
     exclude:
       - '../src/Shared/Kernel.php'
+      - '../src/OAuth/Infrastructure/Provider/DeterministicOAuthProvider.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -83,6 +84,14 @@ services:
     factory: ['@App\OAuth\Application\Factory\OAuthProviderCollectionFactory', 'create']
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider'
+
+  App\Shared\Domain\Collection\OAuthProviderNameCollection:
+    arguments:
+      $providers: !tagged_iterator 'app.oauth_provider_name'
+
+  App\Shared\Application\Provider\OAuthSupportedProvidersProvider:
+    arguments:
+      $providers: '@App\Shared\Domain\Collection\OAuthProviderNameCollection'
 
   App\Shared\Application\EventListener\RequestBodySizeLimitListener:
     arguments:
@@ -420,6 +429,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['github']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
     arguments:
@@ -438,6 +448,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['google']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
     arguments:
@@ -457,6 +468,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['facebook']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
     arguments:
@@ -475,6 +487,7 @@ services:
     class: App\OAuth\Domain\ValueObject\OAuthProvider
     factory: ['App\OAuth\Domain\ValueObject\OAuthProvider', 'fromString']
     arguments: ['twitter']
+    tags: ['app.oauth_provider_name']
 
   App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
     arguments:

@@ -1,5 +1,46 @@
 services:
   php:
+    build:
+      target: frankenphp_prod
+    command:
+      - frankenphp
+      - run
+      - --config
+      - /etc/caddy/Caddyfile
+    ports:
+      - target: 8081
+        published: 8081
+        protocol: tcp
+    volumes:
+      - ./:/srv/app
+      - /srv/app/vendor
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./infrastructure/docker/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint:ro
+      - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
     environment:
       APP_ENV: schemathesis
       CADDY_PHP_APP_ENV: schemathesis
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      SERVER_NAME: :80
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 120s
+
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - '${MAILCATCHER_SMTP_PORT}:1025'
+      - '${MAILCATCHER_HTTP_PORT}:1080'
+
+  localstack:
+    image: localstack/localstack:3.4.0
+    ports:
+      - '${LOCALSTACK_PORT:-4566}:4566'
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+    volumes:
+      - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh

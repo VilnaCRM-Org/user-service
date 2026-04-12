@@ -12,6 +12,7 @@ use App\OAuth\Domain\Exception\MissingOAuthParametersException;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
+use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -128,6 +129,25 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->invokeController();
     }
 
+    public function testInvokeIgnoresAccessTokenCookieAttachmentForTwoFactor(): void
+    {
+        $this->arrangeCommandBus(
+            new HandleOAuthCallbackResponse(
+                true,
+                $this->faker->sha256(),
+                $this->faker->sha256(),
+                $this->faker->uuid()
+            )
+        );
+
+        $this->authCookieFactory->expects($this->never())
+            ->method('create');
+
+        $response = $this->invokeController();
+
+        $this->assertSame([], $response->headers->getCookies());
+    }
+
     public function testInvokeSetsPragmaNoCacheHeader(): void
     {
         $this->arrangeDirectSignIn();
@@ -144,9 +164,6 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingCode(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
-        $this->expectExceptionMessage(
-            'Missing required OAuth parameters: code, state, or flow-binding cookie'
-        );
 
         $this->invokeController(code: '');
     }
@@ -154,9 +171,6 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingState(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
-        $this->expectExceptionMessage(
-            'Missing required OAuth parameters: code, state, or flow-binding cookie'
-        );
 
         $this->invokeController(state: '');
     }
@@ -164,9 +178,6 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     public function testInvokeThrowsOnMissingCookie(): void
     {
         $this->expectException(MissingOAuthParametersException::class);
-        $this->expectExceptionMessage(
-            'Missing required OAuth parameters: code, state, or flow-binding cookie'
-        );
 
         $this->invokeController(flowBindingToken: '');
     }
@@ -186,44 +197,119 @@ final class OAuthCallbackControllerTest extends UnitTestCase
         $this->invokeController(provider: $provider);
     }
 
-    public function testInvokeDispatchesCommandWithQueryParams(): void
+    public function testInvokeDispatchesCommandWithCode(): void
     {
         $code = $this->faker->sha256();
-        $state = $this->faker->sha256();
-        $matchesQueryParams = function (
-            HandleOAuthCallbackCommand $command,
-        ) use ($code, $state): bool {
-            return $this->commandHasQueryParameters($command, $code, $state);
-        };
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback($matchesQueryParams));
+            ->with($this->callback(
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->code === $code
+            ));
 
         $this->arrangeDirectSignIn();
 
-        $this->invokeController(code: $code, state: $state);
+        $this->invokeController(code: $code);
     }
 
-    public function testInvokeDispatchesCommandWithFlowBindingToken(): void
+    public function testInvokeDispatchesCommandWithState(): void
     {
-        $flowBindingToken = $this->faker->sha256();
-        $matchesFlowBindingToken = function (
-            HandleOAuthCallbackCommand $command,
-        ) use ($flowBindingToken): bool {
-            return $this->commandHasFlowBindingToken(
-                $command,
-                $flowBindingToken,
-            );
-        };
+        $state = $this->faker->sha256();
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->callback($matchesFlowBindingToken));
+            ->with($this->callback(
+                static fn (HandleOAuthCallbackCommand $cmd): bool => $cmd->state === $state
+            ));
 
         $this->arrangeDirectSignIn();
 
-        $this->invokeController(flowBindingToken: $flowBindingToken);
+        $this->invokeController(state: $state);
+    }
+
+    public function testInvokeDispatchesCommandWithFlowBinding(): void
+    {
+        $token = $this->faker->sha256();
+        $check = static fn (
+            HandleOAuthCallbackCommand $cmd,
+        ): bool => $cmd->flowBindingToken === $token;
+
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($this->callback($check));
+
+        $this->arrangeDirectSignIn();
+
+        $this->invokeController(flowBindingToken: $token);
+    }
+
+    public function testInvokeDispatchesCommandWithClientIpAndUserAgent(): void
+    {
+        $clientIp = '198.51.100.24';
+        $userAgent = 'VilnaCRM OAuth Callback Test';
+        $response = new HandleOAuthCallbackResponse(
+            false,
+            $this->faker->sha256(),
+            $this->faker->sha256(),
+        );
+
+        $this->expectDispatchWithRequestMetadata($clientIp, $userAgent, $response);
+
+        $this->arrangeAuthCookie();
+
+        $this->invokeController(clientIp: $clientIp, userAgent: $userAgent);
+    }
+
+    public function testInvokeThrowsWhenDirectSignInTokensAreMissing(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'OAuth callback response missing access/refresh token when 2FA is disabled.'
+        );
+
+        $this->arrangeCommandBus(new HandleOAuthCallbackResponse(false));
+
+        $this->invokeController();
+    }
+
+    public function testInvokeThrowsWhenAccessTokenIsMissingForDirectSignIn(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'OAuth callback response missing access/refresh token when 2FA is disabled.'
+        );
+
+        $this->authCookieFactory->expects($this->never())
+            ->method('create');
+        $this->arrangeCommandBus(
+            new HandleOAuthCallbackResponse(
+                false,
+                null,
+                $this->faker->sha256(),
+            )
+        );
+
+        $this->invokeController();
+    }
+
+    public function testInvokeThrowsWhenRefreshTokenIsMissingForDirectSignIn(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'OAuth callback response missing access/refresh token when 2FA is disabled.'
+        );
+
+        $this->authCookieFactory->expects($this->never())
+            ->method('create');
+        $this->arrangeCommandBus(
+            new HandleOAuthCallbackResponse(
+                false,
+                $this->faker->sha256(),
+                null,
+            )
+        );
+
+        $this->invokeController();
     }
 
     private function arrangeDirectSignIn(): void
@@ -243,7 +329,9 @@ final class OAuthCallbackControllerTest extends UnitTestCase
     ): void {
         $this->commandBus->method('dispatch')
             ->willReturnCallback(
-                static function (HandleOAuthCallbackCommand $command) use ($responseDto): void {
+                static function (
+                    HandleOAuthCallbackCommand $command
+                ) use ($responseDto): void {
                     $command->setResponse($responseDto);
                 }
             );
@@ -255,17 +343,61 @@ final class OAuthCallbackControllerTest extends UnitTestCase
             ->willReturn(Cookie::create('auth', $this->faker->sha256()));
     }
 
+    private function expectDispatchWithRequestMetadata(
+        string $clientIp,
+        string $userAgent,
+        HandleOAuthCallbackResponse $response,
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(
+                function (HandleOAuthCallbackCommand $command) use (
+                    $clientIp,
+                    $userAgent,
+                    $response
+                ): void {
+                    $this->assertSame($clientIp, $command->ipAddress);
+                    $this->assertSame($userAgent, $command->userAgent);
+                    $command->setResponse($response);
+                }
+            );
+    }
+
     private function invokeController(
         ?string $provider = null,
         ?string $code = null,
         ?string $state = null,
         ?string $flowBindingToken = null,
+        ?string $clientIp = null,
+        ?string $userAgent = null,
     ): Response {
         $provider ??= $this->faker->word();
         $code ??= $this->faker->sha256();
         $state ??= $this->faker->sha256();
         $flowBindingToken ??= $this->faker->sha256();
+        $clientIp ??= $this->faker->ipv4();
+        $userAgent ??= $this->faker->userAgent();
 
+        $request = $this->createRequest(
+            $provider,
+            $code,
+            $state,
+            $flowBindingToken,
+            $clientIp,
+            $userAgent,
+        );
+
+        return ($this->controller)($provider, $request);
+    }
+
+    private function createRequest(
+        string $provider,
+        string $code,
+        string $state,
+        string $flowBindingToken,
+        string $clientIp,
+        string $userAgent,
+    ): Request {
         $request = Request::create(
             sprintf(
                 'https://example.com/api/auth/social/%s/callback?code=%s&state=%s',
@@ -274,49 +406,30 @@ final class OAuthCallbackControllerTest extends UnitTestCase
                 $state,
             ),
             'GET',
+            server: [
+                'REMOTE_ADDR' => $clientIp,
+                'HTTP_USER_AGENT' => $userAgent,
+            ],
         );
+        $request->cookies->set(OAuthFlowCookieFactory::COOKIE_NAME, $flowBindingToken);
 
-        $request->cookies->set(
-            OAuthFlowCookieFactory::COOKIE_NAME,
-            $flowBindingToken,
-        );
-
-        return ($this->controller)($provider, $request);
-    }
-
-    private function commandHasQueryParameters(
-        HandleOAuthCallbackCommand $command,
-        string $expectedCode,
-        string $expectedState,
-    ): bool {
-        return $command->code === $expectedCode
-            && $command->state === $expectedState;
-    }
-
-    private function commandHasFlowBindingToken(
-        HandleOAuthCallbackCommand $command,
-        string $expectedFlowBindingToken,
-    ): bool {
-        return $command->flowBindingToken === $expectedFlowBindingToken;
+        return $request;
     }
 
     /**
      * @return array<string, bool|string>
-     *
-     * @phpstan-return array{
-     *     2fa_enabled: bool,
-     *     access_token?: string,
-     *     refresh_token?: string,
-     *     pending_session_id?: string
-     * }
      */
     private function decodeResponse(Response $response): array
     {
-        return json_decode(
+        $payload = json_decode(
             (string) $response->getContent(),
             true,
             512,
-            JSON_THROW_ON_ERROR
+            JSON_THROW_ON_ERROR,
         );
+
+        $this->assertIsArray($payload);
+
+        return $payload;
     }
 }

@@ -14,3 +14,15 @@ framework:
         adapter: cache.adapter.array
         provider: null
         tags: true
+
+      cache.validator_expression_language:
+        adapter: cache.adapter.filesystem
+
+      cache.security_expression_language:
+        adapter: cache.adapter.filesystem
+
+      cache.security_is_granted_attribute_expression_language:
+        adapter: cache.adapter.filesystem
+
+      cache.security_is_csrf_token_valid_attribute_expression_language:
+        adapter: cache.adapter.filesystem

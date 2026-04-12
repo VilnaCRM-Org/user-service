@@ -22,6 +22,7 @@ final class ResilientHttpClientFactory
         private readonly int $timeoutMs,
         private readonly int $maxRetries,
         private readonly HandlerStack $handlerStack,
+        private readonly int $retryDelayBaseMs = self::MILLISECONDS_PER_SECOND,
     ) {
         if ($connectTimeoutMs <= 0) {
             throw new InvalidArgumentException('connectTimeoutMs must be greater than 0.');
@@ -33,6 +34,10 @@ final class ResilientHttpClientFactory
 
         if ($maxRetries < 0) {
             throw new InvalidArgumentException('maxRetries must be greater than or equal to 0.');
+        }
+
+        if ($retryDelayBaseMs <= 0) {
+            throw new InvalidArgumentException('retryDelayBaseMs must be greater than 0.');
         }
     }
 
@@ -86,8 +91,10 @@ final class ResilientHttpClientFactory
 
     private function createRetryDelay(): callable
     {
-        return static function (int $retries): int {
-            $delayMs = self::MILLISECONDS_PER_SECOND * (2 ** $retries);
+        $retryDelayBaseMs = $this->retryDelayBaseMs;
+
+        return static function (int $retries) use ($retryDelayBaseMs): int {
+            $delayMs = $retryDelayBaseMs * (2 ** $retries);
 
             return min(self::MAX_RETRY_DELAY_MS, $delayMs);
         };

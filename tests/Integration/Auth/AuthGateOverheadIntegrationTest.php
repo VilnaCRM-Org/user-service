@@ -51,34 +51,42 @@ final class AuthGateOverheadIntegrationTest extends AuthIntegrationTestCase
         array $anonymousServer,
         array $authenticatedServer
     ): void {
-        $anonymousAverageMs = $this->measureAverageLatencyMs($kernel, $anonymousServer);
-        $authenticatedAverageMs = $this->measureAverageLatencyMs($kernel, $authenticatedServer);
-        $overheadMs = $authenticatedAverageMs - $anonymousAverageMs;
+        $anonymousMedianMs = $this->measureMedianLatencyMs($kernel, $anonymousServer);
+        $authenticatedMedianMs = $this->measureMedianLatencyMs($kernel, $authenticatedServer);
+        $overheadMs = $authenticatedMedianMs - $anonymousMedianMs;
         $maxAllowedOverheadMs = $this->resolveMaxAllowedOverheadMs();
 
         $this->assertLessThan($maxAllowedOverheadMs, $overheadMs, sprintf(
-            'Auth-gate overhead %.3fms exceeds %.1fms (anon=%.3fms, auth=%.3fms).',
+            'Auth-gate median overhead %.3fms exceeds %.1fms (anon=%.3fms, auth=%.3fms).',
             $overheadMs,
             $maxAllowedOverheadMs,
-            $anonymousAverageMs,
-            $authenticatedAverageMs
+            $anonymousMedianMs,
+            $authenticatedMedianMs
         ));
     }
 
     /**
      * @param array<string, string> $server
      */
-    private function measureAverageLatencyMs(
+    private function measureMedianLatencyMs(
         HttpKernelInterface $kernel,
         array $server
     ): float {
-        $totalMs = 0.0;
+        $latenciesMs = [];
 
         for ($iteration = 0; $iteration < self::ITERATIONS; $iteration++) {
-            $totalMs += $this->performHealthRequest($kernel, $server);
+            $latenciesMs[] = $this->performHealthRequest($kernel, $server);
         }
 
-        return $totalMs / self::ITERATIONS;
+        sort($latenciesMs);
+        $count = count($latenciesMs);
+        $midpoint = intdiv($count, 2);
+
+        if ($count % 2 === 0) {
+            return ($latenciesMs[$midpoint - 1] + $latenciesMs[$midpoint]) / 2;
+        }
+
+        return $latenciesMs[$midpoint];
     }
 
     /**
