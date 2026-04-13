@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Runtime;
 
+use Closure;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
@@ -14,6 +15,7 @@ final class FrankenPhpRunner implements RunnerInterface
     public function __construct(
         private readonly HttpKernelInterface $kernel,
         private readonly int $loopMax,
+        private readonly ?Closure $requestBodyParserAvailabilityChecker = null,
     ) {
     }
 
@@ -62,7 +64,7 @@ final class FrankenPhpRunner implements RunnerInterface
             return new Request($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER);
         }
 
-        if (\function_exists('request_parse_body')) {
+        if ($this->requestBodyParserIsAvailable()) {
             return $this->createParsedBodyRequest();
         }
 
@@ -91,5 +93,12 @@ final class FrankenPhpRunner implements RunnerInterface
         }
 
         return new Request($_GET, $post, [], $_COOKIE, $_FILES, $_SERVER, $content);
+    }
+
+    private function requestBodyParserIsAvailable(): bool
+    {
+        $checker = $this->requestBodyParserAvailabilityChecker ?? static fn (): bool => \function_exists('request_parse_body');
+
+        return $checker();
     }
 }

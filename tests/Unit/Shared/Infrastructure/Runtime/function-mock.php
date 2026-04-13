@@ -11,9 +11,11 @@ final class MockFrankenPhpFunctions
     public static array $ignoreUserAbortArguments = [];
     public static array $requestParseBodyResults = [];
     public static int $handleRequestCalls = 0;
+    public static int $fileGetContentsCalls = 0;
     public static int $gcCollectCyclesCalls = 0;
     public static int $gcMemCachesCalls = 0;
     public static int $requestParseBodyCalls = 0;
+    public static string|false|null $fileGetContentsResult = null;
     public static ?\Throwable $requestParseBodyException = null;
 
     public static function reset(): void
@@ -23,16 +25,18 @@ final class MockFrankenPhpFunctions
         self::$ignoreUserAbortArguments = [];
         self::$requestParseBodyResults = [];
         self::$handleRequestCalls = 0;
+        self::$fileGetContentsCalls = 0;
         self::$gcCollectCyclesCalls = 0;
         self::$gcMemCachesCalls = 0;
         self::$requestParseBodyCalls = 0;
+        self::$fileGetContentsResult = null;
         self::$requestParseBodyException = null;
     }
 }
 
 function ignore_user_abort(bool $enable): int
 {
-    MockFrankenPhpFunctions::$ignoreUserAbortArguments[] = $enable;
+    MockFrankenPhpFunctions::$ignoreUserAbortArguments = [...MockFrankenPhpFunctions::$ignoreUserAbortArguments, $enable];
 
     return 0;
 }
@@ -69,6 +73,17 @@ function gc_mem_caches(): int
     ++MockFrankenPhpFunctions::$gcMemCachesCalls;
 
     return 0;
+}
+
+function file_get_contents(string $filename): string|false
+{
+    if ('php://input' !== $filename || null === MockFrankenPhpFunctions::$fileGetContentsResult) {
+        return \file_get_contents($filename);
+    }
+
+    ++MockFrankenPhpFunctions::$fileGetContentsCalls;
+
+    return MockFrankenPhpFunctions::$fileGetContentsResult;
 }
 
 function request_parse_body(): array
