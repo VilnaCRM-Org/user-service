@@ -22,6 +22,7 @@ final class FrankenPhpRunnerTest extends TestCase
 {
     private array $originalServer = [];
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -34,6 +35,7 @@ final class FrankenPhpRunnerTest extends TestCase
         ];
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         $_SERVER = $this->originalServer;

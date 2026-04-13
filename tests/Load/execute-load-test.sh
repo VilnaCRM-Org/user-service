@@ -38,6 +38,16 @@ loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
 loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
 composeCmd=(docker compose -p "$loadTestComposeProject" -f docker-compose.load-tests.yml)
 
+scenario_requires_seeded_users() {
+    case "$1" in
+        createUser|graphQLCreateUser|createUserBatch|health|oauth|oauthSocialCallback|oauthSocialInitiate)
+            return 1
+            ;;
+    esac
+
+    return 0
+}
+
 serviceToken=$(
   "${composeCmd[@]}" exec -T php sh /srv/app/tests/Load/generate-service-token.sh | tr -d '\r\n'
 )
@@ -52,7 +62,7 @@ K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
     k6 run --summary-trend-stats='avg,min,med,max,p(95),p(99)' \
     --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html'"
 
-if [[ $scenario != "createUser" && $scenario != "graphQLCreateUser" && $scenario != "createUserBatch" ]]; then
+if scenario_requires_seeded_users "$scenario"; then
   eval "$K6" /loadTests/utils/prepareUsers.js -e scenarioName="${scenario}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}" -e API_HOST="${loadTestApiHost}" -e API_PORT="${loadTestApiPort}" -e MAILCATCHER_PORT="${loadTestMailCatcherHttpPort}"
   "${composeCmd[@]}" exec -T php bin/console app:load-test:attach-access-tokens
 fi

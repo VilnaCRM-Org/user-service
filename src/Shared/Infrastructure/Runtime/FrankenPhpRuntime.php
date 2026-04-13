@@ -10,12 +10,31 @@ use Symfony\Component\Runtime\RunnerInterface;
 
 final class FrankenPhpRuntime extends BaseRuntime
 {
+    #[\Override]
     public function getRunner(?object $application): RunnerInterface
     {
-        if ($application instanceof HttpKernelInterface && ($_SERVER['FRANKENPHP_WORKER'] ?? false)) {
-            return new FrankenPhpRunner($application, $this->options['frankenphp_loop_max']);
+        if ($this->shouldUseWorkerRunner($application)) {
+            return new FrankenPhpRunner($application, $this->loopMax());
         }
 
         return parent::getRunner($application);
+    }
+
+    private function shouldUseWorkerRunner(?object $application): bool
+    {
+        return $application instanceof HttpKernelInterface
+            && $this->workerModeEnabled();
+    }
+
+    private function loopMax(): int
+    {
+        return (int) $this->options['frankenphp_loop_max'];
+    }
+
+    private function workerModeEnabled(): bool
+    {
+        $workerFlag = getenv('FRANKENPHP_WORKER');
+
+        return $workerFlag !== false && $workerFlag !== '';
     }
 }

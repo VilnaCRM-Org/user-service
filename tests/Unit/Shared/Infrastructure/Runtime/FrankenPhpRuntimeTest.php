@@ -11,9 +11,10 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class FrankenPhpRuntimeTest extends TestCase
 {
+    #[\Override]
     protected function tearDown(): void
     {
-        unset($_SERVER['FRANKENPHP_WORKER']);
+        putenv('FRANKENPHP_WORKER');
 
         parent::tearDown();
     }
@@ -26,7 +27,7 @@ final class FrankenPhpRuntimeTest extends TestCase
         self::assertNotInstanceOf(FrankenPhpRunner::class, $runtime->getRunner(null));
         self::assertNotInstanceOf(FrankenPhpRunner::class, $runtime->getRunner($kernel));
 
-        $_SERVER['FRANKENPHP_WORKER'] = 1;
+        putenv('FRANKENPHP_WORKER=1');
 
         self::assertInstanceOf(FrankenPhpRunner::class, $runtime->getRunner($kernel));
     }
