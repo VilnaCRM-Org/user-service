@@ -40,12 +40,16 @@ trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
         $container = static::$kernel->getContainer();
         $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
 
-        \assert($container instanceof Container);
+        Assert::assertInstanceOf(Container::class, $container);
         $this->getDeallocationChecker()->expectDeallocation($container, 'container');
 
         foreach ($container->getServiceIds() as $serviceId) {
             if ($container->initialized($serviceId) && !in_array($serviceId, $ignoredServiceLeaks, true)) {
                 $service = $container->get($serviceId);
+                if (!is_object($service)) {
+                    continue;
+                }
+
                 $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
             }
         }

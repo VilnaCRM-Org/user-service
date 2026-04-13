@@ -199,14 +199,11 @@ abstract class RestMemoryWebTestCase extends WebTestCase
 
     protected function createServiceAuthorizationHeader(): array
     {
-        return [
-            'HTTP_AUTHORIZATION' => sprintf(
-                'Bearer %s',
-                $this->testAccessTokenFactory()->createServiceToken(
-                    sprintf('service-%s', strtolower($this->faker->lexify('????')))
-                )
-            ),
-        ];
+        return $this->createAuthorizationHeader(
+            $this->testAccessTokenFactory()->createServiceToken(
+                sprintf('service-%s', strtolower($this->faker->lexify('????')))
+            )
+        );
     }
 
     /**
@@ -222,12 +219,9 @@ abstract class RestMemoryWebTestCase extends WebTestCase
             ? null
             : $this->createActiveSession($subject);
 
-        return [
-            'HTTP_AUTHORIZATION' => sprintf(
-                'Bearer %s',
-                $this->testAccessTokenFactory()->createToken($subject, $roles, $sessionId)
-            ),
-        ];
+        return $this->createAuthorizationHeader(
+            $this->testAccessTokenFactory()->createToken($subject, $roles, $sessionId)
+        );
     }
 
     protected function saveConfirmationToken(User $user): ConfirmationTokenInterface
@@ -422,6 +416,16 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         );
 
         return $sessionId;
+    }
+
+    /**
+     * @return array{HTTP_AUTHORIZATION: string}
+     */
+    private function createAuthorizationHeader(string $token): array
+    {
+        return [
+            'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
+        ];
     }
 
     private function generatePassword(): string

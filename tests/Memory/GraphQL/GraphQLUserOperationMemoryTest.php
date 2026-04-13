@@ -60,6 +60,14 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
         $this->assertSame($expected, $actual);
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function inventoryTargets(): array
+    {
+        return self::USER_OPERATION_TARGETS;
+    }
+
     #[DataProvider('userOperationTargets')]
     public function testGraphQlUserOperationsStayStableAcrossRepeatedSameKernelRequests(
         string $coverageTarget,
@@ -87,7 +95,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
         $newUser = new CreateUserGraphQLMutationInput(
             $this->uniqueEmail('memory-graphql-create-target', $iteration),
             'MU',
-            'Aa1!createpass',
+            $this->generatePassword(),
         );
 
         $payload = $this->extractGraphQlUserPayload(
@@ -111,6 +119,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
             email: $this->uniqueEmail('memory-graphql-update', $iteration),
         );
         $updatedEmail = $this->uniqueEmail('memory-graphql-updated', $iteration);
+        $updatedPassword = $this->generatePassword();
         $accessToken = $this->issueAccessTokenForUser($fixture['user']);
         $payload = $this->extractGraphQlUserPayload(
             $this->executeGraphQl(
@@ -119,7 +128,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
                     $fixture['user']->getId(),
                     $updatedEmail,
                     $fixture['password'],
-                    'Aa1!updatedpass',
+                    $updatedPassword,
                     'UP',
                 ),
                 $accessToken,

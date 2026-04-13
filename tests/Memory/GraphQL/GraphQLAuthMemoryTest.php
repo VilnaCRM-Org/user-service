@@ -45,19 +45,13 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
 
     public function testAuthMutationInventoryMatchesGraphQlLoadScripts(): void
     {
-        $actual = array_values(
-            array_filter(
-                $this->graphQlLoadScriptTargets(),
-                static fn (string $target): bool => in_array(
-                    $target,
-                    self::AUTH_MUTATION_TARGETS,
-                    true,
-                ),
-            ),
-        );
+        $actual = $this->graphQlLoadScriptTargets();
         sort($actual);
 
-        $expected = self::AUTH_MUTATION_TARGETS;
+        $expected = array_values(array_unique(array_merge(
+            self::AUTH_MUTATION_TARGETS,
+            GraphQLUserOperationMemoryTest::inventoryTargets(),
+        )));
         sort($expected);
 
         $this->assertSame($expected, $actual);
@@ -332,7 +326,7 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
             email: $this->uniqueEmail('memory-graphql-confirm-reset', $iteration),
         );
         $token = $this->seedPasswordResetToken($fixture['user']);
-        $newPassword = sprintf('Aa1!confirmreset%d', $iteration);
+        $newPassword = $this->generatePassword();
         $data = $this->extractGraphQlData(
             $this->executeGraphQl(
                 $client,

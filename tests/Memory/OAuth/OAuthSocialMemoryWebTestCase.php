@@ -213,10 +213,13 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
             self::FLOW_COOKIE_NAME,
         );
         $this->assertInstanceOf(Cookie::class, $cookie);
+        $flowCookie = $cookie->getValue();
+        $this->assertIsString($flowCookie);
+        $this->assertNotSame('', $flowCookie);
 
         return [
             'state' => $state,
-            'cookie' => $cookie->getValue(),
+            'cookie' => $flowCookie,
         ];
     }
 
@@ -249,6 +252,9 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         return $user;
     }
 
+    /**
+     * @return list<string>
+     */
     protected function oauthSocialRestLoadTargets(): array
     {
         $targets = array_map(
@@ -268,7 +274,10 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         $featurePath = dirname(__DIR__, 3) . '/features/oauth_social.feature';
         $contents = file_get_contents($featurePath);
 
-        $this->assertIsString($contents);
+        $this->assertIsString(
+            $contents,
+            sprintf('Failed to read feature file: %s', $featurePath),
+        );
         preg_match_all('/^\\s*Scenario:\\s*(.+)$/m', $contents, $matches);
 
         return array_values($matches[1] ?? []);

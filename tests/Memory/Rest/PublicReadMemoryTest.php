@@ -85,7 +85,7 @@ final class PublicReadMemoryTest extends RestMemoryWebTestCase
 
     public function testUnauthorizedCollectionErrorPathReusesSameKernelAcrossRepeatedRequests(): void
     {
-        $this->runRepeatedRestScenario('unauthorizedUsersCollectionError', function (): void {
+        $this->runRepeatedRestScenario('getUsers', function (): void {
             ['response' => $response] = $this->requestJson('GET', '/api/users');
 
             self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());

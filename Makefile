@@ -203,10 +203,11 @@ integration-tests: setup-test-db ## Run integration tests
 
 memory-tests: setup-test-db ## Run memory leak tests with coverage requirement of 100%
 	@echo "Running memory leak tests with coverage requirement of 100%..."
-	@$(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt
-	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_memory_output.txt; then \
+	@bash -lc 'set -o pipefail; $(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
+	status=$$?; \
+	if [ $$status -ne 0 ]; then \
 		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
-		exit 1; \
+		exit $$status; \
 	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
@@ -338,6 +339,9 @@ new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
 start: up build-k6-docker build-spectral-docker ## Start docker
+
+start-memory-tests: ## Start only services required for memory leak tests
+	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps

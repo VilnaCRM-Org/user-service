@@ -115,13 +115,17 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         $container = static::$kernel->getContainer();
         $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
 
-        \assert($container instanceof Container);
+        $this->assertInstanceOf(Container::class, $container);
         foreach ($container->getServiceIds() as $serviceId) {
             if (
                 $container->initialized($serviceId)
                 && !\in_array($serviceId, $ignoredServiceLeaks, true)
             ) {
                 $service = $container->get($serviceId);
+                if (!is_object($service)) {
+                    continue;
+                }
+
                 $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
             }
         }
@@ -739,7 +743,7 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         return self::GRAPHQL_ID_PREFIX . $userId;
     }
 
-    private function generatePassword(): string
+    protected function generatePassword(): string
     {
         return sprintf(
             'Aa1!%s',
