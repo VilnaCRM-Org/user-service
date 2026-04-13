@@ -148,10 +148,8 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $this->assertSame('invalid_state', $result['body']['error_code'] ?? null);
     }
 
-    private function exerciseProviderEmailUnavailable(
-        KernelBrowser $client,
-        int $iteration,
-    ): void {
+    private function exerciseProviderEmailUnavailable(KernelBrowser $client): void
+    {
         $provider = 'facebook';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(
@@ -229,10 +227,8 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $this->assertSame('provider_mismatch', $result['body']['error_code'] ?? null);
     }
 
-    private function exerciseUnverifiedProviderEmail(
-        KernelBrowser $client,
-        int $iteration,
-    ): void {
+    private function exerciseUnverifiedProviderEmail(KernelBrowser $client): void
+    {
         $provider = 'google';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(
@@ -286,18 +282,28 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
 
     private function scenarioHandler(string $coverageTarget): callable
     {
-        $method = match ($coverageTarget) {
-            'oauthSocialInitiate' => 'exerciseInitiate',
-            'oauthSocialCallbackDirectSignIn' => 'exerciseDirectSignIn',
-            'oauthSocialCallbackTwoFactor' => 'exerciseTwoFactor',
-            'oauthSocialCallbackReplay' => 'exerciseReplay',
-            'oauthSocialCallbackProviderEmailUnavailable' => 'exerciseProviderEmailUnavailable',
-            'oauthSocialCallbackReturningLinkedUser' => 'exerciseReturningLinkedUser',
-            'oauthSocialCallbackAutoLinkExistingUser' => 'exerciseAutoLinkExistingUser',
-            'oauthSocialCallbackProviderMismatch' => 'exerciseProviderMismatch',
-            'oauthSocialCallbackUnverifiedProviderEmail' => 'exerciseUnverifiedProviderEmail',
+        return match ($coverageTarget) {
+            'oauthSocialInitiate' => $this->exerciseInitiate(...),
+            'oauthSocialCallbackDirectSignIn' => $this->exerciseDirectSignIn(...),
+            'oauthSocialCallbackTwoFactor' => $this->exerciseTwoFactor(...),
+            'oauthSocialCallbackReplay' => $this->exerciseReplay(...),
+            'oauthSocialCallbackProviderEmailUnavailable' => function (
+                KernelBrowser $client,
+                int $iteration,
+            ): void {
+                self::assertGreaterThanOrEqual(0, $iteration);
+                $this->exerciseProviderEmailUnavailable($client);
+            },
+            'oauthSocialCallbackReturningLinkedUser' => $this->exerciseReturningLinkedUser(...),
+            'oauthSocialCallbackAutoLinkExistingUser' => $this->exerciseAutoLinkExistingUser(...),
+            'oauthSocialCallbackProviderMismatch' => $this->exerciseProviderMismatch(...),
+            'oauthSocialCallbackUnverifiedProviderEmail' => function (
+                KernelBrowser $client,
+                int $iteration,
+            ): void {
+                self::assertGreaterThanOrEqual(0, $iteration);
+                $this->exerciseUnverifiedProviderEmail($client);
+            },
         };
-
-        return $this->{$method}(...);
     }
 }
