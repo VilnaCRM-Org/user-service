@@ -46,6 +46,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyMethods)
+ */
 abstract class GraphQLMemoryWebTestCase extends WebTestCase
 {
     use CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
@@ -81,6 +84,7 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     /**
      * @return list<string>
      */
+    #[\Override]
     protected function getIgnoredServiceLeaks(): array
     {
         return [
@@ -261,6 +265,8 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
 
     /**
      * @return array{user: User, password: string}
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     protected function createUserFixture(
         bool $confirmed = true,

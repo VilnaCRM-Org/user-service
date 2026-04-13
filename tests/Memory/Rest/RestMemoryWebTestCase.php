@@ -35,6 +35,9 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 
 #[Group('memory')]
 #[Group('memory-rest')]
+/**
+ * @SuppressWarnings(PHPMD.TooManyMethods)
+ */
 abstract class RestMemoryWebTestCase extends WebTestCase
 {
     use CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
@@ -67,6 +70,7 @@ abstract class RestMemoryWebTestCase extends WebTestCase
     /**
      * @return list<string>
      */
+    #[\Override]
     protected function getIgnoredServiceLeaks(): array
     {
         return ['test.client'];

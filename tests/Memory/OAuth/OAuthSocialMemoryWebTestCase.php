@@ -51,6 +51,7 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
     /**
      * @return list<string>
      */
+    #[\Override]
     protected function getIgnoredServiceLeaks(): array
     {
         return ['test.client'];

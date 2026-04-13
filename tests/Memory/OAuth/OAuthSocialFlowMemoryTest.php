@@ -164,6 +164,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         KernelBrowser $client,
         int $iteration,
     ): void {
+        $this->assertGreaterThanOrEqual(0, $iteration);
         $provider = 'facebook';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(
@@ -268,6 +269,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         KernelBrowser $client,
         int $iteration,
     ): void {
+        $this->assertGreaterThanOrEqual(0, $iteration);
         $provider = 'google';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(

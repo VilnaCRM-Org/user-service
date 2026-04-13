@@ -32,7 +32,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
             $user = $this->createUnconfirmedUser();
             $token = $this->saveConfirmationToken($user);
 
-            ['response' => $response, 'body' => $body] = $this->requestJson(
+            ['response' => $response] = $this->requestJson(
                 'PATCH',
                 '/api/users/confirm',
                 ['token' => $token->getTokenValue()],

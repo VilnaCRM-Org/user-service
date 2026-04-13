@@ -188,6 +188,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
         $peer = $this->createUserFixture(
             email: $this->uniqueEmail('memory-graphql-get-users-peer', $iteration),
         );
+        $this->assertNotSame($owner['user']->getId(), $peer['user']->getId());
         $accessToken = $this->issueAccessTokenForUser($owner['user']);
         $payload = $this->extractGraphQlData(
             $this->executeGraphQl(
