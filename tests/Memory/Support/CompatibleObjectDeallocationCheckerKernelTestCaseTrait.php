@@ -46,11 +46,9 @@ trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
         foreach ($container->getServiceIds() as $serviceId) {
             if ($container->initialized($serviceId) && !in_array($serviceId, $ignoredServiceLeaks, true)) {
                 $service = $container->get($serviceId);
-                if (!is_object($service)) {
-                    continue;
+                if (is_object($service)) {
+                    $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
                 }
-
-                $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
             }
         }
     }

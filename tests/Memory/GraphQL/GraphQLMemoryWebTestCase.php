@@ -122,11 +122,9 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
                 && !\in_array($serviceId, $ignoredServiceLeaks, true)
             ) {
                 $service = $container->get($serviceId);
-                if (!is_object($service)) {
-                    continue;
+                if (is_object($service)) {
+                    $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
                 }
-
-                $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
             }
         }
     }
