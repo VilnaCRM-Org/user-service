@@ -509,7 +509,7 @@ GRAPHQL;
      */
     protected function graphQlLoadScriptTargets(): array
     {
-        $files = glob(dirname(__DIR__, 2) . '/Load/scripts/graphql/*.js');
+        $files = glob(dirname(__DIR__, 3) . '/tests/Load/scripts/graphql/*.js');
         $paths = is_array($files) ? $files : [];
         $targets = array_map(
             static fn (string $path): string => pathinfo($path, PATHINFO_FILENAME),
