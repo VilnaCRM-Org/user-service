@@ -11,6 +11,11 @@ abstract class BrowserReuseMemoryWebTestCase extends MemoryWebTestCase
 {
     private ?TrackedBrowserObjects $pendingBrowserObjects = null;
 
+    protected function clearPendingBrowserObjects(): void
+    {
+        $this->pendingBrowserObjects = null;
+    }
+
     protected function runMemoryScenario(string $coverageTarget, callable $scenario): void
     {
         Assert::assertNotSame('', $coverageTarget);
@@ -77,7 +82,7 @@ abstract class BrowserReuseMemoryWebTestCase extends MemoryWebTestCase
         );
 
         $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
-        $this->pendingBrowserObjects = null;
+        $this->clearPendingBrowserObjects();
         $client->getHistory()->clear();
         gc_collect_cycles();
     }

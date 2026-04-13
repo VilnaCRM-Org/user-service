@@ -94,6 +94,7 @@ GRAPHQL;
     protected function tearDown(): void
     {
         $this->flushPendingBrowserObjects();
+        $this->clearPendingBrowserObjects();
         $this->trackKernelServicesForDeallocation();
         if (isset($this->client)) {
             $this->resetBrowserState($this->client);
@@ -892,7 +893,6 @@ GRAPHQL;
             $this->passwordHasherFactory,
             $this->passwordResetTokenFactory,
             $this->passwordResetTokenRepository,
-            $this->pendingBrowserObjects,
             $this->testAccessTokenFactory,
             $this->ulidFactory,
             $this->userFactory,

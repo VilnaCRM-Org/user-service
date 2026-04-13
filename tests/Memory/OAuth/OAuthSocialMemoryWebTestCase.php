@@ -47,6 +47,7 @@ abstract class OAuthSocialMemoryWebTestCase extends BrowserReuseMemoryWebTestCas
     protected function tearDown(): void
     {
         $this->flushPendingBrowserObjects();
+        $this->clearPendingBrowserObjects();
         $this->trackKernelServicesForDeallocation();
         if (isset($this->client)) {
             $this->resetBrowserState($this->client);
@@ -55,7 +56,6 @@ abstract class OAuthSocialMemoryWebTestCase extends BrowserReuseMemoryWebTestCas
             $this->client,
             $this->container,
             $this->passwordHasherFactory,
-            $this->pendingBrowserObjects,
             $this->pendingTwoFactorRepository,
             $this->recordingOAuthPublisher,
             $this->socialIdentityRepository,
@@ -205,7 +205,7 @@ abstract class OAuthSocialMemoryWebTestCase extends BrowserReuseMemoryWebTestCas
             $contents,
             sprintf('Failed to read feature file: %s', $featurePath),
         );
-        preg_match_all('/^\\s*Scenario:\\s*(.+)$/m', $contents, $matches);
+        preg_match_all('/^\\s*Scenario(?:\\s+Outline)?:\\s*(.+)$/m', $contents, $matches);
 
         return array_values(array_filter(
             array_map('trim', $matches[1] ?? []),
