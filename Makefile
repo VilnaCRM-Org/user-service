@@ -55,6 +55,7 @@ PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
 DEPTRAC       = ./vendor/bin/deptrac
 INFECTION     = ./vendor/bin/infection
 INFECTION_THREADS ?= 4
+INFECTION_COVERAGE_DIR = /tmp/infection
 
 # Misc
 .DEFAULT_GOAL = help
@@ -317,7 +318,12 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_PHP_TEST_ENV_NOTTY) php -d memory_limit=-1 $(INFECTION) --configuration=infection.json5 --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_PHP_TEST_ENV_NOTTY) sh -lc 'set -eu; \
+		export XDEBUG_MODE=coverage; \
+		rm -rf $(INFECTION_COVERAGE_DIR); \
+		mkdir -p $(INFECTION_COVERAGE_DIR)/coverage-xml; \
+		php -d memory_limit=-1 ./vendor/bin/phpunit --testsuite=Unit --coverage-xml=$(INFECTION_COVERAGE_DIR)/coverage-xml --log-junit=$(INFECTION_COVERAGE_DIR)/junit.xml --order-by=defects,random; \
+		php -d memory_limit=-1 $(INFECTION) --configuration=infection.json5 --coverage=$(INFECTION_COVERAGE_DIR) --skip-initial-tests --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered'
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'
