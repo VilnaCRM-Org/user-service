@@ -31,4 +31,46 @@ final class FrankenPhpRuntimeTest extends TestCase
 
         self::assertInstanceOf(FrankenPhpRunner::class, $runtime->getRunner($kernel));
     }
+
+    public function testGetRunnerUsesUnlimitedLoopMaxWhenOptionIsMissing(): void
+    {
+        putenv('FRANKENPHP_WORKER=1');
+
+        $runtime = new FrankenPhpRuntime();
+        $this->setRuntimeOptions($runtime, []);
+
+        $runner = $runtime->getRunner($this->createStub(HttpKernelInterface::class));
+
+        self::assertInstanceOf(FrankenPhpRunner::class, $runner);
+        self::assertSame(-1, $this->readRunnerLoopMax($runner));
+    }
+
+    public function testGetRunnerCastsConfiguredLoopMaxBeforePassingItToRunner(): void
+    {
+        putenv('FRANKENPHP_WORKER=1');
+
+        $runtime = new FrankenPhpRuntime(['frankenphp_loop_max' => 1]);
+        $this->setRuntimeOptions($runtime, ['frankenphp_loop_max' => '7']);
+
+        $runner = $runtime->getRunner($this->createStub(HttpKernelInterface::class));
+
+        self::assertInstanceOf(FrankenPhpRunner::class, $runner);
+        self::assertSame(7, $this->readRunnerLoopMax($runner));
+    }
+
+    /**
+     * @param array<string, int|string> $options
+     */
+    private function setRuntimeOptions(FrankenPhpRuntime $runtime, array $options): void
+    {
+        $reflection = new \ReflectionProperty($runtime, 'options');
+        $reflection->setValue($runtime, $options);
+    }
+
+    private function readRunnerLoopMax(FrankenPhpRunner $runner): int
+    {
+        $reflection = new \ReflectionProperty($runner, 'loopMax');
+
+        return $reflection->getValue($runner);
+    }
 }
