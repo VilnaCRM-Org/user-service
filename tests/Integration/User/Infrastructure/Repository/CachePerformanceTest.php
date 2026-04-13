@@ -74,7 +74,7 @@ final class CachePerformanceTest extends UserIntegrationTestCase
 
     public function testEmailLookupCachePerformance(): void
     {
-        $email = $this->faker->unique()->safeEmail();
+        $email = $this->generateUniqueEmail();
         $this->createTestUserWithEmail($email);
         $this->cachePool->clear();
 
@@ -336,7 +336,7 @@ final class CachePerformanceTest extends UserIntegrationTestCase
     private function createTestUser(): User
     {
         $user = new User(
-            email: $this->faker->unique()->safeEmail(),
+            email: $this->generateUniqueEmail(),
             initials: $this->faker->name(),
             password: password_hash($this->faker->password(12), PASSWORD_BCRYPT),
             id: $this->generateUuid()
@@ -362,5 +362,15 @@ final class CachePerformanceTest extends UserIntegrationTestCase
     private function generateUuid(): Uuid
     {
         return new Uuid((string) SymfonyUuid::v4());
+    }
+
+    private function generateUniqueEmail(): string
+    {
+        return sprintf(
+            '%s-%s@%s',
+            strtolower($this->faker->lexify('cache????')),
+            strtolower((string) SymfonyUuid::v4()),
+            $this->faker->safeEmailDomain(),
+        );
     }
 }
