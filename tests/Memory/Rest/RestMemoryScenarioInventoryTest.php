@@ -13,29 +13,10 @@ final class RestMemoryScenarioInventoryTest extends TestCase
 {
     public function testRestLoadScriptInventoryIsFullyMappedByMemoryCoverage(): void
     {
-        $scripts = glob(dirname(__DIR__, 2) . '/Load/scripts/rest-api/*.js');
-        self::assertIsArray($scripts);
-
-        $expectedScenarios = array_merge(
-            array_keys(RestMemoryScenarioInventory::COVERED_LOAD_SCENARIOS),
-            RestMemoryScenarioInventory::DEFERRED_LOAD_SCENARIOS
-        );
-        sort($expectedScenarios);
-
-        $actualScenarios = array_map(
-            static fn (string $path): string => basename($path, '.js'),
-            $scripts
-        );
-        sort($actualScenarios);
-
         self::assertSame(
-            $expectedScenarios,
-            $actualScenarios,
-            sprintf(
-                'Expected memory scenario catalog to match rest load scripts. Expected: [%s], actual: [%s].',
-                implode(', ', $expectedScenarios),
-                implode(', ', $actualScenarios)
-            )
+            $this->expectedScenarios(),
+            $this->discoveredScenarios(),
+            'Expected memory scenario catalog to match rest load scripts.',
         );
     }
 
@@ -52,5 +33,36 @@ final class RestMemoryScenarioInventoryTest extends TestCase
                 )
             );
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function expectedScenarios(): array
+    {
+        $expectedScenarios = array_merge(
+            array_keys(RestMemoryScenarioInventory::COVERED_LOAD_SCENARIOS),
+            RestMemoryScenarioInventory::DEFERRED_LOAD_SCENARIOS,
+        );
+        sort($expectedScenarios);
+
+        return $expectedScenarios;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function discoveredScenarios(): array
+    {
+        $scripts = glob(dirname(__DIR__, 2) . '/Load/scripts/rest-api/*.js');
+        self::assertIsArray($scripts);
+
+        $actualScenarios = array_map(
+            static fn (string $path): string => basename($path, '.js'),
+            $scripts,
+        );
+        sort($actualScenarios);
+
+        return $actualScenarios;
     }
 }

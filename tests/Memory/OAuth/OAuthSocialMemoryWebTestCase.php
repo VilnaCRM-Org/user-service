@@ -109,11 +109,7 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         ): void {
             for ($iteration = 0; $iteration < $iterations; ++$iteration) {
                 $scenario($client, $iteration);
-                $this->assertSame(
-                    $kernelId,
-                    spl_object_id($client->getKernel()),
-                    'Kernel was rebooted between OAuth iterations.',
-                );
+                $this->assertKernelReuse($kernelId, $client);
                 $this->flushPendingBrowserObjects();
                 $this->resetBrowserState($client);
             }
@@ -253,6 +249,15 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
             $prefix,
             $iteration,
             strtolower($this->faker->lexify('????')),
+        );
+    }
+
+    private function assertKernelReuse(int $kernelId, KernelBrowser $client): void
+    {
+        $this->assertSame(
+            $kernelId,
+            spl_object_id($client->getKernel()),
+            'Kernel was rebooted between OAuth iterations.',
         );
     }
 
