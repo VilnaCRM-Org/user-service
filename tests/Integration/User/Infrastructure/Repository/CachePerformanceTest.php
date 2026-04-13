@@ -74,8 +74,7 @@ final class CachePerformanceTest extends UserIntegrationTestCase
 
     public function testEmailLookupCachePerformance(): void
     {
-        $email = $this->generateUniqueEmail();
-        $this->createTestUserWithEmail($email);
+        $email = $this->createTestUser()->getEmail();
         $this->cachePool->clear();
 
         $cacheMissLatencyNs = $this->measureEmailLookupLatency($email);
@@ -333,10 +332,15 @@ final class CachePerformanceTest extends UserIntegrationTestCase
         );
     }
 
-    private function createTestUser(): User
+    private function createTestUser(?string $email = null): User
     {
         $user = new User(
-            email: $this->generateUniqueEmail(),
+            email: $email ?? sprintf(
+                '%s-%s@%s',
+                strtolower($this->faker->lexify('cache????')),
+                strtolower((string) SymfonyUuid::v4()),
+                $this->faker->safeEmailDomain(),
+            ),
             initials: $this->faker->name(),
             password: password_hash($this->faker->password(12), PASSWORD_BCRYPT),
             id: $this->generateUuid()
@@ -347,30 +351,8 @@ final class CachePerformanceTest extends UserIntegrationTestCase
         return $user;
     }
 
-    private function createTestUserWithEmail(string $email): void
-    {
-        $user = new User(
-            email: $email,
-            initials: $this->faker->name(),
-            password: password_hash($this->faker->password(12), PASSWORD_BCRYPT),
-            id: $this->generateUuid()
-        );
-
-        $this->repository->save($user);
-    }
-
     private function generateUuid(): Uuid
     {
         return new Uuid((string) SymfonyUuid::v4());
-    }
-
-    private function generateUniqueEmail(): string
-    {
-        return sprintf(
-            '%s-%s@%s',
-            strtolower($this->faker->lexify('cache????')),
-            strtolower((string) SymfonyUuid::v4()),
-            $this->faker->safeEmailDomain(),
-        );
     }
 }
