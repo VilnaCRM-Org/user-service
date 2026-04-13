@@ -22,9 +22,7 @@ final class FrankenPhpLoopGate
             return true;
         }
 
-        $this->handledRequests += 1;
-
-        return $this->handledRequests <= $this->loopMax;
+        return ++$this->handledRequests < $this->loopMax;
     }
 
     private function isUnlimited(): bool

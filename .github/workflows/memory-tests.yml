@@ -12,6 +12,8 @@ jobs:
   memory-tests:
     name: Memory leak tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     timeout-minutes: 90
 
     env:

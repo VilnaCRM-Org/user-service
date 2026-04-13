@@ -129,7 +129,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $flow = $this->initiateSocialFlow($client, $provider);
         $code = $this->uniqueCode('memory-replay', $iteration);
 
-        $this->completeSocialFlow(
+        $firstResult = $this->completeSocialFlow(
             $client,
             $provider,
             $code,
@@ -144,6 +144,10 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
             $flow['cookie'],
         );
 
+        $this->assertSame(200, $firstResult['status']);
+        $this->assertSame(false, $firstResult['body']['2fa_enabled'] ?? null);
+        $this->assertIsString($firstResult['body']['access_token'] ?? null);
+        $this->assertNotSame('', $firstResult['body']['access_token'] ?? null);
         $this->assertSame(422, $result['status']);
         $this->assertSame('invalid_state', $result['body']['error_code'] ?? null);
     }

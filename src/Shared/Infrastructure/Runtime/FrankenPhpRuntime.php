@@ -28,7 +28,9 @@ final class FrankenPhpRuntime extends BaseRuntime
 
     private function loopMax(): int
     {
-        return (int) $this->options['frankenphp_loop_max'];
+        return isset($this->options['frankenphp_loop_max'])
+            ? (int) $this->options['frankenphp_loop_max']
+            : -1;
     }
 
     private function workerModeEnabled(): bool

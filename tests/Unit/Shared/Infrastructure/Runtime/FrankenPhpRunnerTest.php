@@ -109,7 +109,7 @@ final class FrankenPhpRunnerTest extends TestCase
     public function testRunStopsWhenLoopLimitIsReached(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(2);
+        $response = $this->createResponseMock(1);
 
         MockFrankenPhpFunctions::$handleRequestBehaviors = [
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
@@ -117,15 +117,15 @@ final class FrankenPhpRunnerTest extends TestCase
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
         ];
 
-        $kernel->expects($this->exactly(2))->method('handle')->willReturn($response);
-        $kernel->expects($this->exactly(2))->method('terminate');
+        $kernel->expects($this->once())->method('handle')->willReturn($response);
+        $kernel->expects($this->once())->method('terminate');
 
         $runner = new FrankenPhpRunner($kernel, 1);
 
         self::assertSame(0, $runner->run());
-        self::assertSame(2, MockFrankenPhpFunctions::$handleRequestCalls);
-        self::assertSame(2, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
-        self::assertSame(2, MockFrankenPhpFunctions::$gcMemCachesCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$handleRequestCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
     }
 
     public function testRunDoesNotAttemptTerminationForNonTerminableKernel(): void

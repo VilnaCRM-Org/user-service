@@ -60,7 +60,7 @@ prepare_oauth_client_pool() {
   local symfony_cmd
 
   symfony_cmd=$(printf '%q ' "${composeCmd[@]}")
-  symfony_cmd+=$'exec -T php bin/console'
+  symfony_cmd+=$(printf 'exec -T %q bin/console' "$loadTestPhpService")
 
   SYMFONY="$symfony_cmd" \
     "$REPO_ROOT/tests/Load/load-tests-prepare-oauth-client.sh" \
