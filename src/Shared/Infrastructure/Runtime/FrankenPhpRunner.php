@@ -33,7 +33,7 @@ final class FrankenPhpRunner implements RunnerInterface
         $handler = function () use ($server, &$sfRequest, &$sfResponse): void {
             $_SERVER += $server;
 
-            $sfRequest = Request::createFromGlobals();
+            $sfRequest = $this->createRequestFromGlobals();
             $sfResponse = $this->kernel->handle($sfRequest);
 
             $sfResponse->send();
@@ -53,5 +53,43 @@ final class FrankenPhpRunner implements RunnerInterface
         } while ($handled && (-1 === $this->loopMax || ++$loops <= $this->loopMax));
 
         return 0;
+    }
+
+    private function createRequestFromGlobals(): Request
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        if (!\in_array($method, ['PUT', 'DELETE', 'PATCH', 'QUERY'], true)) {
+            return new Request($_GET, $_POST, [], $_COOKIE, $_FILES, $_SERVER);
+        }
+
+        if (\function_exists('request_parse_body')) {
+            return $this->createParsedBodyRequest();
+        }
+
+        return $this->createLegacyParsedBodyRequest();
+    }
+
+    private function createParsedBodyRequest(): Request
+    {
+        try {
+            [$post, $files] = request_parse_body();
+        } catch (\RequestParseBodyException) {
+            $post = $_POST;
+            $files = $_FILES;
+        }
+
+        return new Request($_GET, $post, [], $_COOKIE, $files, $_SERVER);
+    }
+
+    private function createLegacyParsedBodyRequest(): Request
+    {
+        $content = null;
+        $post = $_POST;
+        if (!isset($_SERVER['CONTENT_TYPE']) || str_starts_with((string) $_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded')) {
+            $content = file_get_contents('php://input');
+            parse_str(\is_string($content) ? $content : '', $post);
+        }
+
+        return new Request($_GET, $post, [], $_COOKIE, $_FILES, $_SERVER, $content);
     }
 }

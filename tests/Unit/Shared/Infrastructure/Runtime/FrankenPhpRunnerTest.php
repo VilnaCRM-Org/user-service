@@ -144,6 +144,70 @@ final class FrankenPhpRunnerTest extends TestCase
         self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
     }
 
+    public function testRunBuildsPutRequestsFromParsedBody(): void
+    {
+        $kernel = $this->createMock(TestKernelInterface::class);
+        $response = $this->createResponseMock(1);
+
+        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+            ['server' => ['REQUEST_METHOD' => 'PUT'], 'result' => false],
+        ];
+        MockFrankenPhpFunctions::$requestParseBodyResults = [
+            [['email' => 'worker@example.com'], ['avatar' => ['name' => 'avatar.png']]],
+        ];
+
+        $kernel
+            ->expects($this->once())
+            ->method('handle')
+            ->willReturnCallback(
+                function (Request $request) use ($response): Response {
+                    self::assertSame('PUT', $request->getMethod());
+                    self::assertSame('worker@example.com', $request->request->get('email'));
+                    self::assertTrue($request->files->has('avatar'));
+
+                    return $response;
+                },
+            );
+        $kernel->expects($this->once())->method('terminate');
+
+        $runner = new FrankenPhpRunner($kernel, 500);
+
+        self::assertSame(0, $runner->run());
+        self::assertSame(1, MockFrankenPhpFunctions::$requestParseBodyCalls);
+    }
+
+    public function testRunFallsBackToPhpSuperglobalsWhenRequestBodyParsingFails(): void
+    {
+        $kernel = $this->createMock(TestKernelInterface::class);
+        $response = $this->createResponseMock(1);
+
+        $_POST = ['fallback' => 'value'];
+        $_FILES = ['document' => ['name' => 'contract.pdf']];
+        MockFrankenPhpFunctions::$requestParseBodyException = new \RequestParseBodyException('failed');
+        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+            ['server' => ['REQUEST_METHOD' => 'PATCH'], 'result' => false],
+        ];
+
+        $kernel
+            ->expects($this->once())
+            ->method('handle')
+            ->willReturnCallback(
+                function (Request $request) use ($response): Response {
+                    self::assertSame('PATCH', $request->getMethod());
+                    self::assertSame('value', $request->request->get('fallback'));
+                    self::assertTrue($request->files->has('document'));
+
+                    return $response;
+                },
+            );
+        $kernel->expects($this->once())->method('terminate');
+
+        $runner = new FrankenPhpRunner($kernel, 500);
+
+        self::assertSame(0, $runner->run());
+        self::assertSame(1, MockFrankenPhpFunctions::$requestParseBodyCalls);
+    }
+
     private function createResponseMock(int $expectedSendCalls): Response
     {
         $response = $this->getMockBuilder(Response::class)
