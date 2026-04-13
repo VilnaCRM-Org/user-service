@@ -43,7 +43,7 @@ final class PublicReadMemoryTest extends RestMemoryWebTestCase
 
     public function testGetUserScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
-        $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+        $password = $this->generatePassword();
         $user = $this->createConfirmedUser($password);
         $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -62,7 +62,7 @@ final class PublicReadMemoryTest extends RestMemoryWebTestCase
 
     public function testCachePerformanceScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
-        $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+        $password = $this->generatePassword();
         $user = $this->createConfirmedUser($password);
         $headers = $this->createUserAuthorizationHeader($user->getId());
 

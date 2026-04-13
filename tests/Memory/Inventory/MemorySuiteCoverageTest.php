@@ -12,42 +12,42 @@ final class MemorySuiteCoverageTest extends TestCase
     public function testRestLoadScriptsHaveFullMemoryCoverage(): void
     {
         $this->assertSameCoverage(
+            MemoryCoverageCatalog::coveredRestLoadScripts(),
             $this->discoverRestLoadScriptNames(
                 static fn (string $name): bool => !str_starts_with($name, 'oauth'),
             ),
-            MemoryCoverageCatalog::coveredRestLoadScripts(),
         );
     }
 
     public function testGraphQlLoadScriptsHaveFullMemoryCoverage(): void
     {
         $this->assertSameCoverage(
+            MemoryCoverageCatalog::coveredGraphQlLoadScripts(),
             $this->discoverNames(
                 dirname(__DIR__, 2) . '/Load/scripts/graphql/*.js',
                 '.js',
             ),
-            MemoryCoverageCatalog::coveredGraphQlLoadScripts(),
         );
     }
 
     public function testOAuthLoadScriptsHaveFullMemoryCoverage(): void
     {
         $this->assertSameCoverage(
+            MemoryCoverageCatalog::coveredOAuthLoadScripts(),
             $this->discoverRestLoadScriptNames(
                 static fn (string $name): bool => str_starts_with($name, 'oauth'),
             ),
-            MemoryCoverageCatalog::coveredOAuthLoadScripts(),
         );
     }
 
     public function testBehatFeatureFilesHaveFullMemoryCoverage(): void
     {
         $this->assertSameCoverage(
+            MemoryCoverageCatalog::coveredFeatureFiles(),
             $this->discoverNames(
                 dirname(__DIR__, 3) . '/features/*.feature',
                 '.feature',
             ),
-            MemoryCoverageCatalog::coveredFeatureFiles(),
         );
     }
 
@@ -94,14 +94,22 @@ final class MemorySuiteCoverageTest extends TestCase
     }
 
     /**
-     * @param list<string> $expected
-     * @param list<string> $actual
+     * @param list<string> $cataloged
+     * @param list<string> $discovered
      */
-    private function assertSameCoverage(array $expected, array $actual): void
+    private function assertSameCoverage(array $cataloged, array $discovered): void
     {
-        \sort($expected);
-        \sort($actual);
+        \sort($cataloged);
+        \sort($discovered);
 
-        self::assertSame($expected, $actual);
+        self::assertSame(
+            $cataloged,
+            $discovered,
+            sprintf(
+                'Expected catalog to match discovered coverage. Expected: [%s], actual: [%s].',
+                implode(', ', $cataloged),
+                implode(', ', $discovered)
+            )
+        );
     }
 }

@@ -99,14 +99,21 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         }
 
         $client = $this->createSameKernelClient();
+        $kernelId = spl_object_id($client->getKernel());
 
         $this->runMemoryScenario($coverageTarget, function () use (
             $client,
+            $kernelId,
             $scenario,
             $iterations,
         ): void {
             for ($iteration = 0; $iteration < $iterations; ++$iteration) {
                 $scenario($client, $iteration);
+                $this->assertSame(
+                    $kernelId,
+                    spl_object_id($client->getKernel()),
+                    'Kernel was rebooted between OAuth iterations.',
+                );
                 $this->flushPendingBrowserObjects();
                 $this->resetBrowserState($client);
             }

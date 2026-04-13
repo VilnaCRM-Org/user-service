@@ -152,14 +152,21 @@ GRAPHQL;
         }
 
         $client = $this->createSameKernelClient();
+        $kernelId = spl_object_id($client->getKernel());
 
         $this->runMemoryScenario($coverageTarget, function () use (
             $client,
+            $kernelId,
             $scenario,
             $iterations,
         ): void {
             for ($iteration = 0; $iteration < $iterations; ++$iteration) {
                 $scenario($client, $iteration);
+                $this->assertSame(
+                    $kernelId,
+                    spl_object_id($client->getKernel()),
+                    'Kernel was rebooted between GraphQL iterations.',
+                );
                 $this->flushPendingBrowserObjects();
                 $this->resetBrowserState($client);
             }
@@ -939,7 +946,7 @@ GRAPHQL;
         $user->setPassword(
             $this->passwordHasherFactory
                 ->getPasswordHasher($user::class)
-                ->hash($plainPassword, null),
+                ->hash($plainPassword),
         );
 
         return $user;

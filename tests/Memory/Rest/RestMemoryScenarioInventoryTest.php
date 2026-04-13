@@ -16,19 +16,27 @@ final class RestMemoryScenarioInventoryTest extends TestCase
         $scripts = glob(dirname(__DIR__, 2) . '/Load/scripts/rest-api/*.js');
         self::assertIsArray($scripts);
 
+        $expectedScenarios = array_merge(
+            array_keys(RestMemoryScenarioInventory::COVERED_LOAD_SCENARIOS),
+            RestMemoryScenarioInventory::DEFERRED_LOAD_SCENARIOS
+        );
+        sort($expectedScenarios);
+
         $actualScenarios = array_map(
             static fn (string $path): string => basename($path, '.js'),
             $scripts
         );
         sort($actualScenarios);
 
-        $accountedScenarios = array_merge(
-            array_keys(RestMemoryScenarioInventory::COVERED_LOAD_SCENARIOS),
-            RestMemoryScenarioInventory::DEFERRED_LOAD_SCENARIOS
+        self::assertSame(
+            $expectedScenarios,
+            $actualScenarios,
+            sprintf(
+                'Expected memory scenario catalog to match rest load scripts. Expected: [%s], actual: [%s].',
+                implode(', ', $expectedScenarios),
+                implode(', ', $actualScenarios)
+            )
         );
-        sort($accountedScenarios);
-
-        self::assertSame($actualScenarios, $accountedScenarios);
     }
 
     public function testCoveredScenariosPointToRealTestMethods(): void
@@ -37,7 +45,7 @@ final class RestMemoryScenarioInventoryTest extends TestCase
             self::assertTrue(
                 method_exists($coverage['class'], $coverage['method']),
                 sprintf(
-                    'Scenario "%s" expects %s::%s to exist.',
+                    'Expected scenario "%s" to resolve to %s::%s.',
                     $scenario,
                     $coverage['class'],
                     $coverage['method']

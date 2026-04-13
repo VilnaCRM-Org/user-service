@@ -386,9 +386,10 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
     protected function uniqueEmail(string $prefix): string
     {
         return sprintf(
-            '%s-%s@example.test',
+            '%s-%s@%s',
             strtolower($prefix),
             strtolower((string) $this->container->get(UlidFactory::class)->create()),
+            strtolower($this->faker->safeEmailDomain()),
         );
     }
 
