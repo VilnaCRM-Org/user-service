@@ -404,7 +404,7 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
         Assert::assertInstanceOf(User::class, $user);
 
         $user->setPassword(
-            $this->passwordHasherFactory()->getPasswordHasher($user::class)->hash($password, null)
+            $this->passwordHasherFactory()->getPasswordHasher($user::class)->hash($password)
         );
 
         return $user;

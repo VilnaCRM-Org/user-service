@@ -577,10 +577,14 @@ GRAPHQL;
 
     protected function generatePassword(): string
     {
-        return sprintf(
-            'Aa1!%s',
-            strtolower($this->faker->lexify('????????')),
-        );
+        return str_shuffle(sprintf(
+            '%s%s%s%s%s',
+            strtoupper($this->faker->lexify('?')),
+            strtolower($this->faker->lexify('?')),
+            (string) $this->faker->numberBetween(1, 9),
+            $this->faker->randomElement(['!', '@', '#', '$', '%']),
+            strtolower($this->faker->regexify('[A-Za-z0-9]{8}')),
+        ));
     }
 
     protected function uniqueEmail(string $prefix, int $iteration): string
