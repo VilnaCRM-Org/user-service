@@ -637,11 +637,10 @@ GRAPHQL;
         $timestamp = time();
         $period = $totp->getPeriod();
 
-        return [
-            $totp->at(max(0, $timestamp - $period)),
-            $totp->at($timestamp),
-            $totp->at($timestamp + $period),
-        ];
+        return array_values(array_unique(array_map(
+            static fn (int $offset): string => $totp->at(max(0, $timestamp + ($period * $offset))),
+            [-2, -1, 0, 1, 2],
+        )));
     }
 
     private function graphQlUserId(string $userId): string

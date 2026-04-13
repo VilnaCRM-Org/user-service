@@ -35,7 +35,6 @@ abstract class MemoryWebTestCase extends WebTestCase
         $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
 
         Assert::assertInstanceOf(Container::class, $container);
-        $this->trackDeallocation($container, 'container');
 
         foreach ($container->getServiceIds() as $serviceId) {
             if (!$container->initialized($serviceId)) {
