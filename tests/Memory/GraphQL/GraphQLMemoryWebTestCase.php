@@ -147,6 +147,10 @@ GRAPHQL;
         callable $scenario,
         int $iterations = 2,
     ): void {
+        if ($iterations <= 0) {
+            throw new \InvalidArgumentException('Iterations must be greater than zero.');
+        }
+
         $client = $this->createSameKernelClient();
 
         $this->runMemoryScenario($coverageTarget, function () use (
