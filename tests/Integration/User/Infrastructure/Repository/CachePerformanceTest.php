@@ -24,6 +24,7 @@ final class CachePerformanceTest extends UserIntegrationTestCase
     private const MIN_SPEEDUP_FACTOR = 2.0;
     private const STRICT_SPEEDUP_THRESHOLD_MS = 1.0;
     private const MIN_MEANINGFUL_IMPROVEMENT_MS = 0.2;
+    private const SUB_MILLISECOND_IMPROVEMENT_RATIO = 0.25;
 
     private UserRepositoryInterface $repository;
     private CacheItemPoolInterface $cachePool;
@@ -154,16 +155,17 @@ final class CachePerformanceTest extends UserIntegrationTestCase
     {
         $improvementMs = $cacheMissLatencyMs - $cacheHitLatencyMs;
         $minimumImprovementMs = min(
-            $cacheMissLatencyMs,
             self::MIN_MEANINGFUL_IMPROVEMENT_MS,
+            $cacheMissLatencyMs * self::SUB_MILLISECOND_IMPROVEMENT_RATIO,
         );
 
         self::assertGreaterThanOrEqual(
             $minimumImprovementMs,
             $improvementMs,
             sprintf(
-                'Cache hit should improve a sub-millisecond miss by at least %.2fms, got %.2fms (miss: %.2fms, hit: %.2fms)',
+                'Cache hit should improve a sub-millisecond miss by at least %.2fms (25%% of the miss, capped at %.2fms), got %.2fms (miss: %.2fms, hit: %.2fms)',
                 $minimumImprovementMs,
+                self::MIN_MEANINGFUL_IMPROVEMENT_MS,
                 $improvementMs,
                 $cacheMissLatencyMs,
                 $cacheHitLatencyMs

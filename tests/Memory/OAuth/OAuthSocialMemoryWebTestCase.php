@@ -6,8 +6,8 @@ namespace App\Tests\Memory\OAuth;
 
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\Tests\Memory\Support\MemoryBrowserReuseTrait;
 use App\Tests\Memory\Support\MemoryWebTestCase;
-use App\Tests\Memory\Support\TrackedBrowserObjects;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -23,6 +23,8 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
 {
+    use MemoryBrowserReuseTrait;
+
     protected const FLOW_COOKIE_NAME = 'oauth_flow_binding';
 
     protected Generator $faker;
@@ -35,8 +37,6 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
     protected SocialIdentityRepositoryInterface $socialIdentityRepository;
     protected PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository;
     protected RecordingOAuthPublisher $recordingOAuthPublisher;
-
-    private ?TrackedBrowserObjects $pendingBrowserObjects = null;
 
     #[\Override]
     protected function setUp(): void
@@ -94,33 +94,15 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         callable $scenario,
         int $iterations = 2,
     ): void {
-        if ($iterations <= 0) {
-            throw new \InvalidArgumentException('Iterations must be greater than zero.');
-        }
-
         $client = $this->createSameKernelClient();
-        $kernelId = spl_object_id($client->getKernel());
 
         $this->runMemoryScenario($coverageTarget, function () use (
             $client,
-            $kernelId,
             $scenario,
             $iterations,
         ): void {
-            for ($iteration = 0; $iteration < $iterations; ++$iteration) {
-                $scenario($client, $iteration);
-                $this->assertKernelReuse($kernelId, $client);
-                $this->flushPendingBrowserObjects();
-                $this->resetBrowserState($client);
-            }
+            $this->repeatSameKernelScenario($client, $scenario, $iterations);
         });
-    }
-
-    protected function runMemoryScenario(string $coverageTarget, callable $scenario): void
-    {
-        $this->assertNotSame('', $coverageTarget);
-
-        $scenario();
     }
 
     /**
@@ -252,15 +234,6 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         );
     }
 
-    private function assertKernelReuse(int $kernelId, KernelBrowser $client): void
-    {
-        $this->assertSame(
-            $kernelId,
-            spl_object_id($client->getKernel()),
-            'Kernel was rebooted between OAuth iterations.',
-        );
-    }
-
     /**
      * @param list<Cookie> $cookies
      */
@@ -288,54 +261,9 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         ];
     }
 
-    private function trackBrowserObjects(KernelBrowser $client, string $labelPrefix): void
+    protected function getBrowserFlushUserAgent(): string
     {
-        if ($this->pendingBrowserObjects !== null) {
-            $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
-        }
-
-        $request = $client->getRequest();
-        $this->assertIsObject($request);
-        $response = $client->getResponse();
-        $this->assertIsObject($response);
-
-        $this->pendingBrowserObjects = new TrackedBrowserObjects(
-            $request,
-            $response,
-            $labelPrefix,
-        );
-        $client->getHistory()->clear();
-        gc_collect_cycles();
-    }
-
-    private function flushPendingBrowserObjects(): void
-    {
-        if (!isset($this->client) || $this->pendingBrowserObjects === null) {
-            return;
-        }
-
-        $this->client->request(
-            'GET',
-            '/api/health',
-            [],
-            [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'HTTP_USER_AGENT' => 'OAuthSocialMemoryWebTestCaseFlush',
-                'REMOTE_ADDR' => $this->faker->ipv4(),
-            ],
-        );
-
-        $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
-        $this->pendingBrowserObjects = null;
-        $this->client->getHistory()->clear();
-        gc_collect_cycles();
-    }
-
-    private function resetBrowserState(KernelBrowser $client): void
-    {
-        $client->getHistory()->clear();
-        $client->getCookieJar()->clear();
+        return 'OAuthSocialMemoryWebTestCaseFlush';
     }
 
     private function bootSameKernelClient(): void

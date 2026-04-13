@@ -12,8 +12,8 @@ use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
+use App\Tests\Memory\Support\MemoryBrowserReuseTrait;
 use App\Tests\Memory\Support\MemoryWebTestCase;
-use App\Tests\Memory\Support\TrackedBrowserObjects;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\ConfirmationToken;
@@ -35,7 +35,6 @@ use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\Type as GraphQlType;
 use GraphQL\Type\Introspection;
 use GraphQL\Validator\DocumentValidator;
-use OTPHP\TOTP;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -46,6 +45,9 @@ use Symfony\Component\Uid\Factory\UlidFactory;
  */
 abstract class GraphQLMemoryWebTestCase extends MemoryWebTestCase
 {
+    use MemoryBrowserReuseTrait;
+    use GraphQlMemoryAuthenticationTrait;
+
     private const GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private const GRAPHQL_ID_PREFIX = '/api/users/';
     private const UPDATE_USER_MUTATION_TEMPLATE = <<<'GRAPHQL'
@@ -82,8 +84,6 @@ GRAPHQL;
     protected TokenRepositoryInterface $confirmationTokenRepository;
     protected PasswordResetTokenFactoryInterface $passwordResetTokenFactory;
     protected PasswordResetTokenRepositoryInterface $passwordResetTokenRepository;
-
-    private ?TrackedBrowserObjects $pendingBrowserObjects = null;
 
     #[\Override]
     protected function setUp(): void
@@ -147,33 +147,15 @@ GRAPHQL;
         callable $scenario,
         int $iterations = 2,
     ): void {
-        if ($iterations <= 0) {
-            throw new \InvalidArgumentException('Iterations must be greater than zero.');
-        }
-
         $client = $this->createSameKernelClient();
-        $kernelId = spl_object_id($client->getKernel());
 
         $this->runMemoryScenario($coverageTarget, function () use (
             $client,
-            $kernelId,
             $scenario,
             $iterations,
         ): void {
-            for ($iteration = 0; $iteration < $iterations; ++$iteration) {
-                $scenario($client, $iteration);
-                $this->assertKernelReuse($kernelId, $client);
-                $this->flushPendingBrowserObjects();
-                $this->resetBrowserState($client);
-            }
+            $this->repeatSameKernelScenario($client, $scenario, $iterations);
         });
-    }
-
-    protected function runMemoryScenario(string $coverageTarget, callable $scenario): void
-    {
-        $this->assertNotSame('', $coverageTarget);
-
-        $scenario();
     }
 
     /**
@@ -608,15 +590,6 @@ GRAPHQL;
         );
     }
 
-    private function assertKernelReuse(int $kernelId, KernelBrowser $client): void
-    {
-        $this->assertSame(
-            $kernelId,
-            spl_object_id($client->getKernel()),
-            'Kernel was rebooted between GraphQL iterations.',
-        );
-    }
-
     private function createActiveSession(string $userId): string
     {
         $sessionId = (string) $this->ulidFactory->create();
@@ -652,74 +625,14 @@ GRAPHQL;
         return 'mutation' . $mutation;
     }
 
-    /**
-     * @return list<string>
-     */
-    private function buildTwoFactorCodesWithinStepWindow(string $secret): array
-    {
-        $totp = TOTP::create($secret);
-        $timestamp = time();
-        $period = $totp->getPeriod();
-
-        return array_values(array_unique(array_map(
-            static fn (int $offset): string => $totp->at(max(0, $timestamp + ($period * $offset))),
-            [-2, -1, 0, 1, 2],
-        )));
-    }
-
     private function graphQlUserId(string $userId): string
     {
         return self::GRAPHQL_ID_PREFIX . $userId;
     }
 
-    private function trackBrowserObjects(KernelBrowser $client, string $labelPrefix): void
+    protected function getBrowserFlushUserAgent(): string
     {
-        if ($this->pendingBrowserObjects !== null) {
-            $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
-        }
-
-        $request = $client->getRequest();
-        $this->assertIsObject($request);
-        $response = $client->getResponse();
-        $this->assertIsObject($response);
-
-        $this->pendingBrowserObjects = new TrackedBrowserObjects(
-            $request,
-            $response,
-            $labelPrefix,
-        );
-        $client->getHistory()->clear();
-        gc_collect_cycles();
-    }
-
-    private function flushPendingBrowserObjects(): void
-    {
-        if (!isset($this->client) || $this->pendingBrowserObjects === null) {
-            return;
-        }
-
-        $this->client->request(
-            'GET',
-            '/api/health',
-            [],
-            [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'HTTP_USER_AGENT' => 'GraphQLMemoryWebTestCaseFlush',
-                'REMOTE_ADDR' => $this->faker->ipv4(),
-            ],
-        );
-
-        $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
-        $this->pendingBrowserObjects = null;
-        $this->client->getHistory()->clear();
-        gc_collect_cycles();
-    }
-
-    private function resetBrowserState(KernelBrowser $client): void
-    {
-        $client->getHistory()->clear();
-        $client->getCookieJar()->clear();
+        return 'GraphQLMemoryWebTestCaseFlush';
     }
 
     private function clearGraphQlStaticState(): void
@@ -1016,35 +929,4 @@ GRAPHQL;
         );
     }
 
-    /**
-     * @return list<string>
-     */
-    private function successfulTwoFactorRecoveryCodes(
-        KernelBrowser $client,
-        string $accessToken,
-        string $secret,
-    ): array {
-        $confirm = null;
-
-        foreach ($this->buildTwoFactorCodesWithinStepWindow($secret) as $code) {
-            $confirm = $this->confirmTwoFactorGraphQl($client, $accessToken, $code);
-            if (($confirm['success'] ?? false) === true) {
-                break;
-            }
-        }
-
-        $this->assertIsArray($confirm);
-        $this->assertSame(true, $confirm['success'] ?? null);
-        $recoveryCodes = $confirm['recoveryCodes'] ?? null;
-
-        $this->assertIsArray($recoveryCodes);
-        $this->assertNotSame([], $recoveryCodes);
-
-        return array_values(
-            array_map(
-                static fn ($value): string => (string) $value,
-                $recoveryCodes,
-            ),
-        );
-    }
 }
