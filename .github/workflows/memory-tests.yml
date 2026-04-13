@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start application
-        run: make start
+        run: make start-memory-tests
 
       - name: Execute memory leak tests
         run: make memory-tests

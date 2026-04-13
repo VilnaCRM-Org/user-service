@@ -358,7 +358,7 @@ new-logs: ## Show live logs
 start: up build-k6-docker build-spectral-docker ## Start docker
 
 start-memory-tests: ## Start only services required for memory leak tests
-	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.override.yml up --detach --wait php database redis mailer localstack
+	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
