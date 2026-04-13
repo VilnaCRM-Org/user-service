@@ -4,7 +4,7 @@
          xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/sebastianbergmann/phpunit/10.5/phpunit.xsd"
          backupGlobals="false"
          colors="true"
-         bootstrap="tests/bootstrap.php"
+         bootstrap="tests/bootstrap.memory.php"
          cacheDirectory=".phpunit.cache"
          failOnWarning="true"
 >
@@ -27,13 +27,7 @@
 
     <source restrictDeprecations="false" restrictNotices="false" restrictWarnings="false">
         <include>
-            <directory suffix=".php">tests/Memory/Inventory</directory>
-            <directory suffix=".php">tests/Memory/Support</directory>
+            <directory suffix=".php">tests/Memory</directory>
         </include>
-        <exclude>
-            <directory>tests/Memory/GraphQL</directory>
-            <directory>tests/Memory/OAuth</directory>
-            <directory>tests/Memory/Rest</directory>
-        </exclude>
     </source>
 </phpunit>

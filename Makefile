@@ -9,6 +9,12 @@ LOAD_TEST_COMPOSE_PROJECT ?= $(PROJECT)-load-tests
 LOAD_TEST_API_PORT ?= 18081
 LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
 LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
+MEMORY_SOAK_ROUNDS ?= 6
+MEMORY_SOAK_WARMUP_ROUNDS ?= 2
+MEMORY_SOAK_SETTLE_SECONDS ?= 5
+WORKER_MEMORY_STEP_TOLERANCE_KB ?= 2048
+WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB ?= 12288
+MEMORY_SOAK_SCENARIOS ?= oauth,cachePerformance,createUserBatch,updateUser,confirmTwoFactor,graphQLGetUsers,graphQLUpdateUser,oauthSocialCallback
 
 # Executables: local only
 SYMFONY_BIN   = symfony
@@ -69,6 +75,7 @@ endif
 FIXER_ENV = PHP_CS_FIXER_IGNORE_ENV=1
 PHP_CS_FIXER_CMD = php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
 COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
+MEMORY_COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --configuration=phpunit.memory.xml.dist --coverage-text
 
 GITHUB_HOST ?= github.com
 FORMAT ?= markdown
@@ -87,6 +94,7 @@ else
     RUN_PHP_CS_FIXER = $(call DOCKER_EXEC_WITH_ENV,$(FIXER_ENV),$(PHP_CS_FIXER_CMD))
     RUN_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(COVERAGE_CMD))
 endif
+RUN_MEMORY_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(MEMORY_COVERAGE_CMD))
 
 
 #Input
@@ -198,24 +206,24 @@ behat: setup-test-db clear-test-expression-language-caches ## A php framework fo
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
 
-memory-tests: setup-test-db ## Run memory leak tests with 100% inventory coverage and owned-suite line coverage
+memory-tests: setup-test-db ## Run memory leak tests with 100% suite coverage and endpoint inventory enforcement
 	@echo "Running memory leak tests with strict inventory and coverage requirements..."
-	@bash -o pipefail -c '$(RUN_TESTS_COVERAGE) --configuration=phpunit.memory.xml.dist --testsuite=Memory 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
-	phpunit_exit=$$?; \
-	if [ $$phpunit_exit -ne 0 ]; then \
-		echo "❌ MEMORY TEST FAILURE: PHPUnit exited with status $$phpunit_exit"; \
-		exit $$phpunit_exit; \
+	@bash -lc 'set -o pipefail; $(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
+	status=$$?; \
+	if [ $$status -ne 0 ]; then \
+		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
+		exit $$status; \
 	fi
 	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
-			echo "❌ MEMORY COVERAGE FAILURE: Owned memory-suite line coverage is $$coverage%, but 100% is required."; \
+			echo "❌ COVERAGE FAILURE: Memory suite line coverage is $$coverage%, but 100% is required. Please cover all memory test lines and keep endpoint inventory complete"; \
 			exit 1; \
 		else \
-			echo "✅ MEMORY COVERAGE SUCCESS: Owned memory-suite line coverage is $$coverage%"; \
+			echo "✅ COVERAGE SUCCESS: Memory suite line coverage is $$coverage%"; \
 		fi; \
 	else \
-		echo "❌ ERROR: Could not parse memory-suite coverage from output"; \
+		echo "❌ ERROR: Could not parse memory suite coverage from output"; \
 		exit 1; \
 	fi
 
@@ -231,6 +239,8 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Ensuring JWT keypair exists for test environment..."
+	$(SYMFONY_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
@@ -247,6 +257,8 @@ setup-load-test-db: ## Create database for load testing purposes
 	@echo "Recreating MongoDB schema for load testing..."
 	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Ensuring JWT keypair exists for load-test environment..."
+	$(SYMFONY_LOAD_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_LOAD_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Load-test database ready"
@@ -279,6 +291,14 @@ load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-load-tests.sh
+
+memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load tests and fail on leak signals
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(DOCKER_COMPOSE_LOAD_TEST) restart php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$(MEMORY_SOAK_SCENARIOS)" tests/Load/run-worker-memory-soak.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
@@ -335,7 +355,13 @@ logs: ## Show all logs
 new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up build-k6-docker build-spectral-docker ## Start docker
+start: ## Start docker
+	$(DOCKER_COMPOSE) up --detach --wait
+	$(MAKE) build-k6-docker
+	$(MAKE) build-spectral-docker
+
+start-memory-tests: ## Start only services required for memory leak tests
+	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
