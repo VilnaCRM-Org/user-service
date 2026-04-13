@@ -14,7 +14,7 @@ MEMORY_SOAK_WARMUP_ROUNDS ?= 2
 MEMORY_SOAK_SETTLE_SECONDS ?= 5
 WORKER_MEMORY_STEP_TOLERANCE_KB ?= 2048
 WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB ?= 12288
-MEMORY_SOAK_SCENARIOS ?= oauth,cachePerformance,createUserBatch,updateUser,confirmTwoFactor,graphQLGetUsers,graphQLUpdateUser,oauthSocialCallback
+MEMORY_SOAK_SCENARIOS ?=
 
 # Executables: local only
 SYMFONY_BIN   = symfony

@@ -21,6 +21,7 @@ services:
       APP_ENV: schemathesis
       CADDY_PHP_APP_ENV: schemathesis
       FRANKENPHP_CONFIG: import worker.Caddyfile
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
       SERVER_NAME: :80
     healthcheck:
       test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']

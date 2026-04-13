@@ -16,7 +16,6 @@ memorySoakSettleSeconds=${MEMORY_SOAK_SETTLE_SECONDS:-5}
 workerMemoryStepToleranceKb=${WORKER_MEMORY_STEP_TOLERANCE_KB:-2048}
 workerMemoryTotalGrowthToleranceKb=${WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB:-12288}
 memorySoakResultsFile=${MEMORY_SOAK_RESULTS_FILE:-./tests/Load/loadTestsResults/worker-memory-soak.csv}
-memorySoakScenarios=${MEMORY_SOAK_SCENARIOS:-oauth,cachePerformance,createUserBatch,updateUser,confirmTwoFactor,graphQLGetUsers,graphQLUpdateUser,oauthSocialCallback}
 memorySoakResetBetweenRounds=${MEMORY_SOAK_RESET_BETWEEN_ROUNDS:-true}
 
 IFS=':' read -r -a composeFiles <<< "$loadTestComposeFile"
@@ -32,6 +31,26 @@ done
 
 mkdir -p "$(dirname "$memorySoakResultsFile")"
 printf 'round,timestamp_utc,rss_kb,rss_mib,delta_from_baseline_kb,is_warmup\n' > "$memorySoakResultsFile"
+
+discover_memory_soak_scenarios() {
+  mapfile -t scenarios < <(
+    find "$REPO_ROOT/tests/Load/scripts" -type f -name '*.js' -printf '%f\n' \
+      | sed 's/\.js$//' \
+      | sort
+  )
+
+  if [ "${#scenarios[@]}" -eq 0 ]; then
+    echo "Error: failed to discover load-test scenarios for worker memory soak." >&2
+    exit 1
+  fi
+
+  local joined_scenarios
+  joined_scenarios=$(IFS=,; echo "${scenarios[*]}")
+
+  printf '%s\n' "$joined_scenarios"
+}
+
+memorySoakScenarios=${MEMORY_SOAK_SCENARIOS:-$(discover_memory_soak_scenarios)}
 
 sample_rss_kb() {
   local rss_kb

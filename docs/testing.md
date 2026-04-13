@@ -65,10 +65,13 @@ Run `make memory-tests` to execute the dedicated memory suite. This target appli
 - **100% inventory coverage** against the authoritative feature baseline from `tests/Load/scripts/rest-api/*.js`, `tests/Load/scripts/graphql/*.js`, and the Behat feature files under `/features`
 - **100% line coverage** for the owned memory-suite scaffolding under `/tests/Memory/Support` and `/tests/Memory/Inventory`
 
+Run `make memory-load-soak-tests` to execute the repeated worker-mode soak pass that replays the full REST, GraphQL, and OAuth load-script inventory against the same FrankenPHP worker process and fails on sustained RSS growth. Override `MEMORY_SOAK_SCENARIOS` only when you need to narrow a local diagnostic run.
+
 The suite uses `phpunit.memory.xml.dist` and runs as a separate GitHub Actions workflow in `.github/workflows/memory-tests.yml`, so worker-mode regressions appear as an isolated CI check instead of being folded into the main PHPUnit workflow.
 
 ### Design Notes
 
+- FrankenPHP worker mode is enabled across the repository's Docker environments, including the default development stack, dedicated memory-test stack, load-test stack, schemathesis stack, and production image path.
 - Repeated-request memory scenarios should use `disableReboot()` to approximate same-kernel worker reuse.
 - Shared memory tests should finish each synthetic request cycle by resetting Symfony services and calling `gc_collect_cycles()`.
 - `disableReboot()` changes how Symfony resets services tagged with `kernel.reset`; this can affect token storage and Doctrine ODM behavior, so future endpoint suites may require test-environment adjustments instead of assuming standard functional-test semantics.

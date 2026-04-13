@@ -88,6 +88,7 @@ CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 FROM frankenphp_base AS frankenphp_dev
 
 ENV APP_ENV=dev \
+    FRANKENPHP_CONFIG="import worker.Caddyfile" \
     XDEBUG_MODE=off
 
 RUN apk add --no-cache \
@@ -105,6 +106,7 @@ RUN set -eux; \
     install-php-extensions xdebug
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile
 
 RUN git config --global --add safe.directory /srv/app
 
