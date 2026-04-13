@@ -177,23 +177,18 @@ GRAPHQL;
         string $query,
         ?string $accessToken = null,
     ): array {
-        $client->request(
-            'POST',
-            self::GRAPHQL_ENDPOINT_URI,
-            [],
-            [],
-            $this->createGraphQlServerParameters($accessToken),
-            \Safe\json_encode(['query' => $query]),
-        );
+        return $this->executeGraphQlRequest($client, $query, $accessToken, false);
+    }
 
-        $response = $client->getResponse();
-        $decoded = $this->decodeGraphQlResponse($response->getContent());
-        $this->trackBrowserObjects($client, 'graphql request');
-
-        return [
-            'status' => $response->getStatusCode(),
-            'body' => $decoded,
-        ];
+    /**
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
+     */
+    protected function executeGraphQlAllowingErrors(
+        KernelBrowser $client,
+        string $query,
+        ?string $accessToken = null,
+    ): array {
+        return $this->executeGraphQlRequest($client, $query, $accessToken, true);
     }
 
     /**
@@ -379,13 +374,21 @@ GRAPHQL;
         string $accessToken,
         string $code,
     ): array {
-        return $this->executeUserMutation(
+        $result = $this->executeGraphQlAllowingErrors(
             $client,
-            'confirmTwoFactorUser',
-            sprintf('twoFactorCode: "%s"', $code),
-            'success recoveryCodes',
+            $this->buildRawUserMutation(
+                'confirmTwoFactorUser',
+                sprintf('twoFactorCode: "%s"', $code),
+                'success recoveryCodes',
+            ),
             $accessToken,
         );
+
+        if ($this->isInvalidTwoFactorCodeResponse($result['body'])) {
+            return [];
+        }
+
+        return $this->extractGraphQlUserPayload($result, 'confirmTwoFactorUser');
     }
 
     /**
@@ -755,15 +758,71 @@ GRAPHQL;
     /**
      * @return array<string, array|bool|float|int|string|null>
      */
-    private function decodeGraphQlResponse(string|false $content): array
-    {
+    private function decodeGraphQlResponse(
+        string|false $content,
+        bool $allowErrors = false,
+    ): array {
         $body = is_string($content) ? $content : '';
         $decoded = json_decode($body, true);
 
         $this->assertIsArray($decoded, is_string($content) ? $content : null);
-        $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
+        if (!$allowErrors) {
+            $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
+        }
 
         return $decoded;
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $body
+     */
+    private function isInvalidTwoFactorCodeResponse(array $body): bool
+    {
+        if (!array_key_exists('errors', $body)) {
+            return false;
+        }
+
+        $errors = $body['errors'] ?? null;
+        $this->assertIsArray($errors);
+        $error = $errors[0] ?? null;
+        $this->assertIsArray($error);
+        $errorContext = json_encode($body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $message = is_string($errorContext) ? $errorContext : null;
+        $this->assertSame(
+            'Invalid two-factor code.',
+            $error['message'] ?? null,
+            $message,
+        );
+
+        return true;
+    }
+
+    /**
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
+     */
+    private function executeGraphQlRequest(
+        KernelBrowser $client,
+        string $query,
+        ?string $accessToken,
+        bool $allowErrors,
+    ): array {
+        $client->request(
+            'POST',
+            self::GRAPHQL_ENDPOINT_URI,
+            [],
+            [],
+            $this->createGraphQlServerParameters($accessToken),
+            \Safe\json_encode(['query' => $query]),
+        );
+
+        $response = $client->getResponse();
+        $decoded = $this->decodeGraphQlResponse($response->getContent(), $allowErrors);
+        $this->trackBrowserObjects($client, 'graphql request');
+
+        return [
+            'status' => $response->getStatusCode(),
+            'body' => $decoded,
+        ];
     }
 
     private function bootSameKernelClient(): void

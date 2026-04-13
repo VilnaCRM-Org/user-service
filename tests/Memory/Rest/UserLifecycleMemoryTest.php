@@ -15,7 +15,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 'POST',
                 '/api/users',
                 [
-                    'email' => strtolower($this->faker->unique()->safeEmail()),
+                    'email' => $this->uniqueEmail('memory-rest-create-user'),
                     'initials' => strtoupper($this->faker->lexify('??')),
                     'password' => $this->generatePassword(),
                 ]
@@ -93,7 +93,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 'PATCH',
                 '/api/users/' . $user->getId(),
                 [
-                    'email' => strtolower($this->faker->unique()->safeEmail()),
+                    'email' => $this->uniqueEmail('memory-rest-update-user'),
                     'initials' => strtoupper($this->faker->lexify('??')),
                     'newPassword' => $password,
                     'oldPassword' => $password,
@@ -119,7 +119,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 'PUT',
                 '/api/users/' . $user->getId(),
                 [
-                    'email' => strtolower($this->faker->unique()->safeEmail()),
+                    'email' => $this->uniqueEmail('memory-rest-replace-user'),
                     'initials' => strtoupper($this->faker->lexify('??')),
                     'newPassword' => $password,
                     'oldPassword' => $password,

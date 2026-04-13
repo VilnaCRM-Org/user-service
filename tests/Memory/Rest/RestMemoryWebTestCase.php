@@ -153,7 +153,7 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
     protected function createConfirmedUser(?string $password = null, ?string $email = null): User
     {
         $password ??= $this->generatePassword();
-        $email ??= strtolower($this->faker->unique()->safeEmail());
+        $email ??= $this->uniqueEmail('memory-rest-confirmed');
 
         $user = $this->createUser($email, $password);
         $user->setConfirmed(true);
@@ -165,7 +165,7 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
     protected function createUnconfirmedUser(?string $password = null, ?string $email = null): User
     {
         $password ??= $this->generatePassword();
-        $email ??= strtolower($this->faker->unique()->safeEmail());
+        $email ??= $this->uniqueEmail('memory-rest-unconfirmed');
 
         $user = $this->createUser($email, $password);
         $this->userRepository()->save($user);
@@ -228,11 +228,10 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
         $timestamp = time();
         $period = $totp->getPeriod();
 
-        return [
-            $totp->at(max(0, $timestamp - $period)),
-            $totp->at($timestamp),
-            $totp->at($timestamp + $period),
-        ];
+        return array_values(array_unique(array_map(
+            static fn (int $offset): string => $totp->at(max(0, $timestamp + ($period * $offset))),
+            [-2, -1, 0, 1, 2],
+        )));
     }
 
     /**
@@ -345,7 +344,7 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
 
         for ($index = 0; $index < $size; ++$index) {
             $batch[] = [
-                'email' => strtolower($this->faker->unique()->safeEmail()),
+                'email' => $this->uniqueEmail(sprintf('memory-rest-batch-%d', $index)),
                 'initials' => strtoupper($this->faker->lexify('??')),
                 'password' => $this->generatePassword(),
             ];
@@ -369,6 +368,15 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
             $this->faker->randomElement(['!', '@', '#', '$', '%']),
             strtolower($this->faker->regexify('[A-Za-z0-9]{8}'))
         ));
+    }
+
+    protected function uniqueEmail(string $prefix): string
+    {
+        return sprintf(
+            '%s-%s@example.test',
+            strtolower($prefix),
+            strtolower((string) $this->container->get(UlidFactory::class)->create()),
+        );
     }
 
     protected function userRepository(): UserRepositoryInterface
