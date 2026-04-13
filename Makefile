@@ -356,7 +356,7 @@ new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
 start: ## Start docker
-	$(DOCKER_COMPOSE) up --detach --wait
+	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
 	$(MAKE) build-k6-docker
 	$(MAKE) build-spectral-docker
 
