@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Runtime;
 
 final class MockFrankenPhpFunctions
 {
+    public static array $handleRequestBehaviors = [];
     public static array $handleRequestResults = [];
     public static array $ignoreUserAbortArguments = [];
     public static int $handleRequestCalls = 0;
@@ -14,6 +15,7 @@ final class MockFrankenPhpFunctions
 
     public static function reset(): void
     {
+        self::$handleRequestBehaviors = [];
         self::$handleRequestResults = [];
         self::$ignoreUserAbortArguments = [];
         self::$handleRequestCalls = 0;
@@ -32,7 +34,19 @@ function ignore_user_abort(bool $enable): int
 function frankenphp_handle_request(callable $callable): bool
 {
     ++MockFrankenPhpFunctions::$handleRequestCalls;
-    $callable();
+
+    $behavior = array_shift(MockFrankenPhpFunctions::$handleRequestBehaviors);
+    if (is_array($behavior) && array_key_exists('server', $behavior)) {
+        $_SERVER = $behavior['server'];
+    }
+
+    if (!is_array($behavior) || ($behavior['invoke'] ?? true)) {
+        $callable();
+    }
+
+    if (is_array($behavior)) {
+        return $behavior['result'] ?? false;
+    }
 
     return array_shift(MockFrankenPhpFunctions::$handleRequestResults) ?? false;
 }
