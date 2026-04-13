@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Memory\Rest;
 
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\HttpFoundation\Response;
 
 #[Group('memory')]
 #[Group('memory-rest')]
@@ -50,5 +51,37 @@ final class RestMemoryWebTestCaseCoverageTest extends RestMemoryWebTestCase
             $encodeRequestContent('POST', ['hello' => 'world'], 'text/plain'),
         );
         self::assertNull($encodeRequestContent('POST', [], 'text/plain'));
+    }
+
+    public function testDecodeJsonRejectsMalformedJson(): void
+    {
+        $decodeJson = \Closure::bind(
+            function (Response $response): array {
+                return $this->decodeJson($response);
+            },
+            $this,
+            RestMemoryWebTestCase::class,
+        );
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Failed to decode JSON response');
+
+        $decodeJson(new Response('{invalid-json'));
+    }
+
+    public function testDecodeJsonRejectsScalarJson(): void
+    {
+        $decodeJson = \Closure::bind(
+            function (Response $response): array {
+                return $this->decodeJson($response);
+            },
+            $this,
+            RestMemoryWebTestCase::class,
+        );
+
+        self::expectException(\RuntimeException::class);
+        self::expectExceptionMessage('Expected decoded JSON response to be an array');
+
+        $decodeJson(new Response('"scalar"'));
     }
 }
