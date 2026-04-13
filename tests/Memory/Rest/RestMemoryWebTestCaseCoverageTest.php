@@ -23,7 +23,8 @@ final class RestMemoryWebTestCaseCoverageTest extends RestMemoryWebTestCase
         self::expectException(\InvalidArgumentException::class);
         self::expectExceptionMessage('Iterations must be greater than zero.');
 
-        $repeatSameKernelScenario(static function (): void {}, 0);
+        $repeatSameKernelScenario(static function (): void {
+        }, 0);
     }
 
     public function testEncodeRequestContentSupportsFormAndFallbackPayloads(): void

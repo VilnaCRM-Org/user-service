@@ -177,7 +177,7 @@ GRAPHQL;
         string $query,
         ?string $accessToken = null,
     ): array {
-        return $this->executeGraphQlRequest($client, $query, $accessToken, false);
+        return $this->executeStrictGraphQlRequest($client, $query, $accessToken);
     }
 
     /**
@@ -188,7 +188,7 @@ GRAPHQL;
         string $query,
         ?string $accessToken = null,
     ): array {
-        return $this->executeGraphQlRequest($client, $query, $accessToken, true);
+        return $this->executeGraphQlRequestAllowingErrors($client, $query, $accessToken);
     }
 
     /**
@@ -758,17 +758,32 @@ GRAPHQL;
     /**
      * @return array<string, array|bool|float|int|string|null>
      */
-    private function decodeGraphQlResponse(
-        string|false $content,
-        bool $allowErrors = false,
-    ): array {
+    private function decodeGraphQlResponse(string|false $content): array
+    {
+        $decoded = $this->decodeGraphQlPayload($content);
+
+        $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
+
+        return $decoded;
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function decodeGraphQlResponseAllowingErrors(string|false $content): array
+    {
+        return $this->decodeGraphQlPayload($content);
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function decodeGraphQlPayload(string|false $content): array
+    {
         $body = is_string($content) ? $content : '';
         $decoded = json_decode($body, true);
 
         $this->assertIsArray($decoded, is_string($content) ? $content : null);
-        if (!$allowErrors) {
-            $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
-        }
 
         return $decoded;
     }
@@ -800,11 +815,45 @@ GRAPHQL;
     /**
      * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
      */
-    private function executeGraphQlRequest(
+    private function executeStrictGraphQlRequest(
         KernelBrowser $client,
         string $query,
         ?string $accessToken,
-        bool $allowErrors,
+    ): array {
+        return $this->executeGraphQlRequestWithDecoder(
+            $client,
+            $query,
+            $accessToken,
+            $this->decodeGraphQlResponse(...),
+        );
+    }
+
+    /**
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
+     */
+    private function executeGraphQlRequestAllowingErrors(
+        KernelBrowser $client,
+        string $query,
+        ?string $accessToken,
+    ): array {
+        return $this->executeGraphQlRequestWithDecoder(
+            $client,
+            $query,
+            $accessToken,
+            $this->decodeGraphQlResponseAllowingErrors(...),
+        );
+    }
+
+    /**
+     * @param callable(string|false): array<string, array|bool|float|int|string|null> $responseDecoder
+     *
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
+     */
+    private function executeGraphQlRequestWithDecoder(
+        KernelBrowser $client,
+        string $query,
+        ?string $accessToken,
+        callable $responseDecoder,
     ): array {
         $client->request(
             'POST',
@@ -816,7 +865,7 @@ GRAPHQL;
         );
 
         $response = $client->getResponse();
-        $decoded = $this->decodeGraphQlResponse($response->getContent(), $allowErrors);
+        $decoded = $responseDecoder($response->getContent());
         $this->trackBrowserObjects($client, 'graphql request');
 
         return [

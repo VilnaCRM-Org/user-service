@@ -9,15 +9,6 @@ use PHPUnit\Framework\Attributes\Group;
 #[Group('memory')]
 final class MemoryWebTestCaseCoverageTest extends MemoryWebTestCase
 {
-    /**
-     * @return list<string>
-     */
-    #[\Override]
-    protected function getIgnoredServiceLeaks(): array
-    {
-        return [];
-    }
-
     public function testTrackKernelServicesForDeallocationReturnsWithoutBootedKernel(): void
     {
         self::ensureKernelShutdown();
@@ -32,5 +23,14 @@ final class MemoryWebTestCaseCoverageTest extends MemoryWebTestCase
         $this->assertTrackedObjectsAreDeallocated();
 
         self::assertTrue(true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    #[\Override]
+    protected function getIgnoredServiceLeaks(): array
+    {
+        return [];
     }
 }

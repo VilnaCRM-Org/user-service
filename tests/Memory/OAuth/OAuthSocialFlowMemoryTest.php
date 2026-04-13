@@ -148,8 +148,10 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $this->assertSame('invalid_state', $result['body']['error_code'] ?? null);
     }
 
-    private function exerciseProviderEmailUnavailable(KernelBrowser $client): void
-    {
+    private function exerciseProviderEmailUnavailable(
+        KernelBrowser $client,
+        int $_iteration,
+    ): void {
         $provider = 'facebook';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(
@@ -227,8 +229,10 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $this->assertSame('provider_mismatch', $result['body']['error_code'] ?? null);
     }
 
-    private function exerciseUnverifiedProviderEmail(KernelBrowser $client): void
-    {
+    private function exerciseUnverifiedProviderEmail(
+        KernelBrowser $client,
+        int $_iteration,
+    ): void {
         $provider = 'google';
         $flow = $this->initiateSocialFlow($client, $provider);
         $result = $this->completeSocialFlow(
@@ -287,23 +291,13 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
             'oauthSocialCallbackDirectSignIn' => $this->exerciseDirectSignIn(...),
             'oauthSocialCallbackTwoFactor' => $this->exerciseTwoFactor(...),
             'oauthSocialCallbackReplay' => $this->exerciseReplay(...),
-            'oauthSocialCallbackProviderEmailUnavailable' => function (
-                KernelBrowser $client,
-                int $iteration,
-            ): void {
-                self::assertGreaterThanOrEqual(0, $iteration);
-                $this->exerciseProviderEmailUnavailable($client);
-            },
+            'oauthSocialCallbackProviderEmailUnavailable' => $this
+                ->exerciseProviderEmailUnavailable(...),
             'oauthSocialCallbackReturningLinkedUser' => $this->exerciseReturningLinkedUser(...),
             'oauthSocialCallbackAutoLinkExistingUser' => $this->exerciseAutoLinkExistingUser(...),
             'oauthSocialCallbackProviderMismatch' => $this->exerciseProviderMismatch(...),
-            'oauthSocialCallbackUnverifiedProviderEmail' => function (
-                KernelBrowser $client,
-                int $iteration,
-            ): void {
-                self::assertGreaterThanOrEqual(0, $iteration);
-                $this->exerciseUnverifiedProviderEmail($client);
-            },
+            'oauthSocialCallbackUnverifiedProviderEmail' => $this
+                ->exerciseUnverifiedProviderEmail(...),
         };
     }
 }
