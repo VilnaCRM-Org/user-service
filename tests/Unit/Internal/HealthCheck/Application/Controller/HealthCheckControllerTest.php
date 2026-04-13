@@ -17,7 +17,6 @@ final class HealthCheckControllerTest extends UnitTestCase
     private HealthEventFactory $eventFactory;
     private HealthCheckController $controller;
 
-    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

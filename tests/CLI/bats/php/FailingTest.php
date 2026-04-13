@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit;
+use PHPUnit\Framework\TestCase;
 
-final class FailingTest extends UnitTestCase
+class FailingTest extends TestCase
 {
-    public function testFailure(): void
+    public function testFailure()
     {
         $this->assertTrue(false);
     }

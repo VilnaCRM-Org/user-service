@@ -1,63 +1,32 @@
 #!/bin/bash
-set -e
+set -e -x
 
-if [ -z "$1" ]; then
-    echo "Error: scenario not provided."
-    exit 1
-fi
-
-if [ -z "$2" ]; then
-    echo "Error: runSmoke not provided."
-    exit 1
-fi
-
-if [ -z "$3" ]; then
-    echo "Error: runAverage not provided."
-    exit 1
-fi
-
-if [ -z "$4" ]; then
-    echo "Error: runStress not provided."
-    exit 1
-fi
-
-if [ -z "$5" ]; then
-    echo "Error: runSpike not provided."
+if [[ -z "${1:-}" ]]; then
+    echo "Error: scenario not provided." >&2
     exit 1
 fi
 
 scenario=$1
-runSmoke=$2
-runAverage=$3
-runStress=$4
-runSpike=$5
+runSmoke=${2:-true}
+runAverage=${3:-true}
+runStress=${4:-true}
+runSpike=${5:-true}
 htmlPrefix=$6
-loadTestComposeProject=${LOAD_TEST_COMPOSE_PROJECT:-user-service-load-tests}
-loadTestApiHost=${LOAD_TEST_API_HOST:-localhost}
-loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
-loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
-composeCmd=(docker compose -p "$loadTestComposeProject" -f docker-compose.load-tests.yml)
 
-serviceToken=$(
-  "${composeCmd[@]}" exec -T php sh /srv/app/tests/Load/generate-service-token.sh | tr -d '\r\n'
-)
-
-if [ -z "$serviceToken" ]; then
-  echo "Error: failed to generate service token for load tests."
-  exit 1
+echo "Executing load test for scenario: $scenario"
+echo "Options - Smoke: $runSmoke, Average: $runAverage, Stress: $runStress, Spike: $runSpike"
+ENV_VARS=""
+if [[ -n "${API_HOST:-}" ]]; then
+  ENV_VARS="${ENV_VARS} -e API_HOST=${API_HOST}"
 fi
 
-K6="docker run -v ./tests/Load:/loadTests --net=host --rm \
-    --user $(id -u) \
+if [[ -n "${API_PORT:-}" ]]; then
+  ENV_VARS="${ENV_VARS} -e API_PORT=${API_PORT}"
+fi
+
+K6="docker run -v ./tests/Load:/loadTests --net=host --rm ${ENV_VARS} \
+    --user $(id -u):$(id -g) \
     k6 run --summary-trend-stats='avg,min,med,max,p(95),p(99)' \
-    --out 'web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html'"
+    --out 'dashboard=port=-1&period=1s&export=/loadTests/results/${htmlPrefix}${scenario}.html'"
 
-if [[ $scenario != "createUser" && $scenario != "graphQLCreateUser" && $scenario != "createUserBatch" ]]; then
-  eval "$K6" /loadTests/utils/prepareUsers.js -e scenarioName="${scenario}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}" -e API_HOST="${loadTestApiHost}" -e API_PORT="${loadTestApiPort}" -e MAILCATCHER_PORT="${loadTestMailCatcherHttpPort}"
-  "${composeCmd[@]}" exec -T php bin/console app:load-test:attach-access-tokens
-fi
-
-scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)
-scriptRelPath="${scriptFile#./tests/Load/}"
-
-eval "$K6" "/loadTests/${scriptRelPath}" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}" -e serviceToken="${serviceToken}" -e API_HOST="${loadTestApiHost}" -e API_PORT="${loadTestApiPort}" -e MAILCATCHER_PORT="${loadTestMailCatcherHttpPort}"
+eval "$K6" "/loadTests/scripts/${scenario}.js" -e run_smoke="${runSmoke}" -e run_average="${runAverage}" -e run_stress="${runStress}" -e run_spike="${runSpike}"

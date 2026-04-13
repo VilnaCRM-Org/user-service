@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   schemathesis:
     name: Schemathesis
@@ -11,17 +14,23 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-
-      - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start Application
         run: make start
+
+      - name: Wait for Application Readiness
+        run: |
+          for _ in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://localhost:8081/ping; then
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          docker compose logs php database localstack
+          exit 1
 
       - name: Run Schemathesis Validation
         run: make schemathesis-validate
