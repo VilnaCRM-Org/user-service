@@ -24,6 +24,14 @@ final class FrankenPhpLoopGateTest extends TestCase
         self::assertFalse($loopGate->keepRunning(true));
     }
 
+    public function testKeepRunningStopsAfterConfiguredPositiveLimitIsReached(): void
+    {
+        $loopGate = new FrankenPhpLoopGate(2);
+
+        self::assertTrue($loopGate->keepRunning(true));
+        self::assertFalse($loopGate->keepRunning(true));
+    }
+
     public function testKeepRunningStopsImmediatelyWhenRequestWasNotHandled(): void
     {
         $loopGate = new FrankenPhpLoopGate(-1);

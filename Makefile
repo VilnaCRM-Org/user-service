@@ -34,6 +34,7 @@ EXEC_PHP_SCHEMATHESIS = $(DOCKER_COMPOSE_SCHEMATHESIS) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
+EXEC_PHP_TEST_ENV_NOTTY = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
 EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
 EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
@@ -316,7 +317,7 @@ build-spectral-docker:
 	$(DOCKER) build -t user-service-spectral -f ./docker/spectral/Dockerfile .
 
 infection: ## Run mutations test.
-	$(EXEC_ENV) php -d memory_limit=-1 $(INFECTION) --configuration=infection.json5 --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
+	$(EXEC_PHP_TEST_ENV_NOTTY) php -d memory_limit=-1 $(INFECTION) --configuration=infection.json5 --test-framework-options="--testsuite=Unit" --show-mutations --log-verbosity=all -j$(INFECTION_THREADS) --min-msi=100 --min-covered-msi=100 --with-uncovered
 
 create-oauth-client: ## Run mutation testing
 	$(EXEC_PHP) sh -c 'bin/console league:oauth2-server:create-client $(clientName)'

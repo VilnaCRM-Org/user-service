@@ -15,9 +15,6 @@
             <directory name="tests/CLI"/>
         </ignoreFiles>
     </projectFiles>
-    <stubs>
-        <file name="stubs/frankenphp.phpstub"/>
-    </stubs>
     <plugins>
         <plugin filename="scripts/ArchitectureGuardPlugin.php"/>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>

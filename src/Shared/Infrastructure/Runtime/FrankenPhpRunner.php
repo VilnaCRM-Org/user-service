@@ -11,6 +11,7 @@ use Symfony\Component\Runtime\RunnerInterface;
 
 final class FrankenPhpRunner implements RunnerInterface
 {
+    private readonly FrankenPhpBootstrapServerFactory $bootstrapServerFactory;
     private readonly FrankenPhpRequestFactory $requestFactory;
 
     public function __construct(
@@ -18,6 +19,7 @@ final class FrankenPhpRunner implements RunnerInterface
         private readonly int $loopMax,
         ?Closure $bodyParserChecker = null,
     ) {
+        $this->bootstrapServerFactory = new FrankenPhpBootstrapServerFactory();
         $this->requestFactory = new FrankenPhpRequestFactory($bodyParserChecker);
     }
 
@@ -26,7 +28,7 @@ final class FrankenPhpRunner implements RunnerInterface
     {
         ignore_user_abort(true);
 
-        $bootstrapServer = FrankenPhpBootstrapServer::fromRequest(
+        $bootstrapServer = $this->bootstrapServerFactory->create(
             $this->requestFactory->createBaseRequest(),
         );
         $loopGate = new FrankenPhpLoopGate($this->loopMax);
@@ -45,6 +47,7 @@ final class FrankenPhpRunner implements RunnerInterface
 
     private function handleRequest(Closure $handler): bool
     {
+        /** @psalm-suppress UndefinedFunction */
         return frankenphp_handle_request($handler);
     }
 

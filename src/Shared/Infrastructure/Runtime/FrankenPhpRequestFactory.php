@@ -35,9 +35,10 @@ final class FrankenPhpRequestFactory
 
     public function createBaseRequest(): Request
     {
-        $factory = Closure::fromCallable([Request::class, 'createFromGlobals']);
+        $request = call_user_func([Request::class, 'createFromGlobals']);
+        assert($request instanceof Request);
 
-        return $factory();
+        return $request;
     }
 
     private function requestBodyParserIsAvailable(): bool

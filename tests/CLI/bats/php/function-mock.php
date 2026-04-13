@@ -6,9 +6,13 @@ namespace App\Shared\Infrastructure\Runtime;
 
 final class MockFrankenPhpFunctions
 {
+    /** @var array<int, array{invoke?: bool, result?: bool, server?: array<string, mixed>}> */
     public static array $handleRequestBehaviors = [];
+    /** @var list<bool> */
     public static array $handleRequestResults = [];
+    /** @var list<bool> */
     public static array $ignoreUserAbortArguments = [];
+    /** @var list<array{0: array<string, mixed>, 1: array<string, mixed>}> */
     public static array $requestParseBodyResults = [];
     public static int $handleRequestCalls = 0;
     public static int $fileGetContentsCalls = 0;
@@ -32,11 +36,88 @@ final class MockFrankenPhpFunctions
         self::$fileGetContentsResult = null;
         self::$requestParseBodyException = null;
     }
+
+    /**
+     * @return array{
+     *     server: array<string, mixed>,
+     *     post: array<string, mixed>,
+     *     files: array<string, mixed>
+     * }
+     */
+    public static function snapshotRequestGlobals(): array
+    {
+        return [
+            'server' => $_SERVER,
+            'post' => $_POST,
+            'files' => $_FILES,
+        ];
+    }
+
+    /**
+     * @param array{
+     *     server: array<string, mixed>,
+     *     post: array<string, mixed>,
+     *     files: array<string, mixed>
+     * } $snapshot
+     */
+    public static function restoreRequestGlobals(array $snapshot): void
+    {
+        $_SERVER = $snapshot['server'];
+        $_POST = $snapshot['post'];
+        $_FILES = $snapshot['files'];
+    }
+
+    /** @param array<string, mixed> $server */
+    public static function replaceServer(array $server): void
+    {
+        $_SERVER = $server;
+    }
+
+    /** @param array<string, mixed> $post */
+    public static function replacePost(array $post): void
+    {
+        $_POST = $post;
+    }
+
+    /** @param array<string, mixed> $files */
+    public static function replaceFiles(array $files): void
+    {
+        $_FILES = $files;
+    }
+
+    /**
+     * @param array<int, array{invoke?: bool, result?: bool, server?: array<string, mixed>}> $behaviors
+     */
+    public static function setHandleRequestBehaviors(array $behaviors): void
+    {
+        self::$handleRequestBehaviors = $behaviors;
+    }
+
+    /**
+     * @param list<array{0: array<string, mixed>, 1: array<string, mixed>}> $results
+     */
+    public static function setRequestParseBodyResults(array $results): void
+    {
+        self::$requestParseBodyResults = $results;
+    }
+
+    public static function setRequestParseBodyException(?\Throwable $exception): void
+    {
+        self::$requestParseBodyException = $exception;
+    }
+
+    public static function setFileGetContentsResult(string|false|null $result): void
+    {
+        self::$fileGetContentsResult = $result;
+    }
 }
 
 function ignore_user_abort(bool $enable): int
 {
-    MockFrankenPhpFunctions::$ignoreUserAbortArguments = [...MockFrankenPhpFunctions::$ignoreUserAbortArguments, $enable];
+    MockFrankenPhpFunctions::$ignoreUserAbortArguments = [
+        ...MockFrankenPhpFunctions::$ignoreUserAbortArguments,
+        $enable,
+    ];
 
     return 0;
 }
@@ -77,7 +158,7 @@ function gc_mem_caches(): int
 
 function file_get_contents(string $filename): string|false
 {
-    if ('php://input' !== $filename || null === MockFrankenPhpFunctions::$fileGetContentsResult) {
+    if ($filename !== 'php://input' || MockFrankenPhpFunctions::$fileGetContentsResult === null) {
         return \file_get_contents($filename);
     }
 
@@ -86,6 +167,9 @@ function file_get_contents(string $filename): string|false
     return MockFrankenPhpFunctions::$fileGetContentsResult;
 }
 
+/**
+ * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+ */
 function request_parse_body(): array
 {
     ++MockFrankenPhpFunctions::$requestParseBodyCalls;

@@ -4,41 +4,41 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Runtime;
 
-require_once __DIR__ . '/function-mock.php';
-
 use App\Shared\Infrastructure\Runtime\FrankenPhpRunner;
 use App\Shared\Infrastructure\Runtime\MockFrankenPhpFunctions;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use Symfony\Component\HttpKernel\TerminableInterface;
-
-interface TestKernelInterface extends HttpKernelInterface, TerminableInterface
-{
-}
 
 final class FrankenPhpRunnerTest extends TestCase
 {
-    private array $originalServer = [];
+    /**
+     * @var array{
+     *     server: array<string, array<string, scalar|null>|scalar|null>,
+     *     post: array<string, array<string, scalar|null>|scalar|null>,
+     *     files: array<string, array<string, scalar|null>|scalar|null>
+     * }
+     */
+    private array $originalRequestGlobals = [];
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->originalServer = $_SERVER;
+        $this->originalRequestGlobals = MockFrankenPhpFunctions::snapshotRequestGlobals();
         MockFrankenPhpFunctions::reset();
-        $_SERVER = [
+        MockFrankenPhpFunctions::replaceServer([
             'FOO' => 'bar',
             'HTTP_STALE_HEADER' => 'stale',
-        ];
+        ]);
     }
 
     #[\Override]
     protected function tearDown(): void
     {
-        $_SERVER = $this->originalServer;
+        MockFrankenPhpFunctions::restoreRequestGlobals($this->originalRequestGlobals);
         MockFrankenPhpFunctions::reset();
 
         parent::tearDown();
@@ -47,41 +47,19 @@ final class FrankenPhpRunnerTest extends TestCase
     public function testRunPreservesRequestHeadersAndFiltersBootstrapHttpHeaders(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(1);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertPreservedRequestHeaders($request);
+            },
+        );
+        $this->setSingleHandleRequestBehavior([
+            'REQUEST_METHOD' => 'GET',
+            'HTTP_REQUEST_HEADER' => 'fresh',
+        ]);
 
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
-            [
-                'server' => [
-                    'REQUEST_METHOD' => 'GET',
-                    'HTTP_REQUEST_HEADER' => 'fresh',
-                ],
-                'result' => false,
-            ],
-        ];
-
-        $kernel
-            ->expects($this->once())
-            ->method('handle')
-            ->willReturnCallback(
-                function (Request $request) use ($response): Response {
-                    self::assertSame('bar', $request->server->get('FOO'));
-                    self::assertSame('web=1&worker=1', $request->server->get('APP_RUNTIME_MODE'));
-                    self::assertSame('fresh', $request->headers->get('request-header'));
-                    self::assertFalse($request->headers->has('stale-header'));
-
-                    return $response;
-                },
-            );
-        $kernel->expects($this->once())->method('terminate')->with($this->isInstanceOf(Request::class), $response);
-
-        $runner = new FrankenPhpRunner($kernel, 500);
-
-        self::assertSame(0, $runner->run());
-        self::assertSame([true], MockFrankenPhpFunctions::$ignoreUserAbortArguments);
-        self::assertSame(1, MockFrankenPhpFunctions::$handleRequestCalls);
-        self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
-        self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
-        self::assertSame(0, MockFrankenPhpFunctions::$requestParseBodyCalls);
+        self::assertSame(0, $this->runRunner($kernel));
+        $this->assertSingleRunMetrics();
     }
 
     public function testRunLoopsUntilHandleRequestReturnsFalseWhenLoopLimitIsUnlimited(): void
@@ -89,11 +67,11 @@ final class FrankenPhpRunnerTest extends TestCase
         $kernel = $this->createMock(TestKernelInterface::class);
         $response = $this->createResponseMock(3);
 
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => false],
-        ];
+        ]);
 
         $kernel->expects($this->exactly(3))->method('handle')->willReturn($response);
         $kernel->expects($this->exactly(3))->method('terminate');
@@ -111,11 +89,11 @@ final class FrankenPhpRunnerTest extends TestCase
         $kernel = $this->createMock(TestKernelInterface::class);
         $response = $this->createResponseMock(1);
 
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => true],
-        ];
+        ]);
 
         $kernel->expects($this->once())->method('handle')->willReturn($response);
         $kernel->expects($this->once())->method('terminate');
@@ -133,9 +111,9 @@ final class FrankenPhpRunnerTest extends TestCase
         $kernel = $this->createMock(HttpKernelInterface::class);
         $response = $this->createResponseMock(1);
 
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
             ['server' => ['REQUEST_METHOD' => 'GET'], 'result' => false],
-        ];
+        ]);
 
         $kernel->expects($this->once())->method('handle')->willReturn($response);
 
@@ -150,138 +128,159 @@ final class FrankenPhpRunnerTest extends TestCase
     public function testRunBuildsPutRequestsFromParsedBody(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(1);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertSame('PUT', $request->getMethod());
+                self::assertSame('worker@example.com', $request->request->get('email'));
+                self::assertTrue($request->files->has('avatar'));
+            },
+        );
 
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
             ['server' => ['REQUEST_METHOD' => 'PUT'], 'result' => false],
-        ];
-        MockFrankenPhpFunctions::$requestParseBodyResults = [
+        ]);
+        MockFrankenPhpFunctions::setRequestParseBodyResults([
             [['email' => 'worker@example.com'], ['avatar' => ['name' => 'avatar.png']]],
-        ];
+        ]);
 
-        $kernel
-            ->expects($this->once())
-            ->method('handle')
-            ->willReturnCallback(
-                function (Request $request) use ($response): Response {
-                    self::assertSame('PUT', $request->getMethod());
-                    self::assertSame('worker@example.com', $request->request->get('email'));
-                    self::assertTrue($request->files->has('avatar'));
-
-                    return $response;
-                },
-            );
-        $kernel->expects($this->once())->method('terminate');
-
-        $runner = new FrankenPhpRunner($kernel, 500);
-
-        self::assertSame(0, $runner->run());
+        self::assertSame(0, $this->runRunner($kernel));
         self::assertSame(1, MockFrankenPhpFunctions::$requestParseBodyCalls);
     }
 
     public function testRunFallsBackToPhpSuperglobalsWhenRequestBodyParsingFails(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(1);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertSame('PATCH', $request->getMethod());
+                self::assertSame('value', $request->request->get('fallback'));
+                self::assertTrue($request->files->has('document'));
+            },
+        );
 
-        $_POST = ['fallback' => 'value'];
-        $_FILES = ['document' => ['name' => 'contract.pdf']];
-        MockFrankenPhpFunctions::$requestParseBodyException = new \RequestParseBodyException('failed');
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
+        MockFrankenPhpFunctions::replacePost(['fallback' => 'value']);
+        MockFrankenPhpFunctions::replaceFiles(['document' => ['name' => 'contract.pdf']]);
+        MockFrankenPhpFunctions::setRequestParseBodyException(
+            new \RequestParseBodyException('failed'),
+        );
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
             ['server' => ['REQUEST_METHOD' => 'PATCH'], 'result' => false],
-        ];
+        ]);
 
-        $kernel
-            ->expects($this->once())
-            ->method('handle')
-            ->willReturnCallback(
-                function (Request $request) use ($response): Response {
-                    self::assertSame('PATCH', $request->getMethod());
-                    self::assertSame('value', $request->request->get('fallback'));
-                    self::assertTrue($request->files->has('document'));
-
-                    return $response;
-                },
-            );
-        $kernel->expects($this->once())->method('terminate');
-
-        $runner = new FrankenPhpRunner($kernel, 500);
-
-        self::assertSame(0, $runner->run());
+        self::assertSame(0, $this->runRunner($kernel));
         self::assertSame(1, MockFrankenPhpFunctions::$requestParseBodyCalls);
     }
 
     public function testRunBuildsLegacyFormEncodedRequestsWhenRequestBodyParserIsUnavailable(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(1);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertRequestPayload($request, 'legacy', 'value');
+            },
+        );
 
-        MockFrankenPhpFunctions::$fileGetContentsResult = 'legacy=value';
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
-            [
-                'server' => [
-                    'REQUEST_METHOD' => 'PATCH',
-                    'CONTENT_TYPE' => 'application/x-www-form-urlencoded',
-                ],
-                'result' => false,
-            ],
-        ];
+        MockFrankenPhpFunctions::setFileGetContentsResult('legacy=value');
+        $this->setSinglePatchHandleRequestBehavior('application/x-www-form-urlencoded');
 
-        $kernel
-            ->expects($this->once())
-            ->method('handle')
-            ->willReturnCallback(
-                function (Request $request) use ($response): Response {
-                    self::assertSame('PATCH', $request->getMethod());
-                    self::assertSame('value', $request->request->get('legacy'));
-
-                    return $response;
-                },
-            );
-        $kernel->expects($this->once())->method('terminate');
-
-        $runner = new FrankenPhpRunner($kernel, 500, static fn (): bool => false);
-
-        self::assertSame(0, $runner->run());
-        self::assertSame(1, MockFrankenPhpFunctions::$fileGetContentsCalls);
-        self::assertSame(0, MockFrankenPhpFunctions::$requestParseBodyCalls);
+        self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
+        $this->assertSingleRunMetrics(fileGetContentsCalls: 1);
     }
 
     public function testRunKeepsPostPayloadForLegacyNonFormRequests(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);
-        $response = $this->createResponseMock(1);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertRequestPayload($request, 'fallback', 'value');
+            },
+        );
 
-        $_POST = ['fallback' => 'value'];
-        MockFrankenPhpFunctions::$fileGetContentsResult = 'legacy=ignored';
-        MockFrankenPhpFunctions::$handleRequestBehaviors = [
-            [
-                'server' => [
-                    'REQUEST_METHOD' => 'PATCH',
-                    'CONTENT_TYPE' => 'application/json',
-                ],
-                'result' => false,
-            ],
-        ];
+        MockFrankenPhpFunctions::replacePost(['fallback' => 'value']);
+        MockFrankenPhpFunctions::setFileGetContentsResult('legacy=ignored');
+        $this->setSinglePatchHandleRequestBehavior('application/json');
+
+        self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
+        $this->assertSingleRunMetrics();
+    }
+
+    private function expectSingleHandledRequest(
+        TestKernelInterface $kernel,
+        callable $assertRequest,
+    ): void {
+        $response = $this->createResponseMock(1);
 
         $kernel
             ->expects($this->once())
             ->method('handle')
             ->willReturnCallback(
-                function (Request $request) use ($response): Response {
-                    self::assertSame('PATCH', $request->getMethod());
-                    self::assertSame('value', $request->request->get('fallback'));
+                static function (Request $request) use ($assertRequest, $response): Response {
+                    $assertRequest($request);
 
                     return $response;
                 },
             );
         $kernel->expects($this->once())->method('terminate');
+    }
 
-        $runner = new FrankenPhpRunner($kernel, 500, static fn (): bool => false);
+    private function runRunner(
+        HttpKernelInterface $kernel,
+        ?\Closure $bodyParserChecker = null,
+    ): int {
+        $runner = new FrankenPhpRunner($kernel, 500, $bodyParserChecker);
 
-        self::assertSame(0, $runner->run());
-        self::assertSame(0, MockFrankenPhpFunctions::$fileGetContentsCalls);
-        self::assertSame(0, MockFrankenPhpFunctions::$requestParseBodyCalls);
+        return $runner->run();
+    }
+
+    private function assertSingleRunMetrics(
+        int $requestParseBodyCalls = 0,
+        int $fileGetContentsCalls = 0,
+    ): void {
+        self::assertSame([true], MockFrankenPhpFunctions::$ignoreUserAbortArguments);
+        self::assertSame(1, MockFrankenPhpFunctions::$handleRequestCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
+        self::assertSame($requestParseBodyCalls, MockFrankenPhpFunctions::$requestParseBodyCalls);
+        self::assertSame($fileGetContentsCalls, MockFrankenPhpFunctions::$fileGetContentsCalls);
+    }
+
+    /**
+     * @param array<string, array<string, scalar|null>|scalar|null> $server
+     */
+    private function setSingleHandleRequestBehavior(array $server): void
+    {
+        MockFrankenPhpFunctions::setHandleRequestBehaviors([
+            ['server' => $server, 'result' => false],
+        ]);
+    }
+
+    private function setSinglePatchHandleRequestBehavior(string $contentType): void
+    {
+        $this->setSingleHandleRequestBehavior([
+            'REQUEST_METHOD' => 'PATCH',
+            'CONTENT_TYPE' => $contentType,
+        ]);
+    }
+
+    private static function assertPreservedRequestHeaders(Request $request): void
+    {
+        self::assertSame('bar', $request->server->get('FOO'));
+        self::assertSame('web=1&worker=1', $request->server->get('APP_RUNTIME_MODE'));
+        self::assertSame('fresh', $request->headers->get('request-header'));
+        self::assertFalse($request->headers->has('stale-header'));
+    }
+
+    private static function assertRequestPayload(
+        Request $request,
+        string $field,
+        string $value,
+    ): void {
+        self::assertSame('PATCH', $request->getMethod());
+        self::assertSame($value, $request->request->get($field));
     }
 
     private function createResponseMock(int $expectedSendCalls): Response

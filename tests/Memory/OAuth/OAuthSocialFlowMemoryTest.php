@@ -126,30 +126,59 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
     private function exerciseReplay(KernelBrowser $client, int $iteration): void
     {
         $provider = 'google';
-        $flow = $this->initiateSocialFlow($client, $provider);
-        $code = $this->uniqueCode('memory-replay', $iteration);
-
-        $firstResult = $this->completeSocialFlow(
+        [$firstResult, $result] = $this->replaySocialFlow(
             $client,
             $provider,
-            $code,
-            $flow['state'],
-            $flow['cookie'],
-        );
-        $result = $this->completeSocialFlow(
-            $client,
-            $provider,
-            $code,
-            $flow['state'],
-            $flow['cookie'],
+            $this->uniqueCode('memory-replay', $iteration),
+            $this->initiateSocialFlow($client, $provider),
         );
 
-        $this->assertSame(200, $firstResult['status']);
-        $this->assertSame(false, $firstResult['body']['2fa_enabled'] ?? null);
-        $this->assertIsString($firstResult['body']['access_token'] ?? null);
-        $this->assertNotSame('', $firstResult['body']['access_token'] ?? null);
+        $this->assertSuccessfulReplayLogin($firstResult);
         $this->assertSame(422, $result['status']);
         $this->assertSame('invalid_state', $result['body']['error_code'] ?? null);
+    }
+
+    /**
+     * @param array{state: string, cookie: string} $flow
+     *
+     * @return array{
+     *     0: array{status: int, body: array<string, array|bool|float|int|string|null>, responseCookie: \Symfony\Component\HttpFoundation\Cookie|null},
+     *     1: array{status: int, body: array<string, array|bool|float|int|string|null>, responseCookie: \Symfony\Component\HttpFoundation\Cookie|null}
+     * }
+     */
+    private function replaySocialFlow(
+        KernelBrowser $client,
+        string $provider,
+        string $code,
+        array $flow,
+    ): array {
+        return [
+            $this->completeSocialFlow(
+                $client,
+                $provider,
+                $code,
+                $flow['state'],
+                $flow['cookie'],
+            ),
+            $this->completeSocialFlow(
+                $client,
+                $provider,
+                $code,
+                $flow['state'],
+                $flow['cookie'],
+            ),
+        ];
+    }
+
+    /**
+     * @param array{status: int, body: array<string, array|bool|float|int|string|null>, responseCookie: \Symfony\Component\HttpFoundation\Cookie|null} $result
+     */
+    private function assertSuccessfulReplayLogin(array $result): void
+    {
+        $this->assertSame(200, $result['status']);
+        $this->assertSame(false, $result['body']['2fa_enabled'] ?? null);
+        $this->assertIsString($result['body']['access_token'] ?? null);
+        $this->assertNotSame('', $result['body']['access_token'] ?? null);
     }
 
     private function exerciseProviderEmailUnavailable(
