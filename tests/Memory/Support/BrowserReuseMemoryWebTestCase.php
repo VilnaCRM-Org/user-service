@@ -7,7 +7,7 @@ namespace App\Tests\Memory\Support;
 use PHPUnit\Framework\Assert;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
-trait MemoryBrowserReuseTrait
+abstract class BrowserReuseMemoryWebTestCase extends MemoryWebTestCase
 {
     private ?TrackedBrowserObjects $pendingBrowserObjects = null;
 
@@ -59,11 +59,12 @@ trait MemoryBrowserReuseTrait
 
     protected function flushPendingBrowserObjects(): void
     {
-        if (!isset($this->client) || $this->pendingBrowserObjects === null) {
+        $client = $this->getTrackedBrowserClient();
+        if ($client === null || $this->pendingBrowserObjects === null) {
             return;
         }
 
-        $this->client->request(
+        $client->request(
             'GET',
             '/api/health',
             [],
@@ -71,13 +72,13 @@ trait MemoryBrowserReuseTrait
             [
                 'HTTP_ACCEPT' => 'application/json',
                 'HTTP_USER_AGENT' => $this->getBrowserFlushUserAgent(),
-                'REMOTE_ADDR' => $this->faker->ipv4(),
+                'REMOTE_ADDR' => '127.0.0.1',
             ],
         );
 
         $this->pendingBrowserObjects->expectDeallocation($this->getDeallocationChecker());
         $this->pendingBrowserObjects = null;
-        $this->client->getHistory()->clear();
+        $client->getHistory()->clear();
         gc_collect_cycles();
     }
 
@@ -86,6 +87,8 @@ trait MemoryBrowserReuseTrait
         $client->getHistory()->clear();
         $client->getCookieJar()->clear();
     }
+
+    abstract protected function getTrackedBrowserClient(): ?KernelBrowser;
 
     abstract protected function getBrowserFlushUserAgent(): string;
 

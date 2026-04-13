@@ -12,8 +12,7 @@ use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
-use App\Tests\Memory\Support\MemoryBrowserReuseTrait;
-use App\Tests\Memory\Support\MemoryWebTestCase;
+use App\Tests\Memory\Support\BrowserReuseMemoryWebTestCase;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\ConfirmationToken;
@@ -35,6 +34,7 @@ use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\Type as GraphQlType;
 use GraphQL\Type\Introspection;
 use GraphQL\Validator\DocumentValidator;
+use OTPHP\TOTP;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -43,11 +43,8 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 /**
  * @SuppressWarnings(PHPMD.TooManyMethods)
  */
-abstract class GraphQLMemoryWebTestCase extends MemoryWebTestCase
+abstract class GraphQLMemoryWebTestCase extends BrowserReuseMemoryWebTestCase
 {
-    use MemoryBrowserReuseTrait;
-    use GraphQlMemoryAuthenticationTrait;
-
     private const GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private const GRAPHQL_ID_PREFIX = '/api/users/';
     private const UPDATE_USER_MUTATION_TEMPLATE = <<<'GRAPHQL'
@@ -178,6 +175,186 @@ GRAPHQL;
         ?string $accessToken = null,
     ): array {
         return $this->executeGraphQlRequestAllowingErrors($client, $query, $accessToken);
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function signInGraphQl(
+        KernelBrowser $client,
+        string $email,
+        string $password,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'signInUser',
+            sprintf('email: "%s", password: "%s"', $email, $password),
+            'success twoFactorEnabled accessToken refreshToken pendingSessionId',
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function refreshTokenGraphQl(
+        KernelBrowser $client,
+        string $refreshToken,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'refreshTokenUser',
+            sprintf('refreshToken: "%s"', $refreshToken),
+            'success accessToken refreshToken',
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function setupTwoFactorGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'setupTwoFactorUser',
+            '',
+            'success otpauthUri secret',
+            $accessToken,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function confirmTwoFactorGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+        string $code,
+    ): array {
+        $result = $this->executeGraphQlAllowingErrors(
+            $client,
+            $this->buildRawUserMutation(
+                'confirmTwoFactorUser',
+                sprintf('twoFactorCode: "%s"', $code),
+                'success recoveryCodes',
+            ),
+            $accessToken,
+        );
+
+        if ($this->isInvalidTwoFactorCodeResponse($result['body'])) {
+            return [];
+        }
+
+        return $this->extractGraphQlUserPayload($result, 'confirmTwoFactorUser');
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function disableTwoFactorGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+        string $code,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'disableTwoFactorUser',
+            sprintf('twoFactorCode: "%s"', $code),
+            'success',
+            $accessToken,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function regenerateRecoveryCodesGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'regenerateRecoveryCodesUser',
+            '',
+            'success recoveryCodes',
+            $accessToken,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function signOutGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'signOutUser',
+            '',
+            'success',
+            $accessToken,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function signOutAllGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'signOutAllUser',
+            '',
+            'success',
+            $accessToken,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    protected function completeTwoFactorGraphQl(
+        KernelBrowser $client,
+        string $pendingSessionId,
+        string $code,
+    ): array {
+        return $this->executeUserMutation(
+            $client,
+            'completeTwoFactorUser',
+            sprintf(
+                'pendingSessionId: "%s", twoFactorCode: "%s"',
+                $pendingSessionId,
+                $code,
+            ),
+            'success twoFactorEnabled accessToken refreshToken recoveryCodesRemaining warning',
+        );
+    }
+
+    /**
+     * @return array{secret: string, recoveryCodes: list<string>}
+     */
+    protected function enableTwoFactorGraphQl(
+        KernelBrowser $client,
+        string $accessToken,
+    ): array {
+        $setup = $this->setupTwoFactorGraphQl($client, $accessToken);
+        $secret = $setup['secret'] ?? null;
+
+        $this->assertIsString($secret);
+        $this->assertNotSame('', $secret);
+
+        return [
+            'secret' => $secret,
+            'recoveryCodes' => $this->successfulTwoFactorRecoveryCodes(
+                $client,
+                $accessToken,
+                $secret,
+            ),
+        ];
     }
 
     /**
@@ -408,6 +585,18 @@ GRAPHQL;
         );
     }
 
+    #[\Override]
+    protected function getBrowserFlushUserAgent(): string
+    {
+        return 'GraphQLMemoryWebTestCaseFlush';
+    }
+
+    #[\Override]
+    protected function getTrackedBrowserClient(): ?KernelBrowser
+    {
+        return $this->client ?? null;
+    }
+
     private function createActiveSession(string $userId): string
     {
         $sessionId = (string) $this->ulidFactory->create();
@@ -446,11 +635,6 @@ GRAPHQL;
     private function graphQlUserId(string $userId): string
     {
         return self::GRAPHQL_ID_PREFIX . $userId;
-    }
-
-    protected function getBrowserFlushUserAgent(): string
-    {
-        return 'GraphQLMemoryWebTestCaseFlush';
     }
 
     private function clearGraphQlStaticState(): void
@@ -561,6 +745,53 @@ GRAPHQL;
         );
 
         return true;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function successfulTwoFactorRecoveryCodes(
+        KernelBrowser $client,
+        string $accessToken,
+        string $secret,
+    ): array {
+        $confirm = null;
+
+        foreach ($this->buildTwoFactorCodesWithinStepWindow($secret) as $code) {
+            $confirm = $this->confirmTwoFactorGraphQl($client, $accessToken, $code);
+            if (($confirm['success'] ?? false) === true) {
+                break;
+            }
+        }
+
+        $this->assertIsArray($confirm);
+        $this->assertSame(true, $confirm['success'] ?? null);
+        $recoveryCodes = $confirm['recoveryCodes'] ?? null;
+
+        $this->assertIsArray($recoveryCodes);
+        $this->assertNotSame([], $recoveryCodes);
+
+        return array_values(
+            array_map(
+                static fn ($value): string => (string) $value,
+                $recoveryCodes,
+            ),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildTwoFactorCodesWithinStepWindow(string $secret): array
+    {
+        $totp = TOTP::create($secret);
+        $timestamp = time();
+        $period = $totp->getPeriod();
+
+        return array_values(array_unique(array_map(
+            static fn (int $offset): string => $totp->at(max(0, $timestamp + ($period * $offset))),
+            [-2, -1, 0, 1, 2],
+        )));
     }
 
     /**
@@ -746,5 +977,4 @@ GRAPHQL;
             $responseFields,
         );
     }
-
 }

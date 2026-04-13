@@ -6,8 +6,7 @@ namespace App\Tests\Memory\OAuth;
 
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Memory\Support\MemoryBrowserReuseTrait;
-use App\Tests\Memory\Support\MemoryWebTestCase;
+use App\Tests\Memory\Support\BrowserReuseMemoryWebTestCase;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -21,10 +20,8 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
+abstract class OAuthSocialMemoryWebTestCase extends BrowserReuseMemoryWebTestCase
 {
-    use MemoryBrowserReuseTrait;
-
     protected const FLOW_COOKIE_NAME = 'oauth_flow_binding';
 
     protected Generator $faker;
@@ -234,6 +231,18 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         );
     }
 
+    #[\Override]
+    protected function getBrowserFlushUserAgent(): string
+    {
+        return 'OAuthSocialMemoryWebTestCaseFlush';
+    }
+
+    #[\Override]
+    protected function getTrackedBrowserClient(): ?KernelBrowser
+    {
+        return $this->client ?? null;
+    }
+
     /**
      * @param list<Cookie> $cookies
      */
@@ -259,11 +268,6 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
             'HTTP_USER_AGENT' => $userAgent,
             'REMOTE_ADDR' => $this->faker->ipv4(),
         ];
-    }
-
-    protected function getBrowserFlushUserAgent(): string
-    {
-        return 'OAuthSocialMemoryWebTestCaseFlush';
     }
 
     private function bootSameKernelClient(): void
