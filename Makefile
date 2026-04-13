@@ -9,6 +9,12 @@ LOAD_TEST_COMPOSE_PROJECT ?= $(PROJECT)-load-tests
 LOAD_TEST_API_PORT ?= 18081
 LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
 LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
+MEMORY_SOAK_ROUNDS ?= 3
+MEMORY_SOAK_WARMUP_ROUNDS ?= 2
+MEMORY_SOAK_SETTLE_SECONDS ?= 5
+WORKER_MEMORY_STEP_TOLERANCE_KB ?= 2048
+WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB ?= 12288
+MEMORY_SOAK_SCENARIOS ?= oauth,cachePerformance,createUserBatch,updateUser,confirmTwoFactor,graphQLGetUsers,graphQLUpdateUser,oauthSocialCallback
 
 # Executables: local only
 SYMFONY_BIN   = symfony
@@ -84,12 +90,11 @@ endef
 ifeq ($(CI),1)
     RUN_PHP_CS_FIXER = $(FIXER_ENV) $(PHP_CS_FIXER_CMD)
     RUN_TESTS_COVERAGE = XDEBUG_MODE=coverage $(COVERAGE_CMD)
-    RUN_MEMORY_TESTS_COVERAGE = XDEBUG_MODE=coverage $(MEMORY_COVERAGE_CMD)
 else
     RUN_PHP_CS_FIXER = $(call DOCKER_EXEC_WITH_ENV,$(FIXER_ENV),$(PHP_CS_FIXER_CMD))
     RUN_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(COVERAGE_CMD))
-    RUN_MEMORY_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(MEMORY_COVERAGE_CMD))
 endif
+RUN_MEMORY_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(MEMORY_COVERAGE_CMD))
 
 
 #Input
@@ -234,6 +239,8 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Ensuring JWT keypair exists for test environment..."
+	$(SYMFONY_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
@@ -250,6 +257,8 @@ setup-load-test-db: ## Create database for load testing purposes
 	@echo "Recreating MongoDB schema for load testing..."
 	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@echo "Ensuring JWT keypair exists for load-test environment..."
+	$(SYMFONY_LOAD_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_LOAD_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Load-test database ready"
@@ -282,6 +291,12 @@ load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-load-tests.sh
+
+memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load tests and fail on leak signals
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$(MEMORY_SOAK_SCENARIOS)" tests/Load/run-worker-memory-soak.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
