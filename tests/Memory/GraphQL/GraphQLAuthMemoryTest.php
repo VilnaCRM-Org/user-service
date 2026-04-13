@@ -12,9 +12,6 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 #[Group('memory-graphql')]
 final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
 {
-    /**
-     * @var list<string>
-     */
     private const AUTH_MUTATION_TARGETS = [
         'graphQLCompleteTwoFactor',
         'graphQLConfirmPasswordReset',
@@ -29,6 +26,9 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
         'graphQLSignoutAll',
     ];
 
+    /**
+     * @return iterable<string, array{0: string}>
+     */
     public static function authMutationTargets(): iterable
     {
         foreach (self::AUTH_MUTATION_TARGETS as $coverageTarget) {
@@ -262,40 +262,20 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
         $fixture = $this->createUserFixture(
             email: $this->uniqueEmail('memory-graphql-complete-2fa', $iteration),
         );
-        $firstSignIn = $this->signInGraphQl(
-            $client,
-            $fixture['user']->getEmail(),
-            $fixture['password'],
+        $accessToken = $this->requireAccessToken(
+            $this->signInGraphQl($client, $fixture['user']->getEmail(), $fixture['password']),
         );
-        $accessToken = $firstSignIn['accessToken'] ?? null;
-
-        $this->assertIsString($accessToken);
-        $this->assertNotSame('', $accessToken);
-
         $enabled = $this->enableTwoFactorGraphQl($client, $accessToken);
-        $secondSignIn = $this->signInGraphQl(
-            $client,
-            $fixture['user']->getEmail(),
-            $fixture['password'],
+        $pendingSessionId = $this->requirePendingSessionId(
+            $this->signInGraphQl($client, $fixture['user']->getEmail(), $fixture['password']),
         );
-        $pendingSessionId = $secondSignIn['pendingSessionId'] ?? null;
-
-        $this->assertSame(true, $secondSignIn['twoFactorEnabled'] ?? null);
-        $this->assertIsString($pendingSessionId);
-        $this->assertNotSame('', $pendingSessionId);
-
         $payload = $this->completeTwoFactorGraphQl(
             $client,
             $pendingSessionId,
             $enabled['recoveryCodes'][0],
         );
 
-        $this->assertSame(true, $payload['success'] ?? null);
-        $this->assertSame(true, $payload['twoFactorEnabled'] ?? null);
-        $this->assertIsString($payload['accessToken'] ?? null);
-        $this->assertNotSame('', $payload['accessToken'] ?? null);
-        $this->assertIsString($payload['refreshToken'] ?? null);
-        $this->assertNotSame('', $payload['refreshToken'] ?? null);
+        $this->assertSuccessfulTwoFactorCompletion($payload);
     }
 
     private function exerciseRequestPasswordReset(
@@ -314,8 +294,7 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
             'requestPasswordResetUser',
         );
 
-        $this->assertArrayHasKey('user', $data);
-        $this->assertNull($data['user']);
+        $this->assertNullUserData($data);
     }
 
     private function exerciseConfirmPasswordReset(
@@ -335,8 +314,7 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
             'confirmPasswordResetUser',
         );
 
-        $this->assertArrayHasKey('user', $data);
-        $this->assertNull($data['user']);
+        $this->assertNullUserData($data);
 
         $signIn = $this->signInGraphQl(
             $client,
@@ -345,5 +323,54 @@ final class GraphQLAuthMemoryTest extends GraphQLMemoryWebTestCase
         );
 
         $this->assertSame(true, $signIn['success'] ?? null);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $data
+     */
+    private function assertNullUserData(array $data): void
+    {
+        $this->assertArrayHasKey('user', $data);
+        $this->assertNull($data['user']);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function requireAccessToken(array $payload): string
+    {
+        $accessToken = $payload['accessToken'] ?? null;
+
+        $this->assertIsString($accessToken);
+        $this->assertNotSame('', $accessToken);
+
+        return $accessToken;
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function requirePendingSessionId(array $payload): string
+    {
+        $pendingSessionId = $payload['pendingSessionId'] ?? null;
+
+        $this->assertSame(true, $payload['twoFactorEnabled'] ?? null);
+        $this->assertIsString($pendingSessionId);
+        $this->assertNotSame('', $pendingSessionId);
+
+        return $pendingSessionId;
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function assertSuccessfulTwoFactorCompletion(array $payload): void
+    {
+        $this->assertSame(true, $payload['success'] ?? null);
+        $this->assertSame(true, $payload['twoFactorEnabled'] ?? null);
+        $this->assertIsString($payload['accessToken'] ?? null);
+        $this->assertNotSame('', $payload['accessToken'] ?? null);
+        $this->assertIsString($payload['refreshToken'] ?? null);
+        $this->assertNotSame('', $payload['refreshToken'] ?? null);
     }
 }

@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Memory\Support;
 
-use function in_array;
-
 use PHPUnit\Framework\Assert;
 use ShipMonk\MemoryScanner\ObjectDeallocationChecker;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\Container;
 
-/**
- * @phpstan-require-extends KernelTestCase
- * @mixin KernelTestCase
- */
-trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
+abstract class MemoryWebTestCase extends WebTestCase
 {
     private ?ObjectDeallocationChecker $deallocationChecker = null;
 
@@ -33,7 +27,7 @@ trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
 
     protected function trackKernelServicesForDeallocation(): void
     {
-        if (static::$kernel === null || !$this->status()->isSuccess()) {
+        if (!$this->canTrackKernelServices()) {
             return;
         }
 
@@ -41,15 +35,18 @@ trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
         $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
 
         Assert::assertInstanceOf(Container::class, $container);
-        $this->getDeallocationChecker()->expectDeallocation($container, 'container');
+        $this->trackDeallocation($container, 'container');
 
         foreach ($container->getServiceIds() as $serviceId) {
-            if ($container->initialized($serviceId) && !in_array($serviceId, $ignoredServiceLeaks, true)) {
-                $service = $container->get($serviceId);
-                if (is_object($service)) {
-                    $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
-                }
+            if (!$container->initialized($serviceId)) {
+                continue;
             }
+
+            if (\in_array($serviceId, $ignoredServiceLeaks, true)) {
+                continue;
+            }
+
+            $this->trackInitializedService($container, $serviceId);
         }
     }
 
@@ -65,5 +62,25 @@ trait CompatibleObjectDeallocationCheckerKernelTestCaseTrait
         $leakCauses = $deallocationChecker->checkDeallocations();
 
         Assert::assertCount(0, $leakCauses, $deallocationChecker->explainLeaks($leakCauses));
+    }
+
+    private function canTrackKernelServices(): bool
+    {
+        return static::$kernel !== null && $this->status()->isSuccess();
+    }
+
+    private function trackInitializedService(Container $container, string $serviceId): void
+    {
+        $service = $container->get($serviceId);
+        if (!is_object($service)) {
+            return;
+        }
+
+        $this->trackDeallocation($service, sprintf('service %s', $serviceId));
+    }
+
+    private function trackDeallocation(object $object, string $label): void
+    {
+        $this->getDeallocationChecker()->expectDeallocation($object, $label);
     }
 }

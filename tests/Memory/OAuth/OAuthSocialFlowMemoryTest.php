@@ -6,6 +6,7 @@ namespace App\Tests\Memory\OAuth;
 
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider;
+use App\User\Domain\Entity\User;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -14,9 +15,6 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 #[Group('memory-oauth')]
 final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
 {
-    /**
-     * @var list<string>
-     */
     private const OAUTH_SOCIAL_TARGETS = [
         'oauthSocialCallbackAutoLinkExistingUser',
         'oauthSocialCallbackDirectSignIn',
@@ -29,9 +27,6 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         'oauthSocialInitiate',
     ];
 
-    /**
-     * @var list<string>
-     */
     private const FEATURE_SCENARIOS = [
         'Social OAuth direct sign-in succeeds',
         'Social OAuth starts a 2FA challenge for linked users',
@@ -39,6 +34,9 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         'Facebook social OAuth returns provider email unavailable',
     ];
 
+    /**
+     * @return iterable<string, array{0: string}>
+     */
     public static function socialTargets(): iterable
     {
         foreach (self::OAUTH_SOCIAL_TARGETS as $coverageTarget) {
@@ -68,17 +66,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
     ): void {
         $this->runRepeatedOAuthScenario(
             $coverageTarget,
-            match ($coverageTarget) {
-                'oauthSocialInitiate' => $this->exerciseInitiate(...),
-                'oauthSocialCallbackDirectSignIn' => $this->exerciseDirectSignIn(...),
-                'oauthSocialCallbackTwoFactor' => $this->exerciseTwoFactor(...),
-                'oauthSocialCallbackReplay' => $this->exerciseReplay(...),
-                'oauthSocialCallbackProviderEmailUnavailable' => $this->exerciseProviderEmailUnavailable(...),
-                'oauthSocialCallbackReturningLinkedUser' => $this->exerciseReturningLinkedUser(...),
-                'oauthSocialCallbackAutoLinkExistingUser' => $this->exerciseAutoLinkExistingUser(...),
-                'oauthSocialCallbackProviderMismatch' => $this->exerciseProviderMismatch(...),
-                'oauthSocialCallbackUnverifiedProviderEmail' => $this->exerciseUnverifiedProviderEmail(...),
-            },
+            $this->scenarioHandler($coverageTarget),
         );
     }
 
@@ -186,18 +174,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
     {
         $provider = 'google';
         $code = $this->uniqueCode('memory-linked', $iteration);
-        $firstFlow = $this->initiateSocialFlow($client, $provider);
-
-        $this->completeSocialFlow(
-            $client,
-            $provider,
-            $code,
-            $firstFlow['state'],
-            $firstFlow['cookie'],
-        );
-        $user = $this->requireUserByEmail(
-            DeterministicOAuthProvider::emailFor($provider, $code),
-        );
+        $user = $this->signInLinkedSocialUser($client, $provider, $code);
 
         $this->recordingOAuthPublisher->reset();
         $secondFlow = $this->initiateSocialFlow($client, $provider);
@@ -212,12 +189,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $this->assertSame(200, $result['status']);
         $this->assertSame([], $this->recordingOAuthPublisher->createdEvents());
         $this->assertCount(1, $this->recordingOAuthPublisher->signedInEvents());
-        $this->assertSame(
-            $user->getId(),
-            $this->requireUserByEmail(
-                DeterministicOAuthProvider::emailFor($provider, $code),
-            )->getId(),
-        );
+        $this->assertSame($user->getId(), $this->requireSocialUser($provider, $code)->getId());
     }
 
     private function exerciseAutoLinkExistingUser(
@@ -228,14 +200,7 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
         $code = $this->uniqueCode('memory-auto-link', $iteration);
         $email = DeterministicOAuthProvider::emailFor($provider, $code);
         $existingUser = $this->createLocalUser($email, false, false);
-        $flow = $this->initiateSocialFlow($client, $provider);
-        $result = $this->completeSocialFlow(
-            $client,
-            $provider,
-            $code,
-            $flow['state'],
-            $flow['cookie'],
-        );
+        $result = $this->completeInitiatedFlow($client, $provider, $code);
 
         $this->assertSame(200, $result['status']);
         $this->assertSame(
@@ -285,5 +250,56 @@ final class OAuthSocialFlowMemoryTest extends OAuthSocialMemoryWebTestCase
             'unverified_provider_email',
             $result['body']['error_code'] ?? null,
         );
+    }
+
+    /**
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>, responseCookie: \Symfony\Component\HttpFoundation\Cookie|null}
+     */
+    private function completeInitiatedFlow(
+        KernelBrowser $client,
+        string $provider,
+        string $code,
+    ): array {
+        $flow = $this->initiateSocialFlow($client, $provider);
+
+        return $this->completeSocialFlow(
+            $client,
+            $provider,
+            $code,
+            $flow['state'],
+            $flow['cookie'],
+        );
+    }
+
+    private function signInLinkedSocialUser(
+        KernelBrowser $client,
+        string $provider,
+        string $code,
+    ): User {
+        $this->completeInitiatedFlow($client, $provider, $code);
+
+        return $this->requireSocialUser($provider, $code);
+    }
+
+    private function requireSocialUser(string $provider, string $code): User
+    {
+        return $this->requireUserByEmail(DeterministicOAuthProvider::emailFor($provider, $code));
+    }
+
+    private function scenarioHandler(string $coverageTarget): callable
+    {
+        $method = match ($coverageTarget) {
+            'oauthSocialInitiate' => 'exerciseInitiate',
+            'oauthSocialCallbackDirectSignIn' => 'exerciseDirectSignIn',
+            'oauthSocialCallbackTwoFactor' => 'exerciseTwoFactor',
+            'oauthSocialCallbackReplay' => 'exerciseReplay',
+            'oauthSocialCallbackProviderEmailUnavailable' => 'exerciseProviderEmailUnavailable',
+            'oauthSocialCallbackReturningLinkedUser' => 'exerciseReturningLinkedUser',
+            'oauthSocialCallbackAutoLinkExistingUser' => 'exerciseAutoLinkExistingUser',
+            'oauthSocialCallbackProviderMismatch' => 'exerciseProviderMismatch',
+            'oauthSocialCallbackUnverifiedProviderEmail' => 'exerciseUnverifiedProviderEmail',
+        };
+
+        return $this->{$method}(...);
     }
 }

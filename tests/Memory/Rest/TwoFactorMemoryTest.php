@@ -11,7 +11,7 @@ final class TwoFactorMemoryTest extends RestMemoryWebTestCase
     public function testSetupTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('setupTwoFactor', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
 
@@ -31,7 +31,7 @@ final class TwoFactorMemoryTest extends RestMemoryWebTestCase
     public function testConfirmTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('confirmTwoFactor', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             $secret = $this->setupTwoFactor($signIn['access_token']);
@@ -42,10 +42,10 @@ final class TwoFactorMemoryTest extends RestMemoryWebTestCase
         });
     }
 
-    public function testRegenerateRecoveryCodesScenarioReusesSameKernelAcrossRepeatedRequests(): void
+    public function testRegenerateRecoveryCodesScenarioReusesKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('regenerateRecoveryCodes', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             $secret = $this->setupTwoFactor($signIn['access_token']);
@@ -67,7 +67,7 @@ final class TwoFactorMemoryTest extends RestMemoryWebTestCase
     public function testSigninTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('signinTwoFactor', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $primarySignIn = $this->signIn($user, $password);
             $secret = $this->setupTwoFactor($primarySignIn['access_token']);

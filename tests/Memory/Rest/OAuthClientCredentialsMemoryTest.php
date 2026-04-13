@@ -16,21 +16,13 @@ final class OAuthClientCredentialsMemoryTest extends RestMemoryWebTestCase
         $this->runRepeatedRestScenario('oauth', function (): void {
             $clientId = strtolower($this->faker->bothify('memory-client-????-####'));
             $clientSecret = $this->faker->sha1();
-
-            $oauthClient = new Client('Memory Client', $clientId, $clientSecret);
-            $oauthClient->setGrants(new Grant('client_credentials'));
-            $oauthClient->setActive(true);
-            $this->container->get(ClientManagerInterface::class)->save($oauthClient);
+            $this->registerClientCredentialsClient($clientId, $clientSecret);
 
             ['response' => $response, 'body' => $body] = $this->requestJson(
                 'POST',
                 '/api/oauth/token',
                 $this->createOauthClientPayload(),
-                [
-                    'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(
-                        sprintf('%s:%s', $clientId, $clientSecret),
-                    ),
-                ],
+                $this->createBasicAuthorizationHeader($clientId, $clientSecret),
             );
 
             self::assertSame(Response::HTTP_OK, $response->getStatusCode());
@@ -38,5 +30,25 @@ final class OAuthClientCredentialsMemoryTest extends RestMemoryWebTestCase
             self::assertNotSame('', $body['access_token'] ?? null);
             self::assertSame('Bearer', $body['token_type'] ?? null);
         }, 5);
+    }
+
+    /**
+     * @return array{HTTP_AUTHORIZATION: string}
+     */
+    private function createBasicAuthorizationHeader(string $clientId, string $clientSecret): array
+    {
+        return [
+            'HTTP_AUTHORIZATION' => 'Basic ' . base64_encode(
+                sprintf('%s:%s', $clientId, $clientSecret),
+            ),
+        ];
+    }
+
+    private function registerClientCredentialsClient(string $clientId, string $clientSecret): void
+    {
+        $oauthClient = new Client('Memory Client', $clientId, $clientSecret);
+        $oauthClient->setGrants(new Grant('client_credentials'));
+        $oauthClient->setActive(true);
+        $this->container->get(ClientManagerInterface::class)->save($oauthClient);
     }
 }

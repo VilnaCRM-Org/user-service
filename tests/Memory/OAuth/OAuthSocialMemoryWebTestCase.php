@@ -6,7 +6,7 @@ namespace App\Tests\Memory\OAuth;
 
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Memory\Support\CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
+use App\Tests\Memory\Support\MemoryWebTestCase;
 use App\Tests\Memory\Support\TrackedBrowserObjects;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
@@ -16,15 +16,13 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use Faker\Factory;
 use Faker\Generator;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
-abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
+abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
 {
-    use CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
-
     protected const FLOW_COOKIE_NAME = 'oauth_flow_binding';
 
     protected Generator $faker;
@@ -46,15 +44,6 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         parent::setUp();
 
         $this->faker = Factory::create();
-    }
-
-    /**
-     * @return list<string>
-     */
-    #[\Override]
-    protected function getIgnoredServiceLeaks(): array
-    {
-        return ['test.client'];
     }
 
     #[\Override]
@@ -82,29 +71,19 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         $this->assertTrackedObjectsAreDeallocated();
     }
 
+    /**
+     * @return list<string>
+     */
+    #[\Override]
+    protected function getIgnoredServiceLeaks(): array
+    {
+        return ['test.client'];
+    }
+
     protected function createSameKernelClient(): KernelBrowser
     {
-        self::ensureKernelShutdown();
-
-        $this->client = static::createClient();
-        $this->client->disableReboot();
-
-        $this->container = static::getContainer();
-        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
-        $this->userFactory = $this->container->get(UserFactoryInterface::class);
-        $this->passwordHasherFactory = $this->container->get(
-            PasswordHasherFactoryInterface::class,
-        );
-        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
-        $this->socialIdentityRepository = $this->container->get(
-            SocialIdentityRepositoryInterface::class,
-        );
-        $this->pendingTwoFactorRepository = $this->container->get(
-            PendingTwoFactorRepositoryInterface::class,
-        );
-        $this->recordingOAuthPublisher = $this->container->get(
-            RecordingOAuthPublisher::class,
-        );
+        $this->bootSameKernelClient();
+        $this->initializeOAuthServices();
         $this->recordingOAuthPublisher->reset();
 
         return $this->client;
@@ -138,7 +117,7 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array{status: int, body: array<string, mixed>, responseCookie: Cookie|null}
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>, responseCookie: Cookie|null}
      */
     protected function completeSocialFlow(
         KernelBrowser $client,
@@ -147,20 +126,10 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         string $state,
         string $flowCookie,
     ): array {
-        $client->setServerParameter(
-            'HTTP_COOKIE',
-            sprintf('%s=%s', self::FLOW_COOKIE_NAME, $flowCookie),
-        );
+        $client->setServerParameter('HTTP_COOKIE', $this->buildFlowCookieHeader($flowCookie));
         $client->request(
             'GET',
-            sprintf(
-                '/api/auth/social/%s/callback?%s',
-                $provider,
-                http_build_query([
-                    'code' => $code,
-                    'state' => $state,
-                ]),
-            ),
+            $this->socialCallbackUri($provider, $code, $state),
             [],
             [],
             $this->jsonServerParameters('MemoryOAuthSocialCallback'),
@@ -168,16 +137,16 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         $client->setServerParameter('HTTP_COOKIE', '');
 
         $response = $client->getResponse();
-        $content = $response->getContent();
-        $decoded = json_decode(is_string($content) ? $content : '', true);
+        $decoded = $this->decodeOAuthJson($response->getContent());
         $this->trackBrowserObjects($client, 'oauth social callback');
-
-        $this->assertIsArray($decoded, is_string($content) ? $content : null);
 
         return [
             'status' => $response->getStatusCode(),
             'body' => $decoded,
-            'responseCookie' => $this->findCookie($response->headers->getCookies(), '__Host-auth_token'),
+            'responseCookie' => $this->findCookie(
+                $response->headers->getCookies(),
+                '__Host-auth_token',
+            ),
         ];
     }
 
@@ -188,39 +157,9 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         KernelBrowser $client,
         string $provider,
     ): array {
-        $client->request(
-            'GET',
-            sprintf('/api/auth/social/%s', $provider),
-            [],
-            [],
-            $this->jsonServerParameters('MemoryOAuthSocialInitiate'),
+        return $this->extractInitiatedFlow(
+            $this->requestInitiateSocialFlow($client, $provider),
         );
-
-        $response = $client->getResponse();
-        $this->trackBrowserObjects($client, 'oauth social initiate');
-        $this->assertSame(302, $response->getStatusCode());
-        $location = $response->headers->get('Location');
-
-        $this->assertIsString($location);
-        parse_str((string) parse_url($location, \PHP_URL_QUERY), $query);
-
-        $state = $query['state'] ?? null;
-        $this->assertIsString($state);
-        $this->assertNotSame('', $state);
-
-        $cookie = $this->findCookie(
-            $response->headers->getCookies(),
-            self::FLOW_COOKIE_NAME,
-        );
-        $this->assertInstanceOf(Cookie::class, $cookie);
-        $flowCookie = $cookie->getValue();
-        $this->assertIsString($flowCookie);
-        $this->assertNotSame('', $flowCookie);
-
-        return [
-            'state' => $state,
-            'cookie' => $flowCookie,
-        ];
     }
 
     protected function createLocalUser(
@@ -257,9 +196,11 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
      */
     protected function oauthSocialRestLoadTargets(): array
     {
+        $files = glob(dirname(__DIR__, 2) . '/Load/scripts/rest-api/oauthSocial*.js');
+        $paths = is_array($files) ? $files : [];
         $targets = array_map(
             static fn (string $path): string => pathinfo($path, PATHINFO_FILENAME),
-            glob(dirname(__DIR__, 2) . '/Load/scripts/rest-api/oauthSocial*.js') ?: [],
+            $paths,
         );
         sort($targets);
 
@@ -280,7 +221,10 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         );
         preg_match_all('/^\\s*Scenario:\\s*(.+)$/m', $contents, $matches);
 
-        return array_values($matches[1] ?? []);
+        return array_values(array_filter(
+            array_map('trim', $matches[1] ?? []),
+            static fn (string $scenario): bool => $scenario !== '',
+        ));
     }
 
     protected function requireUserByEmail(string $email): User
@@ -289,6 +233,16 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
         $this->assertInstanceOf(User::class, $user);
 
         return $user;
+    }
+
+    protected function uniqueCode(string $prefix, int $iteration): string
+    {
+        return sprintf(
+            '%s-%d-%s',
+            $prefix,
+            $iteration,
+            strtolower($this->faker->lexify('????')),
+        );
     }
 
     /**
@@ -316,16 +270,6 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
             'HTTP_USER_AGENT' => $userAgent,
             'REMOTE_ADDR' => $this->faker->ipv4(),
         ];
-    }
-
-    protected function uniqueCode(string $prefix, int $iteration): string
-    {
-        return sprintf(
-            '%s-%d-%s',
-            $prefix,
-            $iteration,
-            strtolower($this->faker->lexify('????')),
-        );
     }
 
     private function trackBrowserObjects(KernelBrowser $client, string $labelPrefix): void
@@ -376,5 +320,118 @@ abstract class OAuthSocialMemoryWebTestCase extends WebTestCase
     {
         $client->getHistory()->clear();
         $client->getCookieJar()->clear();
+    }
+
+    private function bootSameKernelClient(): void
+    {
+        self::ensureKernelShutdown();
+
+        $this->client = static::createClient();
+        $this->client->disableReboot();
+        $this->container = static::getContainer();
+    }
+
+    private function initializeOAuthServices(): void
+    {
+        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
+        $this->userFactory = $this->container->get(UserFactoryInterface::class);
+        $this->passwordHasherFactory = $this->container->get(
+            PasswordHasherFactoryInterface::class,
+        );
+        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
+        $this->socialIdentityRepository = $this->container->get(
+            SocialIdentityRepositoryInterface::class,
+        );
+        $this->pendingTwoFactorRepository = $this->container->get(
+            PendingTwoFactorRepositoryInterface::class,
+        );
+        $this->recordingOAuthPublisher = $this->container->get(RecordingOAuthPublisher::class);
+    }
+
+    private function buildFlowCookieHeader(string $flowCookie): string
+    {
+        return sprintf('%s=%s', self::FLOW_COOKIE_NAME, $flowCookie);
+    }
+
+    private function socialCallbackUri(string $provider, string $code, string $state): string
+    {
+        return sprintf(
+            '/api/auth/social/%s/callback?%s',
+            $provider,
+            http_build_query([
+                'code' => $code,
+                'state' => $state,
+            ]),
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function decodeOAuthJson(string|false $content): array
+    {
+        $decoded = json_decode(is_string($content) ? $content : '', true);
+
+        $this->assertIsArray($decoded, is_string($content) ? $content : null);
+
+        return $decoded;
+    }
+
+    private function extractFlowState(?string $location): string
+    {
+        $this->assertIsString($location);
+        parse_str((string) parse_url($location, \PHP_URL_QUERY), $query);
+        $state = $query['state'] ?? null;
+
+        $this->assertIsString($state);
+        $this->assertNotSame('', $state);
+
+        return $state;
+    }
+
+    private function requireCookieValue(Cookie $cookie): string
+    {
+        $flowCookie = $cookie->getValue();
+
+        $this->assertIsString($flowCookie);
+        $this->assertNotSame('', $flowCookie);
+
+        return $flowCookie;
+    }
+
+    private function requestInitiateSocialFlow(KernelBrowser $client, string $provider): Response
+    {
+        $client->request(
+            'GET',
+            sprintf('/api/auth/social/%s', $provider),
+            [],
+            [],
+            $this->jsonServerParameters('MemoryOAuthSocialInitiate'),
+        );
+
+        $response = $client->getResponse();
+        $this->trackBrowserObjects($client, 'oauth social initiate');
+        $this->assertSame(302, $response->getStatusCode());
+
+        return $response;
+    }
+
+    /**
+     * @return array{state: string, cookie: string}
+     */
+    private function extractInitiatedFlow(Response $response): array
+    {
+        $state = $this->extractFlowState($response->headers->get('Location'));
+        $cookie = $this->findCookie(
+            $response->headers->getCookies(),
+            self::FLOW_COOKIE_NAME,
+        );
+
+        $this->assertInstanceOf(Cookie::class, $cookie);
+
+        return [
+            'state' => $state,
+            'cookie' => $this->requireCookieValue($cookie),
+        ];
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Memory\Rest;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Memory\Support\CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
+use App\Tests\Memory\Support\MemoryWebTestCase;
 use App\Tests\Memory\Support\TrackedBrowserObjects;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Entity\AuthSession;
@@ -26,7 +26,6 @@ use OTPHP\TOTP;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,10 +37,8 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 /**
  * @SuppressWarnings(PHPMD.TooManyMethods)
  */
-abstract class RestMemoryWebTestCase extends WebTestCase
+abstract class RestMemoryWebTestCase extends MemoryWebTestCase
 {
-    use CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
-
     protected const DEFAULT_ITERATIONS = 3;
 
     protected Generator $faker;
@@ -67,15 +64,6 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         }
     }
 
-    /**
-     * @return list<string>
-     */
-    #[\Override]
-    protected function getIgnoredServiceLeaks(): array
-    {
-        return ['test.client'];
-    }
-
     #[\Override]
     protected function tearDown(): void
     {
@@ -86,6 +74,15 @@ abstract class RestMemoryWebTestCase extends WebTestCase
 
         parent::tearDown();
         $this->assertTrackedObjectsAreDeallocated();
+    }
+
+    /**
+     * @return list<string>
+     */
+    #[\Override]
+    protected function getIgnoredServiceLeaks(): array
+    {
+        return ['test.client'];
     }
 
     protected function runRepeatedRestScenario(
@@ -104,24 +101,12 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         $scenario();
     }
 
-    private function repeatSameKernelScenario(
-        callable $scenario,
-        int $iterations = self::DEFAULT_ITERATIONS
-    ): void {
-        for ($iteration = 0; $iteration < $iterations; ++$iteration) {
-            $scenario($iteration);
-            $this->assertSameKernel();
-            $this->flushPendingBrowserObjects();
-            $this->resetBrowserState();
-        }
-    }
-
     /**
-     * @param array<string, mixed> $payload
+     * @param array<string, array|bool|float|int|string|null> $payload
      * @param array<string, string> $headers
      * @param array<string, string> $cookies
      *
-     * @return array<string, mixed>
+     * @return array{response: Response, body: array<string, array|bool|float|int|string|null>}
      */
     protected function requestJson(
         string $method,
@@ -135,17 +120,8 @@ abstract class RestMemoryWebTestCase extends WebTestCase
             $this->client->getCookieJar()->set(new Cookie($name, $value));
         }
 
-        $server = array_merge([
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => $contentType,
-            'REMOTE_ADDR' => $this->faker->ipv4(),
-            'HTTP_USER_AGENT' => 'RestMemoryWebTestCase',
-        ], $headers);
-
-        $content = null;
-        if (!in_array($method, ['GET', 'DELETE'], true)) {
-            $content = $payload === [] ? '{}' : json_encode($payload, JSON_THROW_ON_ERROR);
-        }
+        $server = array_merge($this->defaultJsonServer($contentType), $headers);
+        $content = $this->encodeRequestContent($method, $payload, $contentType);
 
         $this->client->request($method, $uri, [], [], $server, $content);
         $response = $this->client->getResponse();
@@ -160,7 +136,7 @@ abstract class RestMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function decodeJson(Response $response): array
     {
@@ -197,6 +173,9 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         return $user;
     }
 
+    /**
+     * @return array{HTTP_AUTHORIZATION: string}
+     */
     protected function createServiceAuthorizationHeader(): array
     {
         return $this->createAuthorizationHeader(
@@ -380,6 +359,39 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         self::assertSame($this->sharedKernelId, spl_object_id($this->client->getKernel()));
     }
 
+    protected function generatePassword(): string
+    {
+        return str_shuffle(sprintf(
+            '%s%s%s%s%s',
+            strtoupper($this->faker->lexify('?')),
+            strtolower($this->faker->lexify('?')),
+            (string) $this->faker->numberBetween(1, 9),
+            $this->faker->randomElement(['!', '@', '#', '$', '%']),
+            strtolower($this->faker->regexify('[A-Za-z0-9]{8}'))
+        ));
+    }
+
+    protected function userRepository(): UserRepositoryInterface
+    {
+        return $this->container->get(UserRepositoryInterface::class);
+    }
+
+    private function repeatSameKernelScenario(
+        callable $scenario,
+        int $iterations = self::DEFAULT_ITERATIONS
+    ): void {
+        if ($iterations <= 0) {
+            throw new \InvalidArgumentException('Iterations must be greater than zero.');
+        }
+
+        for ($iteration = 0; $iteration < $iterations; ++$iteration) {
+            $scenario($iteration);
+            $this->assertSameKernel();
+            $this->flushPendingBrowserObjects();
+            $this->resetBrowserState();
+        }
+    }
+
     private function createUser(string $email, string $password): User
     {
         $user = $this->userFactory()->create(
@@ -426,14 +438,6 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         return [
             'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $token),
         ];
-    }
-
-    private function generatePassword(): string
-    {
-        return sprintf(
-            'Aa1!%s',
-            strtolower($this->faker->regexify('[A-Za-z0-9]{12}'))
-        );
     }
 
     private function resetBrowserState(): void
@@ -523,13 +527,69 @@ abstract class RestMemoryWebTestCase extends WebTestCase
         return $this->container->get(UserFactoryInterface::class);
     }
 
-    protected function userRepository(): UserRepositoryInterface
-    {
-        return $this->container->get(UserRepositoryInterface::class);
-    }
-
     private function uuidTransformer(): UuidTransformer
     {
         return $this->container->get(UuidTransformer::class);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function defaultJsonServer(string $contentType): array
+    {
+        return [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => $contentType,
+            'REMOTE_ADDR' => $this->faker->ipv4(),
+            'HTTP_USER_AGENT' => 'RestMemoryWebTestCase',
+        ];
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function encodeRequestContent(
+        string $method,
+        array $payload,
+        string $contentType,
+    ): ?string {
+        if ($this->requestDoesNotSendBody($method)) {
+            return null;
+        }
+
+        return match ($contentType) {
+            'application/x-www-form-urlencoded' => $this->encodeFormPayload($payload),
+            'application/json' => $this->encodeJsonPayload($payload),
+            default => $this->encodeFallbackPayload($payload),
+        };
+    }
+
+    private function requestDoesNotSendBody(string $method): bool
+    {
+        return in_array($method, ['GET', 'DELETE'], true);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function encodeFormPayload(array $payload): string
+    {
+        return $payload === [] ? '' : http_build_query($payload);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function encodeJsonPayload(array $payload): string
+    {
+        return $payload === [] ? '{}' : json_encode($payload, JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function encodeFallbackPayload(array $payload): ?string
+    {
+        return $payload === [] ? null : json_encode($payload, JSON_THROW_ON_ERROR);
     }
 }

@@ -6,9 +6,6 @@ namespace App\Tests\Memory\Rest;
 
 final class RestMemoryScenarioInventory
 {
-    /**
-     * @var array<string, array{class: class-string, method: non-empty-string}>
-     */
     public const COVERED_LOAD_SCENARIOS = [
         'cachePerformance' => [
             'class' => PublicReadMemoryTest::class,
@@ -60,7 +57,7 @@ final class RestMemoryScenarioInventory
         ],
         'regenerateRecoveryCodes' => [
             'class' => TwoFactorMemoryTest::class,
-            'method' => 'testRegenerateRecoveryCodesScenarioReusesSameKernelAcrossRepeatedRequests',
+            'method' => 'testRegenerateRecoveryCodesScenarioReusesKernelAcrossRepeatedRequests',
         ],
         'replaceUser' => [
             'class' => UserLifecycleMemoryTest::class,
@@ -104,9 +101,6 @@ final class RestMemoryScenarioInventory
         ],
     ];
 
-    /**
-     * @var list<string>
-     */
     public const DEFERRED_LOAD_SCENARIOS = [
         'oauthSocialCallback',
         'oauthSocialInitiate',

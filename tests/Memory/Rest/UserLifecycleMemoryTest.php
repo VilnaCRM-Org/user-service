@@ -17,7 +17,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 [
                     'email' => strtolower($this->faker->unique()->safeEmail()),
                     'initials' => strtoupper($this->faker->lexify('??')),
-                    'password' => 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}')),
+                    'password' => $this->generatePassword(),
                 ]
             );
 
@@ -66,7 +66,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
 
     public function testGetUsersScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
-        $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+        $password = $this->generatePassword();
         $user = $this->createConfirmedUser($password);
         $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -85,7 +85,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
     public function testUpdateUserScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('updateUser', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -111,7 +111,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
     public function testReplaceUserScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('replaceUser', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -135,7 +135,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
     public function testDeleteUserScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('deleteUser', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -153,7 +153,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
     public function testResendEmailToUserScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('resendEmailToUser', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createUnconfirmedUser($password);
             $headers = $this->createUserAuthorizationHeader($user->getId());
 
@@ -164,7 +164,10 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 $headers
             );
 
-            self::assertContains($response->getStatusCode(), [Response::HTTP_OK, Response::HTTP_TOO_MANY_REQUESTS]);
+            self::assertContains(
+                $response->getStatusCode(),
+                [Response::HTTP_OK, Response::HTTP_TOO_MANY_REQUESTS]
+            );
         });
     }
 }

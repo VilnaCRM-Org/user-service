@@ -12,7 +12,7 @@ use App\Tests\Behat\UserGraphQLContext\Input\DeleteUserGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
-use App\Tests\Memory\Support\CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
+use App\Tests\Memory\Support\MemoryWebTestCase;
 use App\Tests\Memory\Support\TrackedBrowserObjects;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Entity\AuthSession;
@@ -36,12 +36,7 @@ use GraphQL\Type\Definition\Type as GraphQlType;
 use GraphQL\Type\Introspection;
 use GraphQL\Validator\DocumentValidator;
 use OTPHP\TOTP;
-
-use function Safe\json_encode;
-
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
@@ -49,12 +44,29 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 /**
  * @SuppressWarnings(PHPMD.TooManyMethods)
  */
-abstract class GraphQLMemoryWebTestCase extends WebTestCase
+abstract class GraphQLMemoryWebTestCase extends MemoryWebTestCase
 {
-    use CompatibleObjectDeallocationCheckerKernelTestCaseTrait;
-
     private const GRAPHQL_ENDPOINT_URI = '/api/graphql';
     private const GRAPHQL_ID_PREFIX = '/api/users/';
+    private const UPDATE_USER_MUTATION_TEMPLATE = <<<'GRAPHQL'
+mutation {
+  updateUser(
+    input: {
+      id: "%s"
+      email: "%s"
+      initials: "%s"
+      password: "%s"
+      newPassword: "%s"
+    }
+  ) {
+    user {
+      id
+      email
+      initials
+    }
+  }
+}
+GRAPHQL;
 
     protected Generator $faker;
     protected KernelBrowser $client;
@@ -79,6 +91,21 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         parent::setUp();
 
         $this->faker = Factory::create();
+    }
+
+    #[\Override]
+    protected function tearDown(): void
+    {
+        $this->flushPendingBrowserObjects();
+        $this->trackKernelServicesForDeallocation();
+        if (isset($this->client)) {
+            $this->resetBrowserState($this->client);
+        }
+        $this->unsetGraphQlDependencies();
+
+        parent::tearDown();
+        $this->clearGraphQlStaticState();
+        $this->assertTrackedObjectsAreDeallocated();
     }
 
     /**
@@ -106,92 +133,10 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         ];
     }
 
-    protected function trackKernelServicesForDeallocation(): void
-    {
-        if (static::$kernel === null || !$this->status()->isSuccess()) {
-            return;
-        }
-
-        $container = static::$kernel->getContainer();
-        $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
-
-        $this->assertInstanceOf(Container::class, $container);
-        foreach ($container->getServiceIds() as $serviceId) {
-            if (
-                $container->initialized($serviceId)
-                && !\in_array($serviceId, $ignoredServiceLeaks, true)
-            ) {
-                $service = $container->get($serviceId);
-                if (is_object($service)) {
-                    $this->getDeallocationChecker()->expectDeallocation($service, "service {$serviceId}");
-                }
-            }
-        }
-    }
-
-    #[\Override]
-    protected function tearDown(): void
-    {
-        $this->flushPendingBrowserObjects();
-        $this->trackKernelServicesForDeallocation();
-        if (isset($this->client)) {
-            $this->resetBrowserState($this->client);
-        }
-        unset(
-            $this->authSessionRepository,
-            $this->client,
-            $this->confirmationTokenFactory,
-            $this->confirmationTokenRepository,
-            $this->container,
-            $this->passwordHasherFactory,
-            $this->passwordResetTokenFactory,
-            $this->passwordResetTokenRepository,
-            $this->pendingBrowserObjects,
-            $this->testAccessTokenFactory,
-            $this->ulidFactory,
-            $this->userFactory,
-            $this->userRepository,
-            $this->uuidTransformer,
-        );
-
-        parent::tearDown();
-        $this->clearGraphQlStaticState();
-        $this->assertTrackedObjectsAreDeallocated();
-    }
-
     protected function createSameKernelClient(): KernelBrowser
     {
-        self::ensureKernelShutdown();
-
-        $this->client = static::createClient();
-        $this->client->disableReboot();
-
-        $this->container = static::getContainer();
-        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
-        $this->userFactory = $this->container->get(UserFactoryInterface::class);
-        $this->passwordHasherFactory = $this->container->get(
-            PasswordHasherFactoryInterface::class,
-        );
-        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
-        $this->authSessionRepository = $this->container->get(
-            AuthSessionRepositoryInterface::class,
-        );
-        $this->testAccessTokenFactory = $this->container->get(
-            TestAccessTokenFactory::class,
-        );
-        $this->ulidFactory = $this->container->get(UlidFactory::class);
-        $this->confirmationTokenFactory = $this->container->get(
-            ConfirmationTokenFactoryInterface::class,
-        );
-        $this->confirmationTokenRepository = $this->container->get(
-            TokenRepositoryInterface::class,
-        );
-        $this->passwordResetTokenFactory = $this->container->get(
-            PasswordResetTokenFactoryInterface::class,
-        );
-        $this->passwordResetTokenRepository = $this->container->get(
-            PasswordResetTokenRepositoryInterface::class,
-        );
+        $this->bootSameKernelClient();
+        $this->initializeGraphQlServices();
         $this->container->get('mailer.message_logger_listener')->reset();
 
         return $this->client;
@@ -225,39 +170,25 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array{status: int, body: array<string, mixed>}
+     * @return array{status: int, body: array<string, array|bool|float|int|string|null>}
      */
     protected function executeGraphQl(
         KernelBrowser $client,
         string $query,
         ?string $accessToken = null,
     ): array {
-        $server = [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT_LANGUAGE' => 'en',
-        ];
-
-        if ($accessToken !== null) {
-            $server['HTTP_AUTHORIZATION'] = sprintf('Bearer %s', $accessToken);
-        }
-
         $client->request(
             'POST',
             self::GRAPHQL_ENDPOINT_URI,
             [],
             [],
-            $server,
-            json_encode(['query' => $query]),
+            $this->createGraphQlServerParameters($accessToken),
+            \Safe\json_encode(['query' => $query]),
         );
 
         $response = $client->getResponse();
-        $content = $response->getContent();
-        $decoded = json_decode(is_string($content) ? $content : '', true);
+        $decoded = $this->decodeGraphQlResponse($response->getContent());
         $this->trackBrowserObjects($client, 'graphql request');
-
-        $this->assertIsArray($decoded, is_string($content) ? $content : null);
-        $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
 
         return [
             'status' => $response->getStatusCode(),
@@ -277,24 +208,11 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         ?string $password = null,
     ): array {
         $plainPassword = $password ?? $this->generatePassword();
-        $user = $this->userFactory->create(
+        $user = $this->createGraphQlUser(
             $email ?? strtolower($this->faker->unique()->safeEmail()),
-            strtoupper($this->faker->lexify('??')),
             $plainPassword,
-            $this->uuidTransformer->transformFromString($this->faker->uuid()),
         );
-
-        $user->setPassword(
-            $this->passwordHasherFactory
-                ->getPasswordHasher($user::class)
-                ->hash($plainPassword, null),
-        );
-        $user->setConfirmed($confirmed);
-        $user->setTwoFactorEnabled($twoFactorEnabled);
-        $user->setTwoFactorSecret(
-            $twoFactorEnabled ? $this->faker->regexify('[A-Z2-7]{16}') : null,
-        );
-        $this->userRepository->save($user);
+        $this->configureFixtureUser($user, $confirmed, $twoFactorEnabled);
 
         return [
             'user' => $user,
@@ -328,7 +246,7 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         string $initials,
     ): string {
         return sprintf(
-            'mutation { updateUser(input: { id: "%s", email: "%s", initials: "%s", password: "%s", newPassword: "%s" }) { user { id email initials } } }',
+            self::UPDATE_USER_MUTATION_TEMPLATE,
             $this->graphQlUserId($userId),
             $email,
             $initials,
@@ -407,173 +325,151 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function signInGraphQl(
         KernelBrowser $client,
         string $email,
         string $password,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                sprintf(
-                    'mutation { signInUser(input: { email: "%s", password: "%s" }) { user { success twoFactorEnabled accessToken refreshToken pendingSessionId } } }',
-                    $email,
-                    $password,
-                ),
-            ),
+        return $this->executeUserMutation(
+            $client,
             'signInUser',
+            sprintf('email: "%s", password: "%s"', $email, $password),
+            'success twoFactorEnabled accessToken refreshToken pendingSessionId',
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function refreshTokenGraphQl(
         KernelBrowser $client,
         string $refreshToken,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                sprintf(
-                    'mutation { refreshTokenUser(input: { refreshToken: "%s" }) { user { success accessToken refreshToken } } }',
-                    $refreshToken,
-                ),
-            ),
+        return $this->executeUserMutation(
+            $client,
             'refreshTokenUser',
+            sprintf('refreshToken: "%s"', $refreshToken),
+            'success accessToken refreshToken',
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function setupTwoFactorGraphQl(
         KernelBrowser $client,
         string $accessToken,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                'mutation { setupTwoFactorUser(input: {}) { user { success otpauthUri secret } } }',
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'setupTwoFactorUser',
+            '',
+            'success otpauthUri secret',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function confirmTwoFactorGraphQl(
         KernelBrowser $client,
         string $accessToken,
         string $code,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                sprintf(
-                    'mutation { confirmTwoFactorUser(input: { twoFactorCode: "%s" }) { user { success recoveryCodes } } }',
-                    $code,
-                ),
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'confirmTwoFactorUser',
+            sprintf('twoFactorCode: "%s"', $code),
+            'success recoveryCodes',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function disableTwoFactorGraphQl(
         KernelBrowser $client,
         string $accessToken,
         string $code,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                sprintf(
-                    'mutation { disableTwoFactorUser(input: { twoFactorCode: "%s" }) { user { success } } }',
-                    $code,
-                ),
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'disableTwoFactorUser',
+            sprintf('twoFactorCode: "%s"', $code),
+            'success',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function regenerateRecoveryCodesGraphQl(
         KernelBrowser $client,
         string $accessToken,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                'mutation { regenerateRecoveryCodesUser(input: {}) { user { success recoveryCodes } } }',
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'regenerateRecoveryCodesUser',
+            '',
+            'success recoveryCodes',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function signOutGraphQl(
         KernelBrowser $client,
         string $accessToken,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                'mutation { signOutUser(input: {}) { user { success } } }',
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'signOutUser',
+            '',
+            'success',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function signOutAllGraphQl(
         KernelBrowser $client,
         string $accessToken,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                'mutation { signOutAllUser(input: {}) { user { success } } }',
-                $accessToken,
-            ),
+        return $this->executeUserMutation(
+            $client,
             'signOutAllUser',
+            '',
+            'success',
+            $accessToken,
         );
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function completeTwoFactorGraphQl(
         KernelBrowser $client,
         string $pendingSessionId,
         string $code,
     ): array {
-        return $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                sprintf(
-                    'mutation { completeTwoFactorUser(input: { pendingSessionId: "%s", twoFactorCode: "%s" }) { user { success twoFactorEnabled accessToken refreshToken recoveryCodesRemaining warning } } }',
-                    $pendingSessionId,
-                    $code,
-                ),
-            ),
+        return $this->executeUserMutation(
+            $client,
             'completeTwoFactorUser',
+            sprintf(
+                'pendingSessionId: "%s", twoFactorCode: "%s"',
+                $pendingSessionId,
+                $code,
+            ),
+            'success twoFactorEnabled accessToken refreshToken recoveryCodesRemaining warning',
         );
     }
 
@@ -590,30 +486,15 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         $this->assertIsString($secret);
         $this->assertNotSame('', $secret);
 
-        $confirm = null;
-
-        foreach ($this->buildTwoFactorCodesWithinStepWindow($secret) as $code) {
-            $confirm = $this->confirmTwoFactorGraphQl($client, $accessToken, $code);
-            if (($confirm['success'] ?? false) === true) {
-                break;
-            }
-        }
-
-        $this->assertIsArray($confirm);
-        $this->assertSame(true, $confirm['success'] ?? null);
-        $recoveryCodes = $confirm['recoveryCodes'] ?? null;
-
-        $this->assertIsArray($recoveryCodes);
-        $this->assertNotSame([], $recoveryCodes);
+        $recoveryCodes = $this->successfulTwoFactorRecoveryCodes(
+            $client,
+            $accessToken,
+            $secret,
+        );
 
         return [
             'secret' => $secret,
-            'recoveryCodes' => array_values(
-                array_map(
-                    static fn (mixed $value): string => (string) $value,
-                    $recoveryCodes,
-                ),
-            ),
+            'recoveryCodes' => $recoveryCodes,
         ];
     }
 
@@ -640,9 +521,11 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
      */
     protected function graphQlLoadScriptTargets(): array
     {
+        $files = glob(dirname(__DIR__, 2) . '/Load/scripts/graphql/*.js');
+        $paths = is_array($files) ? $files : [];
         $targets = array_map(
             static fn (string $path): string => pathinfo($path, PATHINFO_FILENAME),
-            glob(dirname(__DIR__, 2) . '/Load/scripts/graphql/*.js') ?: [],
+            $paths,
         );
         sort($targets);
 
@@ -650,7 +533,9 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @param array{status: int, body: array<string, array|bool|float|int|string|null>} $result
+     *
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function extractGraphQlUserPayload(array $result, string $rootField): array
     {
@@ -672,7 +557,9 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     }
 
     /**
-     * @return array<string, mixed>
+     * @param array{status: int, body: array<string, array|bool|float|int|string|null>} $result
+     *
+     * @return array<string, array|bool|float|int|string|null>
      */
     protected function extractGraphQlData(array $result, string $rootField): array
     {
@@ -686,6 +573,24 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         $this->assertIsArray($body['data'][$rootField]);
 
         return $body['data'][$rootField];
+    }
+
+    protected function generatePassword(): string
+    {
+        return sprintf(
+            'Aa1!%s',
+            strtolower($this->faker->lexify('????????')),
+        );
+    }
+
+    protected function uniqueEmail(string $prefix, int $iteration): string
+    {
+        return sprintf(
+            '%s-%d-%s@example.test',
+            $prefix,
+            $iteration,
+            strtolower($this->faker->lexify('????')),
+        );
     }
 
     private function createActiveSession(string $userId): string
@@ -708,6 +613,9 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         return $sessionId;
     }
 
+    /**
+     * @param list<string> $responseFields
+     */
     private function buildUserMutation(
         string $rootField,
         GraphQLMutationInput $input,
@@ -739,24 +647,6 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
     private function graphQlUserId(string $userId): string
     {
         return self::GRAPHQL_ID_PREFIX . $userId;
-    }
-
-    protected function generatePassword(): string
-    {
-        return sprintf(
-            'Aa1!%s',
-            strtolower($this->faker->lexify('????????')),
-        );
-    }
-
-    protected function uniqueEmail(string $prefix, int $iteration): string
-    {
-        return sprintf(
-            '%s-%d-%s@example.test',
-            $prefix,
-            $iteration,
-            strtolower($this->faker->lexify('????')),
-        );
     }
 
     private function trackBrowserObjects(KernelBrowser $client, string $labelPrefix): void
@@ -832,9 +722,198 @@ abstract class GraphQLMemoryWebTestCase extends WebTestCase
         $this->resetStaticProperty(DocumentValidator::class, 'initRules', true);
     }
 
-    private function resetStaticProperty(string $className, string $propertyName, mixed $value): void
-    {
+    private function resetStaticProperty(
+        string $className,
+        string $propertyName,
+        array|bool|null $value,
+    ): void {
         $property = new \ReflectionProperty($className, $propertyName);
         $property->setValue(null, $value);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function createGraphQlServerParameters(?string $accessToken): array
+    {
+        $server = [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_ACCEPT_LANGUAGE' => 'en',
+        ];
+
+        if ($accessToken !== null) {
+            $server['HTTP_AUTHORIZATION'] = sprintf('Bearer %s', $accessToken);
+        }
+
+        return $server;
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function decodeGraphQlResponse(string|false $content): array
+    {
+        $body = is_string($content) ? $content : '';
+        $decoded = json_decode($body, true);
+
+        $this->assertIsArray($decoded, is_string($content) ? $content : null);
+        $this->assertArrayNotHasKey('errors', $decoded, is_string($content) ? $content : null);
+
+        return $decoded;
+    }
+
+    private function bootSameKernelClient(): void
+    {
+        self::ensureKernelShutdown();
+
+        $this->client = static::createClient();
+        $this->client->disableReboot();
+        $this->container = static::getContainer();
+    }
+
+    private function initializeGraphQlServices(): void
+    {
+        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
+        $this->userFactory = $this->container->get(UserFactoryInterface::class);
+        $this->passwordHasherFactory = $this->container->get(
+            PasswordHasherFactoryInterface::class,
+        );
+        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
+        $this->authSessionRepository = $this->container->get(
+            AuthSessionRepositoryInterface::class,
+        );
+        $this->testAccessTokenFactory = $this->container->get(TestAccessTokenFactory::class);
+        $this->ulidFactory = $this->container->get(UlidFactory::class);
+        $this->initializeGraphQlTokenServices();
+    }
+
+    private function unsetGraphQlDependencies(): void
+    {
+        unset(
+            $this->authSessionRepository,
+            $this->client,
+            $this->confirmationTokenFactory,
+            $this->confirmationTokenRepository,
+            $this->container,
+            $this->passwordHasherFactory,
+            $this->passwordResetTokenFactory,
+            $this->passwordResetTokenRepository,
+            $this->pendingBrowserObjects,
+            $this->testAccessTokenFactory,
+            $this->ulidFactory,
+            $this->userFactory,
+            $this->userRepository,
+            $this->uuidTransformer,
+        );
+    }
+
+    private function createGraphQlUser(string $email, string $plainPassword): User
+    {
+        $user = $this->userFactory->create(
+            $email,
+            strtoupper($this->faker->lexify('??')),
+            $plainPassword,
+            $this->uuidTransformer->transformFromString($this->faker->uuid()),
+        );
+
+        $user->setPassword(
+            $this->passwordHasherFactory
+                ->getPasswordHasher($user::class)
+                ->hash($plainPassword, null),
+        );
+
+        return $user;
+    }
+
+    private function configureFixtureUser(User $user, bool $confirmed, bool $twoFactorEnabled): void
+    {
+        $user->setConfirmed($confirmed);
+        $user->setTwoFactorEnabled($twoFactorEnabled);
+        $user->setTwoFactorSecret(
+            $twoFactorEnabled ? $this->faker->regexify('[A-Z2-7]{16}') : null,
+        );
+        $this->userRepository->save($user);
+    }
+
+    private function initializeGraphQlTokenServices(): void
+    {
+        $this->confirmationTokenFactory = $this->container->get(
+            ConfirmationTokenFactoryInterface::class,
+        );
+        $this->confirmationTokenRepository = $this->container->get(TokenRepositoryInterface::class);
+        $this->passwordResetTokenFactory = $this->container->get(
+            PasswordResetTokenFactoryInterface::class,
+        );
+        $this->passwordResetTokenRepository = $this->container->get(
+            PasswordResetTokenRepositoryInterface::class,
+        );
+    }
+
+    /**
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function executeUserMutation(
+        KernelBrowser $client,
+        string $rootField,
+        string $input,
+        string $responseFields,
+        ?string $accessToken = null,
+    ): array {
+        return $this->extractGraphQlUserPayload(
+            $this->executeGraphQl(
+                $client,
+                $this->buildRawUserMutation($rootField, $input, $responseFields),
+                $accessToken,
+            ),
+            $rootField,
+        );
+    }
+
+    private function buildRawUserMutation(
+        string $rootField,
+        string $input,
+        string $responseFields,
+    ): string {
+        $inputExpression = $input === '' ? '{}' : sprintf('{ %s }', $input);
+
+        return sprintf(
+            'mutation { %s(input: %s) { user { %s } } }',
+            $rootField,
+            $inputExpression,
+            $responseFields,
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function successfulTwoFactorRecoveryCodes(
+        KernelBrowser $client,
+        string $accessToken,
+        string $secret,
+    ): array {
+        $confirm = null;
+
+        foreach ($this->buildTwoFactorCodesWithinStepWindow($secret) as $code) {
+            $confirm = $this->confirmTwoFactorGraphQl($client, $accessToken, $code);
+            if (($confirm['success'] ?? false) === true) {
+                break;
+            }
+        }
+
+        $this->assertIsArray($confirm);
+        $this->assertSame(true, $confirm['success'] ?? null);
+        $recoveryCodes = $confirm['recoveryCodes'] ?? null;
+
+        $this->assertIsArray($recoveryCodes);
+        $this->assertNotSame([], $recoveryCodes);
+
+        return array_values(
+            array_map(
+                static fn ($value): string => (string) $value,
+                $recoveryCodes,
+            ),
+        );
     }
 }

@@ -13,9 +13,6 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 #[Group('memory-graphql')]
 final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
 {
-    /**
-     * @var list<string>
-     */
     private const USER_OPERATION_TARGETS = [
         'graphQLConfirmUser',
         'graphQLCreateUser',
@@ -26,6 +23,9 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
         'graphQLUpdateUser',
     ];
 
+    /**
+     * @return iterable<string, array{0: string}>
+     */
     public static function userOperationTargets(): iterable
     {
         foreach (self::USER_OPERATION_TARGETS as $coverageTarget) {
@@ -107,10 +107,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
             'createUser',
         );
 
-        $this->assertSame(
-            $newUser->toArray()['email'],
-            $payload['email'] ?? null,
-        );
+        $this->assertSame($newUser->toArray()['email'], $payload['email'] ?? null);
     }
 
     private function exerciseUpdateUser(KernelBrowser $client, int $iteration): void
@@ -119,31 +116,9 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
             email: $this->uniqueEmail('memory-graphql-update', $iteration),
         );
         $updatedEmail = $this->uniqueEmail('memory-graphql-updated', $iteration);
-        $updatedPassword = $this->generatePassword();
-        $accessToken = $this->issueAccessTokenForUser($fixture['user']);
-        $payload = $this->extractGraphQlUserPayload(
-            $this->executeGraphQl(
-                $client,
-                $this->buildUpdateUserMutation(
-                    $fixture['user']->getId(),
-                    $updatedEmail,
-                    $fixture['password'],
-                    $updatedPassword,
-                    'UP',
-                ),
-                $accessToken,
-            ),
-            'updateUser',
-        );
+        $payload = $this->updateUserPayload($client, $fixture, $updatedEmail);
 
-        $this->assertSame(
-            $this->buildGetUserId($fixture['user']->getId()),
-            $payload['id'] ?? null,
-        );
-        $this->assertSame(
-            $updatedEmail,
-            $payload['email'] ?? null,
-        );
+        $this->assertReturnedUser($payload, $fixture['user']->getId(), $updatedEmail);
     }
 
     private function exerciseDeleteUser(KernelBrowser $client, int $iteration): void
@@ -191,43 +166,11 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
 
     private function exerciseGetUsers(KernelBrowser $client, int $iteration): void
     {
-        $owner = $this->createUserFixture(
-            email: $this->uniqueEmail('memory-graphql-get-users-owner', $iteration),
-        );
-        $peer = $this->createUserFixture(
-            email: $this->uniqueEmail('memory-graphql-get-users-peer', $iteration),
-        );
-        $this->assertNotSame($owner['user']->getId(), $peer['user']->getId());
-        $accessToken = $this->issueAccessTokenForUser($owner['user']);
-        $payload = $this->extractGraphQlData(
-            $this->executeGraphQl(
-                $client,
-                $this->buildGetUsersQuery(100),
-                $accessToken,
-            ),
-            'users',
-        );
+        ['owner' => $owner, 'peer' => $peer] = $this->createGetUsersFixtures($iteration);
+        $returnedUsers = $this->fetchReturnedUsers($client, $owner['user']);
 
-        $edges = $payload['edges'] ?? null;
-
-        $this->assertIsArray($edges);
-        $this->assertNotSame([], $edges);
-        $returnedUsers = array_map(
-            static fn (array $edge): array => [
-                'id' => (string) ($edge['node']['id'] ?? ''),
-                'email' => (string) ($edge['node']['email'] ?? ''),
-            ],
-            $edges,
-        );
-
-        $this->assertContainsOnly('array', $returnedUsers);
-
-        foreach ($returnedUsers as $returnedUser) {
-            $this->assertArrayHasKey('id', $returnedUser);
-            $this->assertArrayHasKey('email', $returnedUser);
-            $this->assertStringStartsWith('/api/users/', $returnedUser['id']);
-            $this->assertNotSame('', $returnedUser['email']);
-        }
+        $this->assertReturnedUsersAreWellFormed($returnedUsers);
+        $this->assertReturnedFixturesArePresent($returnedUsers, $owner, $peer);
     }
 
     private function exerciseConfirmUser(KernelBrowser $client, int $iteration): void
@@ -279,5 +222,157 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
     private function buildGetUserId(string $userId): string
     {
         return sprintf('/api/users/%s', $userId);
+    }
+
+    /**
+     * @param array<string, array|bool|float|int|string|null> $payload
+     */
+    private function assertReturnedUser(array $payload, string $userId, string $email): void
+    {
+        $this->assertSame($this->buildGetUserId($userId), $payload['id'] ?? null);
+        $this->assertSame($email, $payload['email'] ?? null);
+    }
+
+    /**
+     * @param array{user: \App\User\Domain\Entity\User, password: string} $fixture
+     *
+     * @return array<string, array|bool|float|int|string|null>
+     */
+    private function updateUserPayload(
+        KernelBrowser $client,
+        array $fixture,
+        string $updatedEmail,
+    ): array {
+        return $this->extractGraphQlUserPayload(
+            $this->executeGraphQl(
+                $client,
+                $this->buildUpdateUserMutation(
+                    $fixture['user']->getId(),
+                    $updatedEmail,
+                    $fixture['password'],
+                    $this->generatePassword(),
+                    'UP',
+                ),
+                $this->issueAccessTokenForUser($fixture['user']),
+            ),
+            'updateUser',
+        );
+    }
+
+    /**
+     * @param list<array{id: string, email: string}> $returnedUsers
+     */
+    private function assertReturnedUsersAreWellFormed(array $returnedUsers): void
+    {
+        foreach ($returnedUsers as $returnedUser) {
+            $this->assertStringStartsWith('/api/users/', $returnedUser['id']);
+            $this->assertNotSame('', $returnedUser['email']);
+        }
+    }
+
+    /**
+     * @param list<array{node: array{id?: string, email?: string}}> $edges
+     *
+     * @return list<array{id: string, email: string}>
+     */
+    private function returnedUsersFromEdges(array $edges): array
+    {
+        $returnedUsers = array_map(
+            static fn (array $edge): array => [
+                'id' => (string) ($edge['node']['id'] ?? ''),
+                'email' => (string) ($edge['node']['email'] ?? ''),
+            ],
+            $edges,
+        );
+
+        $this->assertContainsOnly('array', $returnedUsers);
+
+        return $returnedUsers;
+    }
+
+    /**
+     * @return array{
+     *     owner: array{user: \App\User\Domain\Entity\User, password: string},
+     *     peer: array{user: \App\User\Domain\Entity\User, password: string}
+     * }
+     */
+    private function createGetUsersFixtures(int $iteration): array
+    {
+        $owner = $this->createUserFixture(
+            email: $this->uniqueEmail('memory-graphql-get-users-owner', $iteration),
+        );
+        $peer = $this->createUserFixture(
+            email: $this->uniqueEmail('memory-graphql-get-users-peer', $iteration),
+        );
+
+        $this->assertNotSame($owner['user']->getId(), $peer['user']->getId());
+
+        return [
+            'owner' => $owner,
+            'peer' => $peer,
+        ];
+    }
+
+    /**
+     * @return list<array{id: string, email: string}>
+     */
+    private function fetchReturnedUsers(
+        KernelBrowser $client,
+        \App\User\Domain\Entity\User $owner,
+    ): array {
+        $payload = $this->extractGraphQlData(
+            $this->executeGraphQl(
+                $client,
+                $this->buildGetUsersQuery(100),
+                $this->issueAccessTokenForUser($owner),
+            ),
+            'users',
+        );
+        $edges = $payload['edges'] ?? null;
+
+        $this->assertIsArray($edges);
+        $this->assertNotSame([], $edges);
+
+        return $this->returnedUsersFromEdges($edges);
+    }
+
+    /**
+     * @param list<array{id: string, email: string}> $returnedUsers
+     */
+    private function assertReturnedUsersContain(
+        array $returnedUsers,
+        string $userId,
+        string $email,
+    ): void {
+        $expectedId = $this->buildGetUserId($userId);
+        $matchesFixture = array_filter(
+            $returnedUsers,
+            static fn (array $returnedUser): bool => $returnedUser['id'] === $expectedId
+                && $returnedUser['email'] === $email,
+        );
+
+        $this->assertNotSame([], $matchesFixture);
+    }
+
+    /**
+     * @param array{user: \App\User\Domain\Entity\User, password: string} $owner
+     * @param array{user: \App\User\Domain\Entity\User, password: string} $peer
+     * @param list<array{id: string, email: string}> $returnedUsers
+     */
+    private function assertReturnedFixturesArePresent(
+        array $returnedUsers,
+        array $owner,
+        array $peer,
+    ): void {
+        $this->assertReturnedUsersContain(
+            $returnedUsers,
+            $owner['user']->getId(),
+            $owner['user']->getEmail(),
+        );
+        $this->assertReturnedUsersContain(
+            $returnedUsers,
+            $peer['user']->getId(),
+            $peer['user']->getEmail(),
+        );
     }
 }

@@ -5,14 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Memory\Inventory;
 
 use App\Tests\Memory\Support\MemoryCoverageCatalog;
-
-use function array_values;
-use function basename;
-use function glob;
-
 use PHPUnit\Framework\TestCase;
-
-use function sort;
 
 final class MemorySuiteCoverageTest extends TestCase
 {
@@ -73,13 +66,14 @@ final class MemorySuiteCoverageTest extends TestCase
     }
 
     /**
+     * @param list<string> $names
      * @param callable(string): bool $filter
      *
      * @return list<string>
      */
     private function filterNames(array $names, callable $filter): array
     {
-        return array_values(array_filter(
+        return \array_values(\array_filter(
             $names,
             static fn (string $name): bool => $filter($name),
         ));
@@ -90,11 +84,11 @@ final class MemorySuiteCoverageTest extends TestCase
      */
     private function discoverNames(string $pattern, string $suffix): array
     {
-        $files = glob($pattern);
+        $files = \glob($pattern);
         self::assertIsArray($files);
 
-        return array_values(array_map(
-            static fn (string $file): string => basename($file, $suffix),
+        return \array_values(\array_map(
+            static fn (string $file): string => \basename($file, $suffix),
             $files,
         ));
     }
@@ -105,8 +99,8 @@ final class MemorySuiteCoverageTest extends TestCase
      */
     private function assertSameCoverage(array $expected, array $actual): void
     {
-        sort($expected);
-        sort($actual);
+        \sort($expected);
+        \sort($actual);
 
         self::assertSame($expected, $actual);
     }
