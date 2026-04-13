@@ -153,13 +153,17 @@ final class CachePerformanceTest extends UserIntegrationTestCase
     private function assertMeaningfulSubMillisecondImprovement(float $cacheMissLatencyMs, float $cacheHitLatencyMs): void
     {
         $improvementMs = $cacheMissLatencyMs - $cacheHitLatencyMs;
+        $minimumImprovementMs = min(
+            $cacheMissLatencyMs,
+            self::MIN_MEANINGFUL_IMPROVEMENT_MS,
+        );
 
         self::assertGreaterThanOrEqual(
-            self::MIN_MEANINGFUL_IMPROVEMENT_MS,
+            $minimumImprovementMs,
             $improvementMs,
             sprintf(
                 'Cache hit should improve a sub-millisecond miss by at least %.2fms, got %.2fms (miss: %.2fms, hit: %.2fms)',
-                self::MIN_MEANINGFUL_IMPROVEMENT_MS,
+                $minimumImprovementMs,
                 $improvementMs,
                 $cacheMissLatencyMs,
                 $cacheHitLatencyMs

@@ -146,8 +146,21 @@ abstract class RestMemoryWebTestCase extends MemoryWebTestCase
         }
 
         $decoded = json_decode($content, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException(sprintf(
+                'Failed to decode JSON response: %s',
+                json_last_error_msg(),
+            ));
+        }
 
-        return is_array($decoded) ? $decoded : [];
+        if (!is_array($decoded)) {
+            throw new \RuntimeException(sprintf(
+                'Expected decoded JSON response to be an array, got %s.',
+                get_debug_type($decoded),
+            ));
+        }
+
+        return $decoded;
     }
 
     protected function createConfirmedUser(?string $password = null, ?string $email = null): User

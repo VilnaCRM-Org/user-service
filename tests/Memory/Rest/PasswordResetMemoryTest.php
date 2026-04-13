@@ -28,13 +28,14 @@ final class PasswordResetMemoryTest extends RestMemoryWebTestCase
         $this->runRepeatedRestScenario('resetPasswordConfirm', function (): void {
             $user = $this->createConfirmedUser();
             $token = $this->savePasswordResetToken($user);
+            $password = $this->generatePassword();
 
             ['response' => $response] = $this->requestJson(
                 'POST',
                 '/api/reset-password/confirm',
                 [
                     'token' => $token->getTokenValue(),
-                    'newPassword' => 'Bb2!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}')),
+                    'newPassword' => $password,
                 ]
             );
 

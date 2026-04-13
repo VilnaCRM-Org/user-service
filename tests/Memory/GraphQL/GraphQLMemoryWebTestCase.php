@@ -593,10 +593,11 @@ GRAPHQL;
     protected function uniqueEmail(string $prefix, int $iteration): string
     {
         return sprintf(
-            '%s-%d-%s@example.test',
+            '%s-%d-%s@%s',
             $prefix,
             $iteration,
             strtolower($this->faker->lexify('????')),
+            $this->faker->safeEmailDomain(),
         );
     }
 
@@ -707,6 +708,9 @@ GRAPHQL;
 
     private function clearGraphQlStaticState(): void
     {
+        // Verified against webonyx/graphql-php v15.31.4; prefer the public
+        // Directive/Introspection reset APIs and re-check these reflected
+        // internals when upgrading graphql-php.
         $this->resetDocumentValidatorState();
         $this->resetStaticProperty(GraphQlType::class, 'builtInScalars', null);
         $this->resetStaticProperty(GraphQlType::class, 'builtInTypes', null);

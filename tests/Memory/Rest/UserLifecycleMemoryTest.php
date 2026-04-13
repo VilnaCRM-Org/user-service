@@ -164,10 +164,7 @@ final class UserLifecycleMemoryTest extends RestMemoryWebTestCase
                 $headers
             );
 
-            self::assertContains(
-                $response->getStatusCode(),
-                [Response::HTTP_OK, Response::HTTP_TOO_MANY_REQUESTS]
-            );
+            self::assertSame(Response::HTTP_OK, $response->getStatusCode());
         });
     }
 }

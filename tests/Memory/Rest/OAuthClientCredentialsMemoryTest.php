@@ -46,7 +46,7 @@ final class OAuthClientCredentialsMemoryTest extends RestMemoryWebTestCase
 
     private function registerClientCredentialsClient(string $clientId, string $clientSecret): void
     {
-        $oauthClient = new Client('Memory Client', $clientId, $clientSecret);
+        $oauthClient = new Client($this->faker->company(), $clientId, $clientSecret);
         $oauthClient->setGrants(new Grant('client_credentials'));
         $oauthClient->setActive(true);
         $this->container->get(ClientManagerInterface::class)->save($oauthClient);

@@ -92,7 +92,7 @@ final class TwoFactorMemoryTest extends RestMemoryWebTestCase
     public function testDisableTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('disableTwoFactor', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             $secret = $this->setupTwoFactor($signIn['access_token']);

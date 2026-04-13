@@ -11,7 +11,7 @@ final class AuthTokenMemoryTest extends RestMemoryWebTestCase
     public function testSigninScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('signin', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             ['response' => $response, 'body' => $body] = $this->requestJson(
                 'POST',
@@ -32,7 +32,7 @@ final class AuthTokenMemoryTest extends RestMemoryWebTestCase
     public function testRefreshTokenScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('refreshToken', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             ['response' => $response, 'body' => $body] = $this->requestJson(
@@ -50,7 +50,7 @@ final class AuthTokenMemoryTest extends RestMemoryWebTestCase
     public function testSignoutScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('signout', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             ['response' => $response] = $this->requestJson(
@@ -67,7 +67,7 @@ final class AuthTokenMemoryTest extends RestMemoryWebTestCase
     public function testSignoutAllScenarioReusesSameKernelAcrossRepeatedRequests(): void
     {
         $this->runRepeatedRestScenario('signoutAll', function (): void {
-            $password = 'Aa1!' . strtolower($this->faker->regexify('[A-Za-z0-9]{12}'));
+            $password = $this->generatePassword();
             $user = $this->createConfirmedUser($password);
             $signIn = $this->signIn($user, $password);
             $this->signIn($user, $password);

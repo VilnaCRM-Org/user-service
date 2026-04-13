@@ -4,10 +4,15 @@ on:
   pull_request:
     branches: ['main']
 
+concurrency:
+  group: memory-tests-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   memory-tests:
     name: Memory leak tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Repository

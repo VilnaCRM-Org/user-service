@@ -94,6 +94,10 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         callable $scenario,
         int $iterations = 2,
     ): void {
+        if ($iterations <= 0) {
+            throw new \InvalidArgumentException('Iterations must be greater than zero.');
+        }
+
         $client = $this->createSameKernelClient();
 
         $this->runMemoryScenario($coverageTarget, function () use (
@@ -167,7 +171,7 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         bool $twoFactorEnabled,
         bool $confirmed,
     ): User {
-        $plainPassword = sprintf('Aa1!%s', strtolower($this->faker->lexify('????????')));
+        $plainPassword = $this->faker->regexify('[A-Z][a-z][1-9][!@#$%][A-Za-z0-9]{8}');
         $user = $this->userFactory->create(
             $email,
             strtoupper($this->faker->lexify('??')),
@@ -179,7 +183,7 @@ abstract class OAuthSocialMemoryWebTestCase extends MemoryWebTestCase
         $user->setPassword(
             $this->passwordHasherFactory
                 ->getPasswordHasher($user::class)
-                ->hash($plainPassword, null),
+                ->hash($plainPassword),
         );
         $user->setConfirmed($confirmed);
         $user->setTwoFactorEnabled($twoFactorEnabled);
