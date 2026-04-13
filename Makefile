@@ -69,6 +69,7 @@ endif
 FIXER_ENV = PHP_CS_FIXER_IGNORE_ENV=1
 PHP_CS_FIXER_CMD = php ./vendor/bin/php-cs-fixer fix $(git ls-files -om --exclude-standard) --allow-risky=yes --config .php-cs-fixer.dist.php
 COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --coverage-text
+MEMORY_COVERAGE_CMD = php -d memory_limit=-1 ./vendor/bin/phpunit --configuration=phpunit.memory.xml.dist --coverage-text
 
 GITHUB_HOST ?= github.com
 FORMAT ?= markdown
@@ -83,9 +84,11 @@ endef
 ifeq ($(CI),1)
     RUN_PHP_CS_FIXER = $(FIXER_ENV) $(PHP_CS_FIXER_CMD)
     RUN_TESTS_COVERAGE = XDEBUG_MODE=coverage $(COVERAGE_CMD)
+    RUN_MEMORY_TESTS_COVERAGE = XDEBUG_MODE=coverage $(MEMORY_COVERAGE_CMD)
 else
     RUN_PHP_CS_FIXER = $(call DOCKER_EXEC_WITH_ENV,$(FIXER_ENV),$(PHP_CS_FIXER_CMD))
     RUN_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(COVERAGE_CMD))
+    RUN_MEMORY_TESTS_COVERAGE = $(call DOCKER_EXEC_WITH_ENV,APP_ENV=test -e XDEBUG_MODE=coverage,$(MEMORY_COVERAGE_CMD))
 endif
 
 
@@ -197,6 +200,26 @@ behat: setup-test-db clear-test-expression-language-caches ## A php framework fo
 
 integration-tests: setup-test-db ## Run integration tests
 	$(RUN_TESTS_COVERAGE) --testsuite=Integration
+
+memory-tests: setup-test-db ## Run memory leak tests with coverage requirement of 100%
+	@echo "Running memory leak tests with coverage requirement of 100%..."
+	@$(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt
+	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_memory_output.txt; then \
+		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
+		exit 1; \
+	fi
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	if [ -n "$$coverage" ]; then \
+		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
+			echo "❌ COVERAGE FAILURE: Memory suite line coverage is $$coverage%, but 100% is required. Please cover all memory test lines and keep endpoint inventory complete"; \
+			exit 1; \
+		else \
+			echo "✅ COVERAGE SUCCESS: Memory suite line coverage is $$coverage%"; \
+		fi; \
+	else \
+		echo "❌ ERROR: Could not parse memory suite coverage from output"; \
+		exit 1; \
+	fi
 
 cache-performance-tests: setup-test-db ## Run cache performance integration tests
 	$(EXEC_ENV) $(PHPUNIT) tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php --testdox

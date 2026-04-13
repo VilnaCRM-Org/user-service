@@ -1,0 +1,20 @@
+name: Memory leak testing
+
+on:
+  pull_request:
+    branches: ['main']
+
+jobs:
+  memory-tests:
+    name: Memory leak tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Start application
+        run: make start
+
+      - name: Execute memory leak tests
+        run: make memory-tests
