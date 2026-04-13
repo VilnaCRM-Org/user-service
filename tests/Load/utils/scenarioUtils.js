@@ -77,6 +77,7 @@ export default class ScenarioUtils {
 
   getThresholds() {
     const thresholdsBuilder = new ThresholdsBuilder();
+    const disableDurationThresholds = this.utils.getCLIVariable('disable_duration_thresholds') === 'true';
     const thresholdConfigs = {
       run_smoke: { name: 'smoke', config: this.smokeConfig },
       run_average: { name: 'average', config: this.averageConfig },
@@ -87,7 +88,7 @@ export default class ScenarioUtils {
     Object.keys(thresholdConfigs).forEach(key => {
       if (this.utils.getCLIVariable(key) !== 'false') {
         const { name, config } = thresholdConfigs[key];
-        thresholdsBuilder.addThreshold(name, config);
+        thresholdsBuilder.addThreshold(name, config, disableDurationThresholds);
       }
     });
 

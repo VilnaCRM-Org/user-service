@@ -12,6 +12,10 @@ services:
       #  from the bind-mount for better performance by enabling the next line:
       #- /srv/app/vendor
     environment:
+      APP_ENV: '${APP_ENV:-dev}'
+      APP_DEBUG: '${APP_DEBUG:-1}'
+      CADDY_PHP_APP_ENV: '${APP_ENV:-dev}'
+      CADDY_PHP_APP_DEBUG: '${APP_DEBUG:-1}'
       FRANKENPHP_CONFIG: import worker.Caddyfile
       FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
       # See https://xdebug.org/docs/all_settings#mode

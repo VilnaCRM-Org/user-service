@@ -20,6 +20,12 @@ final class MemoryCoverageInventory
     public const INVENTORY_COVERAGE_THRESHOLD = 100;
 
     public const REST_LOAD_SCENARIOS = [
+        'apiContextUser',
+        'apiDocs',
+        'apiEntrypoint',
+        'apiErrors400',
+        'apiValidationErrors',
+        'apiWellKnownGenid',
         'cachePerformance',
         'confirmTwoFactor',
         'confirmUser',
@@ -31,6 +37,7 @@ final class MemoryCoverageInventory
         'getUsers',
         'health',
         'oauth',
+        'oauthAuthorize',
         'oauthSocialCallback',
         'oauthSocialInitiate',
         'refreshToken',
@@ -100,6 +107,42 @@ final class MemoryCoverageInventory
         'user_operations',
     ];
 
+    private const GRAPHQL_AUTH_LOAD_SCENARIOS = [
+        'graphQLCompleteTwoFactor',
+        'graphQLConfirmPasswordReset',
+        'graphQLConfirmTwoFactor',
+        'graphQLDisableTwoFactor',
+        'graphQLRefreshToken',
+        'graphQLRegenerateRecoveryCodes',
+        'graphQLRequestPasswordReset',
+        'graphQLSetupTwoFactor',
+        'graphQLSignin',
+        'graphQLSignout',
+        'graphQLSignoutAll',
+    ];
+
+    private const SIGNIN_AUTH_FEATURES = [
+        'account_lockout',
+        'auth_gate',
+        'cookie_security',
+        'cors',
+        'data_protection',
+        'error_format',
+        'input_validation',
+        'jwt_validation',
+        'rate_limiting',
+        'security_headers',
+        'signin',
+        'signin_story_1_1',
+        'signin_story_1_2',
+    ];
+
+    private const SIGNIN_TWO_FACTOR_FEATURES = [
+        'signin_story_2_1',
+        'signin_story_2_2',
+        'two_factor_auth',
+    ];
+
     /**
      * @return list<string>
      */
@@ -145,124 +188,14 @@ final class MemoryCoverageInventory
      */
     private static function featureMemoryTests(): array
     {
-        return [
-            'feature:account_lockout' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:auth_gate' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:cookie_security' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:cors' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:data_protection' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:error_format' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:graphql_authentication' => self::coverage(
-                GraphQLAuthMemoryTest::class,
-                'testGraphQlAuthMutationsStayStableAcrossRepeatedSameKernelRequests',
-            ),
-            'feature:graphql_password_reset' => self::coverage(
-                GraphQLAuthMemoryTest::class,
-                'testGraphQlAuthMutationsStayStableAcrossRepeatedSameKernelRequests',
-            ),
-            'feature:health_check' => self::coverage(
-                PublicReadMemoryTest::class,
-                'testHealthScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:input_validation' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:jwt_validation' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:oauth' => self::coverage(
-                OAuthClientCredentialsMemoryTest::class,
-                'testOauthClientCredentialsScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:oauth_social' => self::coverage(
-                OAuthSocialFlowMemoryTest::class,
-                'testOAuthSocialFlowsStayStableAcrossRepeatedSameKernelRequests',
-            ),
-            'feature:password_reset' => self::coverage(
-                PasswordResetMemoryTest::class,
-                'testResetPasswordScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:password_reset_auth_integration' => self::coverage(
-                PasswordResetMemoryTest::class,
-                'testResetPasswordConfirmScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:rate_limiting' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:security_headers' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:session_lifecycle' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSignoutAllScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:signin' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:signin_story_1_1' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:signin_story_1_2' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:signin_story_2_1' => self::coverage(
-                TwoFactorMemoryTest::class,
-                'testSigninTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:signin_story_2_2' => self::coverage(
-                TwoFactorMemoryTest::class,
-                'testSigninTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:token_refresh' => self::coverage(
-                AuthTokenMemoryTest::class,
-                'testRefreshTokenScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:two_factor_auth' => self::coverage(
-                TwoFactorMemoryTest::class,
-                'testSigninTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:user_graphql_localization' => self::coverage(
-                GraphQLUserOperationMemoryTest::class,
-                'testGraphQlUserOperationsStayStableAcrossRepeatedSameKernelRequests',
-            ),
-            'feature:user_graphql_operations' => self::coverage(
-                GraphQLUserOperationMemoryTest::class,
-                'testGraphQlUserOperationsStayStableAcrossRepeatedSameKernelRequests',
-            ),
-            'feature:user_localization' => self::coverage(
-                UserLifecycleMemoryTest::class,
-                'testGetUsersScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-            'feature:user_operations' => self::coverage(
-                UserLifecycleMemoryTest::class,
-                'testCreateUserScenarioReusesSameKernelAcrossRepeatedRequests',
-            ),
-        ];
+        return array_merge(
+            self::signinFeatureMemoryTests(),
+            self::graphqlFeatureMemoryTests(),
+            self::publicFeatureMemoryTests(),
+            self::oauthFeatureMemoryTests(),
+            self::passwordResetFeatureMemoryTests(),
+            self::userFeatureMemoryTests(),
+        );
     }
 
     /**
@@ -271,27 +204,13 @@ final class MemoryCoverageInventory
     private static function graphQlMemoryTests(): array
     {
         return array_merge(
-            self::prefixedCoverageMap(
-                [
-                    'graphQLCompleteTwoFactor',
-                    'graphQLConfirmPasswordReset',
-                    'graphQLConfirmTwoFactor',
-                    'graphQLDisableTwoFactor',
-                    'graphQLRefreshToken',
-                    'graphQLRegenerateRecoveryCodes',
-                    'graphQLRequestPasswordReset',
-                    'graphQLSetupTwoFactor',
-                    'graphQLSignin',
-                    'graphQLSignout',
-                    'graphQLSignoutAll',
-                ],
-                'graphql',
+            self::graphQlCoverage(
+                self::GRAPHQL_AUTH_LOAD_SCENARIOS,
                 GraphQLAuthMemoryTest::class,
                 'testGraphQlAuthMutationsStayStableAcrossRepeatedSameKernelRequests',
             ),
-            self::prefixedCoverageMap(
+            self::graphQlCoverage(
                 GraphQLUserOperationMemoryTest::inventoryTargets(),
-                'graphql',
                 GraphQLUserOperationMemoryTest::class,
                 'testGraphQlUserOperationsStayStableAcrossRepeatedSameKernelRequests',
             ),
@@ -330,13 +249,13 @@ final class MemoryCoverageInventory
         string $class,
         string $method,
     ): array {
-        $coverage = [];
-
-        foreach ($targets as $target) {
-            $coverage[sprintf('%s:%s', $prefix, $target)] = self::coverage($class, $method);
-        }
-
-        return $coverage;
+        return array_combine(
+            array_map(
+                static fn (string $target): string => sprintf('%s:%s', $prefix, $target),
+                $targets,
+            ),
+            array_fill(0, count($targets), self::coverage($class, $method)),
+        );
     }
 
     /**
@@ -348,5 +267,136 @@ final class MemoryCoverageInventory
             'class' => $class,
             'method' => $method,
         ];
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function graphqlFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            [
+                'graphql_authentication',
+                'graphql_password_reset',
+            ],
+            GraphQLAuthMemoryTest::class,
+            'testGraphQlAuthMutationsStayStableAcrossRepeatedSameKernelRequests',
+        ) + self::featureCoverage(
+            [
+                'user_graphql_localization',
+                'user_graphql_operations',
+            ],
+            GraphQLUserOperationMemoryTest::class,
+            'testGraphQlUserOperationsStayStableAcrossRepeatedSameKernelRequests',
+        );
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function oauthFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            ['oauth'],
+            OAuthClientCredentialsMemoryTest::class,
+            'testOauthClientCredentialsScenarioReusesSameKernelAcrossRepeatedRequests',
+        ) + self::featureCoverage(
+            ['oauth_social'],
+            OAuthSocialFlowMemoryTest::class,
+            'testOAuthSocialFlowsStayStableAcrossRepeatedSameKernelRequests',
+        );
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function passwordResetFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            [
+                'password_reset',
+                'password_reset_auth_integration',
+            ],
+            PasswordResetMemoryTest::class,
+            'testResetPasswordScenarioReusesSameKernelAcrossRepeatedRequests',
+        );
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function publicFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            ['health_check'],
+            PublicReadMemoryTest::class,
+            'testHealthScenarioReusesSameKernelAcrossRepeatedRequests',
+        );
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function signinFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            self::SIGNIN_AUTH_FEATURES,
+            AuthTokenMemoryTest::class,
+            'testSigninScenarioReusesSameKernelAcrossRepeatedRequests',
+        ) + self::featureCoverage(
+            ['session_lifecycle'],
+            AuthTokenMemoryTest::class,
+            'testSignoutAllScenarioReusesSameKernelAcrossRepeatedRequests',
+        ) + self::featureCoverage(
+            ['token_refresh'],
+            AuthTokenMemoryTest::class,
+            'testRefreshTokenScenarioReusesSameKernelAcrossRepeatedRequests',
+        ) + self::featureCoverage(
+            self::SIGNIN_TWO_FACTOR_FEATURES,
+            TwoFactorMemoryTest::class,
+            'testSigninTwoFactorScenarioReusesSameKernelAcrossRepeatedRequests',
+        );
+    }
+
+    /**
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function userFeatureMemoryTests(): array
+    {
+        return self::featureCoverage(
+            ['user_localization'],
+            UserLifecycleMemoryTest::class,
+            'testGetUsersScenarioReusesSameKernelAcrossRepeatedRequests',
+        ) + self::featureCoverage(
+            ['user_operations'],
+            UserLifecycleMemoryTest::class,
+            'testCreateUserScenarioReusesSameKernelAcrossRepeatedRequests',
+        );
+    }
+
+    /**
+     * @param list<string> $targets
+     *
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function featureCoverage(
+        array $targets,
+        string $class,
+        string $method,
+    ): array {
+        return self::prefixedCoverageMap($targets, 'feature', $class, $method);
+    }
+
+    /**
+     * @param list<string> $targets
+     *
+     * @return array<string, array{class: class-string, method: string}>
+     */
+    private static function graphQlCoverage(
+        array $targets,
+        string $class,
+        string $method,
+    ): array {
+        return self::prefixedCoverageMap($targets, 'graphql', $class, $method);
     }
 }

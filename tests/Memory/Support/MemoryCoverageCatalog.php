@@ -32,8 +32,19 @@ final class MemoryCoverageCatalog
         ],
         [
             'id' => 'health_check',
-            'loadScripts' => ['health'],
+            'loadScripts' => ['apiDocs', 'health'],
             'features' => ['health_check'],
+        ],
+        [
+            'id' => 'api_platform_surface',
+            'loadScripts' => [
+                'apiContextUser',
+                'apiEntrypoint',
+                'apiErrors400',
+                'apiValidationErrors',
+                'apiWellKnownGenid',
+            ],
+            'features' => ['error_format', 'security_headers'],
         ],
         [
             'id' => 'user_registration_and_confirmation',
@@ -152,7 +163,7 @@ final class MemoryCoverageCatalog
     private const OAUTH_SCENARIOS = [
         [
             'id' => 'client_credentials',
-            'loadScripts' => ['oauth'],
+            'loadScripts' => ['oauth', 'oauthAuthorize'],
             'features' => ['oauth'],
         ],
         [

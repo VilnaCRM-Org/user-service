@@ -42,6 +42,7 @@ loadTestComposeFile=${LOAD_TEST_COMPOSE_FILE:-docker-compose.load-tests.yml}
 loadTestApiHost=${LOAD_TEST_API_HOST:-localhost}
 loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
 loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
+disableDurationThresholds=${LOAD_TEST_DISABLE_DURATION_THRESHOLDS:-false}
 composeCmd=(docker compose -p "$loadTestComposeProject")
 
 IFS=':' read -r -a composeFiles <<< "$loadTestComposeFile"
@@ -92,6 +93,7 @@ if scenario_requires_seeded_users "$scenario"; then
     -e "run_average=${runAverage}" \
     -e "run_stress=${runStress}" \
     -e "run_spike=${runSpike}" \
+    -e "disable_duration_thresholds=${disableDurationThresholds}" \
     -e "serviceToken=${serviceToken}" \
     -e "API_HOST=${loadTestApiHost}" \
     -e "API_PORT=${loadTestApiPort}" \
@@ -112,6 +114,7 @@ scriptRelPath="${scriptFile#./tests/Load/}"
   -e "run_average=${runAverage}" \
   -e "run_stress=${runStress}" \
   -e "run_spike=${runSpike}" \
+  -e "disable_duration_thresholds=${disableDurationThresholds}" \
   -e "serviceToken=${serviceToken}" \
   -e "API_HOST=${loadTestApiHost}" \
   -e "API_PORT=${loadTestApiPort}" \

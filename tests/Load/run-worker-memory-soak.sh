@@ -140,7 +140,8 @@ run_round_loads() {
     fi
 
     echo "[$(timestamp_utc)] round ${round}/${memorySoakRounds}: scenario=${trimmed_scenario}"
-    ./tests/Load/execute-load-test.sh "$trimmed_scenario" true false false false "worker-memory-r${round}-"
+    LOAD_TEST_DISABLE_DURATION_THRESHOLDS=true \
+      ./tests/Load/execute-load-test.sh "$trimmed_scenario" true false false false "worker-memory-r${round}-"
   done
 }
 

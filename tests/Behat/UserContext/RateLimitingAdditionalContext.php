@@ -12,6 +12,8 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 final readonly class RateLimitingAdditionalContext implements Context
 {
+    private const LOOPBACK_IPS = ['127.0.0.1', '::1'];
+
     public function __construct(
         private UserOperationsState $state,
         private UserRepositoryInterface $userRepository,
@@ -28,7 +30,7 @@ final readonly class RateLimitingAdditionalContext implements Context
      */
     public function passwordResetConfirmRequestsFromTheSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->passwordResetConfirmLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->passwordResetConfirmLimiter, $count);
     }
 
     /**
@@ -92,6 +94,13 @@ final readonly class RateLimitingAdditionalContext implements Context
         $this->redisDatabaseMirror->mirrorDefaultLimiterStateToHttpDatabase();
     }
 
+    private function consumeLoopbackLimiter(RateLimiterFactory $limiter, int $count): void
+    {
+        foreach ($this->loopbackIpKeys() as $loopbackIpKey) {
+            $this->consume($limiter, $loopbackIpKey, $count);
+        }
+    }
+
     private function buildUserKey(string $userId): string
     {
         return sprintf('user:%s', $userId);
@@ -99,9 +108,22 @@ final readonly class RateLimitingAdditionalContext implements Context
 
     private function buildIpKey(): string
     {
-        $clientIpAddress = '::1';
+        $clientIpAddress = self::LOOPBACK_IPS[0];
         $this->state->clientIpAddress = $clientIpAddress;
 
         return sprintf('ip:%s', $clientIpAddress);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function loopbackIpKeys(): array
+    {
+        $this->state->clientIpAddress = self::LOOPBACK_IPS[0];
+
+        return array_map(
+            static fn (string $loopbackIp): string => sprintf('ip:%s', $loopbackIp),
+            self::LOOPBACK_IPS
+        );
     }
 }

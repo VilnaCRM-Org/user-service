@@ -7,6 +7,30 @@ namespace App\Tests\Memory\Rest;
 final class RestMemoryScenarioInventory
 {
     public const COVERED_LOAD_SCENARIOS = [
+        'apiContextUser' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
+        'apiDocs' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
+        'apiEntrypoint' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
+        'apiErrors400' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
+        'apiValidationErrors' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
+        'apiWellKnownGenid' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
+        ],
         'cachePerformance' => [
             'class' => PublicReadMemoryTest::class,
             'method' => 'testCachePerformanceScenarioReusesSameKernelAcrossRepeatedRequests',
@@ -50,6 +74,10 @@ final class RestMemoryScenarioInventory
         'oauth' => [
             'class' => OAuthClientCredentialsMemoryTest::class,
             'method' => 'testOauthClientCredentialsScenarioReusesSameKernelAcrossRepeatedRequests',
+        ],
+        'oauthAuthorize' => [
+            'class' => PublicApiSurfaceMemoryTest::class,
+            'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
         ],
         'refreshToken' => [
             'class' => AuthTokenMemoryTest::class,

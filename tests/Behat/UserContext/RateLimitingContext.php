@@ -16,6 +16,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 final readonly class RateLimitingContext implements Context
 {
     private const DEFAULT_PENDING_SESSION_ID = 'some-session';
+    private const LOOPBACK_IPS = ['127.0.0.1', '::1'];
 
     public function __construct(
         private UserOperationsState $state,
@@ -32,7 +33,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function anonymousRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume($this->apiLimiters->globalApiAnonymousLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->apiLimiters->globalApiAnonymousLimiter, $count);
     }
 
     /**
@@ -40,11 +41,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function authenticatedRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume(
-            $this->apiLimiters->globalApiAuthenticatedLimiter,
-            $this->buildIpKey(),
-            $count
-        );
+        $this->consumeLoopbackLimiter($this->apiLimiters->globalApiAuthenticatedLimiter, $count);
     }
 
     /**
@@ -52,7 +49,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function registrationRequestsHaveBeenSentFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->apiLimiters->registrationLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->apiLimiters->registrationLimiter, $count);
     }
 
     /**
@@ -66,7 +63,7 @@ final readonly class RateLimitingContext implements Context
             throw new RuntimeException(sprintf('Unsupported rate-limit path: %s', $path));
         }
 
-        $this->consume($this->apiLimiters->userCollectionLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->apiLimiters->userCollectionLimiter, $count);
     }
 
     /**
@@ -116,7 +113,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function resendConfirmationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->apiLimiters->resendConfirmationLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->apiLimiters->resendConfirmationLimiter, $count);
     }
 
     /**
@@ -138,7 +135,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function refreshTokenExchangeRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->authLimiters->refreshTokenLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->authLimiters->refreshTokenLimiter, $count);
     }
 
     /**
@@ -146,7 +143,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function emailConfirmationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->apiLimiters->emailConfirmationLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->apiLimiters->emailConfirmationLimiter, $count);
     }
 
     /**
@@ -154,7 +151,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function signInRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->authLimiters->signinIpLimiter, $this->buildIpKey(), $count);
+        $this->consumeLoopbackLimiter($this->authLimiters->signinIpLimiter, $count);
     }
 
     /**
@@ -201,11 +198,7 @@ final readonly class RateLimitingContext implements Context
      */
     public function twoFactorVerificationRequestsFromSameIpWithinMinute(int $count): void
     {
-        $this->consume(
-            $this->authLimiters->twofaVerificationIpLimiter,
-            $this->buildIpKey(),
-            $count
-        );
+        $this->consumeLoopbackLimiter($this->authLimiters->twofaVerificationIpLimiter, $count);
     }
 
     /**
@@ -297,6 +290,13 @@ final readonly class RateLimitingContext implements Context
         $this->redisDatabaseMirror->mirrorDefaultLimiterStateToHttpDatabase();
     }
 
+    private function consumeLoopbackLimiter(RateLimiterFactory $limiter, int $count): void
+    {
+        foreach ($this->loopbackIpKeys() as $loopbackIpKey) {
+            $this->consume($limiter, $loopbackIpKey, $count);
+        }
+    }
+
     private function buildUserKey(string $userId): string
     {
         return sprintf('user:%s', $userId);
@@ -309,9 +309,22 @@ final readonly class RateLimitingContext implements Context
 
     private function buildIpKey(): string
     {
-        $clientIpAddress = '::1';
+        $clientIpAddress = self::LOOPBACK_IPS[0];
         $this->state->clientIpAddress = $clientIpAddress;
 
         return sprintf('ip:%s', $clientIpAddress);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function loopbackIpKeys(): array
+    {
+        $this->state->clientIpAddress = self::LOOPBACK_IPS[0];
+
+        return array_map(
+            static fn (string $loopbackIp): string => sprintf('ip:%s', $loopbackIp),
+            self::LOOPBACK_IPS
+        );
     }
 }

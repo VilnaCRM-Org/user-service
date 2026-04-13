@@ -203,6 +203,7 @@ deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
 behat: setup-test-db clear-test-expression-language-caches ## A php framework for autotesting business expectations
+	APP_ENV=test APP_DEBUG=0 $(DOCKER_COMPOSE) up --detach --wait php
 	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
