@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Runtime;
 
+use App\Shared\Infrastructure\Runtime\FrankenPhpRequestHandlerInvoker;
 use App\Shared\Infrastructure\Runtime\FrankenPhpRunner;
 use App\Shared\Infrastructure\Runtime\MockFrankenPhpFunctions;
+use Closure;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -123,6 +125,28 @@ final class FrankenPhpRunnerTest extends TestCase
         self::assertSame(1, MockFrankenPhpFunctions::$handleRequestCalls);
         self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
         self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
+    }
+
+    public function testRunUsesInjectedRequestHandlerInvoker(): void
+    {
+        $kernel = $this->createMock(TestKernelInterface::class);
+        $customInvokerCalls = 0;
+
+        MockFrankenPhpFunctions::replaceServer(['REQUEST_METHOD' => 'GET']);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+            },
+        );
+        $runner = new FrankenPhpRunner(
+            $kernel,
+            500,
+            null,
+            $this->createInjectedRequestHandlerInvoker($customInvokerCalls),
+        );
+
+        self::assertSame(0, $runner->run());
+        self::assertInjectedRunMetrics($customInvokerCalls);
     }
 
     public function testRunBuildsPutRequestsFromParsedBody(): void
@@ -264,6 +288,39 @@ final class FrankenPhpRunnerTest extends TestCase
         self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
         self::assertSame($requestParseBodyCalls, MockFrankenPhpFunctions::$requestParseBodyCalls);
         self::assertSame($fileGetContentsCalls, MockFrankenPhpFunctions::$fileGetContentsCalls);
+    }
+
+    private function createInjectedRequestHandlerInvoker(
+        int &$customInvokerCalls,
+    ): FrankenPhpRequestHandlerInvoker {
+        $handleRequestCallable = self::namespacedHandleRequestCallable();
+
+        return new FrankenPhpRequestHandlerInvoker(
+            static fn (string $function): bool => $function === $handleRequestCallable,
+            static function (string $callable, Closure $handler) use (
+                &$customInvokerCalls,
+                $handleRequestCallable,
+            ): bool {
+                ++$customInvokerCalls;
+                self::assertSame($handleRequestCallable, $callable);
+                $handler();
+
+                return false;
+            },
+        );
+    }
+
+    private static function assertInjectedRunMetrics(int $customInvokerCalls): void
+    {
+        self::assertSame(1, $customInvokerCalls);
+        self::assertSame(0, MockFrankenPhpFunctions::$handleRequestCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
+        self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
+    }
+
+    private static function namespacedHandleRequestCallable(): string
+    {
+        return 'App\\Shared\\Infrastructure\\Runtime\\frankenphp_handle_request';
     }
 
     /**

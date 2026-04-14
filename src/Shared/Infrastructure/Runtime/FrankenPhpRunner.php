@@ -7,27 +7,26 @@ namespace App\Shared\Infrastructure\Runtime;
 use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpBootstrapServerFactory;
 use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpRequestFactory;
 use Closure;
-use RuntimeException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\Runtime\RunnerInterface;
 
 final class FrankenPhpRunner implements RunnerInterface
 {
-    private const MISSING_HANDLE_REQUEST_MESSAGE = <<<'MESSAGE'
-frankenphp_handle_request() is unavailable. Ensure FrankenPHP worker runtime is enabled.
-MESSAGE;
-
     private readonly FrankenPhpBootstrapServerFactory $bootstrapServerFactory;
     private readonly FrankenPhpRequestFactory $requestFactory;
+    private readonly FrankenPhpRequestHandlerInvoker $requestHandlerInvoker;
 
     public function __construct(
         private readonly HttpKernelInterface $kernel,
         private readonly int $loopMax,
         ?Closure $bodyParserChecker = null,
+        ?FrankenPhpRequestHandlerInvoker $requestHandlerInvoker = null,
     ) {
         $this->bootstrapServerFactory = new FrankenPhpBootstrapServerFactory();
         $this->requestFactory = new FrankenPhpRequestFactory($bodyParserChecker);
+        $this->requestHandlerInvoker = $requestHandlerInvoker
+            ?? new FrankenPhpRequestHandlerInvoker();
     }
 
     #[\Override]
@@ -54,14 +53,7 @@ MESSAGE;
 
     private function handleRequest(Closure $handler): bool
     {
-        $namespacedHandleRequest = __NAMESPACE__ . '\frankenphp_handle_request';
-        $handleRequest = match (true) {
-            \function_exists($namespacedHandleRequest) => $namespacedHandleRequest,
-            \function_exists('frankenphp_handle_request') => 'frankenphp_handle_request',
-            default => throw new RuntimeException(self::MISSING_HANDLE_REQUEST_MESSAGE),
-        };
-
-        return (bool) \call_user_func($handleRequest, $handler);
+        return $this->requestHandlerInvoker->invoke($handler);
     }
 
     private function terminateRequest(?FrankenPhpHandledRequest $handledRequest): void

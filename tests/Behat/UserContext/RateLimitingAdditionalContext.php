@@ -86,5 +86,4 @@ final readonly class RateLimitingAdditionalContext implements Context
 
         return $user->getId();
     }
-
 }

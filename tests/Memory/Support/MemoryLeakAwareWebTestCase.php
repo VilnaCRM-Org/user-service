@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Memory\Support;
 
-use function in_array;
 use LogicException;
 use ShipMonk\MemoryScanner\ObjectDeallocationChecker;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -86,7 +85,7 @@ abstract class MemoryLeakAwareWebTestCase extends WebTestCase
         foreach ($container->getServiceIds() as $serviceId) {
             if (
                 $container->initialized($serviceId)
-                && !in_array($serviceId, $ignoredServiceLeaks, true)
+                && !\in_array($serviceId, $ignoredServiceLeaks, true)
             ) {
                 $service = $container->get($serviceId);
                 $this->getDeallocationChecker()->expectDeallocation(

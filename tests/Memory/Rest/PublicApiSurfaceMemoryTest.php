@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 #[Group('memory-rest')]
 final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
 {
-    private const API_SURFACE_TARGETS = [
+    private const REST_API_SURFACE_TARGETS = [
         'apiContextUser' => [
             'uri' => '/api/contexts/User',
             'status' => Response::HTTP_UNAUTHORIZED,
@@ -55,13 +55,6 @@ final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
             'expectedBodyValue' => 'An error occurred',
             'headers' => [],
         ],
-        'oauthAuthorize' => [
-            'uri' => '/api/oauth/authorize?response_type=code&client_id=memory-suite&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&scope=read&state=memory-state',
-            'status' => Response::HTTP_UNAUTHORIZED,
-            'expectedBodyField' => 'title',
-            'expectedBodyValue' => 'Unauthorized',
-            'headers' => [],
-        ],
     ];
 
     /**
@@ -69,7 +62,7 @@ final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
      */
     public static function publicApiSurfaceTargets(): iterable
     {
-        foreach (self::API_SURFACE_TARGETS as $coverageTarget => $scenario) {
+        foreach (self::apiSurfaceTargets() as $coverageTarget => $scenario) {
             yield $coverageTarget => [
                 $coverageTarget,
                 $scenario['uri'],
@@ -84,14 +77,14 @@ final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
     public function testPublicApiSurfaceTargetsProviderEnumeratesEveryTarget(): void
     {
         self::assertSame(
-            array_keys(self::API_SURFACE_TARGETS),
+            array_keys(self::apiSurfaceTargets()),
             array_keys(iterator_to_array(self::publicApiSurfaceTargets())),
         );
     }
 
     public function testPublicApiSurfaceInventoryMatchesLoadScripts(): void
     {
-        $expected = array_keys(self::API_SURFACE_TARGETS);
+        $expected = array_keys(self::apiSurfaceTargets());
         sort($expected);
 
         $actual = array_values(array_filter(
@@ -104,6 +97,9 @@ final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
     }
 
     #[DataProvider('publicApiSurfaceTargets')]
+    /**
+     * @param array<string, string> $headers
+     */
     public function testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests(
         string $coverageTarget,
         string $uri,
@@ -145,5 +141,43 @@ final class PublicApiSurfaceMemoryTest extends RestMemoryWebTestCase
         sort($targets);
 
         return array_values($targets);
+    }
+
+    /**
+     * @return array<string, array{
+     *     uri: string,
+     *     status: int,
+     *     expectedBodyField: string,
+     *     expectedBodyValue: string,
+     *     headers: array<string, string>
+     * }>
+     */
+    private static function apiSurfaceTargets(): array
+    {
+        return self::REST_API_SURFACE_TARGETS + [
+            'oauthAuthorize' => [
+                'uri' => self::oauthAuthorizeUri(),
+                'status' => Response::HTTP_UNAUTHORIZED,
+                'expectedBodyField' => 'title',
+                'expectedBodyValue' => 'Unauthorized',
+                'headers' => [],
+            ],
+        ];
+    }
+
+    private static function oauthAuthorizeUri(): string
+    {
+        return '/api/oauth/authorize?' . http_build_query(
+            [
+                'response_type' => 'code',
+                'client_id' => 'memory-suite',
+                'redirect_uri' => 'https://example.com/callback',
+                'scope' => 'read',
+                'state' => 'memory-state',
+            ],
+            '',
+            '&',
+            PHP_QUERY_RFC3986,
+        );
     }
 }
