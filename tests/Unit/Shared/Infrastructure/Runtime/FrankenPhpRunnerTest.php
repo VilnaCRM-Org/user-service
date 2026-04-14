@@ -136,6 +136,7 @@ final class FrankenPhpRunnerTest extends TestCase
         $this->expectSingleHandledRequest(
             $kernel,
             static function (Request $request): void {
+                self::assertSame('GET', $request->getMethod());
             },
         );
         $runner = new FrankenPhpRunner(
