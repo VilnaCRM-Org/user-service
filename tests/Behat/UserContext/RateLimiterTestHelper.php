@@ -28,7 +28,9 @@ final readonly class RateLimiterTestHelper
         UserOperationsState $state,
         int $count
     ): void {
-        foreach ($this->loopbackIpKeys($state) as $loopbackIpKey) {
+        $state->clientIpAddress = self::LOOPBACK_IPS[0];
+
+        foreach ($this->loopbackIpKeys() as $loopbackIpKey) {
             $this->consume($limiter, $loopbackIpKey, $count);
         }
     }
@@ -46,10 +48,8 @@ final readonly class RateLimiterTestHelper
     /**
      * @return list<string>
      */
-    private function loopbackIpKeys(UserOperationsState $state): array
+    private function loopbackIpKeys(): array
     {
-        $state->clientIpAddress = self::LOOPBACK_IPS[0];
-
         return array_map(
             static fn (string $loopbackIp): string => sprintf('ip:%s', $loopbackIp),
             self::LOOPBACK_IPS

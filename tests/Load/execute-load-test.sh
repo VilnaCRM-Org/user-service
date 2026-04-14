@@ -71,8 +71,16 @@ attach_access_tokens() {
     bin/console app:load-test:attach-access-tokens
 }
 
+scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)
+if [ -z "$scriptFile" ]; then
+  echo "Error: load-test scenario script not found for '${scenario}'." >&2
+  exit 1
+fi
+
+scriptRelPath="${scriptFile#./tests/Load/}"
+
 serviceToken=$(
-  "${composeCmd[@]}" exec -T php sh /srv/app/tests/Load/generate-service-token.sh | tr -d '\r\n'
+  "${composeCmd[@]}" exec -T "$loadTestPhpService" sh /srv/app/tests/Load/generate-service-token.sh | tr -d '\r\n'
 )
 
 if [ -z "$serviceToken" ]; then
@@ -106,14 +114,6 @@ if scenario_requires_seeded_users "$scenario"; then
     -e "MAILCATCHER_PORT=${loadTestMailCatcherHttpPort}"
   attach_access_tokens
 fi
-
-scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)
-if [ -z "$scriptFile" ]; then
-  echo "Error: load-test scenario script not found for '${scenario}'." >&2
-  exit 1
-fi
-
-scriptRelPath="${scriptFile#./tests/Load/}"
 
 "${k6Cmd[@]}" "/loadTests/${scriptRelPath}" \
   -e "run_smoke=${runSmoke}" \
