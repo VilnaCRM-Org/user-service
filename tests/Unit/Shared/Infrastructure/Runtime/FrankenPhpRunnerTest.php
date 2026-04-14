@@ -8,6 +8,7 @@ use App\Shared\Infrastructure\Runtime\FrankenPhpRequestHandlerInvoker;
 use App\Shared\Infrastructure\Runtime\FrankenPhpRunner;
 use App\Shared\Infrastructure\Runtime\MockFrankenPhpFunctions;
 use Closure;
+use Faker\Factory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -152,12 +153,15 @@ final class FrankenPhpRunnerTest extends TestCase
 
     public function testRunBuildsPutRequestsFromParsedBody(): void
     {
+        $faker = Factory::create();
+        $email = $faker->safeEmail();
+        $avatarName = $faker->word() . '.png';
         $kernel = $this->createMock(TestKernelInterface::class);
         $this->expectSingleHandledRequest(
             $kernel,
-            static function (Request $request): void {
+            static function (Request $request) use ($email): void {
                 self::assertSame('PUT', $request->getMethod());
-                self::assertSame('worker@example.com', $request->request->get('email'));
+                self::assertSame($email, $request->request->get('email'));
                 self::assertTrue($request->files->has('avatar'));
             },
         );
@@ -166,7 +170,7 @@ final class FrankenPhpRunnerTest extends TestCase
             ['server' => ['REQUEST_METHOD' => 'PUT'], 'result' => false],
         ]);
         MockFrankenPhpFunctions::setRequestParseBodyResults([
-            [['email' => 'worker@example.com'], ['avatar' => ['name' => 'avatar.png']]],
+            [['email' => $email], ['avatar' => ['name' => $avatarName]]],
         ]);
 
         self::assertSame(0, $this->runRunner($kernel));
