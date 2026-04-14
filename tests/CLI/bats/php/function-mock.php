@@ -180,3 +180,18 @@ function request_parse_body(): array
 
     return array_shift(MockFrankenPhpFunctions::$requestParseBodyResults) ?? [[], []];
 }
+
+namespace App\Shared\Infrastructure\Runtime\Factory;
+
+/**
+ * @return array{0: array<string, mixed>, 1: array<string, mixed>}
+ */
+function request_parse_body(): array
+{
+    return \App\Shared\Infrastructure\Runtime\request_parse_body();
+}
+
+function file_get_contents(string $filename): string|false
+{
+    return \App\Shared\Infrastructure\Runtime\file_get_contents($filename);
+}

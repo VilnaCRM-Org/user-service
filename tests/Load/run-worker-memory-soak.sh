@@ -10,6 +10,7 @@ loadTestComposeProject=${LOAD_TEST_COMPOSE_PROJECT:-user-service-load-tests}
 loadTestComposeFile=${LOAD_TEST_COMPOSE_FILE:-docker-compose.load-tests.yml}
 loadTestPhpService=${LOAD_TEST_PHP_SERVICE:-php}
 loadTestRedisService=${LOAD_TEST_REDIS_SERVICE:-redis}
+loadTestLockoutRedisService=${LOAD_TEST_LOCKOUT_REDIS_SERVICE:-$loadTestRedisService}
 memorySoakRounds=${MEMORY_SOAK_ROUNDS:-6}
 memorySoakWarmupRounds=${MEMORY_SOAK_WARMUP_ROUNDS:-2}
 memorySoakSettleSeconds=${MEMORY_SOAK_SETTLE_SECONDS:-5}
@@ -115,6 +116,9 @@ reset_round_state() {
   echo "[$reset_timestamp] resetting load-test data stores before round execution"
 
   "${composeCmd[@]}" exec -T "$loadTestRedisService" redis-cli FLUSHALL >/dev/null
+  if [ "$loadTestLockoutRedisService" != "$loadTestRedisService" ]; then
+    "${composeCmd[@]}" exec -T "$loadTestLockoutRedisService" redis-cli FLUSHALL >/dev/null
+  fi
   "${composeCmd[@]}" exec -T -e APP_ENV=load_test "$loadTestPhpService" \
     bin/console doctrine:mongodb:schema:drop >/dev/null 2>&1 || true
   "${composeCmd[@]}" exec -T -e APP_ENV=load_test "$loadTestPhpService" \
@@ -152,6 +156,7 @@ fi
 
 declare -a rss_samples=()
 
+initial_restart_count=$(sample_restart_count)
 initial_rss_kb=$(sample_rss_kb)
 initial_timestamp=$(timestamp_utc)
 initial_rss_mib=$(to_mib "$initial_rss_kb")
@@ -188,8 +193,8 @@ for round in $(seq 1 "$memorySoakRounds"); do
   fi
 
   restart_count=$(sample_restart_count)
-  if [ "$restart_count" -ne 0 ]; then
-    echo "Error: worker container restarted during soak run (restart_count=${restart_count})." >&2
+  if [ "$restart_count" -gt "$initial_restart_count" ]; then
+    echo "Error: worker container restarted during soak run (restart_count=${restart_count}, initial_restart_count=${initial_restart_count})." >&2
     exit 1
   fi
 

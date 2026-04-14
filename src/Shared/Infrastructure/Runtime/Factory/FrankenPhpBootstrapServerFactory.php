@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Runtime;
+namespace App\Shared\Infrastructure\Runtime\Factory;
 
+use App\Shared\Infrastructure\Runtime\FrankenPhpBootstrapServer;
 use Symfony\Component\HttpFoundation\Request;
 
 final class FrankenPhpBootstrapServerFactory

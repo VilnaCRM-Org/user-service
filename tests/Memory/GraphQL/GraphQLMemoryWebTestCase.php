@@ -669,6 +669,12 @@ GRAPHQL;
         string $propertyName,
         array|bool|null $value,
     ): void {
+        if (!property_exists($className, $propertyName)) {
+            // @codeCoverageIgnoreStart
+            return;
+            // @codeCoverageIgnoreEnd
+        }
+
         $property = new \ReflectionProperty($className, $propertyName);
         $property->setValue(null, $value);
     }

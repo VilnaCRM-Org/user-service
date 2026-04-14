@@ -39,6 +39,7 @@ runSpike=$5
 htmlPrefix=${6:-}
 loadTestComposeProject=${LOAD_TEST_COMPOSE_PROJECT:-user-service-load-tests}
 loadTestComposeFile=${LOAD_TEST_COMPOSE_FILE:-docker-compose.load-tests.yml}
+loadTestPhpService=${LOAD_TEST_PHP_SERVICE:-php}
 loadTestApiHost=${LOAD_TEST_API_HOST:-localhost}
 loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
 loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
@@ -57,12 +58,17 @@ done
 
 scenario_requires_seeded_users() {
     case "$1" in
-        createUser|graphQLCreateUser|createUserBatch|health|oauth|oauthSocialCallback|oauthSocialInitiate)
+        createUser|graphQLCreateUser|createUserBatch|health|oauth|oauthAuthorize|oauthSocialCallback|oauthSocialInitiate)
             return 1
             ;;
     esac
 
     return 0
+}
+
+attach_access_tokens() {
+  "${composeCmd[@]}" exec -T "$loadTestPhpService" \
+    bin/console app:load-test:attach-access-tokens
 }
 
 serviceToken=$(
@@ -98,7 +104,7 @@ if scenario_requires_seeded_users "$scenario"; then
     -e "API_HOST=${loadTestApiHost}" \
     -e "API_PORT=${loadTestApiPort}" \
     -e "MAILCATCHER_PORT=${loadTestMailCatcherHttpPort}"
-  "${composeCmd[@]}" exec -T php bin/console app:load-test:attach-access-tokens
+  attach_access_tokens
 fi
 
 scriptFile=$(find ./tests/Load/scripts -name "${scenario}.js" | head -1)

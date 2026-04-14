@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Infrastructure\Runtime;
 
-use App\Shared\Infrastructure\Runtime\FrankenPhpBootstrapServerFactory;
+use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpBootstrapServerFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 

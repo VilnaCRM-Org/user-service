@@ -190,6 +190,24 @@ final class FrankenPhpRunnerTest extends TestCase
         $this->assertSingleRunMetrics(fileGetContentsCalls: 1);
     }
 
+    public function testRunPreservesExistingPostPayloadWhenLegacyInputStreamIsEmpty(): void
+    {
+        $kernel = $this->createMock(TestKernelInterface::class);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertRequestPayload($request, 'fallback', 'value');
+            },
+        );
+
+        MockFrankenPhpFunctions::replacePost(['fallback' => 'value']);
+        MockFrankenPhpFunctions::setFileGetContentsResult('');
+        $this->setSinglePatchHandleRequestBehavior('application/x-www-form-urlencoded');
+
+        self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
+        $this->assertSingleRunMetrics(fileGetContentsCalls: 1);
+    }
+
     public function testRunKeepsPostPayloadForLegacyNonFormRequests(): void
     {
         $kernel = $this->createMock(TestKernelInterface::class);

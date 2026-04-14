@@ -1,6 +1,4 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
-
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
     this.utils = utils;
@@ -86,53 +84,33 @@ export default class InsertUsersUtils {
     const safeBatchSize = configuredBatchSize > 0 ? configuredBatchSize : 10;
     const batchSize = Math.min(safeBatchSize, numberOfUsers);
     const users = [];
-    let pendingRequests = this.prepareRequestBatch(numberOfUsers, batchSize, serviceToken);
-    const maxAttempts = 3;
+    const pendingRequests = this.prepareRequestBatch(numberOfUsers, batchSize, serviceToken);
+    const responses = http.batch(pendingRequests.map(({ request }) => request));
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-      const responses = http.batch(pendingRequests.map(({ request }) => request));
-      const retryRequests = [];
+    responses.forEach((response, index) => {
+      const batchRequest = pendingRequests[index];
 
-      responses.forEach((response, index) => {
-        const batchRequest = pendingRequests[index];
-
-        if (response.status === 200 || response.status === 201) {
-          try {
-            JSON.parse(response.body).forEach(user => {
-              user.password = batchRequest.passwords[user.email];
-              users.push(user);
-            });
-          } catch (parseError) {
-            console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
-            throw new Error(`Failed to parse batch response: ${response.body}`);
-          }
-
-          return;
+      if (response.status === 200 || response.status === 201) {
+        try {
+          JSON.parse(response.body).forEach(user => {
+            user.password = batchRequest.passwords[user.email];
+            users.push(user);
+          });
+        } catch (parseError) {
+          console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
+          throw new Error(`Failed to parse batch response: ${response.body}`);
         }
 
-        if (response.status >= 500 && attempt < maxAttempts) {
-          console.log(
-            `Batch request ${index + 1} failed with status ${response.status}; retrying attempt ${attempt + 1}/${maxAttempts}.`
-          );
-          retryRequests.push(batchRequest);
-          return;
-        }
-
-        console.log(
-          `Batch request ${index + 1} failed with status ${response.status}: ${response.body}`
-        );
-        throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
-      });
-
-      if (retryRequests.length === 0) {
-        return users;
+        return;
       }
 
-      pendingRequests = retryRequests;
-      sleep(1);
-    }
+      console.log(
+        `Batch request ${index + 1} failed with status ${response.status}: ${response.body}`
+      );
+      throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
+    });
 
-    throw new Error(`Batch request failed after ${maxAttempts} attempts.`);
+    return users;
   }
 
   countRequestForRampingRate(startRps, targetRps, duration) {

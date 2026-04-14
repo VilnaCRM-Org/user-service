@@ -69,6 +69,7 @@ abstract class BrowserReuseMemoryWebTestCase extends MemoryWebTestCase
             return;
         }
 
+        $client->getCookieJar()->clear();
         $client->request(
             'GET',
             '/api/health',

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Runtime;
+namespace App\Shared\Infrastructure\Runtime\Factory;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -15,7 +15,11 @@ final class FrankenPhpLegacyBodyRequestFactory
 
         if ($this->shouldParseBody($request)) {
             $content = file_get_contents('php://input');
-            parse_str(\is_string($content) ? $content : '', $post);
+            if (\is_string($content) && $content !== '') {
+                $parsedPost = [];
+                parse_str($content, $parsedPost);
+                $post = $parsedPost;
+            }
         }
 
         return new Request(

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Runtime;
 
+use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpBootstrapServerFactory;
+use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpRequestFactory;
 use Closure;
+use RuntimeException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Symfony\Component\Runtime\RunnerInterface;
@@ -47,7 +50,17 @@ final class FrankenPhpRunner implements RunnerInterface
 
     private function handleRequest(Closure $handler): bool
     {
-        /** @psalm-suppress UndefinedFunction */
+        if (
+            !\function_exists(__NAMESPACE__ . '\frankenphp_handle_request')
+            && !\function_exists('frankenphp_handle_request')
+        ) {
+            // @codeCoverageIgnoreStart
+            throw new RuntimeException(
+                'frankenphp_handle_request() is unavailable. Ensure FrankenPHP worker runtime is enabled.',
+            );
+            // @codeCoverageIgnoreEnd
+        }
+
         return frankenphp_handle_request($handler);
     }
 
