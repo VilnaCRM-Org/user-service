@@ -66,4 +66,40 @@ final class FrankenPhpLegacyBodyRequestFactoryTest extends TestCase
         self::assertSame('value', $rebuiltRequest->request->get('legacy'));
         self::assertSame(1, MockFrankenPhpFunctions::$interceptedPhpInputCalls);
     }
+
+    public function testCreateTreatsWhitespaceOnlyContentTypeAsEmpty(): void
+    {
+        MockFrankenPhpFunctions::setFileGetContentsResult('legacy=value');
+        $request = new Request(
+            [],
+            ['fallback' => 'value'],
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => '   '],
+        );
+
+        $rebuiltRequest = $this->factory->create($request);
+
+        self::assertSame('value', $rebuiltRequest->request->get('legacy'));
+        self::assertSame(1, MockFrankenPhpFunctions::$interceptedPhpInputCalls);
+    }
+
+    public function testCreateTrimsWhitespaceAroundLegacyMediaTypeToken(): void
+    {
+        MockFrankenPhpFunctions::setFileGetContentsResult('legacy=value');
+        $request = new Request(
+            [],
+            ['fallback' => 'value'],
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/x-www-form-urlencoded ; charset=UTF-8'],
+        );
+
+        $rebuiltRequest = $this->factory->create($request);
+
+        self::assertSame('value', $rebuiltRequest->request->get('legacy'));
+        self::assertSame(1, MockFrankenPhpFunctions::$interceptedPhpInputCalls);
+    }
 }
