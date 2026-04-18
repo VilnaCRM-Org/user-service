@@ -235,30 +235,3 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->assertSame('', $profile->name);
     }
 }
-
-final class StatefulFacebookProviderDouble extends Facebook
-{
-    public function __construct()
-    {
-    }
-
-    #[\Override]
-    public function setPkceCode($pkceCode)
-    {
-        parent::setPkceCode($pkceCode);
-
-        return $this;
-    }
-
-    #[\Override]
-    public function getAccessToken($grant = 'authorization_code', array $params = []): AccessToken
-    {
-        return new AccessToken([
-            'access_token' => sprintf(
-                '%s|%s',
-                $params['code'],
-                $this->getPkceCode() ?? 'none',
-            ),
-        ]);
-    }
-}

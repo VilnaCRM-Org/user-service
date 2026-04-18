@@ -258,22 +258,3 @@ final class TwitterOAuthProviderTest extends UnitTestCase
         $this->assertSame($name, $profile->name);
     }
 }
-
-final class StatefulTwitterProviderDouble extends Twitter
-{
-    public function __construct()
-    {
-    }
-
-    #[\Override]
-    public function getAccessToken($grant, array $options = []): AccessToken
-    {
-        return new AccessToken([
-            'access_token' => sprintf(
-                '%s|%s',
-                $options['code'],
-                isset($this->pkceVerifier) ? $this->pkceVerifier : 'none',
-            ),
-        ]);
-    }
-}
