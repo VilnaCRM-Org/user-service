@@ -197,6 +197,28 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         );
     }
 
+    public function testExchangeCodeDoesNotReusePkceVerifierAcrossCalls(): void
+    {
+        $facebook = new StatefulFacebookProviderDouble();
+        $provider = new FacebookOAuthProvider(
+            $facebook,
+            OAuthProvider::fromString('facebook'),
+        );
+
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+
+        $this->assertSame(
+            sprintf('%s|%s', $firstCode, $firstVerifier),
+            $provider->exchangeCode($firstCode, $firstVerifier),
+        );
+        $this->assertSame(
+            sprintf('%s|none', $secondCode),
+            $provider->exchangeCode($secondCode, null),
+        );
+    }
+
     public function testFetchProfileUsesEmptyStringWhenNameIsNull(): void
     {
         $email = $this->faker->safeEmail();
@@ -211,5 +233,30 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $profile = $this->provider->fetchProfile($this->faker->sha256());
 
         $this->assertSame('', $profile->name);
+    }
+}
+
+final class StatefulFacebookProviderDouble extends Facebook
+{
+    public function __construct()
+    {
+    }
+
+    public function setPkceCode($pkceCode)
+    {
+        parent::setPkceCode($pkceCode);
+
+        return $this;
+    }
+
+    public function getAccessToken($grant = 'authorization_code', array $params = []): AccessToken
+    {
+        return new AccessToken([
+            'access_token' => sprintf(
+                '%s|%s',
+                $params['code'],
+                $this->getPkceCode() ?? 'none',
+            ),
+        ]);
     }
 }

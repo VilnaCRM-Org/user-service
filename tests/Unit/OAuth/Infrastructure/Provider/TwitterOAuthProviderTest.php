@@ -199,6 +199,28 @@ final class TwitterOAuthProviderTest extends UnitTestCase
         );
     }
 
+    public function testExchangeCodeDoesNotReusePkceVerifierAcrossCalls(): void
+    {
+        $twitter = new StatefulTwitterProviderDouble();
+        $provider = new TwitterOAuthProvider(
+            $twitter,
+            OAuthProvider::fromString('twitter'),
+        );
+
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+
+        $this->assertSame(
+            sprintf('%s|%s', $firstCode, $firstVerifier),
+            $provider->exchangeCode($firstCode, $firstVerifier),
+        );
+        $this->assertSame(
+            sprintf('%s|none', $secondCode),
+            $provider->exchangeCode($secondCode, null),
+        );
+    }
+
     public function testFetchProfileUsesUsernameWhenNameIsNull(): void
     {
         $email = $this->faker->safeEmail();
@@ -234,5 +256,23 @@ final class TwitterOAuthProviderTest extends UnitTestCase
         $profile = $this->provider->fetchProfile($this->faker->sha256());
 
         $this->assertSame($name, $profile->name);
+    }
+}
+
+final class StatefulTwitterProviderDouble extends Twitter
+{
+    public function __construct()
+    {
+    }
+
+    public function getAccessToken($grant, array $options = []): AccessToken
+    {
+        return new AccessToken([
+            'access_token' => sprintf(
+                '%s|%s',
+                $options['code'],
+                isset($this->pkceVerifier) ? $this->pkceVerifier : 'none',
+            ),
+        ]);
     }
 }
