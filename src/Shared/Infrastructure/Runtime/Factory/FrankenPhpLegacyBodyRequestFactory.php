@@ -26,7 +26,7 @@ final class FrankenPhpLegacyBodyRequestFactory
         return new Request(
             $request->query->all(),
             $post,
-            [],
+            $request->attributes->all(),
             $request->cookies->all(),
             $request->files->all(),
             $request->server->all(),
@@ -36,11 +36,9 @@ final class FrankenPhpLegacyBodyRequestFactory
 
     private function shouldParseBody(Request $request): bool
     {
-        $contentType = $request->headers->get('CONTENT_TYPE', '');
+        $contentType = trim((string) $request->headers->get('CONTENT_TYPE', ''));
+        $mediaType = strtolower(trim((string) strtok($contentType, ';')));
 
-        return $contentType === '' || str_starts_with(
-            $contentType,
-            'application/x-www-form-urlencoded',
-        );
+        return $contentType === '' || $mediaType === 'application/x-www-form-urlencoded';
     }
 }

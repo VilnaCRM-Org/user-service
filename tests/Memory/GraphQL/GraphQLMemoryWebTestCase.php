@@ -903,6 +903,7 @@ GRAPHQL;
             $this->confirmationTokenFactory,
             $this->confirmationTokenRepository,
             $this->container,
+            $this->faker,
             $this->passwordHasherFactory,
             $this->passwordResetTokenFactory,
             $this->passwordResetTokenRepository,

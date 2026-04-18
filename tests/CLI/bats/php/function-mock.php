@@ -10,10 +10,22 @@ final class MockFrankenPhpFunctions
     public static array $handleRequestBehaviors = [];
     /** @var list<bool> */
     public static array $handleRequestResults = [];
-    /** @var list<bool> */
+    /** @var list<?bool> */
     public static array $ignoreUserAbortArguments = [];
+    /**
+     * @var list<array{
+     *     filename: string,
+     *     use_include_path: bool,
+     *     context: mixed,
+     *     offset: int,
+     *     length: ?int
+     * }>
+     */
+    public static array $fileGetContentsArguments = [];
     /** @var list<array{0: array<string, mixed>, 1: array<string, mixed>}> */
     public static array $requestParseBodyResults = [];
+    /** @var list<?array> */
+    public static array $requestParseBodyArguments = [];
     public static int $handleRequestCalls = 0;
     public static int $interceptedPhpInputCalls = 0;
     public static int $gcCollectCyclesCalls = 0;
@@ -27,7 +39,9 @@ final class MockFrankenPhpFunctions
         self::$handleRequestBehaviors = [];
         self::$handleRequestResults = [];
         self::$ignoreUserAbortArguments = [];
+        self::$fileGetContentsArguments = [];
         self::$requestParseBodyResults = [];
+        self::$requestParseBodyArguments = [];
         self::$handleRequestCalls = 0;
         self::$interceptedPhpInputCalls = 0;
         self::$gcCollectCyclesCalls = 0;
@@ -118,7 +132,7 @@ final class MockFrankenPhpFunctions
     }
 }
 
-function ignore_user_abort(bool $enable): int
+function ignore_user_abort(?bool $enable = null): int
 {
     MockFrankenPhpFunctions::$ignoreUserAbortArguments = [
         ...MockFrankenPhpFunctions::$ignoreUserAbortArguments,
@@ -162,10 +176,33 @@ function gc_mem_caches(): int
     return 0;
 }
 
-function file_get_contents(string $filename): string|false
+function file_get_contents(
+    string $filename,
+    bool $use_include_path = false,
+    mixed $context = null,
+    int $offset = 0,
+    ?int $length = null,
+): string|false
 {
+    MockFrankenPhpFunctions::$fileGetContentsArguments = [
+        ...MockFrankenPhpFunctions::$fileGetContentsArguments,
+        [
+            'filename' => $filename,
+            'use_include_path' => $use_include_path,
+            'context' => $context,
+            'offset' => $offset,
+            'length' => $length,
+        ],
+    ];
+
     if ($filename !== 'php://input' || MockFrankenPhpFunctions::$fileGetContentsResult === null) {
-        return \file_get_contents($filename);
+        return \file_get_contents(
+            $filename,
+            $use_include_path,
+            $context,
+            $offset,
+            $length,
+        );
     }
 
     ++MockFrankenPhpFunctions::$interceptedPhpInputCalls;
@@ -176,8 +213,13 @@ function file_get_contents(string $filename): string|false
 /**
  * @return array{0: array<string, mixed>, 1: array<string, mixed>}
  */
-function request_parse_body(): array
+function request_parse_body(?array $options = null): array
 {
+    MockFrankenPhpFunctions::$requestParseBodyArguments = [
+        ...MockFrankenPhpFunctions::$requestParseBodyArguments,
+        $options,
+    ];
+
     ++MockFrankenPhpFunctions::$requestParseBodyCalls;
 
     if (MockFrankenPhpFunctions::$requestParseBodyException instanceof \Throwable) {
@@ -192,12 +234,24 @@ namespace App\Shared\Infrastructure\Runtime\Factory;
 /**
  * @return array{0: array<string, mixed>, 1: array<string, mixed>}
  */
-function request_parse_body(): array
+function request_parse_body(?array $options = null): array
 {
-    return \App\Shared\Infrastructure\Runtime\request_parse_body();
+    return \App\Shared\Infrastructure\Runtime\request_parse_body($options);
 }
 
-function file_get_contents(string $filename): string|false
+function file_get_contents(
+    string $filename,
+    bool $use_include_path = false,
+    mixed $context = null,
+    int $offset = 0,
+    ?int $length = null,
+): string|false
 {
-    return \App\Shared\Infrastructure\Runtime\file_get_contents($filename);
+    return \App\Shared\Infrastructure\Runtime\file_get_contents(
+        $filename,
+        $use_include_path,
+        $context,
+        $offset,
+        $length,
+    );
 }

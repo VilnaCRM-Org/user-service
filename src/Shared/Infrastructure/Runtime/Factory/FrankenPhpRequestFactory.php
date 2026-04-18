@@ -33,12 +33,10 @@ final class FrankenPhpRequestFactory
         return $this->legacyBodyRequestFactory->create($request);
     }
 
+    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function createBaseRequest(): Request
     {
-        /** @var callable(): Request $requestFactory */
-        $requestFactory = [Request::class, 'createFromGlobals'];
-
-        return $requestFactory();
+        return Request::createFromGlobals();
     }
 
     private function requestBodyParserIsAvailable(): bool
