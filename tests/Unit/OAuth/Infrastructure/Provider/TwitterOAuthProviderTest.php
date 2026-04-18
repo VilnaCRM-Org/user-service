@@ -265,6 +265,7 @@ final class StatefulTwitterProviderDouble extends Twitter
     {
     }
 
+    #[\Override]
     public function getAccessToken($grant, array $options = []): AccessToken
     {
         return new AccessToken([

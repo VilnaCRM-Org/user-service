@@ -242,6 +242,7 @@ final class StatefulFacebookProviderDouble extends Facebook
     {
     }
 
+    #[\Override]
     public function setPkceCode($pkceCode)
     {
         parent::setPkceCode($pkceCode);
@@ -249,6 +250,7 @@ final class StatefulFacebookProviderDouble extends Facebook
         return $this;
     }
 
+    #[\Override]
     public function getAccessToken($grant = 'authorization_code', array $params = []): AccessToken
     {
         return new AccessToken([
