@@ -7,6 +7,7 @@ namespace App\Tests\Unit\OAuth\Application\Resolver;
 use App\OAuth\Application\Factory\OAuthUserFactory;
 use App\OAuth\Application\Resolver\OAuthUserResolver;
 use App\OAuth\Domain\Entity\SocialIdentity;
+use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
@@ -266,7 +267,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->assertSame(self::MULTIBYTE_PREFIX, $result->user->getInitials());
     }
 
-    public function testResolveSkipsAutoLinkWhenEmailNotVerified(): void
+    public function testResolveRejectsUnverifiedEmailBeforeAutoLink(): void
     {
         $provider = OAuthProvider::fromString($this->faker->word());
         $email = $this->faker->safeEmail();
@@ -274,32 +275,31 @@ final class OAuthUserResolverTest extends UnitTestCase
 
         $this->arrangeNoIdentityMatch();
         $this->userRepo->expects($this->never())->method('findByEmail');
-        $this->passwordHasher->method('hash')
-            ->willReturn($this->faker->sha256());
+        $this->userRepo->expects($this->never())->method('save');
+        $this->socialIdentityRepo->expects($this->never())->method('save');
 
-        $profile = $this->createUnverifiedProfile($email);
-        $result = $this->resolver->resolve($provider, $profile);
+        $this->expectException(UnverifiedProviderEmailException::class);
+        $this->expectExceptionMessageMatches('/' . preg_quote((string) $provider, '/') . '/');
 
-        $this->assertTrue($result->newlyCreated);
-        $this->assertFalse($result->user->isConfirmed());
+        $this->resolver->resolve($provider, $this->createUnverifiedProfile($email));
     }
 
-    public function testResolveNewUserNotConfirmedWhenEmailNotVerified(): void
+    public function testResolveRejectsUnverifiedEmailBeforeNewUserCreation(): void
     {
         $provider = OAuthProvider::fromString($this->faker->word());
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')->willReturn(null);
-        $this->passwordHasher->method('hash')
-            ->willReturn($this->faker->sha256());
+        $this->userRepo->expects($this->never())->method('findByEmail');
+        $this->userRepo->expects($this->never())->method('save');
+        $this->socialIdentityRepo->expects($this->never())->method('save');
 
-        $profile = $this->createUnverifiedProfile(
-            $this->faker->safeEmail(),
+        $this->expectException(UnverifiedProviderEmailException::class);
+        $this->expectExceptionMessageMatches('/' . preg_quote((string) $provider, '/') . '/');
+
+        $this->resolver->resolve(
+            $provider,
+            $this->createUnverifiedProfile($this->faker->safeEmail()),
         );
-        $result = $this->resolver->resolve($provider, $profile);
-
-        $this->assertTrue($result->newlyCreated);
-        $this->assertFalse($result->user->isConfirmed());
     }
 
     public function testResolveAutoLinkSkipsSaveIfAlreadyConfirmed(): void

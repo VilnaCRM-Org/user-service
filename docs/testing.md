@@ -99,6 +99,8 @@ We test each available endpoint of our service with multiple loads. For each end
 
 Also, you can check [this](https://github.com/VilnaCRM-Org/user-service/actions/workflows/load-tests.yml?query=branch%3Amain) GitHub CI workflow to see the results of the latest Load test execution.
 
+For the endpoint-by-endpoint FrankenPHP worker-mode comparison generated during the rollout, see [FrankenPHP Worker Mode Vs Non-Worker Mode](./frankenphp-worker-mode-comparison.md). That report keeps the same fixed-VU benchmark profile for both runtime modes and compares every configured load-test scenario.
+
 ### Location
 
 Our load testing scripts are organized within the `/tests/Load` directory. These scripts are crafted to simulate various realistic usage scenarios that our application might face in production. By doing so, we can accurately assess how our system behaves under different levels of demand.

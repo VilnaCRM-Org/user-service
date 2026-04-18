@@ -24,6 +24,8 @@ To ensure our User Service is optimized for high performance, we conducted exten
 
 Here you will find the results of load tests for each User Service endpoint, with a graph, that shows how execution parameters were changing over time for different load scenarios. Also, the metric for Spike testing will be provided, alongside a table, that will show the most important of them.
 
+For the dedicated FrankenPHP runtime comparison used during the worker-mode rollout, see [FrankenPHP Worker Mode Vs Non-Worker Mode](./frankenphp-worker-mode-comparison.md). That report compares every configured REST, GraphQL, and OAuth load scenario under the same fixed-VU benchmark profile with worker mode enabled and disabled.
+
 Each endpoint was tested for smoke, average, stress, and spike load scenarios. You can learn more about them [here](https://grafana.com/docs/k6/latest/testing-guides/test-types/).
 Also, you can find HTML files with load test reports [here](https://github.com/VilnaCRM-Org/user-service/tree/main/tests/Load/results/fpm)
 

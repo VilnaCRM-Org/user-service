@@ -151,7 +151,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame($id, $profile->providerId);
-        $this->assertTrue($profile->emailVerified);
+        $this->assertFalse($profile->emailVerified);
     }
 
     public function testFetchProfileThrowsEmailUnavailableWhenEmailIsNull(): void

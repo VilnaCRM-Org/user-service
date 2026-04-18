@@ -71,11 +71,13 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
         ?string $codeVerifier,
     ): string {
         try {
+            $facebook = clone $this->facebook;
+
             if ($codeVerifier !== null) {
-                $this->facebook->setPkceCode($codeVerifier);
+                $facebook->setPkceCode($codeVerifier);
             }
 
-            $token = $this->facebook->getAccessToken(
+            $token = $facebook->getAccessToken(
                 'authorization_code',
                 ['code' => $code],
             );
@@ -120,7 +122,7 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
             email: $owner->getEmail(),
             name: $owner->getName() ?? '',
             providerId: (string) $owner->getId(),
-            emailVerified: true,
+            emailVerified: false,
         );
     }
 }
