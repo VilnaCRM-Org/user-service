@@ -15,7 +15,7 @@ final class MockFrankenPhpFunctions
     /** @var list<array{0: array<string, mixed>, 1: array<string, mixed>}> */
     public static array $requestParseBodyResults = [];
     public static int $handleRequestCalls = 0;
-    public static int $fileGetContentsCalls = 0;
+    public static int $interceptedPhpInputCalls = 0;
     public static int $gcCollectCyclesCalls = 0;
     public static int $gcMemCachesCalls = 0;
     public static int $requestParseBodyCalls = 0;
@@ -29,7 +29,7 @@ final class MockFrankenPhpFunctions
         self::$ignoreUserAbortArguments = [];
         self::$requestParseBodyResults = [];
         self::$handleRequestCalls = 0;
-        self::$fileGetContentsCalls = 0;
+        self::$interceptedPhpInputCalls = 0;
         self::$gcCollectCyclesCalls = 0;
         self::$gcMemCachesCalls = 0;
         self::$requestParseBodyCalls = 0;
@@ -91,6 +91,12 @@ final class MockFrankenPhpFunctions
     public static function setHandleRequestBehaviors(array $behaviors): void
     {
         self::$handleRequestBehaviors = $behaviors;
+    }
+
+    /** @param list<bool> $results */
+    public static function setHandleRequestResults(array $results): void
+    {
+        self::$handleRequestResults = $results;
     }
 
     /**
@@ -162,7 +168,7 @@ function file_get_contents(string $filename): string|false
         return \file_get_contents($filename);
     }
 
-    ++MockFrankenPhpFunctions::$fileGetContentsCalls;
+    ++MockFrankenPhpFunctions::$interceptedPhpInputCalls;
 
     return MockFrankenPhpFunctions::$fileGetContentsResult;
 }

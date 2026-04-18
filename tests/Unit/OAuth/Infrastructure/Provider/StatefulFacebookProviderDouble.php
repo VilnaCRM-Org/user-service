@@ -33,10 +33,13 @@ final class StatefulFacebookProviderDouble extends Facebook
     #[\Override]
     public function getAccessToken($grant = 'authorization_code', array $params = []): AccessToken
     {
+        $fallbackCode = is_string($grant) ? $grant : 'authorization_code';
+        $code = $params['code'] ?? $fallbackCode;
+
         return new AccessToken([
             'access_token' => sprintf(
                 '%s|%s',
-                $params['code'],
+                $code,
                 $this->getPkceCode() ?? 'none',
             ),
         ]);

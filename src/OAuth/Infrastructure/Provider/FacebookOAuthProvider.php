@@ -122,7 +122,7 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
             email: $owner->getEmail(),
             name: $owner->getName() ?? '',
             providerId: (string) $owner->getId(),
-            emailVerified: false,
+            emailVerified: true,
         );
     }
 }

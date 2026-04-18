@@ -70,29 +70,40 @@ abstract class MemoryLeakAwareWebTestCase extends WebTestCase
 
     private function trackInitializedServicesForDeallocation(): void
     {
-        $container = static::$kernel?->getContainer();
-        if (!$container instanceof Container) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException(
-                'Container is not an instance of Symfony\Component\DependencyInjection\Container.'
-            );
-            // @codeCoverageIgnoreEnd
-        }
-
-        $ignoredServiceLeaks = $this->getIgnoredServiceLeaks();
-        $this->getDeallocationChecker()->expectDeallocation($container, 'container');
+        $container = $this->requireContainer();
+        $deallocationChecker = $this->getDeallocationChecker();
+        $deallocationChecker->expectDeallocation($container, 'container');
 
         foreach ($container->getServiceIds() as $serviceId) {
-            if (
-                $container->initialized($serviceId)
-                && !\in_array($serviceId, $ignoredServiceLeaks, true)
-            ) {
-                $service = $container->get($serviceId);
-                $this->getDeallocationChecker()->expectDeallocation(
-                    $service,
-                    sprintf('service %s', $serviceId)
-                );
+            if (!$this->shouldTrackService($container, $serviceId)) {
+                continue;
             }
+
+            $deallocationChecker->expectDeallocation(
+                $container->get($serviceId),
+                sprintf('service %s', $serviceId),
+            );
         }
+    }
+
+    private function requireContainer(): Container
+    {
+        $container = static::$kernel?->getContainer();
+        if ($container instanceof Container) {
+            return $container;
+        }
+
+        // @codeCoverageIgnoreStart
+        throw new LogicException(
+            'Container is not an instance of Symfony\Component\DependencyInjection\Container.'
+        );
+        // @codeCoverageIgnoreEnd
+    }
+
+    private function shouldTrackService(Container $container, string $serviceId): bool
+    {
+        return $serviceId !== 'service_container'
+            && $container->initialized($serviceId)
+            && !\in_array($serviceId, $this->getIgnoredServiceLeaks(), true);
     }
 }

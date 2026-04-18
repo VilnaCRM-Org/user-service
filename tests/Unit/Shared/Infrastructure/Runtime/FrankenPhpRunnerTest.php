@@ -216,7 +216,7 @@ final class FrankenPhpRunnerTest extends TestCase
         $this->setSinglePatchHandleRequestBehavior('application/x-www-form-urlencoded');
 
         self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
-        $this->assertSingleRunMetrics(fileGetContentsCalls: 1);
+        $this->assertSingleRunMetrics(interceptedPhpInputCalls: 1);
     }
 
     public function testRunPreservesExistingPostPayloadWhenLegacyInputStreamIsEmpty(): void
@@ -234,7 +234,25 @@ final class FrankenPhpRunnerTest extends TestCase
         $this->setSinglePatchHandleRequestBehavior('application/x-www-form-urlencoded');
 
         self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
-        $this->assertSingleRunMetrics(fileGetContentsCalls: 1);
+        $this->assertSingleRunMetrics(interceptedPhpInputCalls: 1);
+    }
+
+    public function testRunPreservesExistingPostPayloadWhenLegacyInputStreamReadFails(): void
+    {
+        $kernel = $this->createMock(TestKernelInterface::class);
+        $this->expectSingleHandledRequest(
+            $kernel,
+            static function (Request $request): void {
+                self::assertRequestPayload($request, 'fallback', 'value');
+            },
+        );
+
+        MockFrankenPhpFunctions::replacePost(['fallback' => 'value']);
+        MockFrankenPhpFunctions::setFileGetContentsResult(false);
+        $this->setSinglePatchHandleRequestBehavior('application/x-www-form-urlencoded');
+
+        self::assertSame(0, $this->runRunner($kernel, static fn (): bool => false));
+        $this->assertSingleRunMetrics(interceptedPhpInputCalls: 1);
     }
 
     public function testRunKeepsPostPayloadForLegacyNonFormRequests(): void
@@ -285,14 +303,17 @@ final class FrankenPhpRunnerTest extends TestCase
 
     private function assertSingleRunMetrics(
         int $requestParseBodyCalls = 0,
-        int $fileGetContentsCalls = 0,
+        int $interceptedPhpInputCalls = 0,
     ): void {
         self::assertSame([true], MockFrankenPhpFunctions::$ignoreUserAbortArguments);
         self::assertSame(1, MockFrankenPhpFunctions::$handleRequestCalls);
         self::assertSame(1, MockFrankenPhpFunctions::$gcCollectCyclesCalls);
         self::assertSame(1, MockFrankenPhpFunctions::$gcMemCachesCalls);
         self::assertSame($requestParseBodyCalls, MockFrankenPhpFunctions::$requestParseBodyCalls);
-        self::assertSame($fileGetContentsCalls, MockFrankenPhpFunctions::$fileGetContentsCalls);
+        self::assertSame(
+            $interceptedPhpInputCalls,
+            MockFrankenPhpFunctions::$interceptedPhpInputCalls,
+        );
     }
 
     private function createInjectedRequestHandlerInvoker(

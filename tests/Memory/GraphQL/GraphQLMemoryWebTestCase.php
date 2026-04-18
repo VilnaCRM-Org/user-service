@@ -646,9 +646,16 @@ GRAPHQL;
         $this->resetDocumentValidatorState();
         $this->resetStaticProperty(GraphQlType::class, 'builtInScalars', null);
         $this->resetStaticProperty(GraphQlType::class, 'builtInTypes', null);
-        Directive::resetCachedInstances();
-        Introspection::resetCachedInstances();
+        $this->resetCachedInstancesIfAvailable(Directive::class);
+        $this->resetCachedInstancesIfAvailable(Introspection::class);
         gc_collect_cycles();
+    }
+
+    private function resetCachedInstancesIfAvailable(string $className): void
+    {
+        if (method_exists($className, 'resetCachedInstances')) {
+            $className::resetCachedInstances();
+        }
     }
 
     private function resetDocumentValidatorState(): void

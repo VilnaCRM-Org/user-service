@@ -132,7 +132,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->provider->exchangeCode($invalidCode, null);
     }
 
-    public function testFetchProfileReturnsProfileWithEmail(): void
+    public function testFetchProfileReturnsVerifiedProfileWhenEmailIsPresent(): void
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
@@ -151,7 +151,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame($id, $profile->providerId);
-        $this->assertFalse($profile->emailVerified);
+        $this->assertTrue($profile->emailVerified);
     }
 
     public function testFetchProfileThrowsEmailUnavailableWhenEmailIsNull(): void

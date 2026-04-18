@@ -25,19 +25,24 @@ load 'bats-assert/load'
   mv tests/CLI/bats/php/PartlyCoveredEventBus.php src/Shared/Infrastructure/Bus/Event/
 
   run docker compose exec -T php composer dump-autoload
-  assert_success
+  setup_status=$status
+  setup_output=$output
 
-  run make unit-tests
   run make infection
   infection_status=$status
   infection_output=$output
 
   mv src/Shared/Infrastructure/Bus/Event/PartlyCoveredEventBus.php tests/CLI/bats/php/
   run docker compose exec -T php composer dump-autoload
-  assert_success
+  restore_status=$status
+  restore_output=$output
 
+  [ "$setup_status" -eq 0 ]
+  [[ "$setup_output" == *"Generating autoload files"* ]]
   [ "$infection_status" -ne 0 ]
   [[ "$infection_output" == *"6 mutants were not covered by tests"* ]]
+  [ "$restore_status" -eq 0 ]
+  [[ "$restore_output" == *"Generating autoload files"* ]]
 }
 
 @test "make behat should fail when scenarios fail" {

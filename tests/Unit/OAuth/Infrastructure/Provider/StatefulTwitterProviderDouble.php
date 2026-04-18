@@ -20,10 +20,13 @@ final class StatefulTwitterProviderDouble extends Twitter
     #[\Override]
     public function getAccessToken($grant, array $options = []): AccessToken
     {
+        $fallbackCode = is_string($grant) ? $grant : 'authorization_code';
+        $code = $options['code'] ?? $fallbackCode;
+
         return new AccessToken([
             'access_token' => sprintf(
                 '%s|%s',
-                $options['code'],
+                $code,
                 $this->pkceVerifier ?? 'none',
             ),
         ]);

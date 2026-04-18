@@ -14,8 +14,9 @@ final class FrankenPhpLegacyBodyRequestFactory
         $post = $request->request->all();
 
         if ($this->shouldParseBody($request)) {
-            $content = file_get_contents('php://input');
-            if (\is_string($content) && $content !== '') {
+            $rawContent = file_get_contents('php://input');
+            $content = \is_string($rawContent) ? $rawContent : null;
+            if ($content !== null && $content !== '') {
                 $parsedPost = [];
                 parse_str($content, $parsedPost);
                 $post = $parsedPost;
