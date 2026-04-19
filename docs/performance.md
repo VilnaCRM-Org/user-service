@@ -54,18 +54,18 @@ The optimized build now:
 
 The table below compares the scenario-side latency block for the same smoke run before and after the cache changes.
 
-| Scenario | Avg Before | Avg After | P99 Before | P99 After |
-| --- | --- | --- | --- | --- |
-| `apiContextUser` | `4.37ms` | `2.37ms` | `14.48ms` | `8.91ms` |
-| `getUser` | `11.89ms` | `5.82ms` | `63.23ms` | `17.63ms` |
-| `getUsers` | `28.43ms` | `21.43ms` | `66.94ms` | `45.10ms` |
-| `graphQLGetUser` | `22.13ms` | `14.20ms` | `97.21ms` | `33.77ms` |
-| `graphQLGetUsers` | `319.49ms` | `56.46ms` | `1.25s` | `133.87ms` |
-| `updateUser` | `149.62ms` | `67.63ms` | `387.10ms` | `94.28ms` |
-| `replaceUser` | `177.16ms` | `61.86ms` | `335.19ms` | `72.43ms` |
-| `deleteUser` | `18.25ms` | `5.48ms` | `51.54ms` | `9.19ms` |
-| `signin` | `34.18ms` | `9.65ms` | `104.45ms` | `23.17ms` |
-| `refreshToken` | `29.95ms` | `8.91ms` | `117.98ms` | `15.52ms` |
+| Scenario          | Avg Before | Avg After | P99 Before | P99 After  |
+| ----------------- | ---------- | --------- | ---------- | ---------- |
+| `apiContextUser`  | `4.37ms`   | `2.37ms`  | `14.48ms`  | `8.91ms`   |
+| `getUser`         | `11.89ms`  | `5.82ms`  | `63.23ms`  | `17.63ms`  |
+| `getUsers`        | `28.43ms`  | `21.43ms` | `66.94ms`  | `45.10ms`  |
+| `graphQLGetUser`  | `22.13ms`  | `14.20ms` | `97.21ms`  | `33.77ms`  |
+| `graphQLGetUsers` | `319.49ms` | `56.46ms` | `1.25s`    | `133.87ms` |
+| `updateUser`      | `149.62ms` | `67.63ms` | `387.10ms` | `94.28ms`  |
+| `replaceUser`     | `177.16ms` | `61.86ms` | `335.19ms` | `72.43ms`  |
+| `deleteUser`      | `18.25ms`  | `5.48ms`  | `51.54ms`  | `9.19ms`   |
+| `signin`          | `34.18ms`  | `9.65ms`  | `104.45ms` | `23.17ms`  |
+| `refreshToken`    | `29.95ms`  | `8.91ms`  | `117.98ms` | `15.52ms`  |
 
 ### Outcome
 
