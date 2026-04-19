@@ -184,7 +184,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            'The partial parameter must be either true, false, 1, or 0.'
         );
     }
 
@@ -204,7 +204,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            'The partial parameter must be either true, false, 1, or 0.'
         );
     }
 
@@ -225,7 +225,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            'The partial parameter must be either true, false, 1, or 0.'
         );
     }
 

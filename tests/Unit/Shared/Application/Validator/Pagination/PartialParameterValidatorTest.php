@@ -99,6 +99,31 @@ final class PartialParameterValidatorTest extends UnitTestCase
         self::assertNull($validator->validate(['partial' => '1']));
     }
 
+    public function testReturnsNullForMixedCaseBooleanPartialParameter(): void
+    {
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::once())
+            ->method('wasParameterSent')
+            ->with('True')
+            ->willReturn(true);
+        $valueValidator->expects(self::once())
+            ->method('isExplicitlyProvided')
+            ->with('True')
+            ->willReturn(true);
+
+        $normalizer = $this->createMock(BooleanNormalizer::class);
+        $normalizer->expects(self::once())
+            ->method('normalize')
+            ->with('True')
+            ->willReturn(true);
+
+        $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
+
+        $validator = new PartialParameterValidator($valueValidator, $normalizer, $violationFactory);
+
+        self::assertNull($validator->validate(['partial' => 'True']));
+    }
+
     public function testReturnsViolationForImplicitPartialValue(): void
     {
         $violation = $this->createMock(QueryParameterViolation::class);

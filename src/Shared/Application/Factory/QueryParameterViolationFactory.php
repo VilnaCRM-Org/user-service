@@ -16,7 +16,7 @@ final class QueryParameterViolationFactory
         'Page and itemsPerPage must be greater than or equal to 1.';
     private const INVALID_PARTIAL_PAGINATION_TITLE = 'Invalid partial pagination value';
     private const INVALID_PARTIAL_PAGINATION_DETAIL =
-        'The partial parameter must be either true or false.';
+        'The partial parameter must be either true, false, 1, or 0.';
 
     public function unknownParameters(string $parameterList): QueryParameterViolation
     {
