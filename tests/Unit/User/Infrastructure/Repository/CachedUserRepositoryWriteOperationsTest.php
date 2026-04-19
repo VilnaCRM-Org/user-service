@@ -28,6 +28,44 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->save($user);
     }
 
+    public function testSaveInvalidatesPreviousEmailTagWhenEmailChanges(): void
+    {
+        $oldEmail = $this->faker->unique()->email();
+        $newEmail = $this->faker->unique()->email();
+        $oldHash = $this->faker->sha256();
+        $newHash = $this->faker->sha256();
+        $user = $this->createUserMock($this->faker->uuid(), $newEmail);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($user);
+
+        $this->unitOfWork
+            ->expects($this->once())
+            ->method('getOriginalDocumentData')
+            ->with($user)
+            ->willReturn(['email' => $oldEmail]);
+
+        $this->cacheKeyBuilder
+            ->method('hashEmail')
+            ->willReturnCallback(static function (string $email) use ($oldEmail, $oldHash, $newEmail, $newHash): string {
+                return match ($email) {
+                    $oldEmail => $oldHash,
+                    $newEmail => $newHash,
+                    default => throw new \LogicException(sprintf('Unexpected email "%s".', $email)),
+                };
+            });
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $newHash,
+            'user.email.' . $oldHash,
+        ]);
+
+        $this->repository->save($user);
+    }
+
     public function testDeleteDelegatesToInnerRepository(): void
     {
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());

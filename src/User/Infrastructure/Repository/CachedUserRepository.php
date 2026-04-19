@@ -130,10 +130,11 @@ final class CachedUserRepository extends UserRepositoryDecorator
     #[\Override]
     public function save(object $user): void
     {
+        $previousEmailTag = $user instanceof UserInterface ? $this->previousEmailTag($user) : null;
         $this->inner->save($user);
 
         if ($user instanceof UserInterface) {
-            $this->invalidateUserCache($user, 'save');
+            $this->invalidateUserCache($user, 'save', $previousEmailTag);
         }
     }
 
@@ -335,12 +336,28 @@ final class CachedUserRepository extends UserRepositoryDecorator
         ]);
     }
 
-    private function invalidateUserCache(UserInterface $user, string $operation): void
+    private function previousEmailTag(UserInterface $user): ?string
     {
+        $originalData = $this->documentManager->getUnitOfWork()->getOriginalDocumentData($user);
+        $previousEmail = $originalData['email'] ?? null;
+
+        if (!is_string($previousEmail) || $previousEmail === $user->getEmail()) {
+            return null;
+        }
+
+        return 'user.email.' . $this->cacheKeyBuilder->hashEmail($previousEmail);
+    }
+
+    private function invalidateUserCache(
+        UserInterface $user,
+        string $operation,
+        ?string $previousEmailTag = null
+    ): void {
         $this->invalidateTags([
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
+            ...($previousEmailTag !== null ? [$previousEmailTag] : []),
         ], $operation);
     }
 

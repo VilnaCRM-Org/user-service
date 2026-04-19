@@ -10,6 +10,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\CachedUserRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\UnitOfWork;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -20,6 +21,7 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
     protected CacheKeyBuilder&MockObject $cacheKeyBuilder;
     protected LoggerInterface&MockObject $logger;
     protected DocumentManager&MockObject $documentManager;
+    protected UnitOfWork&MockObject $unitOfWork;
     protected CachedUserRepository $repository;
 
     #[\Override]
@@ -32,6 +34,9 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
         $this->cacheKeyBuilder = $this->createMock(CacheKeyBuilder::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->documentManager = $this->createMock(DocumentManager::class);
+        $this->unitOfWork = $this->createMock(UnitOfWork::class);
+        $this->documentManager->method('getUnitOfWork')->willReturn($this->unitOfWork);
+        $this->unitOfWork->method('getOriginalDocumentData')->willReturn([]);
 
         $this->repository = new CachedUserRepository(
             $this->innerRepository,
