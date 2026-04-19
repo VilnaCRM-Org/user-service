@@ -436,8 +436,7 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
     private function assertRefreshExchangeState(
         string $refreshToken,
         int $expectedStatusCode
-    ): void
-    {
+    ): void {
         $refresh = $this->requestJson('/api/token', ['refreshToken' => $refreshToken]);
         $this->assertSame($expectedStatusCode, $refresh['response']->getStatusCode());
 

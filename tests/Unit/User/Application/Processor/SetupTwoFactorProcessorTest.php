@@ -92,31 +92,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
     public function testProcessRejectsNonEmptyRequestBodiesResolvedFromRequestStack(): void
     {
         $email = $this->faker->email();
-        $securityUser = $this->createSecurityUser($email);
-        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
-
-        $requestStack = new RequestStack();
-        $requestStack->push(
-            Request::create(
-                '/api/2fa/setup',
-                Request::METHOD_POST,
-                [],
-                [],
-                [],
-                ['CONTENT_TYPE' => 'application/json'],
-                '[null, null]'
-            )
-        );
-
-        $this->commandBus
-            ->expects($this->never())
-            ->method('dispatch');
-
-        $this->expectException(BadRequestHttpException::class);
-        $this->expectExceptionMessage('This operation does not accept request body content.');
-
-        $this->createProcessor($requestStack)
-            ->process(new SetupTwoFactorDto(), new Post());
+        $this->expectRejectedRequestBody('[null, null]', $email);
     }
 
     public function testProcessAcceptsEmptyJsonObjectRequestBody(): void
@@ -176,31 +152,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
     public function testProcessRejectsInvalidJsonRequestBody(): void
     {
         $email = $this->faker->email();
-        $securityUser = $this->createSecurityUser($email);
-        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
-
-        $requestStack = new RequestStack();
-        $requestStack->push(
-            Request::create(
-                '/api/2fa/setup',
-                Request::METHOD_POST,
-                [],
-                [],
-                [],
-                ['CONTENT_TYPE' => 'application/json'],
-                '{'
-            )
-        );
-
-        $this->commandBus
-            ->expects($this->never())
-            ->method('dispatch');
-
-        $this->expectException(BadRequestHttpException::class);
-        $this->expectExceptionMessage('This operation does not accept request body content.');
-
-        $this->createProcessor($requestStack)
-            ->process(new SetupTwoFactorDto(), new Post());
+        $this->expectRejectedRequestBody('{', $email);
     }
 
     private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
@@ -214,6 +166,37 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             new HttpRequestContextResolver($requestStack),
             new EmptyJsonObjectRequestValidator($this->createJsonSerializer()),
         );
+    }
+
+    private function createJsonRequestStack(string $content): RequestStack
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                $content,
+            )
+        );
+
+        return $requestStack;
+    }
+
+    private function expectRejectedRequestBody(string $content, string $email): void
+    {
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
+        $this->commandBus->expects($this->never())->method('dispatch');
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->expectExceptionMessage('This operation does not accept request body content.');
+
+        $this->createProcessor($this->createJsonRequestStack($content))
+            ->process(new SetupTwoFactorDto(), new Post());
     }
 
     private function expectSetupDispatch(

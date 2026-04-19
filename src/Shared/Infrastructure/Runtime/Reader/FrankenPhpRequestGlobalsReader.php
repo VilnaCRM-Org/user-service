@@ -9,17 +9,26 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class FrankenPhpRequestGlobalsReader implements FrankenPhpRequestGlobalsReaderInterface
 {
-    private readonly array|Closure $requestReader;
+    private readonly Closure $requestReader;
 
-    public function __construct(array|Closure|null $requestReader = null)
+    public function __construct(?Closure $requestReader = null)
     {
         $this->requestReader = $requestReader
-            ?? [Request::class, 'createFromGlobals'];
+            ?? $this->defaultRequestReader();
     }
 
     #[\Override]
     public function readRequest(): Request
     {
         return ($this->requestReader)();
+    }
+
+    private function defaultRequestReader(): Closure
+    {
+        return static function (): Request {
+            $requestReader = [Request::class, 'createFromGlobals'];
+
+            return $requestReader();
+        };
     }
 }
