@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Post;
+use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SetupTwoFactorCommand;
@@ -145,6 +146,63 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $this->assertSetupResponse($response, $uri, 'ABC123');
     }
 
+    public function testProcessAcceptsWhitespaceOnlyRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
+        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
+        $this->expectSetupDispatch($email, $uri, 'ABC123');
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                " \n\t "
+            )
+        );
+
+        $response = $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+
+        $this->assertSetupResponse($response, $uri, 'ABC123');
+    }
+
+    public function testProcessRejectsInvalidJsonRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                '{'
+            )
+        );
+
+        $this->commandBus
+            ->expects($this->never())
+            ->method('dispatch');
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->expectExceptionMessage('This operation does not accept request body content.');
+
+        $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+    }
+
     private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
     {
         $requestStack ??= new RequestStack();
@@ -154,7 +212,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
             new HttpRequestContextResolver($requestStack),
-            $this->createJsonSerializer(),
+            new EmptyJsonObjectRequestValidator($this->createJsonSerializer()),
         );
     }
 

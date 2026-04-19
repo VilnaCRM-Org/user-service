@@ -147,8 +147,8 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->assertSame(Response::HTTP_NO_CONTENT, $signOut['response']->getStatusCode());
 
         $this->assertOnlyPrimarySessionRevoked($primary, $secondary);
-        $this->assertRefreshRejected($primary['refreshToken']);
-        $this->assertRefreshAccepted($secondary['refreshToken']);
+        $this->assertRefreshExchangeState($primary['refreshToken'], Response::HTTP_UNAUTHORIZED);
+        $this->assertRefreshExchangeState($secondary['refreshToken'], Response::HTTP_OK);
     }
 
     public function testSignOutAllEndpointRevokesAllSessionsAndRefreshTokens(): void
@@ -164,8 +164,8 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->assertSame(Response::HTTP_NO_CONTENT, $signOutAll['response']->getStatusCode());
 
         $this->assertAllSessionsRevoked($primary, $secondary);
-        $this->assertRefreshRejected($primary['refreshToken']);
-        $this->assertRefreshRejected($secondary['refreshToken']);
+        $this->assertRefreshExchangeState($primary['refreshToken'], Response::HTTP_UNAUTHORIZED);
+        $this->assertRefreshExchangeState($secondary['refreshToken'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -407,14 +407,6 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->assertSame($sessionId, $newToken->getSessionId());
     }
 
-    private function assertRefreshAccepted(string $refreshToken): void
-    {
-        $refresh = $this->requestJson('/api/token', ['refreshToken' => $refreshToken]);
-        $this->assertSame(Response::HTTP_OK, $refresh['response']->getStatusCode());
-        $this->requireStringKey($refresh['body'], 'access_token');
-        $this->requireStringKey($refresh['body'], 'refresh_token');
-    }
-
     private function decodeSessionId(string $accessToken): string
     {
         $payload = JwtPayloadDecoder::decode($accessToken);
@@ -441,10 +433,20 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         return $token;
     }
 
-    private function assertRefreshRejected(string $refreshToken): void
+    private function assertRefreshExchangeState(
+        string $refreshToken,
+        int $expectedStatusCode
+    ): void
     {
         $refresh = $this->requestJson('/api/token', ['refreshToken' => $refreshToken]);
-        $this->assertSame(Response::HTTP_UNAUTHORIZED, $refresh['response']->getStatusCode());
+        $this->assertSame($expectedStatusCode, $refresh['response']->getStatusCode());
+
+        if ($expectedStatusCode !== Response::HTTP_OK) {
+            return;
+        }
+
+        $this->requireStringKey($refresh['body'], 'access_token');
+        $this->requireStringKey($refresh['body'], 'refresh_token');
     }
 
     /**
