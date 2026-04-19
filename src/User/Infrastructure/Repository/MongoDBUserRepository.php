@@ -8,10 +8,17 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
+use function array_map;
+use function array_unique;
+use function array_values;
+
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
+
+use function mb_strtolower;
 
 /**
  * @extends ServiceDocumentRepository<User>
@@ -59,7 +66,10 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $uniqueEmails = array_values(array_unique($emails));
+        $uniqueEmails = array_values(array_unique(array_map(
+            static fn (string $email): string => mb_strtolower($email),
+            $emails
+        )));
 
         if ($uniqueEmails === []) {
             return new UserCollection();

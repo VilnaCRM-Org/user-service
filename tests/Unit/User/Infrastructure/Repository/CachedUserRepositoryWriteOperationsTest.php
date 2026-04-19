@@ -119,7 +119,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->deleteAll();
     }
 
-    public function testMagicCallDelegatesToInnerRepository(): void
+    public function testFindByIdDelegatesToInnerRepository(): void
     {
         $id = $this->faker->uuid();
         $user = $this->createUserMock($id);
@@ -130,7 +130,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->with($id)
             ->willReturn($user);
 
-        $result = $this->repository->__call('findById', [$id]);
+        $result = $this->repository->findById($id);
 
         self::assertSame($user, $result);
     }

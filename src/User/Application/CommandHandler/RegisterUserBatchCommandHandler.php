@@ -75,7 +75,7 @@ final readonly class RegisterUserBatchCommandHandler implements
     {
         $emails = [];
 
-        foreach ($command->users->users as $user) {
+        foreach ($command->users as $user) {
             $emails[] = $user['email'];
         }
 

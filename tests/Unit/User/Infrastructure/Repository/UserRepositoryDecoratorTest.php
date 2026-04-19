@@ -12,6 +12,57 @@ use App\User\Infrastructure\Repository\UserRepositoryDecorator;
 
 final class UserRepositoryDecoratorTest extends UnitTestCase
 {
+    public function testFindByEmailDelegatesToInnerRepository(): void
+    {
+        $email = $this->faker->email();
+        $expectedUser = $this->createMock(UserInterface::class);
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($expectedUser);
+
+        $this->assertSame(
+            $expectedUser,
+            $this->createDecorator($innerRepository)->findByEmail($email)
+        );
+    }
+
+    public function testFindByEmailsDelegatesToInnerRepository(): void
+    {
+        $emails = [$this->faker->unique()->email(), $this->faker->unique()->email()];
+        $expectedUsers = new UserCollection();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('findByEmails')
+            ->with($emails)
+            ->willReturn($expectedUsers);
+
+        $this->assertSame(
+            $expectedUsers,
+            $this->createDecorator($innerRepository)->findByEmails($emails)
+        );
+    }
+
+    public function testFindByIdDelegatesToInnerRepository(): void
+    {
+        $id = $this->faker->uuid();
+        $expectedUser = $this->createMock(UserInterface::class);
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('findById')
+            ->with($id)
+            ->willReturn($expectedUser);
+
+        $this->assertSame(
+            $expectedUser,
+            $this->createDecorator($innerRepository)->findById($id)
+        );
+    }
+
     public function testDeleteAllDelegatesToInnerRepository(): void
     {
         $innerRepository = $this->createMock(UserRepositoryInterface::class);
@@ -27,27 +78,6 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
     private function createDecorator(
         UserRepositoryInterface $innerRepository
     ): UserRepositoryDecorator {
-        return new class($innerRepository) extends UserRepositoryDecorator {
-            #[\Override]
-            public function findByEmail(string $email): ?UserInterface
-            {
-                return $this->inner->findByEmail($email);
-            }
-
-            /**
-             * @param array<int, string> $emails
-             */
-            #[\Override]
-            public function findByEmails(array $emails): UserCollection
-            {
-                return $this->inner->findByEmails($emails);
-            }
-
-            #[\Override]
-            public function findById(string $id): ?UserInterface
-            {
-                return $this->inner->findById($id);
-            }
-        };
+        return new class($innerRepository) extends UserRepositoryDecorator {};
     }
 }

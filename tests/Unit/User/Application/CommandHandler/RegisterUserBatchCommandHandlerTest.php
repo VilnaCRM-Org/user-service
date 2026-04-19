@@ -82,6 +82,12 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
             ->method('findByEmails');
         $this->hasherFactory->expects($this->never())
             ->method('getPasswordHasher');
+        $this->uuidFactory->expects($this->never())
+            ->method('create');
+        $this->mockTransformer->expects($this->never())
+            ->method('transformFromSymfonyUuid');
+        $this->registeredEventFactory->expects($this->never())
+            ->method('create');
         $this->userRepository->expects($this->never())
             ->method('saveBatch');
         $this->eventBus->expects($this->never())
@@ -184,7 +190,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     private function appendBatchRegistrationFixtures(array &$testData): void
     {
         $hashedPassword = $this->faker->password();
-        $email = $this->faker->email();
+        $email = $this->faker->unique()->email();
         $initials = $this->faker->word();
         $userId = $this->transformer->transformFromString($this->faker->uuid());
 
@@ -512,6 +518,8 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
             ->method('getPasswordHasher');
         $this->uuidFactory->expects($this->never())
             ->method('create');
+        $this->mockTransformer->expects($this->never())
+            ->method('transformFromSymfonyUuid');
         $this->userRepository->expects($this->never())
             ->method('saveBatch');
         $this->registeredEventFactory->expects($this->never())
