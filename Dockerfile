@@ -22,22 +22,33 @@ ENV STABILITY=${STABILITY}
 ARG SYMFONY_VERSION=""
 ENV SYMFONY_VERSION=${SYMFONY_VERSION}
 
+ARG APCU_VERSION=v5.1.28
+ARG MONGODB_VERSION=2.2.1
+ARG REDIS_VERSION=6.3.0
+
 ENV APP_ENV=prod
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PATH="${PATH}:/root/.composer/vendor/bin"
 
 RUN set -eux; \
+    mongodb_src="$(mktemp -d)"; \
+    redis_src="$(mktemp -d)"; \
+    curl -sSLf "https://pecl.php.net/get/mongodb-${MONGODB_VERSION}.tgz" | tar -xz -C "$mongodb_src"; \
+    curl -sSLf "https://pecl.php.net/get/redis-${REDIS_VERSION}.tgz" | tar -xz -C "$redis_src"; \
+    mv "$mongodb_src/package.xml" "$mongodb_src/mongodb-${MONGODB_VERSION}/package.xml"; \
+    mv "$redis_src/package.xml" "$redis_src/redis-${REDIS_VERSION}/package.xml"; \
     install-php-extensions \
         @composer \
-        apcu \
+        krakjoe/apcu@${APCU_VERSION} \
         intl \
         opcache \
         zip \
-        mongodb \
+        "$mongodb_src/mongodb-${MONGODB_VERSION}" \
         openssl \
         xsl \
-        redis \
+        "$redis_src/redis-${REDIS_VERSION}" \
+    && rm -rf "$mongodb_src" "$redis_src" \
     && apk add --no-cache \
         icu-libs=~74.2 \
         libzip=~1.11 \

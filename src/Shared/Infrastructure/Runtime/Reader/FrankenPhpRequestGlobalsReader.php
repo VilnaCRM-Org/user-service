@@ -25,6 +25,21 @@ final class FrankenPhpRequestGlobalsReader implements FrankenPhpRequestGlobalsRe
 
     private function defaultRequestReader(): Closure
     {
-        return static fn (): Request => Request::createFromGlobals();
+        return fn (): Request => new Request(
+            $_GET,
+            $_POST,
+            [],
+            $_COOKIE,
+            $_FILES,
+            $_SERVER,
+            $this->readRequestContent(),
+        );
+    }
+
+    private function readRequestContent(): ?string
+    {
+        $content = file_get_contents('php://input');
+
+        return is_string($content) ? $content : null;
     }
 }
