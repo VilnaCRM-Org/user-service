@@ -213,7 +213,7 @@ integration-tests: setup-test-db ## Run integration tests
 
 memory-tests: setup-test-db ## Run memory leak tests with 100% suite coverage and endpoint inventory enforcement
 	@echo "Running memory leak tests with strict inventory and coverage requirements..."
-	@bash -lc 'set -o pipefail; $(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
+	@bash -c 'set -o pipefail; $(RUN_MEMORY_TESTS_COVERAGE) 2>&1 | tee /tmp/phpunit_memory_output.txt'; \
 	status=$$?; \
 	if [ $$status -ne 0 ]; then \
 		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
@@ -311,7 +311,7 @@ memory-load-soak-tests-full: build-k6-docker ## Run exhaustive worker-mode smoke
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(DOCKER_COMPOSE_LOAD_TEST) restart php
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
-	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$$(./tests/Load/get-load-test-scenarios.sh | paste -sd, -)" tests/Load/run-worker-memory-soak.sh
+	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$$(./tests/Load/get-worker-memory-soak-scenarios.sh | paste -sd, -)" tests/Load/run-worker-memory-soak.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
