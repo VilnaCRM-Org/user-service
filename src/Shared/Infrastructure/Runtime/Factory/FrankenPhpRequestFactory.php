@@ -11,11 +11,15 @@ final class FrankenPhpRequestFactory
 {
     private readonly FrankenPhpLegacyBodyRequestFactory $legacyBodyRequestFactory;
     private readonly FrankenPhpParsedBodyRequestFactory $parsedBodyRequestFactory;
+    private readonly FrankenPhpRequestGlobalsReaderInterface $requestGlobalsReader;
 
-    public function __construct(private readonly ?Closure $bodyParserChecker = null)
-    {
+    public function __construct(
+        private readonly ?Closure $bodyParserChecker = null,
+        ?FrankenPhpRequestGlobalsReaderInterface $requestGlobalsReader = null,
+    ) {
         $this->legacyBodyRequestFactory = new FrankenPhpLegacyBodyRequestFactory();
         $this->parsedBodyRequestFactory = new FrankenPhpParsedBodyRequestFactory();
+        $this->requestGlobalsReader = $requestGlobalsReader ?? new FrankenPhpRequestGlobalsReader();
     }
 
     public function createFromGlobals(): Request
@@ -33,10 +37,9 @@ final class FrankenPhpRequestFactory
         return $this->legacyBodyRequestFactory->create($request);
     }
 
-    /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function createBaseRequest(): Request
     {
-        return Request::createFromGlobals();
+        return $this->requestGlobalsReader->readRequest();
     }
 
     private function requestBodyParserIsAvailable(): bool
