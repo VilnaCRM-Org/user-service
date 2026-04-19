@@ -270,7 +270,7 @@ setup-load-test-db: ## Create database for load testing purposes
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
-LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" --redirect-uri="$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
+LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack

@@ -56,7 +56,7 @@ Run `make integration-tests` to execute the integration tests. This command ensu
 
 ## Memory Leak Testing
 
-The FrankenPHP worker-mode migration uses a dedicated memory suite under `/tests/Memory` to catch retained-object regressions before they reach staging. The primary leak-detection package is **shipmonk/memory-scanner**, and the shared WebTestCase scaffolding is based on `ObjectDeallocationCheckerKernelTestCaseTrait` while using `ObjectDeallocationChecker` directly for PHPUnit 10.5 compatibility.
+The FrankenPHP worker-mode migration uses a dedicated memory suite under `/tests/Memory` to catch retained-object regressions before they reach staging. The primary leak-detection package is **shipmonk/memory-scanner**, and the shared WebTestCase scaffolding uses `ObjectDeallocationChecker` directly through `MemoryWebTestCase` for PHPUnit 10.5 compatibility.
 
 ### Execution
 

@@ -105,7 +105,7 @@ prepare_oauth_client_pool() {
     "$(jq -r '.endpoints.oauth.clientName' "$REPO_ROOT/tests/Load/config.prod.json")" \
     "$(jq -r '.endpoints.oauth.clientID' "$REPO_ROOT/tests/Load/config.prod.json")" \
     "$(jq -r '.endpoints.oauth.clientSecret' "$REPO_ROOT/tests/Load/config.prod.json")" \
-    --redirect-uri="$(jq -r '.endpoints.oauth.clientRedirectUri' "$REPO_ROOT/tests/Load/config.prod.json")"
+    "$(jq -r '.endpoints.oauth.clientRedirectUri' "$REPO_ROOT/tests/Load/config.prod.json")"
 }
 
 reset_round_state() {

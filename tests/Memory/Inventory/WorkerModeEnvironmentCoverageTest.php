@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('memory')]
 final class WorkerModeEnvironmentCoverageTest extends TestCase
 {
+    private const WORKER_RUNTIME_SNIPPET = 'env APP_RUNTIME Runtime\FrankenPhpSymfony\Runtime';
     private const COMPOSE_WORKER_SNIPPETS = [
         'FRANKENPHP_CONFIG: import worker.Caddyfile',
         'FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}',
@@ -41,6 +42,14 @@ final class WorkerModeEnvironmentCoverageTest extends TestCase
 
         self::assertMatchesRegularExpression($this->devWorkerRegex(), $dockerfile);
         self::assertMatchesRegularExpression($this->prodWorkerRegex(), $dockerfile);
+    }
+
+    public function testWorkerCaddyfileUsesTheOfficialSymfonyFrankenphpRuntime(): void
+    {
+        $this->assertFileContainsAll(
+            'infrastructure/docker/php/worker.Caddyfile',
+            [self::WORKER_RUNTIME_SNIPPET],
+        );
     }
 
     public function testComposeFilesKeepWorkerModeAndLoopFuseEnabledAcrossEnvironments(): void
