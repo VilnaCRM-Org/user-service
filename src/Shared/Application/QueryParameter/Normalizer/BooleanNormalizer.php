@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\QueryParameter\Normalizer;
 
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOLEAN;
-
-use function filter_var;
-use function is_bool;
 use function is_string;
 use function strtolower;
 use function trim;
@@ -26,24 +21,9 @@ final class BooleanNormalizer
 
     private function normalizeString(string $value): ?bool
     {
-        $normalizedValue = trim($value);
-
-        if ($normalizedValue === '') {
-            return null;
-        }
-
-        $normalized = filter_var(
-            $normalizedValue,
-            FILTER_VALIDATE_BOOLEAN,
-            FILTER_NULL_ON_FAILURE
-        );
-
-        if (!is_bool($normalized)) {
-            return null;
-        }
-
-        return match (strtolower($normalizedValue)) {
-            'true', 'false' => $normalized,
+        return match (strtolower(trim($value))) {
+            'true' => true,
+            'false' => false,
             default => null,
         };
     }
