@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class FrankenPhpRequestGlobalsReader implements FrankenPhpRequestGlobalsReaderInterface
 {
+    #[\Override]
     /** @SuppressWarnings(PHPMD.StaticAccess) */
     public function readRequest(): Request
     {
