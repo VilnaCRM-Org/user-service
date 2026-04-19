@@ -25,6 +25,12 @@ final readonly class RedisDatabaseMirror
         }
     }
 
+    public function flushDefaultAndHttpDatabases(): void
+    {
+        $this->connection(1)->flushDB();
+        $this->connection(0)->flushDB();
+    }
+
     /**
      * @return list<string>
      */

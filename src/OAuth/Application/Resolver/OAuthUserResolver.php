@@ -7,6 +7,7 @@ namespace App\OAuth\Application\Resolver;
 use App\OAuth\Application\DTO\OAuthResolvedUser;
 use App\OAuth\Application\Factory\OAuthUserFactory;
 use App\OAuth\Domain\Entity\SocialIdentity;
+use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
@@ -42,7 +43,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
         }
 
         if (!$profile->emailVerified) {
-            return $this->handleNewUser($provider, $profile);
+            throw new UnverifiedProviderEmailException((string) $provider);
         }
 
         $user = $this->userRepository->findByEmail($profile->email);

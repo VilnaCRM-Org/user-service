@@ -6,10 +6,12 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SetupTwoFactorDto;
 use App\User\Application\Factory\SetupTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,11 +24,12 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         private CommandBusInterface $commandBus,
         private CurrentUserIdentityResolver $userIdentityResolver,
         private SetupTwoFactorCommandFactoryInterface $setupTwoFactorCommandFactory,
+        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private EmptyJsonObjectRequestValidator $requestValidator,
     ) {
     }
 
     /**
-     * @param SetupTwoFactorDto $data
      * @param array<string, mixed> $uriVariables
      * @param array<string, mixed> $context
      *
@@ -39,6 +42,12 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
+        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
+        $this->requestValidator->assertEmptyRequestBody(
+            $request,
+            'This operation does not accept request body content.'
+        );
+
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->userIdentityResolver->resolveEmail()
         );

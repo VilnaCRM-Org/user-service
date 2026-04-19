@@ -132,7 +132,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->provider->exchangeCode($invalidCode, null);
     }
 
-    public function testFetchProfileReturnsProfileWithEmail(): void
+    public function testFetchProfileReturnsVerifiedProfileWhenEmailIsPresent(): void
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
@@ -194,6 +194,28 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->assertSame(
             $expectedToken,
             $this->provider->exchangeCode($code, null),
+        );
+    }
+
+    public function testExchangeCodeDoesNotReusePkceVerifierAcrossCalls(): void
+    {
+        $facebook = new StatefulFacebookProviderDouble();
+        $provider = new FacebookOAuthProvider(
+            $facebook,
+            OAuthProvider::fromString('facebook'),
+        );
+
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+
+        $this->assertSame(
+            sprintf('%s|%s', $firstCode, $firstVerifier),
+            $provider->exchangeCode($firstCode, $firstVerifier),
+        );
+        $this->assertSame(
+            sprintf('%s|none', $secondCode),
+            $provider->exchangeCode($secondCode, null),
         );
     }
 

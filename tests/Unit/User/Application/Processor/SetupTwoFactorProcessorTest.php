@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Post;
+use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SetupTwoFactorCommand;
@@ -13,9 +14,13 @@ use App\User\Application\DTO\SetupTwoFactorDto;
 use App\User\Application\Factory\SetupTwoFactorCommandFactory;
 use App\User\Application\Processor\SetupTwoFactorProcessor;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
+use App\User\Application\Resolver\HttpRequestContextResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -38,12 +43,12 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $securityUser = $this->createSecurityUser($email);
         $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
-        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
-        $this->expectSetupDispatch($email, $uri, 'ABC123');
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
 
         $response = $this->createProcessor()->process(new SetupTwoFactorDto(), new Post());
 
-        $this->assertSetupResponse($response, $uri, 'ABC123');
+        $this->assertSetupResponse($response, $uri, $secret);
     }
 
     public function testProcessThrowsUnauthorizedWhenNoUserExists(): void
@@ -84,13 +89,128 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             ->process(new SetupTwoFactorDto(), new Post());
     }
 
-    private function createProcessor(): SetupTwoFactorProcessor
+    public function testProcessRejectsNonEmptyRequestBodiesResolvedFromRequestStack(): void
     {
+        $this->expectRejectedRequestBody('[null, null]');
+    }
+
+    public function testProcessAcceptsEmptyJsonObjectRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                '{}'
+            )
+        );
+
+        $response = $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+
+        $this->assertSetupResponse($response, $uri, $secret);
+    }
+
+    public function testProcessAcceptsWhitespaceOnlyRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                " \n\t "
+            )
+        );
+
+        $response = $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+
+        $this->assertSetupResponse($response, $uri, $secret);
+    }
+
+    public function testProcessRejectsInvalidJsonRequestBody(): void
+    {
+        $this->expectRejectedRequestBody('{');
+    }
+
+    private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
+    {
+        $requestStack ??= new RequestStack();
+
         return new SetupTwoFactorProcessor(
             $this->commandBus,
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
+            new HttpRequestContextResolver($requestStack),
+            new EmptyJsonObjectRequestValidator($this->createJsonSerializer()),
         );
+    }
+
+    private function createJsonRequestStack(string $content): RequestStack
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                $content,
+            )
+        );
+
+        return $requestStack;
+    }
+
+    private function expectRejectedRequestBody(string $content): void
+    {
+        $this->security->expects($this->never())->method('getUser');
+        $this->commandBus->expects($this->never())->method('dispatch');
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->expectExceptionMessage('This operation does not accept request body content.');
+
+        $this->createProcessor($this->createJsonRequestStack($content))
+            ->process(new SetupTwoFactorDto(), new Post());
+    }
+
+    /**
+     * @return array{uri: string, secret: string}
+     */
+    private function createSetupResponseData(string $email): array
+    {
+        $secret = strtoupper($this->faker->bothify('??##??##'));
+
+        return [
+            'uri' => sprintf(
+                'otpauth://totp/VilnaCRM:%s?secret=%s&issuer=VilnaCRM',
+                rawurlencode($email),
+                $secret,
+            ),
+            'secret' => $secret,
+        ];
     }
 
     private function expectSetupDispatch(

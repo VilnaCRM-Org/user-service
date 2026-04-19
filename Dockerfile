@@ -22,22 +22,48 @@ ENV STABILITY=${STABILITY}
 ARG SYMFONY_VERSION=""
 ENV SYMFONY_VERSION=${SYMFONY_VERSION}
 
+ARG APCU_VERSION=v5.1.28
+ARG MONGODB_VERSION=2.2.1
+ARG REDIS_VERSION=6.3.0
+ARG APCU_SHA256=ca9c1820810a168786f8048a4c3f8c9e3fd941407ad1553259fb2e30b5f057bf
+ARG MONGODB_SHA256=b923617bec3cde420d80bf78aeb05002be3c0e930b93adaacaa5c2e0c25adb42
+ARG REDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
+
 ENV APP_ENV=prod
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PATH="${PATH}:/root/.composer/vendor/bin"
 
 RUN set -eux; \
+    apcu_src="$(mktemp -d)"; \
+    mongodb_src="$(mktemp -d)"; \
+    redis_src="$(mktemp -d)"; \
+    apcu_tgz="${apcu_src}/apcu-${APCU_VERSION#v}.tgz"; \
+    mongodb_tgz="${mongodb_src}/mongodb-${MONGODB_VERSION}.tgz"; \
+    redis_tgz="${redis_src}/redis-${REDIS_VERSION}.tgz"; \
+    curl -fsSLo "$apcu_tgz" "https://pecl.php.net/get/apcu-${APCU_VERSION#v}.tgz"; \
+    echo "${APCU_SHA256}  ${apcu_tgz}" | sha256sum -c -; \
+    tar -xzf "$apcu_tgz" -C "$apcu_src"; \
+    mv "$apcu_src/package.xml" "$apcu_src/apcu-${APCU_VERSION#v}/package.xml"; \
+    curl -fsSLo "$mongodb_tgz" "https://pecl.php.net/get/mongodb-${MONGODB_VERSION}.tgz"; \
+    echo "${MONGODB_SHA256}  ${mongodb_tgz}" | sha256sum -c -; \
+    tar -xzf "$mongodb_tgz" -C "$mongodb_src"; \
+    mv "$mongodb_src/package.xml" "$mongodb_src/mongodb-${MONGODB_VERSION}/package.xml"; \
+    curl -fsSLo "$redis_tgz" "https://pecl.php.net/get/redis-${REDIS_VERSION}.tgz"; \
+    echo "${REDIS_SHA256}  ${redis_tgz}" | sha256sum -c -; \
+    tar -xzf "$redis_tgz" -C "$redis_src"; \
+    mv "$redis_src/package.xml" "$redis_src/redis-${REDIS_VERSION}/package.xml"; \
     install-php-extensions \
         @composer \
-        apcu \
+        "$apcu_src/apcu-${APCU_VERSION#v}" \
         intl \
         opcache \
         zip \
-        mongodb \
+        "$mongodb_src/mongodb-${MONGODB_VERSION}" \
         openssl \
         xsl \
-        redis \
+        "$redis_src/redis-${REDIS_VERSION}" \
+    && rm -rf "$apcu_src" "$mongodb_src" "$redis_src" \
     && apk add --no-cache \
         icu-libs=~74.2 \
         libzip=~1.11 \
@@ -88,6 +114,7 @@ CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 FROM frankenphp_base AS frankenphp_dev
 
 ENV APP_ENV=dev \
+    FRANKENPHP_CONFIG="import worker.Caddyfile" \
     XDEBUG_MODE=off
 
 RUN apk add --no-cache \
@@ -105,6 +132,7 @@ RUN set -eux; \
     install-php-extensions xdebug
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
+COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile
 
 RUN git config --global --add safe.directory /srv/app
 
