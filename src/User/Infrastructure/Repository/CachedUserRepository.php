@@ -6,7 +6,6 @@ namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\User\Domain\Collection\UserCollection;
-use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -33,31 +32,19 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Handled by UserCacheInvalidationSubscriber via domain events
  * - This class only reads from cache, never invalidates
  */
-final class CachedUserRepository implements UserRepositoryInterface
+final class CachedUserRepository extends UserRepositoryDecorator
 {
     private const TTL_BY_ID = 600;
     private const TTL_BY_EMAIL = 300;
 
     public function __construct(
-        private UserRepositoryInterface $inner,
+        UserRepositoryInterface $inner,
         private TagAwareCacheInterface $cache,
         private CacheKeyBuilder $cacheKeyBuilder,
         private LoggerInterface $logger,
         private DocumentManager $documentManager
     ) {
-    }
-
-    /**
-     * Proxy all other method calls to inner repository
-     *
-     * This ensures compatibility with API Platform's collection provider
-     * which may call Doctrine repository methods not in our interface.
-     *
-     * @param array<int, mixed> $arguments
-     */
-    public function __call(string $method, array $arguments): mixed
-    {
-        return $this->inner->{$method}(...$arguments);
+        parent::__construct($inner);
     }
 
     /**
@@ -129,47 +116,15 @@ final class CachedUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * Delegate persistence to inner repository (no caching on writes)
+     * Bulk lookups intentionally delegate to the inner repository because the
+     * point-lookup cache is keyed per user and would not help this query shape.
      *
-     * @param User $user
+     * @param array<int, string> $emails
      */
     #[\Override]
-    public function save(object $user): void
+    public function findByEmails(array $emails): UserCollection
     {
-        $this->inner->save($user);
-    }
-
-    /**
-     * Delegate deletion to inner repository (no invalidation here)
-     *
-     * Cache invalidation is handled via UserDeletedEvent subscribers.
-     *
-     * @param User $user
-     */
-    #[\Override]
-    public function delete(object $user): void
-    {
-        $this->inner->delete($user);
-    }
-
-    /**
-     * Delegate batch save to inner repository (no caching on writes)
-     */
-    #[\Override]
-    public function saveBatch(UserCollection $users): void
-    {
-        $this->inner->saveBatch($users);
-    }
-
-    /**
-     * Delegate batch delete to inner repository (no invalidation here)
-     *
-     * Cache invalidation is handled via UserDeletedEvent subscribers.
-     */
-    #[\Override]
-    public function deleteBatch(UserCollection $users): void
-    {
-        $this->inner->deleteBatch($users);
+        return $this->inner->findByEmails($emails);
     }
 
     #[\Override]

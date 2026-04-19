@@ -47,6 +47,23 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->saveBatch($users);
     }
 
+    public function testFindByEmailsDelegatesToInnerRepository(): void
+    {
+        $firstEmail = $this->faker->unique()->email();
+        $secondEmail = $this->faker->unique()->email();
+        $user = $this->createUserMock($this->faker->uuid(), $firstEmail);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmails')
+            ->with([$firstEmail, $secondEmail])
+            ->willReturn(new UserCollection([$user]));
+
+        $result = $this->repository->findByEmails([$firstEmail, $secondEmail]);
+
+        self::assertSame([$user], iterator_to_array($result));
+    }
+
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
         $users = new UserCollection([
@@ -68,10 +85,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->expects($this->once())
             ->method('deleteAll');
 
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(['user', 'user.collection']);
+        $this->cache->expectInvalidateTags(static function (array $tags): bool {
+            self::assertSame(['user', 'user.collection'], $tags);
+
+            return true;
+        });
 
         $this->repository->deleteAll();
     }
@@ -82,11 +100,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->expects($this->once())
             ->method('deleteAll');
 
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(['user', 'user.collection'])
-            ->willThrowException(new \RuntimeException('Cache error'));
+        $this->cache->expectInvalidateTags(static function (array $tags): never {
+            self::assertSame(['user', 'user.collection'], $tags);
+
+            throw new \RuntimeException('Cache error');
+        });
 
         $this->logger
             ->expects($this->once())
@@ -102,7 +120,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->deleteAll();
     }
 
-    public function testMagicCallDelegatesToInnerRepository(): void
+    public function testFindByIdDelegatesToInnerRepository(): void
     {
         $id = $this->faker->uuid();
         $user = $this->createUserMock($id);
@@ -113,7 +131,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->with($id)
             ->willReturn($user);
 
-        $result = $this->repository->__call('findById', [$id]);
+        $result = $this->repository->findById($id);
 
         self::assertSame($user, $result);
     }

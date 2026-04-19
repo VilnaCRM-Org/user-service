@@ -20,6 +20,12 @@ To ensure our User Service is optimized for high performance, we conducted exten
 - **Database:** MariaDB 11.4
 - **Load Testing Tools:** Grafana K6
 
+## Recent Application-Level Optimizations
+
+- `GET /api/users` now supports opt-in partial pagination through the `partial` query parameter, letting clients skip the extra pagination count query when they do not need a total item count.
+- `POST /api/users/batch` now preloads existing users with a single bulk email lookup instead of performing one duplicate-email query per incoming user.
+- Batch registration assembly now lives in a dedicated factory, which keeps the hot path explicit and makes the bulk-lookup behavior easier to validate with repository and cache tests.
+
 ## Benchmarks
 
 Here you will find the results of load tests for each User Service endpoint, with a graph, that shows how execution parameters were changing over time for different load scenarios. Also, the metric for Spike testing will be provided, alongside a table, that will show the most important of them.

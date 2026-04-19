@@ -8,10 +8,17 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
+use function array_map;
+use function array_unique;
+use function array_values;
+
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
+
+use function mb_strtolower;
 
 /**
  * @extends ServiceDocumentRepository<User>
@@ -51,6 +58,38 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     public function findByEmail(string $email): ?UserInterface
     {
         return $this->findOneBy(['email' => $email]);
+    }
+
+    /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $uniqueEmails = array_values(array_unique(array_map(
+            static fn (string $email): string => mb_strtolower($email),
+            $emails
+        )));
+
+        if ($uniqueEmails === []) {
+            return new UserCollection();
+        }
+
+        $result = $this->createQueryBuilder()
+            ->field('email')->in($uniqueEmails)
+            ->getQuery()
+            ->execute();
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
     }
 
     /**

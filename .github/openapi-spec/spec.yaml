@@ -1206,6 +1206,17 @@ paths:
             maximum: 100
           style: form
           explode: true
+        -
+          name: partial
+          in: query
+          description: 'Enable or disable partial pagination'
+          required: false
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: boolean
+          style: form
+          explode: true
     post:
       operationId: create_http
       tags:
