@@ -37,6 +37,14 @@ final class BooleanNormalizerTest extends UnitTestCase
         self::assertFalse($this->normalizer->normalize(' False '));
     }
 
+    public function testNormalizesApiPlatformBooleanAliases(): void
+    {
+        self::assertTrue($this->normalizer->normalize(' yes '));
+        self::assertTrue($this->normalizer->normalize('ON'));
+        self::assertFalse($this->normalizer->normalize(' no '));
+        self::assertFalse($this->normalizer->normalize('Off'));
+    }
+
     public function testNormalizesBooleanIntegers(): void
     {
         self::assertTrue($this->normalizer->normalize(1));
@@ -52,6 +60,7 @@ final class BooleanNormalizerTest extends UnitTestCase
     public function testReturnsNullForUnsupportedValues(): void
     {
         self::assertNull($this->normalizer->normalize(''));
+        self::assertNull($this->normalizer->normalize('   '));
         self::assertNull($this->normalizer->normalize('garbage'));
         self::assertNull($this->normalizer->normalize(2));
         self::assertNull($this->normalizer->normalize(new \stdClass()));

@@ -103,11 +103,19 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
         string $cacheKey,
         array|bool|float|int|object|string|null $value
     ): void {
-        $this->cache
-            ->expects($this->once())
-            ->method('get')
-            ->with($cacheKey, $this->callback('is_callable'), null)
-            ->willReturn($value);
+        $this->cache->expectGet(
+            static function (
+                string $actualCacheKey,
+                callable $callback,
+                ?float $beta
+            ) use ($cacheKey, $value) {
+                self::assertSame($cacheKey, $actualCacheKey);
+                self::assertIsCallable($callback);
+                self::assertNull($beta);
+
+                return $value;
+            }
+        );
     }
 
     private function expectDocumentManagerContains(UserInterface $user, bool $contains): void
@@ -137,19 +145,28 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
 
     private function expectCacheDelete(string $cacheKey): void
     {
-        $this->cache
-            ->expects($this->once())
-            ->method('delete')
-            ->with($cacheKey);
+        $this->cache->expectDelete(static function (string $actualCacheKey) use ($cacheKey): bool {
+            self::assertSame($cacheKey, $actualCacheKey);
+
+            return true;
+        });
     }
 
     private function expectCacheGetThrows(string $cacheKey, string $message): void
     {
-        $this->cache
-            ->expects($this->once())
-            ->method('get')
-            ->with($cacheKey, $this->anything(), $this->anything())
-            ->willThrowException(new \RuntimeException($message));
+        $this->cache->expectGet(
+            static function (
+                string $actualCacheKey,
+                callable $callback,
+                ?float $beta
+            ) use ($cacheKey, $message): never {
+                self::assertSame($cacheKey, $actualCacheKey);
+                self::assertIsCallable($callback);
+                self::assertNull($beta);
+
+                throw new \RuntimeException($message);
+            }
+        );
     }
 
     private function expectCacheMissLog(string $cacheKey): void
@@ -184,13 +201,18 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
     private function expectCacheMissStore(string $cacheKey, string $hash): void
     {
         $item = $this->createCacheItemForEmail($hash);
-        $this->cache
-            ->expects($this->once())
-            ->method('get')
-            ->with($cacheKey, $this->callback('is_callable'), null)
-            ->willReturnCallback(
-                static fn (string $key, callable $callback) => $callback($item)
-            );
+        $this->cache->expectGet(
+            static function (
+                string $actualCacheKey,
+                callable $callback,
+                ?float $beta
+            ) use ($cacheKey, $item) {
+                self::assertSame($cacheKey, $actualCacheKey);
+                self::assertNull($beta);
+
+                return $callback($item);
+            }
+        );
     }
 
     private function createCacheItemForEmail(

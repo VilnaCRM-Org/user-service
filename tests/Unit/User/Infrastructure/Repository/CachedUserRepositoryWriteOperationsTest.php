@@ -85,10 +85,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->expects($this->once())
             ->method('deleteAll');
 
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(['user', 'user.collection']);
+        $this->cache->expectInvalidateTags(static function (array $tags): bool {
+            self::assertSame(['user', 'user.collection'], $tags);
+
+            return true;
+        });
 
         $this->repository->deleteAll();
     }
@@ -99,11 +100,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->expects($this->once())
             ->method('deleteAll');
 
-        $this->cache
-            ->expects($this->once())
-            ->method('invalidateTags')
-            ->with(['user', 'user.collection'])
-            ->willThrowException(new \RuntimeException('Cache error'));
+        $this->cache->expectInvalidateTags(static function (array $tags): never {
+            self::assertSame(['user', 'user.collection'], $tags);
+
+            throw new \RuntimeException('Cache error');
+        });
 
         $this->logger
             ->expects($this->once())

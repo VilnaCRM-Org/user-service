@@ -12,12 +12,11 @@ use App\User\Infrastructure\Repository\CachedUserRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 abstract class CachedUserRepositoryTestCase extends UnitTestCase
 {
     protected UserRepositoryInterface&MockObject $innerRepository;
-    protected TagAwareCacheInterface&MockObject $cache;
+    protected TagAwareCacheSpy $cache;
     protected CacheKeyBuilder&MockObject $cacheKeyBuilder;
     protected LoggerInterface&MockObject $logger;
     protected DocumentManager&MockObject $documentManager;
@@ -29,7 +28,7 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
         parent::setUp();
 
         $this->innerRepository = $this->createMock(UserRepositoryInterface::class);
-        $this->cache = $this->createMock(TagAwareCacheInterface::class);
+        $this->cache = new TagAwareCacheSpy();
         $this->cacheKeyBuilder = $this->createMock(CacheKeyBuilder::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->documentManager = $this->createMock(DocumentManager::class);
@@ -41,6 +40,14 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
             $this->logger,
             $this->documentManager
         );
+    }
+
+    #[\Override]
+    protected function tearDown(): void
+    {
+        $this->cache->assertExpectationsMet();
+
+        parent::tearDown();
     }
 
     protected function createUserMock(string $id, ?string $email = null): UserInterface&MockObject

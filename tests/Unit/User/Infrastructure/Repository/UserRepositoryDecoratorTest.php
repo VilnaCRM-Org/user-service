@@ -78,6 +78,7 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
     private function createDecorator(
         UserRepositoryInterface $innerRepository
     ): UserRepositoryDecorator {
-        return new class($innerRepository) extends UserRepositoryDecorator {};
+        return new class($innerRepository) extends UserRepositoryDecorator {
+        };
     }
 }
