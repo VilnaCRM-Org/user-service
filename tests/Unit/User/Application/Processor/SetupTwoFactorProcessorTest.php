@@ -118,6 +118,33 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             ->process(new SetupTwoFactorDto(), new Post());
     }
 
+    public function testProcessAcceptsEmptyJsonObjectRequestBody(): void
+    {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
+        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
+        $this->expectSetupDispatch($email, $uri, 'ABC123');
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                '{}'
+            )
+        );
+
+        $response = $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+
+        $this->assertSetupResponse($response, $uri, 'ABC123');
+    }
+
     private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
     {
         $requestStack ??= new RequestStack();
@@ -127,6 +154,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
             new HttpRequestContextResolver($requestStack),
+            $this->createJsonSerializer(),
         );
     }
 
