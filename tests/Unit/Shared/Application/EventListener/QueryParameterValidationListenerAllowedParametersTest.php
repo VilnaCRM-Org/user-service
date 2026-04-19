@@ -168,14 +168,16 @@ final class QueryParameterValidationListenerAllowedParametersTest extends UnitTe
     private function createPaginationRule(): QPP\PaginationRule
     {
         $valueValidator = new Validator\ExplicitValueValidator();
-        $normalizer = new Normalizer\PositiveIntegerNormalizer();
+        $integerNormalizer = new Normalizer\PositiveIntegerNormalizer();
+        $booleanNormalizer = new Normalizer\BooleanNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
 
         return new QPP\PaginationRule(
-            new VP\PageParameterValidator($valueValidator, $normalizer, $violationFactory),
+            new VP\PageParameterValidator($valueValidator, $integerNormalizer, $violationFactory),
             new VP\ItemsPerPageParameterValidator(
-                new QPP\ItemsPerPageRule($valueValidator, $normalizer, $violationFactory)
-            )
+                new QPP\ItemsPerPageRule($valueValidator, $integerNormalizer, $violationFactory)
+            ),
+            new VP\PartialParameterValidator($valueValidator, $booleanNormalizer, $violationFactory)
         );
     }
 }

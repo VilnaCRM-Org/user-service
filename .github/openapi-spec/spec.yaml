@@ -1212,7 +1212,7 @@ paths:
           description: 'Enable or disable partial pagination'
           required: false
           deprecated: false
-          allowEmptyValue: true
+          allowEmptyValue: false
           schema:
             type: boolean
           style: form

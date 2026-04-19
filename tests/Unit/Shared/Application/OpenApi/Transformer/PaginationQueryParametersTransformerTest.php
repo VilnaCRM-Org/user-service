@@ -90,7 +90,10 @@ final class PaginationQueryParametersTransformerTest extends UnitTestCase
     {
         $pageParameter = $this->createPageParameter();
         $itemsParameter = $this->createItemsPerPageParameter();
-        $operation = new Operation(parameters: [$pageParameter, $itemsParameter]);
+        $partialParameter = $this->createPartialParameter();
+        $operation = new Operation(
+            parameters: [$pageParameter, $itemsParameter, $partialParameter]
+        );
 
         $paths = new Paths();
         $paths->addPath('/users', (new PathItem())->withGet($operation));
@@ -120,6 +123,17 @@ final class PaginationQueryParametersTransformerTest extends UnitTestCase
         );
     }
 
+    private function createPartialParameter(): Parameter
+    {
+        return new Parameter(
+            name: 'partial',
+            in: 'query',
+            description: 'Enable or disable partial pagination',
+            schema: ['type' => 'boolean'],
+            allowEmptyValue: true
+        );
+    }
+
     private function assertPaginationConstraintsEnforced(OpenApi $transformed): void
     {
         $parameters = $transformed->getPaths()->getPath('/users')->getGet()->getParameters();
@@ -129,6 +143,10 @@ final class PaginationQueryParametersTransformerTest extends UnitTestCase
 
         $this->assertSame(1, $parameters[1]->getSchema()['minimum']);
         $this->assertFalse($parameters[1]->getAllowEmptyValue());
+
+        $this->assertSame('boolean', $parameters[2]->getSchema()['type']);
+        $this->assertArrayNotHasKey('minimum', $parameters[2]->getSchema());
+        $this->assertFalse($parameters[2]->getAllowEmptyValue());
     }
 
     private function createFilterParameter(): Parameter

@@ -168,6 +168,67 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         );
     }
 
+    public function testBlankPartialValueTriggersViolation(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET', ['partial' => '']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertProblemJson(
+            $event,
+            'Invalid partial pagination value',
+            'The partial parameter must be either true or false.'
+        );
+    }
+
+    public function testInvalidPartialValueTriggersViolation(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET', ['partial' => 'garbage']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertProblemJson(
+            $event,
+            'Invalid partial pagination value',
+            'The partial parameter must be either true or false.'
+        );
+    }
+
+    public function testArrayPartialValueTriggersViolation(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET');
+        $request->query->set('partial', ['true']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertProblemJson(
+            $event,
+            'Invalid partial pagination value',
+            'The partial parameter must be either true or false.'
+        );
+    }
+
     private function assertProblemJson(
         RequestEvent $event,
         string $expectedTitle,
@@ -208,14 +269,16 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
     private function createPaginationRule(): QPP\PaginationRule
     {
         $valueValidator = new Validator\ExplicitValueValidator();
-        $normalizer = new Normalizer\PositiveIntegerNormalizer();
+        $integerNormalizer = new Normalizer\PositiveIntegerNormalizer();
+        $booleanNormalizer = new Normalizer\BooleanNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
 
         return new QPP\PaginationRule(
-            new VP\PageParameterValidator($valueValidator, $normalizer, $violationFactory),
+            new VP\PageParameterValidator($valueValidator, $integerNormalizer, $violationFactory),
             new VP\ItemsPerPageParameterValidator(
-                new QPP\ItemsPerPageRule($valueValidator, $normalizer, $violationFactory)
-            )
+                new QPP\ItemsPerPageRule($valueValidator, $integerNormalizer, $violationFactory)
+            ),
+            new VP\PartialParameterValidator($valueValidator, $booleanNormalizer, $violationFactory)
         );
     }
 }

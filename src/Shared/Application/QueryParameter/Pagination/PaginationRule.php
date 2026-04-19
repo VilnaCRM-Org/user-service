@@ -8,6 +8,7 @@ use App\Shared\Application\QueryParameter\QueryParameterRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
 use App\Shared\Application\Validator\Pagination\ItemsPerPageParameterValidator;
 use App\Shared\Application\Validator\Pagination\PageParameterValidator;
+use App\Shared\Application\Validator\Pagination\PartialParameterValidator;
 
 /**
  * @implements QueryParameterRule
@@ -18,7 +19,8 @@ final class PaginationRule implements QueryParameterRule
 
     public function __construct(
         private readonly PageParameterValidator $pageValidator,
-        private readonly ItemsPerPageParameterValidator $itemsPerPageValidator
+        private readonly ItemsPerPageParameterValidator $itemsPerPageValidator,
+        private readonly PartialParameterValidator $partialParameterValidator
     ) {
     }
 
@@ -35,6 +37,7 @@ final class PaginationRule implements QueryParameterRule
         }
 
         return $this->pageValidator->validate($query)
-            ?? $this->itemsPerPageValidator->validate($query);
+            ?? $this->itemsPerPageValidator->validate($query)
+            ?? $this->partialParameterValidator->validate($query);
     }
 }
