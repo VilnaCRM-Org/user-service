@@ -3,10 +3,9 @@ services:
     alias: 'security.token_storage'
     public: true
 
-  App\Tests\Behat\UserContext\UserContext:
-    arguments:
-      $cachePool: '@cache.user'
-      $rateLimiterCachePool: '@cache.app'
+  Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface:
+    alias: 'services_resetter'
+    public: true
 
   # Use synchronous event bus for integration tests
   # This ensures events are processed immediately during tests
@@ -42,6 +41,16 @@ services:
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
     exclude: '../tests/Behat/Support/*'
+
+  App\Tests\Behat\UserContext\UserContext:
+    arguments:
+      $cachePool: '@cache.user'
+      $rateLimiterCachePool: '@cache.app'
+      $accountLockoutCachePool: '@cache.account_lockout'
+
+  App\Tests\Behat\UserContext\SignInSecurityContext:
+    arguments:
+      $cachePool: '@cache.account_lockout'
 
   App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
     class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider

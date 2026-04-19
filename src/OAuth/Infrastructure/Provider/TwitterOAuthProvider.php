@@ -72,11 +72,13 @@ final class TwitterOAuthProvider implements OAuthProviderInterface
         ?string $codeVerifier,
     ): string {
         try {
+            $twitter = clone $this->twitter;
+
             if ($codeVerifier !== null) {
-                $this->twitter->setPkceCode($codeVerifier);
+                $twitter->setPkceCode($codeVerifier);
             }
 
-            $token = $this->twitter->getAccessToken(
+            $token = $twitter->getAccessToken(
                 'authorization_code',
                 ['code' => $code],
             );

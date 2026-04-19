@@ -1,5 +1,4 @@
 import http from 'k6/http';
-
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
     this.utils = utils;
@@ -61,17 +60,18 @@ export default class InsertUsersUtils {
     const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
     const generator = this.requestGenerator(numberOfRequests, batchSize, serviceToken);
     const requestBatch = [];
-    const userPasswords = {};
 
     for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
       const { value, done } = generator.next();
       if (done) break;
       const [request, passwords] = value;
-      requestBatch.push(request);
-      Object.assign(userPasswords, passwords);
+      requestBatch.push({
+        request,
+        passwords,
+      });
     }
 
-    return [requestBatch, userPasswords];
+    return requestBatch;
   }
 
   insertUsers(numberOfUsers) {
@@ -84,29 +84,30 @@ export default class InsertUsersUtils {
     const safeBatchSize = configuredBatchSize > 0 ? configuredBatchSize : 10;
     const batchSize = Math.min(safeBatchSize, numberOfUsers);
     const users = [];
-    const [requestBatch, userPasswords] = this.prepareRequestBatch(
-      numberOfUsers,
-      batchSize,
-      serviceToken
-    );
+    const pendingRequests = this.prepareRequestBatch(numberOfUsers, batchSize, serviceToken);
+    const responses = http.batch(pendingRequests.map(({ request }) => request));
 
-    const responses = http.batch(requestBatch);
     responses.forEach((response, index) => {
-      if (response.status !== 200 && response.status !== 201) {
-        console.log(
-          `Batch request ${index} failed with status ${response.status}: ${response.body}`
-        );
-        throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
+      const batchRequest = pendingRequests[index];
+
+      if (response.status === 200 || response.status === 201) {
+        try {
+          JSON.parse(response.body).forEach(user => {
+            user.password = batchRequest.passwords[user.email];
+            users.push(user);
+          });
+        } catch (parseError) {
+          console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
+          throw new Error(`Failed to parse batch response: ${response.body}`);
+        }
+
+        return;
       }
-      try {
-        JSON.parse(response.body).forEach(user => {
-          user.password = userPasswords[user.email];
-          users.push(user);
-        });
-      } catch (parseError) {
-        console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
-        throw new Error(`Failed to parse batch response: ${response.body}`);
-      }
+
+      console.log(
+        `Batch request ${index + 1} failed with status ${response.status}: ${response.body}`
+      );
+      throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
     });
 
     return users;

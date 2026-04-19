@@ -384,6 +384,7 @@ final class UserRequestContext implements Context
         $clientIpAddress = $this->state->clientIpAddress
             ?? $this->state->expectedIpAddress;
         if (is_string($clientIpAddress) && $clientIpAddress !== '') {
+            $headers['REMOTE_ADDR'] = $clientIpAddress;
             $headers['X-Forwarded-For'] = $clientIpAddress;
         }
     }

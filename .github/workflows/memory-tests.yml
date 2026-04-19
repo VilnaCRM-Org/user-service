@@ -1,0 +1,44 @@
+name: Memory leak testing
+
+on:
+  pull_request:
+    branches: ['main']
+
+concurrency:
+  group: memory-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  memory-tests:
+    name: Memory leak tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 90
+
+    env:
+      CI: 0
+      COMPOSE_PROJECT_NAME: user-service-memory-tests
+      COMPOSE_FILE: docker-compose.yml:docker-compose.memory-tests.yml
+      LOAD_TEST_COMPOSE_PROJECT: user-service-memory-load-tests
+      MEMORY_SOAK_ROUNDS: 6
+      MEMORY_SOAK_WARMUP_ROUNDS: 2
+      MEMORY_SOAK_SETTLE_SECONDS: 5
+      WORKER_MEMORY_STEP_TOLERANCE_KB: 2048
+      WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB: 12288
+      HTTP_PORT: 38080
+      HTTPS_PORT: 38443
+      HTTP3_PORT: 38444
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Start application
+        run: make start
+
+      - name: Execute memory leak tests
+        run: make memory-tests
+
+      - name: Execute worker-mode memory soak tests
+        run: make memory-load-soak-tests

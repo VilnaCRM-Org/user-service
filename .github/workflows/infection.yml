@@ -8,20 +8,15 @@ jobs:
   infection:
     name: Infection
     runs-on: ubuntu-latest
+    env:
+      COMPOSE_PROJECT_NAME: user-service-infection
+      COMPOSE_FILE: docker-compose.yml:docker-compose.memory-tests.yml
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-          extensions: mongodb, redis
-          coverage: xdebug
-
-      - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Start application
+        run: make start
 
       - name: Run infection
-        run: CI=1 make infection
-        env:
-          XDEBUG_MODE: coverage
+        run: make infection

@@ -199,6 +199,28 @@ final class TwitterOAuthProviderTest extends UnitTestCase
         );
     }
 
+    public function testExchangeCodeDoesNotReusePkceVerifierAcrossCalls(): void
+    {
+        $twitter = new StatefulTwitterProviderDouble();
+        $provider = new TwitterOAuthProvider(
+            $twitter,
+            OAuthProvider::fromString('twitter'),
+        );
+
+        $firstCode = $this->faker->sha256();
+        $firstVerifier = $this->faker->sha256();
+        $secondCode = $this->faker->sha256();
+
+        $this->assertSame(
+            sprintf('%s|%s', $firstCode, $firstVerifier),
+            $provider->exchangeCode($firstCode, $firstVerifier),
+        );
+        $this->assertSame(
+            sprintf('%s|none', $secondCode),
+            $provider->exchangeCode($secondCode, null),
+        );
+    }
+
     public function testFetchProfileUsesUsernameWhenNameIsNull(): void
     {
         $email = $this->faker->safeEmail();
