@@ -51,13 +51,11 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $requestedEmails = array_flip(array_map($this->emailKey(...), $emails));
+        $requestedEmails = array_flip($emails);
         $users = [];
 
         foreach ($this->users as $user) {
-            $emailKey = $this->emailKey($user->getEmail());
-
-            if (!isset($requestedEmails[$emailKey])) {
+            if (!isset($requestedEmails[$user->getEmail()])) {
                 continue;
             }
 
@@ -113,10 +111,5 @@ final class InMemoryUserRepository implements UserRepositoryInterface
             }
         }
         return null;
-    }
-
-    private function emailKey(string $email): string
-    {
-        return mb_strtolower($email);
     }
 }
