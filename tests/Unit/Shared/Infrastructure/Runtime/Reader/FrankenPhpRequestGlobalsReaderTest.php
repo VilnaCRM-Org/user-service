@@ -18,18 +18,16 @@ final class FrankenPhpRequestGlobalsReaderTest extends UnitTestCase
         self::assertSame($request, $reader->readRequest());
     }
 
-    public function testReadRequestUsesHttpFoundationGlobalsFactoryByDefault(): void
+    public function testReadRequestUsesHttpFoundationGlobalsFactoryWhenReaderIsMissing(): void
     {
-        $reader = new FrankenPhpRequestGlobalsReader();
+        $readers = [
+            new FrankenPhpRequestGlobalsReader(),
+            new FrankenPhpRequestGlobalsReader(null),
+        ];
 
-        self::assertInstanceOf(Request::class, $reader->readRequest());
-    }
-
-    public function testReadRequestFallsBackToDefaultFactoryWhenReaderIsNull(): void
-    {
-        $reader = new FrankenPhpRequestGlobalsReader(null);
-
-        self::assertInstanceOf(Request::class, $reader->readRequest());
+        foreach ($readers as $reader) {
+            self::assertInstanceOf(Request::class, $reader->readRequest());
+        }
     }
 
     private function createRequest(): Request

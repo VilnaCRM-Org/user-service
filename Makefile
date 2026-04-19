@@ -431,7 +431,7 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
-	SCHEMATHESIS_IMAGE=$(SCHEMATHESIS_IMAGE) SCHEMATHESIS_BASE_URL=$(SCHEMATHESIS_BASE_URL) ./scripts/schemathesis-validate.sh
+	SCHEMATHESIS_IMAGE=$(SCHEMATHESIS_IMAGE) SCHEMATHESIS_API_PORT=$(SCHEMATHESIS_API_PORT) SCHEMATHESIS_BASE_URL=$(SCHEMATHESIS_BASE_URL) ./scripts/schemathesis-validate.sh
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec

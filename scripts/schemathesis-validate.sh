@@ -3,11 +3,13 @@ set -euo pipefail
 
 ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 SCHEMATHESIS_IMAGE=${SCHEMATHESIS_IMAGE:-schemathesis/schemathesis:4.9.5}
-SCHEMATHESIS_BASE_URL=${SCHEMATHESIS_BASE_URL:-http://localhost:8081}
+SCHEMATHESIS_API_PORT=${SCHEMATHESIS_API_PORT:-8081}
+SCHEMATHESIS_BASE_URL=${SCHEMATHESIS_BASE_URL:-http://localhost:${SCHEMATHESIS_API_PORT}}
 SCHEMATHESIS_REPORT_DIR=$(mktemp -d "${TMPDIR:-/tmp}/schemathesis-report.XXXXXX")
 
 readonly ROOT_DIR
 readonly SCHEMATHESIS_IMAGE
+readonly SCHEMATHESIS_API_PORT
 readonly SCHEMATHESIS_BASE_URL
 readonly SCHEMATHESIS_REPORT_DIR
 
@@ -45,6 +47,8 @@ sign_in_access_token() {
     local token
 
     if ! body=$(curl --fail-with-body -sS \
+        --connect-timeout 5 \
+        --max-time 30 \
         -X POST \
         "${SCHEMATHESIS_BASE_URL}/api/signin" \
         -H 'Content-Type: application/json' \
@@ -96,7 +100,7 @@ run_schemathesis() {
 
     set +e
     docker run --rm --network=host \
-        -v "${ROOT_DIR}/.github/openapi-spec:/data" \
+        -v "${ROOT_DIR}/.github/openapi-spec:/data:ro" \
         "${SCHEMATHESIS_IMAGE}" \
         run \
         --no-color \

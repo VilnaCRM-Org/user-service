@@ -25,10 +25,6 @@ final class FrankenPhpRequestGlobalsReader implements FrankenPhpRequestGlobalsRe
 
     private function defaultRequestReader(): Closure
     {
-        return static function (): Request {
-            $requestReader = [Request::class, 'createFromGlobals'];
-
-            return $requestReader();
-        };
+        return static fn (): Request => Request::createFromGlobals();
     }
 }
