@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Runtime\Factory;
 
 use Closure;
+use App\Shared\Infrastructure\Runtime\Reader\FrankenPhpRequestGlobalsReader;
+use App\Shared\Infrastructure\Runtime\Reader\FrankenPhpRequestGlobalsReaderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 final class FrankenPhpRequestFactory

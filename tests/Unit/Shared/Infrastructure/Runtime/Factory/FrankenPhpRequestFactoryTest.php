@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Runtime\Factory;
 
 use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpRequestFactory;
-use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpRequestGlobalsReader;
-use App\Shared\Infrastructure\Runtime\Factory\FrankenPhpRequestGlobalsReaderInterface;
+use App\Shared\Infrastructure\Runtime\Reader\FrankenPhpRequestGlobalsReader;
+use App\Shared\Infrastructure\Runtime\Reader\FrankenPhpRequestGlobalsReaderInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 

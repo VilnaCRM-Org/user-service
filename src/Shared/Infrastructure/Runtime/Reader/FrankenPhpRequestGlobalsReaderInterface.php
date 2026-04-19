@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Infrastructure\Runtime\Factory;
+namespace App\Shared\Infrastructure\Runtime\Reader;
 
 use Symfony\Component\HttpFoundation\Request;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 SCHEMATHESIS_IMAGE=${SCHEMATHESIS_IMAGE:-schemathesis/schemathesis:4.9.5}
 SCHEMATHESIS_BASE_URL=${SCHEMATHESIS_BASE_URL:-http://localhost:8081}
 SCHEMATHESIS_REPORT_DIR=$(mktemp -d "${TMPDIR:-/tmp}/schemathesis-report.XXXXXX")
