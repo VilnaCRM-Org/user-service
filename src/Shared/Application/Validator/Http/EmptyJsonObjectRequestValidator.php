@@ -36,24 +36,26 @@ final readonly class EmptyJsonObjectRequestValidator
 
     private function assertEmptyJsonObject(string $content, string $message): void
     {
-        if ($this->isEmptyJsonObject($content, $message)) {
+        try {
+            $isEmptyJsonObject = $this->isEmptyJsonObject($content);
+        } catch (NotEncodableValueException) {
+            throw new BadRequestHttpException($message);
+        }
+
+        if ($isEmptyJsonObject) {
             return;
         }
 
         throw new BadRequestHttpException($message);
     }
 
-    private function isEmptyJsonObject(string $content, string $message): bool
+    private function isEmptyJsonObject(string $content): bool
     {
-        try {
-            $decoded = $this->serializer->decode(
-                $content,
-                JsonEncoder::FORMAT,
-                [JsonDecode::ASSOCIATIVE => false],
-            );
-        } catch (NotEncodableValueException) {
-            throw new BadRequestHttpException($message);
-        }
+        $decoded = $this->serializer->decode(
+            $content,
+            JsonEncoder::FORMAT,
+            [JsonDecode::ASSOCIATIVE => false],
+        );
 
         return $decoded instanceof \stdClass && get_object_vars($decoded) === [];
     }

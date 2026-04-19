@@ -43,12 +43,12 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $securityUser = $this->createSecurityUser($email);
         $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
-        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
-        $this->expectSetupDispatch($email, $uri, 'ABC123');
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
 
         $response = $this->createProcessor()->process(new SetupTwoFactorDto(), new Post());
 
-        $this->assertSetupResponse($response, $uri, 'ABC123');
+        $this->assertSetupResponse($response, $uri, $secret);
     }
 
     public function testProcessThrowsUnauthorizedWhenNoUserExists(): void
@@ -91,8 +91,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
 
     public function testProcessRejectsNonEmptyRequestBodiesResolvedFromRequestStack(): void
     {
-        $email = $this->faker->email();
-        $this->expectRejectedRequestBody('[null, null]', $email);
+        $this->expectRejectedRequestBody('[null, null]');
     }
 
     public function testProcessAcceptsEmptyJsonObjectRequestBody(): void
@@ -100,8 +99,8 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $securityUser = $this->createSecurityUser($email);
         $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
-        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
-        $this->expectSetupDispatch($email, $uri, 'ABC123');
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
 
         $requestStack = new RequestStack();
         $requestStack->push(
@@ -119,7 +118,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $response = $this->createProcessor($requestStack)
             ->process(new SetupTwoFactorDto(), new Post());
 
-        $this->assertSetupResponse($response, $uri, 'ABC123');
+        $this->assertSetupResponse($response, $uri, $secret);
     }
 
     public function testProcessAcceptsWhitespaceOnlyRequestBody(): void
@@ -127,8 +126,8 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $securityUser = $this->createSecurityUser($email);
         $this->security->expects($this->once())->method('getUser')->willReturn($securityUser);
-        $uri = 'otpauth://totp/VilnaCRM:test@example.com?secret=ABC123&issuer=VilnaCRM';
-        $this->expectSetupDispatch($email, $uri, 'ABC123');
+        ['uri' => $uri, 'secret' => $secret] = $this->createSetupResponseData($email);
+        $this->expectSetupDispatch($email, $uri, $secret);
 
         $requestStack = new RequestStack();
         $requestStack->push(
@@ -146,13 +145,12 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $response = $this->createProcessor($requestStack)
             ->process(new SetupTwoFactorDto(), new Post());
 
-        $this->assertSetupResponse($response, $uri, 'ABC123');
+        $this->assertSetupResponse($response, $uri, $secret);
     }
 
     public function testProcessRejectsInvalidJsonRequestBody(): void
     {
-        $email = $this->faker->email();
-        $this->expectRejectedRequestBody('{', $email);
+        $this->expectRejectedRequestBody('{');
     }
 
     private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
@@ -186,10 +184,9 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         return $requestStack;
     }
 
-    private function expectRejectedRequestBody(string $content, string $email): void
+    private function expectRejectedRequestBody(string $content): void
     {
-        $securityUser = $this->createSecurityUser($email);
-        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
+        $this->security->expects($this->never())->method('getUser');
         $this->commandBus->expects($this->never())->method('dispatch');
 
         $this->expectException(BadRequestHttpException::class);
@@ -197,6 +194,23 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
 
         $this->createProcessor($this->createJsonRequestStack($content))
             ->process(new SetupTwoFactorDto(), new Post());
+    }
+
+    /**
+     * @return array{uri: string, secret: string}
+     */
+    private function createSetupResponseData(string $email): array
+    {
+        $secret = strtoupper($this->faker->bothify('??##??##'));
+
+        return [
+            'uri' => sprintf(
+                'otpauth://totp/VilnaCRM:%s?secret=%s&issuer=VilnaCRM',
+                rawurlencode($email),
+                $secret,
+            ),
+            'secret' => $secret,
+        ];
     }
 
     private function expectSetupDispatch(

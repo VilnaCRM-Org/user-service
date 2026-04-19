@@ -12,8 +12,15 @@ readonly SCHEMATHESIS_BASE_URL
 readonly SCHEMATHESIS_REPORT_DIR
 
 cleanup() {
+    local exit_code=$?
+
     set +e
-    rm -rf "$SCHEMATHESIS_REPORT_DIR"
+    if [ "$exit_code" -eq 0 ]; then
+        rm -rf "$SCHEMATHESIS_REPORT_DIR"
+        return
+    fi
+
+    echo "Schemathesis reports preserved at: $SCHEMATHESIS_REPORT_DIR" >&2
 }
 
 trap cleanup EXIT
@@ -35,14 +42,43 @@ sign_in_access_token() {
     local email=$1
     local password=$2
     local body
+    local token
 
-    body=$(curl -sS \
+    if ! body=$(curl --fail-with-body -sS \
         -X POST \
         "${SCHEMATHESIS_BASE_URL}/api/signin" \
         -H 'Content-Type: application/json' \
-        --data "{\"email\":\"${email}\",\"password\":\"${password}\",\"rememberMe\":false}")
+        --data "{\"email\":\"${email}\",\"password\":\"${password}\",\"rememberMe\":false}"); then
+        if [ -n "${body:-}" ]; then
+            echo "$body" >&2
+        fi
 
-    printf '%s' "$body" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p'
+        return 1
+    fi
+
+    if ! token=$(python3 -c '
+import json
+import sys
+
+try:
+    payload = json.load(sys.stdin)
+except json.JSONDecodeError as error:
+    print(f"Invalid sign-in response: {error}", file=sys.stderr)
+    raise SystemExit(1)
+
+access_token = payload.get("access_token")
+if not isinstance(access_token, str) or access_token == "":
+    print("Sign-in response did not contain access_token.", file=sys.stderr)
+    raise SystemExit(1)
+
+print(access_token)
+' <<<"$body"); then
+        echo "$body" >&2
+
+        return 1
+    fi
+
+    printf '%s' "$token"
 }
 
 service_access_token() {
