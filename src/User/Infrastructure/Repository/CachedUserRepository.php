@@ -268,30 +268,59 @@ final class CachedUserRepository extends UserRepositoryDecorator
         UserInterface $cached,
         string $cacheKey,
         callable $fallback
-    ): ?UserInterface
-    {
+    ): ?UserInterface {
         try {
-            $managedUser = $this->documentManager->merge($cached);
-
-            if ($managedUser instanceof UserInterface) {
-                return $managedUser;
-            }
-
-            $this->logger->warning('Cache merge returned an unexpected value - falling back to database', [
-                'cache_key' => $cacheKey,
-                'user_id' => $cached->getId(),
-                'operation' => 'cache.merge.invalid',
-            ]);
+            return $this->mergeCachedUser($cached, $cacheKey) ?? $fallback();
         } catch (\Throwable $e) {
-            $this->logger->warning('Failed to reattach cached user - falling back to database', [
-                'cache_key' => $cacheKey,
-                'user_id' => $cached->getId(),
-                'error' => $e->getMessage(),
-                'operation' => 'cache.merge.error',
-            ]);
+            $this->logReattachWarning(
+                'Failed to reattach cached user - falling back to database',
+                $cacheKey,
+                $cached,
+                'cache.merge.error',
+                $e
+            );
+        }
+        return $fallback();
+    }
+
+    private function mergeCachedUser(
+        UserInterface $cached,
+        string $cacheKey
+    ): ?UserInterface {
+        $managedUser = $this->documentManager->merge($cached);
+
+        if ($managedUser instanceof UserInterface) {
+            return $managedUser;
         }
 
-        return $fallback();
+        $this->logReattachWarning(
+            'Cache merge returned an unexpected value - falling back to database',
+            $cacheKey,
+            $cached,
+            'cache.merge.invalid'
+        );
+
+        return null;
+    }
+
+    private function logReattachWarning(
+        string $message,
+        string $cacheKey,
+        UserInterface $cached,
+        string $operation,
+        ?\Throwable $e = null
+    ): void {
+        $context = [
+            'cache_key' => $cacheKey,
+            'user_id' => $cached->getId(),
+            'operation' => $operation,
+        ];
+
+        if ($e instanceof \Throwable) {
+            $context['error'] = $e->getMessage();
+        }
+
+        $this->logger->warning($message, $context);
     }
 
     /**
