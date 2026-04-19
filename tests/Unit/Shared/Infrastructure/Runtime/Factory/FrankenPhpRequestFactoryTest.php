@@ -15,8 +15,8 @@ final class FrankenPhpRequestFactoryTest extends TestCase
     public function testCreateBaseRequestDelegatesToInjectedGlobalsReader(): void
     {
         $request = Request::create('/runtime-factory', 'GET');
-        $factory = new FrankenPhpRequestFactory(
-            requestGlobalsReader: new class ($request) implements FrankenPhpRequestGlobalsReaderInterface {
+        $requestGlobalsReader =
+            new class($request) implements FrankenPhpRequestGlobalsReaderInterface {
                 public function __construct(private readonly Request $request)
                 {
                 }
@@ -26,8 +26,8 @@ final class FrankenPhpRequestFactoryTest extends TestCase
                 {
                     return $this->request;
                 }
-            },
-        );
+            };
+        $factory = new FrankenPhpRequestFactory(requestGlobalsReader: $requestGlobalsReader);
 
         self::assertSame($request, $factory->createBaseRequest());
     }
