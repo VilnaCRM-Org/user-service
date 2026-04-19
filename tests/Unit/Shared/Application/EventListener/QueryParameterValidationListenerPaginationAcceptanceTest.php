@@ -111,42 +111,6 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
         }
     }
 
-    public function testNumericPartialValuesAreAccepted(): void
-    {
-        foreach (['1', '0'] as $partialValue) {
-            $listener = $this->createListener();
-            $request = Request::create('/api/users', 'GET', ['partial' => $partialValue]);
-
-            $event = new RequestEvent(
-                $this->createMock(HttpKernelInterface::class),
-                $request,
-                HttpKernelInterface::MAIN_REQUEST
-            );
-
-            $listener($event);
-
-            $this->assertFalse($event->hasResponse());
-        }
-    }
-
-    public function testApiPlatformStylePartialBooleanAliasesAreAccepted(): void
-    {
-        foreach (['yes', 'no', 'on', 'off'] as $partialValue) {
-            $listener = $this->createListener();
-            $request = Request::create('/api/users', 'GET', ['partial' => $partialValue]);
-
-            $event = new RequestEvent(
-                $this->createMock(HttpKernelInterface::class),
-                $request,
-                HttpKernelInterface::MAIN_REQUEST
-            );
-
-            $listener($event);
-
-            $this->assertFalse($event->hasResponse());
-        }
-    }
-
     public function testNullPartialValueIsIgnored(): void
     {
         $listener = $this->createListener();

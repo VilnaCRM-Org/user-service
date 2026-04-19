@@ -74,7 +74,7 @@ final class PaginationRuleTest extends UnitTestCase
     {
         return new QueryParameterViolation(
             'Invalid partial pagination value',
-            'The partial parameter must be a valid boolean value.'
+            'The partial parameter must be either true or false.'
         );
     }
 

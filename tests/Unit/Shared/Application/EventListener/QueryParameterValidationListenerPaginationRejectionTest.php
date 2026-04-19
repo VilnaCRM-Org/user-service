@@ -184,7 +184,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be a valid boolean value.'
+            'The partial parameter must be either true or false.'
         );
     }
 
@@ -204,7 +204,47 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be a valid boolean value.'
+            'The partial parameter must be either true or false.'
+        );
+    }
+
+    public function testNumericPartialValueTriggersViolation(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET', ['partial' => '1']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertProblemJson(
+            $event,
+            'Invalid partial pagination value',
+            'The partial parameter must be either true or false.'
+        );
+    }
+
+    public function testAliasPartialValueTriggersViolation(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET', ['partial' => 'yes']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertProblemJson(
+            $event,
+            'Invalid partial pagination value',
+            'The partial parameter must be either true or false.'
         );
     }
 
@@ -225,7 +265,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             'Invalid partial pagination value',
-            'The partial parameter must be a valid boolean value.'
+            'The partial parameter must be either true or false.'
         );
     }
 

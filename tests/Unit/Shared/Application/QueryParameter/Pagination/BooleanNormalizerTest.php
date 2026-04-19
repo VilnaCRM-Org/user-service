@@ -25,30 +25,10 @@ final class BooleanNormalizerTest extends UnitTestCase
         self::assertFalse($this->normalizer->normalize('false'));
     }
 
-    public function testNormalizesNumericBooleanStrings(): void
-    {
-        self::assertTrue($this->normalizer->normalize('1'));
-        self::assertFalse($this->normalizer->normalize('0'));
-    }
-
     public function testNormalizesCaseInsensitiveTrimmedBooleanStrings(): void
     {
         self::assertTrue($this->normalizer->normalize(' TRUE '));
         self::assertFalse($this->normalizer->normalize(' False '));
-    }
-
-    public function testNormalizesApiPlatformBooleanAliases(): void
-    {
-        self::assertTrue($this->normalizer->normalize(' yes '));
-        self::assertTrue($this->normalizer->normalize('ON'));
-        self::assertFalse($this->normalizer->normalize(' no '));
-        self::assertFalse($this->normalizer->normalize('Off'));
-    }
-
-    public function testNormalizesBooleanIntegers(): void
-    {
-        self::assertTrue($this->normalizer->normalize(1));
-        self::assertFalse($this->normalizer->normalize(0));
     }
 
     public function testKeepsBooleanValuesUntouched(): void
@@ -62,6 +42,11 @@ final class BooleanNormalizerTest extends UnitTestCase
         self::assertNull($this->normalizer->normalize(''));
         self::assertNull($this->normalizer->normalize('   '));
         self::assertNull($this->normalizer->normalize('garbage'));
+        self::assertNull($this->normalizer->normalize('1'));
+        self::assertNull($this->normalizer->normalize('0'));
+        self::assertNull($this->normalizer->normalize('yes'));
+        self::assertNull($this->normalizer->normalize('off'));
+        self::assertNull($this->normalizer->normalize(1));
         self::assertNull($this->normalizer->normalize(2));
         self::assertNull($this->normalizer->normalize(new \stdClass()));
     }

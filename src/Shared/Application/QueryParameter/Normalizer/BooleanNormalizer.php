@@ -9,8 +9,8 @@ use const FILTER_VALIDATE_BOOLEAN;
 
 use function filter_var;
 use function is_bool;
-use function is_int;
 use function is_string;
+use function strtolower;
 use function trim;
 
 final class BooleanNormalizer
@@ -19,17 +19,7 @@ final class BooleanNormalizer
     {
         return match (true) {
             is_bool($value) => $value,
-            is_int($value) => $this->normalizeInteger($value),
             is_string($value) => $this->normalizeString($value),
-            default => null,
-        };
-    }
-
-    private function normalizeInteger(int $value): ?bool
-    {
-        return match ($value) {
-            0 => false,
-            1 => true,
             default => null,
         };
     }
@@ -48,6 +38,13 @@ final class BooleanNormalizer
             FILTER_NULL_ON_FAILURE
         );
 
-        return is_bool($normalized) ? $normalized : null;
+        if (!is_bool($normalized)) {
+            return null;
+        }
+
+        return match (strtolower($normalizedValue)) {
+            'true', 'false' => $normalized,
+            default => null,
+        };
     }
 }
