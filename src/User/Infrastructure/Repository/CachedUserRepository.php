@@ -128,6 +128,40 @@ final class CachedUserRepository extends UserRepositoryDecorator
     }
 
     #[\Override]
+    public function save(object $user): void
+    {
+        $this->inner->save($user);
+
+        if ($user instanceof UserInterface) {
+            $this->invalidateUserCache($user, 'save');
+        }
+    }
+
+    #[\Override]
+    public function delete(object $user): void
+    {
+        $this->inner->delete($user);
+
+        if ($user instanceof UserInterface) {
+            $this->invalidateUserCache($user, 'delete');
+        }
+    }
+
+    #[\Override]
+    public function saveBatch(UserCollection $users): void
+    {
+        $this->inner->saveBatch($users);
+        $this->invalidateUserCollectionCache($users, 'save_batch');
+    }
+
+    #[\Override]
+    public function deleteBatch(UserCollection $users): void
+    {
+        $this->inner->deleteBatch($users);
+        $this->invalidateUserCollectionCache($users, 'delete_batch');
+    }
+
+    #[\Override]
     public function deleteAll(): void
     {
         $this->inner->deleteAll();
@@ -220,23 +254,44 @@ final class CachedUserRepository extends UserRepositoryDecorator
             return $fallback();
         }
 
-        return $this->getManagedDocumentIfExists($user) ?? $user;
+        if ($this->documentManager->contains($user)) {
+            return $user;
+        }
+
+        return $this->reattachCachedUser($user, $cacheKey, $fallback);
     }
 
     /**
-     * Get managed MongoDB document if it exists in the DocumentManager's unit of work.
-     *
-     * MongoDB ODM doesn't have tryGetById like ORM, so we check if the document is managed.
+     * @param callable(): mixed $fallback
      */
-    private function getManagedDocumentIfExists(UserInterface $cached): ?UserInterface
+    private function reattachCachedUser(
+        UserInterface $cached,
+        string $cacheKey,
+        callable $fallback
+    ): ?UserInterface
     {
-        // Check if document is already managed by DocumentManager
-        if ($this->documentManager->contains($cached)) {
-            return $cached;
+        try {
+            $managedUser = $this->documentManager->merge($cached);
+
+            if ($managedUser instanceof UserInterface) {
+                return $managedUser;
+            }
+
+            $this->logger->warning('Cache merge returned an unexpected value - falling back to database', [
+                'cache_key' => $cacheKey,
+                'user_id' => $cached->getId(),
+                'operation' => 'cache.merge.invalid',
+            ]);
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to reattach cached user - falling back to database', [
+                'cache_key' => $cacheKey,
+                'user_id' => $cached->getId(),
+                'error' => $e->getMessage(),
+                'operation' => 'cache.merge.error',
+            ]);
         }
 
-        // Refresh from database to get managed instance
-        return $this->inner->findById($cached->getId());
+        return $fallback();
     }
 
     /**
@@ -249,5 +304,48 @@ final class CachedUserRepository extends UserRepositoryDecorator
             'error' => $e->getMessage(),
             'operation' => 'cache.error',
         ]);
+    }
+
+    private function invalidateUserCache(UserInterface $user, string $operation): void
+    {
+        $this->invalidateTags([
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
+        ], $operation);
+    }
+
+    private function invalidateUserCollectionCache(
+        UserCollection $users,
+        string $operation
+    ): void {
+        $tags = ['user.collection'];
+
+        foreach ($users as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $tags[] = 'user.' . $user->getId();
+            $tags[] = 'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail());
+        }
+
+        $this->invalidateTags($tags, $operation);
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    private function invalidateTags(array $tags, string $operation): void
+    {
+        try {
+            $this->cache->invalidateTags(array_values(array_unique($tags)));
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to invalidate cache after user write', [
+                'error' => $e->getMessage(),
+                'operation' => 'cache.invalidation.error',
+                'write_operation' => $operation,
+            ]);
+        }
     }
 }

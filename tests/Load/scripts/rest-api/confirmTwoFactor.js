@@ -1,4 +1,4 @@
-import counter from 'k6/x/counter';
+import exec from 'k6/execution';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
@@ -44,24 +44,28 @@ function confirmWithCandidateCodes(accessToken, secret) {
 }
 
 export default function confirmTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = data.users[exec.scenario.iterationInTest % data.users.length];
   utils.checkUserIsDefined(user);
 
-  const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(
-    signInResult.response,
-    'sign-in for confirm 2fa is status 200',
-    res => res.status === 200
-  );
+  let accessToken = user.accessToken;
 
-  const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
+    const signInResult = authFlowUtils.signIn(user.email, user.password);
     utils.checkResponse(
       signInResult.response,
-      'sign-in returns access token for confirm 2fa',
-      () => false
+      'sign-in for confirm 2fa is status 200',
+      res => res.status === 200
     );
-    return;
+
+    accessToken = signInResult.body?.access_token;
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
+      utils.checkResponse(
+        signInResult.response,
+        'sign-in returns access token for confirm 2fa',
+        () => false
+      );
+      return;
+    }
   }
 
   const setupResult = authFlowUtils.setupTwoFactor(accessToken);
@@ -83,8 +87,21 @@ export default function confirmTwoFactor(data) {
     'confirm 2fa is status 200',
     res => res.status === 200
   );
+  const recoveryCodes = confirmResult.body?.recovery_codes;
+
   utils.checkResponse(confirmResult.response, 'confirm 2fa returns recovery codes array', () =>
-    Array.isArray(confirmResult.body?.recovery_codes)
+    Array.isArray(recoveryCodes)
+  );
+
+  if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
+    return;
+  }
+
+  const disableResult = authFlowUtils.disableTwoFactor(accessToken, recoveryCodes[0]);
+  utils.checkResponse(
+    disableResult.response,
+    'disable 2fa after confirm is status 204',
+    res => res.status === 204
   );
 }
 

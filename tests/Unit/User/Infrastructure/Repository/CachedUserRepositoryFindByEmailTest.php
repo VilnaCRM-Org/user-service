@@ -29,6 +29,43 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
         self::assertSame($cachedUser, $result);
     }
 
+    public function testFindByEmailReattachesDetachedCachedUserWithoutDatabaseQuery(): void
+    {
+        $email = $this->faker->email();
+        $cacheKey = 'user.email.' . $this->faker->sha256();
+        $this->expectBuildUserEmailKey($email, $cacheKey);
+        $cachedUser = $this->createUserMock($this->faker->uuid(), $email);
+        $managedUser = $this->createUserMock($cachedUser->getId(), $email);
+
+        $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectDocumentManagerContains($cachedUser, false);
+        $this->expectDocumentManagerMerge($cachedUser, $managedUser);
+        $this->expectInnerFindByEmailNever();
+
+        $result = $this->repository->findByEmail($email);
+
+        self::assertSame($managedUser, $result);
+    }
+
+    public function testFindByEmailFallsBackToDatabaseWhenMergeFails(): void
+    {
+        $email = $this->faker->email();
+        $cacheKey = 'user.email.' . $this->faker->sha256();
+        $this->expectBuildUserEmailKey($email, $cacheKey);
+        $cachedUser = $this->createUserMock($this->faker->uuid(), $email);
+        $freshUser = $this->createUserMock($cachedUser->getId(), $email);
+
+        $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectDocumentManagerContains($cachedUser, false);
+        $this->expectDocumentManagerMergeThrows($cachedUser, 'Merge failed');
+        $this->expectCacheMergeErrorLog($cacheKey, $cachedUser->getId(), 'Merge failed');
+        $this->expectInnerFindByEmail($email, $freshUser);
+
+        $result = $this->repository->findByEmail($email);
+
+        self::assertSame($freshUser, $result);
+    }
+
     public function testFindByEmailCacheMissLoadsFromDatabaseAndCaches(): void
     {
         $email = $this->faker->email();
@@ -134,6 +171,24 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
             ->method('contains');
     }
 
+    private function expectDocumentManagerMerge(UserInterface $user, UserInterface $managedUser): void
+    {
+        $this->documentManager
+            ->expects($this->once())
+            ->method('merge')
+            ->with($user)
+            ->willReturn($managedUser);
+    }
+
+    private function expectDocumentManagerMergeThrows(UserInterface $user, string $message): void
+    {
+        $this->documentManager
+            ->expects($this->once())
+            ->method('merge')
+            ->with($user)
+            ->willThrowException(new \RuntimeException($message));
+    }
+
     private function expectInnerFindByEmail(string $email, ?UserInterface $user): void
     {
         $this->innerRepository
@@ -141,6 +196,13 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
+    }
+
+    private function expectInnerFindByEmailNever(): void
+    {
+        $this->innerRepository
+            ->expects($this->never())
+            ->method('findByEmail');
     }
 
     private function expectCacheDelete(string $cacheKey): void
@@ -194,6 +256,22 @@ final class CachedUserRepositoryFindByEmailTest extends CachedUserRepositoryTest
                     static fn (array $context): bool => $context['cache_key'] === $cacheKey
                         && $context['error'] === $error
                         && $context['operation'] === 'cache.error'
+                )
+            );
+    }
+
+    private function expectCacheMergeErrorLog(string $cacheKey, string $id, string $error): void
+    {
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to reattach cached user - falling back to database',
+                $this->callback(
+                    static fn (array $context): bool => $context['cache_key'] === $cacheKey
+                        && $context['user_id'] === $id
+                        && $context['error'] === $error
+                        && $context['operation'] === 'cache.merge.error'
                 )
             );
     }

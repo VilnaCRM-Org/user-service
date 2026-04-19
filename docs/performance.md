@@ -26,6 +26,58 @@ To ensure our User Service is optimized for high performance, we conducted exten
 - `POST /api/users/batch` now preloads existing users with a single bulk email lookup instead of performing one duplicate-email query per incoming user.
 - Batch registration assembly now lives in a dedicated factory, which keeps the hot path explicit and makes the bulk-lookup behavior easier to validate with repository and cache tests.
 
+## PR 278 Performance Report
+
+This pull request focused on two hot paths that were still visible under smoke load:
+
+- Detached user cache hits were requerying MongoDB instead of reattaching the cached document to Doctrine ODM.
+- User writes (`save`, `delete`, batch writes) were not invalidating the read cache directly, which left short-lived stale user state in auth flows such as 2FA setup and confirm.
+
+The optimized build now:
+
+- Reattaches detached cached users with `DocumentManager::merge()` before falling back to the database.
+- Invalidates `user.collection`, `user.{id}`, and `user.email.{hash}` tags immediately after user writes.
+- Aligns the K6 TOTP helper with the server-side verification window and resets REST 2FA confirm iterations back to a clean state after a successful run.
+
+### Measurement Setup
+
+- Worktree: `user-service-pr278-opt`
+- Load stack: `docker-compose.load-tests.yml`
+- Compose project: `user-service-pr278-opt-load2`
+- Base URL: `http://localhost:38081`
+- Command shape: `./tests/Load/execute-load-test.sh <scenario> true false false false smoke-`
+- Threshold relaxation for comparison runs: `LOAD_TEST_DISABLE_DURATION_THRESHOLDS=true`
+- Baseline logs: `/tmp/pr278-before-targeted-correct`
+- Optimized logs: `/tmp/pr278-after-targeted-correct`
+
+### Before / After Smoke Results
+
+The table below compares the scenario-side latency block for the same smoke run before and after the cache changes.
+
+| Scenario | Avg Before | Avg After | P99 Before | P99 After |
+| --- | --- | --- | --- | --- |
+| `apiContextUser` | `4.37ms` | `2.37ms` | `14.48ms` | `8.91ms` |
+| `getUser` | `11.89ms` | `5.82ms` | `63.23ms` | `17.63ms` |
+| `getUsers` | `28.43ms` | `21.43ms` | `66.94ms` | `45.10ms` |
+| `graphQLGetUser` | `22.13ms` | `14.20ms` | `97.21ms` | `33.77ms` |
+| `graphQLGetUsers` | `319.49ms` | `56.46ms` | `1.25s` | `133.87ms` |
+| `updateUser` | `149.62ms` | `67.63ms` | `387.10ms` | `94.28ms` |
+| `replaceUser` | `177.16ms` | `61.86ms` | `335.19ms` | `72.43ms` |
+| `deleteUser` | `18.25ms` | `5.48ms` | `51.54ms` | `9.19ms` |
+| `signin` | `34.18ms` | `9.65ms` | `104.45ms` | `23.17ms` |
+| `refreshToken` | `29.95ms` | `8.91ms` | `117.98ms` | `15.52ms` |
+
+### Outcome
+
+- The biggest win was the GraphQL user collection path, which dropped from `319.49ms` average / `1.25s` p99 to `56.46ms` average / `133.87ms` p99.
+- Authenticated REST and token flows also improved materially because they all read through `UserRepositoryInterface`, which now avoids the detached-cache requery pattern.
+- The stale-cache fix also removed the real REST 2FA regression where `/api/2fa/confirm` could return `401 Two-factor setup not initiated.` immediately after `/api/2fa/setup`.
+
+### Regression Sweep Notes
+
+- A broader `make smoke-load-tests` sweep on the same local stack passed the cache-heavy and REST 2FA confirm scenarios after the repository invalidation fix.
+- `graphQLConfirmTwoFactor` still shows intermittent load-harness instability under K6 because the GraphQL mutation can return a `200` response with an error payload instead of recovery codes. Direct fresh-user replays of `signIn -> setupTwoFactor -> confirmTwoFactor` succeed, so the performance comparison above excludes that script until the GraphQL harness is hardened further.
+
 ## Benchmarks
 
 Here you will find the results of load tests for each User Service endpoint, with a graph, that shows how execution parameters were changing over time for different load scenarios. Also, the metric for Spike testing will be provided, alongside a table, that will show the most important of them.

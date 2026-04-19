@@ -28,7 +28,24 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
         self::assertSame($cachedUser, $result);
     }
 
-    public function testFindByIdReturnsFreshUserWhenCachedUserIsDetached(): void
+    public function testFindByIdReattachesDetachedCachedUserWithoutDatabaseQuery(): void
+    {
+        $id = $this->faker->uuid();
+        $cacheKey = $this->expectBuildUserKey($id);
+        $cachedUser = $this->createUserMock($id);
+        $managedUser = $this->createUserMock($id);
+
+        $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectDocumentManagerContains($cachedUser, false);
+        $this->expectDocumentManagerMerge($cachedUser, $managedUser);
+        $this->expectInnerFindByIdNever();
+
+        $result = $this->repository->findById($id);
+
+        self::assertSame($managedUser, $result);
+    }
+
+    public function testFindByIdFallsBackToDatabaseWhenMergeFails(): void
     {
         $id = $this->faker->uuid();
         $cacheKey = $this->expectBuildUserKey($id);
@@ -37,6 +54,8 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
 
         $this->expectCacheGet($cacheKey, $cachedUser);
         $this->expectDocumentManagerContains($cachedUser, false);
+        $this->expectDocumentManagerMergeThrows($cachedUser, 'Merge failed');
+        $this->expectCacheMergeErrorLog($cacheKey, $id, 'Merge failed');
         $this->expectInnerFindById($id, $freshUser);
 
         $result = $this->repository->findById($id);
@@ -138,6 +157,24 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
             ->method('contains');
     }
 
+    private function expectDocumentManagerMerge(UserInterface $user, UserInterface $managedUser): void
+    {
+        $this->documentManager
+            ->expects($this->once())
+            ->method('merge')
+            ->with($user)
+            ->willReturn($managedUser);
+    }
+
+    private function expectDocumentManagerMergeThrows(UserInterface $user, string $message): void
+    {
+        $this->documentManager
+            ->expects($this->once())
+            ->method('merge')
+            ->with($user)
+            ->willThrowException(new \RuntimeException($message));
+    }
+
     private function expectInnerFindById(string $id, ?UserInterface $user): void
     {
         $this->innerRepository
@@ -145,6 +182,13 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
             ->method('findById')
             ->with($id)
             ->willReturn($user);
+    }
+
+    private function expectInnerFindByIdNever(): void
+    {
+        $this->innerRepository
+            ->expects($this->never())
+            ->method('findById');
     }
 
     private function expectCacheDelete(string $cacheKey): void
@@ -199,6 +243,22 @@ final class CachedUserRepositoryFindByIdTest extends CachedUserRepositoryTestCas
                     static fn (array $context): bool => $context['cache_key'] === $cacheKey
                         && $context['error'] === $error
                         && $context['operation'] === 'cache.error'
+                )
+            );
+    }
+
+    private function expectCacheMergeErrorLog(string $cacheKey, string $id, string $error): void
+    {
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to reattach cached user - falling back to database',
+                $this->callback(
+                    static fn (array $context): bool => $context['cache_key'] === $cacheKey
+                        && $context['user_id'] === $id
+                        && $context['error'] === $error
+                        && $context['operation'] === 'cache.merge.error'
                 )
             );
     }

@@ -605,7 +605,7 @@
       "smoke": {
         "threshold": 10000,
         "rps": 1,
-        "vus": 3,
+        "vus": 5,
         "duration": 10
       },
       "average": {
@@ -644,7 +644,7 @@
       "smoke": {
         "threshold": 10000,
         "rps": 1,
-        "vus": 3,
+        "vus": 5,
         "duration": 10
       },
       "average": {
@@ -1620,7 +1620,7 @@
       "smoke": {
         "threshold": 10000,
         "rps": 1,
-        "vus": 3,
+        "vus": 5,
         "duration": 10
       },
       "average": {

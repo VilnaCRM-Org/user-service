@@ -11,11 +11,19 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
     public function testSaveDelegatesToInnerRepository(): void
     {
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $hash = $this->faker->sha256();
 
         $this->innerRepository
             ->expects($this->once())
             ->method('save')
             ->with($user);
+
+        $this->expectHashEmail($user->getEmail(), $hash);
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $hash,
+        ]);
 
         $this->repository->save($user);
     }
@@ -23,26 +31,50 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
     public function testDeleteDelegatesToInnerRepository(): void
     {
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $hash = $this->faker->sha256();
 
         $this->innerRepository
             ->expects($this->once())
             ->method('delete')
             ->with($user);
 
+        $this->expectHashEmail($user->getEmail(), $hash);
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $hash,
+        ]);
+
         $this->repository->delete($user);
     }
 
     public function testSaveBatchDelegatesToInnerRepository(): void
     {
+        $firstUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $secondUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $users = new UserCollection([
-            $this->createUserMock($this->faker->uuid(), $this->faker->email()),
-            $this->createUserMock($this->faker->uuid(), $this->faker->email()),
+            $firstUser,
+            $secondUser,
         ]);
+        $firstHash = $this->faker->sha256();
+        $secondHash = $this->faker->sha256();
 
         $this->innerRepository
             ->expects($this->once())
             ->method('saveBatch')
             ->with($users);
+
+        $this->expectHashEmails([
+            $firstUser->getEmail() => $firstHash,
+            $secondUser->getEmail() => $secondHash,
+        ]);
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $firstUser->getId(),
+            'user.email.' . $firstHash,
+            'user.' . $secondUser->getId(),
+            'user.email.' . $secondHash,
+        ]);
 
         $this->repository->saveBatch($users);
     }
@@ -66,17 +98,69 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
+        $firstUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $secondUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $users = new UserCollection([
-            $this->createUserMock($this->faker->uuid(), $this->faker->email()),
-            $this->createUserMock($this->faker->uuid(), $this->faker->email()),
+            $firstUser,
+            $secondUser,
         ]);
+        $firstHash = $this->faker->sha256();
+        $secondHash = $this->faker->sha256();
 
         $this->innerRepository
             ->expects($this->once())
             ->method('deleteBatch')
             ->with($users);
 
+        $this->expectHashEmails([
+            $firstUser->getEmail() => $firstHash,
+            $secondUser->getEmail() => $secondHash,
+        ]);
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $firstUser->getId(),
+            'user.email.' . $firstHash,
+            'user.' . $secondUser->getId(),
+            'user.email.' . $secondHash,
+        ]);
+
         $this->repository->deleteBatch($users);
+    }
+
+    public function testSaveLogsWarningWhenInvalidationFails(): void
+    {
+        $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $hash = $this->faker->sha256();
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($user);
+
+        $this->expectHashEmail($user->getEmail(), $hash);
+        $this->cache->expectInvalidateTags(static function (array $tags) use ($user, $hash): never {
+            self::assertSame([
+                'user.collection',
+                'user.' . $user->getId(),
+                'user.email.' . $hash,
+            ], $tags);
+
+            throw new \RuntimeException('Cache error');
+        });
+
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to invalidate cache after user write',
+                $this->callback(
+                    static fn (array $context): bool => isset($context['error'])
+                        && $context['operation'] === 'cache.invalidation.error'
+                        && $context['write_operation'] === 'save'
+                )
+            );
+
+        $this->repository->save($user);
     }
 
     public function testDeleteAllInvalidatesCache(): void
@@ -134,5 +218,41 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $result = $this->repository->findById($id);
 
         self::assertSame($user, $result);
+    }
+
+    private function expectHashEmail(string $email, string $hash): void
+    {
+        $this->cacheKeyBuilder
+            ->expects($this->once())
+            ->method('hashEmail')
+            ->with($email)
+            ->willReturn($hash);
+    }
+
+    /**
+     * @param array<string, string> $hashesByEmail
+     */
+    private function expectHashEmails(array $hashesByEmail): void
+    {
+        $this->cacheKeyBuilder
+            ->expects($this->exactly(count($hashesByEmail)))
+            ->method('hashEmail')
+            ->willReturnCallback(static function (string $email) use ($hashesByEmail): string {
+                self::assertArrayHasKey($email, $hashesByEmail);
+
+                return $hashesByEmail[$email];
+            });
+    }
+
+    /**
+     * @param list<string> $expectedTags
+     */
+    private function expectInvalidateTags(array $expectedTags): void
+    {
+        $this->cache->expectInvalidateTags(static function (array $tags) use ($expectedTags): bool {
+            self::assertSame($expectedTags, $tags);
+
+            return true;
+        });
     }
 }

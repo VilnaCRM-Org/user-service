@@ -1,4 +1,4 @@
-import counter from 'k6/x/counter';
+import exec from 'k6/execution';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
@@ -44,24 +44,28 @@ function confirmWithCandidateCodes(accessToken, secret) {
 }
 
 export default function graphQLConfirmTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = data.users[exec.scenario.iterationInTest % data.users.length];
   utils.checkUserIsDefined(user);
 
-  const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(
-    signInResult.response,
-    'sign-in for graphQL confirm 2fa is status 200',
-    res => res.status === 200
-  );
+  let accessToken = user.accessToken;
 
-  const accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
+    const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
     utils.checkResponse(
       signInResult.response,
-      'sign-in returns access token for graphQL confirm 2fa',
-      () => false
+      'sign-in for graphQL confirm 2fa is status 200',
+      res => res.status === 200
     );
-    return;
+
+    accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
+      utils.checkResponse(
+        signInResult.response,
+        'sign-in returns access token for graphQL confirm 2fa',
+        () => false
+      );
+      return;
+    }
   }
 
   const setupResult = graphQLAuthFlowUtils.setupTwoFactor(accessToken);
@@ -87,8 +91,26 @@ export default function graphQLConfirmTwoFactor(data) {
     'graphQL confirm 2fa is status 200',
     res => res.status === 200
   );
+  const recoveryCodes = confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes;
+
   utils.checkResponse(confirmResult.response, 'graphQL confirm 2fa returns recovery codes', () =>
-    Array.isArray(confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes)
+    Array.isArray(recoveryCodes)
+  );
+
+  if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
+    return;
+  }
+
+  const disableResult = graphQLAuthFlowUtils.disableTwoFactor(accessToken, recoveryCodes[0]);
+  utils.checkResponse(
+    disableResult.response,
+    'graphQL disable 2fa after confirm is status 200',
+    res => res.status === 200
+  );
+  utils.checkResponse(
+    disableResult.response,
+    'graphQL disable 2fa after confirm returns success',
+    () => disableResult.body?.data?.disableTwoFactorUser?.user?.success === true
   );
 }
 
