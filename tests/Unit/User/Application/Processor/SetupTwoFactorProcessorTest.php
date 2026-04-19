@@ -13,9 +13,13 @@ use App\User\Application\DTO\SetupTwoFactorDto;
 use App\User\Application\Factory\SetupTwoFactorCommandFactory;
 use App\User\Application\Processor\SetupTwoFactorProcessor;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
+use App\User\Application\Resolver\HttpRequestContextResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -84,12 +88,45 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
             ->process(new SetupTwoFactorDto(), new Post());
     }
 
-    private function createProcessor(): SetupTwoFactorProcessor
+    public function testProcessRejectsNonEmptyRequestBodiesResolvedFromRequestStack(): void
     {
+        $email = $this->faker->email();
+        $securityUser = $this->createSecurityUser($email);
+        $this->security->expects($this->never())->method('getUser')->willReturn($securityUser);
+
+        $requestStack = new RequestStack();
+        $requestStack->push(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                ['CONTENT_TYPE' => 'application/json'],
+                '[null, null]'
+            )
+        );
+
+        $this->commandBus
+            ->expects($this->never())
+            ->method('dispatch');
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->expectExceptionMessage('This operation does not accept request body content.');
+
+        $this->createProcessor($requestStack)
+            ->process(new SetupTwoFactorDto(), new Post());
+    }
+
+    private function createProcessor(?RequestStack $requestStack = null): SetupTwoFactorProcessor
+    {
+        $requestStack ??= new RequestStack();
+
         return new SetupTwoFactorProcessor(
             $this->commandBus,
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
+            new HttpRequestContextResolver($requestStack),
         );
     }
 

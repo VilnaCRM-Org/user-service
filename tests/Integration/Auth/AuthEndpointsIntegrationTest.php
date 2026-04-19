@@ -109,6 +109,31 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         $this->signInWithoutTwoFactor($user->getEmail(), $password);
     }
 
+    public function testSetupTwoFactorRejectsRequestBodies(): void
+    {
+        [$user, $password] = $this->createUserWithPassword();
+        $signIn = $this->signInWithoutTwoFactor($user->getEmail(), $password);
+
+        $response = $this->httpKernel->handle(
+            Request::create(
+                '/api/2fa/setup',
+                Request::METHOD_POST,
+                [],
+                [],
+                [],
+                [
+                    'REMOTE_ADDR' => $this->faker->ipv4(),
+                    'HTTP_ACCEPT' => 'application/json',
+                    'CONTENT_TYPE' => 'application/json',
+                    'HTTP_AUTHORIZATION' => sprintf('Bearer %s', $signIn['accessToken']),
+                ],
+                '[null, null]'
+            )
+        );
+
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
     public function testSignOutEndpointRevokesOnlyCurrentSessionAndCurrentSessionTokens(): void
     {
         [$user, $password] = $this->createUserWithPassword();

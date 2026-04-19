@@ -24,6 +24,8 @@ DOCKER_COMPOSE_LOAD_TEST = LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_MA
 DOCKER_COMPOSE_SCHEMATHESIS = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.schemathesis.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
+SCHEMATHESIS_API_PORT ?= 8081
+SCHEMATHESIS_BASE_URL ?= http://localhost:$(SCHEMATHESIS_API_PORT)
 SCHEMATHESIS_CLIENT_ID ?= dc0bc6323f16fecd4224a3860ca894c5
 SCHEMATHESIS_CLIENT_SECRET ?= 8897b24436ac63e457fbd7d0bd5b678686c0cb214ef92fa9e8464fc7
 SCHEMATHESIS_AUTH = $(SCHEMATHESIS_CLIENT_ID):$(SCHEMATHESIS_CLIENT_SECRET)
@@ -429,19 +431,7 @@ openapi-diff: generate-openapi-spec ## Compare the generated OpenAPI spec agains
 	./scripts/openapi-diff.sh $(or $(base_ref),origin/main)
 
 schemathesis-validate: reset-db generate-openapi-spec ## Validate the running API against the OpenAPI spec with Schemathesis
-	$(DOCKER_COMPOSE_SCHEMATHESIS) up --detach --wait php redis mailer localstack
-	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:clear
-	$(EXEC_PHP_SCHEMATHESIS) bin/console app:seed-schemathesis-data
-	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:pool:clear cache.app
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url http://localhost:8081 --phases=examples --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --exclude-operation-id oauth_social_initiate_get --exclude-operation-id oauth_social_callback_get --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
-	examples_exit=$$?; \
-	$(EXEC_PHP_SCHEMATHESIS) bin/console app:seed-schemathesis-data; \
-	$(EXEC_PHP_SCHEMATHESIS) bin/console cache:pool:clear cache.app; \
-	$(DOCKER) run --rm --network=host -v $(CURDIR)/.github/openapi-spec:/data $(SCHEMATHESIS_IMAGE) run --checks all /data/spec.yaml --url http://localhost:8081 --phases=coverage -n 1 --exclude-operation-id confirm_password_reset --exclude-operation-id oauth_authorize_get --exclude-operation-id oauth_token_post --exclude-operation-id oauth_social_initiate_get --exclude-operation-id oauth_social_callback_get --header 'X-Schemathesis-Test: cleanup-users' --auth '$(SCHEMATHESIS_AUTH)'; \
-	coverage_exit=$$?; \
-	$(DOCKER_COMPOSE) up --detach --wait php redis mailer localstack; \
-	$(EXEC_PHP) bin/console cache:clear; \
-	if [ $$examples_exit -ne 0 ] || [ $$coverage_exit -ne 0 ]; then exit 1; fi
+	SCHEMATHESIS_IMAGE=$(SCHEMATHESIS_IMAGE) SCHEMATHESIS_BASE_URL=$(SCHEMATHESIS_BASE_URL) ./scripts/schemathesis-validate.sh
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec

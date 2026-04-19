@@ -163,6 +163,8 @@ resources:
           responses:
             200:
               description: '2FA setup payload generated'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Authentication required'
       request_password_reset:

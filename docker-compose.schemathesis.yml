@@ -9,7 +9,7 @@ services:
       - /etc/caddy/Caddyfile
     ports:
       - target: 8081
-        published: 8081
+        published: ${SCHEMATHESIS_API_PORT:-8081}
         protocol: tcp
     volumes:
       - ./:/srv/app
