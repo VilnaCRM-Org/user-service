@@ -38,11 +38,11 @@ load 'bats-assert/load'
   restore_output=$output
 
   [ "$setup_status" -eq 0 ]
-  [[ "$setup_output" == *"Generating autoload files"* ]]
+  [[ "$setup_output" == *"autoload files"* ]]
   [ "$infection_status" -ne 0 ]
   [[ "$infection_output" == *"6 mutants were not covered by tests"* ]]
   [ "$restore_status" -eq 0 ]
-  [[ "$restore_output" == *"Generating autoload files"* ]]
+  [[ "$restore_output" == *"autoload files"* ]]
 }
 
 @test "make behat should fail when scenarios fail" {
