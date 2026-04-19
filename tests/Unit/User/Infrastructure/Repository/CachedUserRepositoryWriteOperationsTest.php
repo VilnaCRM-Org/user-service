@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\User\Domain\Collection\UserCollection;
+use App\User\Domain\Entity\UserInterface;
 
 final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepositoryTestCase
 {
@@ -13,17 +14,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $hash = $this->faker->sha256();
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-
-        $this->expectHashEmail($user->getEmail(), $hash);
-        $this->expectInvalidateTags([
-            'user.collection',
-            'user.' . $user->getId(),
-            'user.email.' . $hash,
-        ]);
+        $this->expectSingleUserWrite('save', $user, $hash);
 
         $this->repository->save($user);
     }
@@ -36,32 +27,13 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $newHash = $this->faker->sha256();
         $user = $this->createUserMock($this->faker->uuid(), $newEmail);
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-
-        $this->unitOfWork
-            ->expects($this->once())
-            ->method('getOriginalDocumentData')
-            ->with($user)
-            ->willReturn(['email' => $oldEmail]);
-
-        $this->cacheKeyBuilder
-            ->method('hashEmail')
-            ->willReturnCallback(static function (string $email) use ($oldEmail, $oldHash, $newEmail, $newHash): string {
-                return match ($email) {
-                    $oldEmail => $oldHash,
-                    $newEmail => $newHash,
-                    default => throw new \LogicException(sprintf('Unexpected email "%s".', $email)),
-                };
-            });
-        $this->expectInvalidateTags([
-            'user.collection',
-            'user.' . $user->getId(),
-            'user.email.' . $newHash,
-            'user.email.' . $oldHash,
-        ]);
+        $this->expectSaveWithPreviousEmail(
+            $user,
+            $oldEmail,
+            $oldHash,
+            $newEmail,
+            $newHash
+        );
 
         $this->repository->save($user);
     }
@@ -71,48 +43,16 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $hash = $this->faker->sha256();
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('delete')
-            ->with($user);
-
-        $this->expectHashEmail($user->getEmail(), $hash);
-        $this->expectInvalidateTags([
-            'user.collection',
-            'user.' . $user->getId(),
-            'user.email.' . $hash,
-        ]);
+        $this->expectSingleUserWrite('delete', $user, $hash);
 
         $this->repository->delete($user);
     }
 
     public function testSaveBatchDelegatesToInnerRepository(): void
     {
-        $firstUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
-        $secondUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
-        $users = new UserCollection([
-            $firstUser,
-            $secondUser,
-        ]);
-        $firstHash = $this->faker->sha256();
-        $secondHash = $this->faker->sha256();
+        [$users, $hashesByEmail, $expectedTags] = $this->createBatchWriteFixtures();
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('saveBatch')
-            ->with($users);
-
-        $this->expectHashEmails([
-            $firstUser->getEmail() => $firstHash,
-            $secondUser->getEmail() => $secondHash,
-        ]);
-        $this->expectInvalidateTags([
-            'user.collection',
-            'user.' . $firstUser->getId(),
-            'user.email.' . $firstHash,
-            'user.' . $secondUser->getId(),
-            'user.email.' . $secondHash,
-        ]);
+        $this->expectBatchWrite('saveBatch', $users, $hashesByEmail, $expectedTags);
 
         $this->repository->saveBatch($users);
     }
@@ -136,31 +76,9 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
-        $firstUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
-        $secondUser = $this->createUserMock($this->faker->uuid(), $this->faker->email());
-        $users = new UserCollection([
-            $firstUser,
-            $secondUser,
-        ]);
-        $firstHash = $this->faker->sha256();
-        $secondHash = $this->faker->sha256();
+        [$users, $hashesByEmail, $expectedTags] = $this->createBatchWriteFixtures();
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('deleteBatch')
-            ->with($users);
-
-        $this->expectHashEmails([
-            $firstUser->getEmail() => $firstHash,
-            $secondUser->getEmail() => $secondHash,
-        ]);
-        $this->expectInvalidateTags([
-            'user.collection',
-            'user.' . $firstUser->getId(),
-            'user.email.' . $firstHash,
-            'user.' . $secondUser->getId(),
-            'user.email.' . $secondHash,
-        ]);
+        $this->expectBatchWrite('deleteBatch', $users, $hashesByEmail, $expectedTags);
 
         $this->repository->deleteBatch($users);
     }
@@ -170,33 +88,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
         $hash = $this->faker->sha256();
 
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('save')
-            ->with($user);
-
+        $this->expectSaveDelegation($user);
         $this->expectHashEmail($user->getEmail(), $hash);
-        $this->cache->expectInvalidateTags(static function (array $tags) use ($user, $hash): never {
-            self::assertSame([
-                'user.collection',
-                'user.' . $user->getId(),
-                'user.email.' . $hash,
-            ], $tags);
-
-            throw new \RuntimeException('Cache error');
-        });
-
-        $this->logger
-            ->expects($this->once())
-            ->method('warning')
-            ->with(
-                'Failed to invalidate cache after user write',
-                $this->callback(
-                    static fn (array $context): bool => isset($context['error'])
-                        && $context['operation'] === 'cache.invalidation.error'
-                        && $context['write_operation'] === 'save'
-                )
-            );
+        $this->expectInvalidateTagsFailure($this->singleUserTags($user, $hash));
+        $this->expectWriteInvalidationWarning('save');
 
         $this->repository->save($user);
     }
@@ -221,23 +116,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->innerRepository
             ->expects($this->once())
             ->method('deleteAll');
-
-        $this->cache->expectInvalidateTags(static function (array $tags): never {
-            self::assertSame(['user', 'user.collection'], $tags);
-
-            throw new \RuntimeException('Cache error');
-        });
-
-        $this->logger
-            ->expects($this->once())
-            ->method('warning')
-            ->with(
-                'Failed to invalidate cache after deleteAll',
-                $this->callback(
-                    static fn (array $context): bool => isset($context['error'])
-                        && $context['operation'] === 'cache.invalidation.error'
-                )
-            );
+        $this->expectInvalidateTagsFailure(['user', 'user.collection']);
+        $this->expectDeleteAllInvalidationWarning();
 
         $this->repository->deleteAll();
     }
@@ -275,11 +155,13 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->cacheKeyBuilder
             ->expects($this->exactly(count($hashesByEmail)))
             ->method('hashEmail')
-            ->willReturnCallback(static function (string $email) use ($hashesByEmail): string {
-                self::assertArrayHasKey($email, $hashesByEmail);
+            ->willReturnCallback(
+                static function (string $email) use ($hashesByEmail): string {
+                    self::assertArrayHasKey($email, $hashesByEmail);
 
-                return $hashesByEmail[$email];
-            });
+                    return $hashesByEmail[$email];
+                }
+            );
     }
 
     /**
@@ -287,10 +169,196 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
      */
     private function expectInvalidateTags(array $expectedTags): void
     {
-        $this->cache->expectInvalidateTags(static function (array $tags) use ($expectedTags): bool {
-            self::assertSame($expectedTags, $tags);
+        $this->cache->expectInvalidateTags(
+            static function (array $tags) use ($expectedTags): bool {
+                self::assertSame($expectedTags, $tags);
 
-            return true;
-        });
+                return true;
+            }
+        );
+    }
+
+    private function expectSingleUserWrite(
+        string $method,
+        UserInterface $user,
+        string $hash
+    ): void {
+        $this->innerRepository
+            ->expects($this->once())
+            ->method($method)
+            ->with($user);
+
+        $this->expectHashEmail($user->getEmail(), $hash);
+        $this->expectInvalidateTags($this->singleUserTags($user, $hash));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function singleUserTags(UserInterface $user, string $hash): array
+    {
+        return [
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $hash,
+        ];
+    }
+
+    private function expectSaveWithPreviousEmail(
+        UserInterface $user,
+        string $oldEmail,
+        string $oldHash,
+        string $newEmail,
+        string $newHash
+    ): void {
+        $this->expectSaveDelegation($user);
+        $this->expectOriginalEmail($user, $oldEmail);
+        $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash);
+        $this->expectInvalidateTags([
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $newHash,
+            'user.email.' . $oldHash,
+        ]);
+    }
+
+    private function expectSaveDelegation(UserInterface $user): void
+    {
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($user);
+    }
+
+    private function expectOriginalEmail(UserInterface $user, string $oldEmail): void
+    {
+        $this->unitOfWork
+            ->expects($this->once())
+            ->method('getOriginalDocumentData')
+            ->with($user)
+            ->willReturn(['email' => $oldEmail]);
+    }
+
+    private function expectHashEmailsForSave(
+        string $oldEmail,
+        string $oldHash,
+        string $newEmail,
+        string $newHash
+    ): void {
+        $this->cacheKeyBuilder
+            ->method('hashEmail')
+            ->willReturnCallback(
+                static function (string $email) use (
+                    $oldEmail,
+                    $oldHash,
+                    $newEmail,
+                    $newHash
+                ): string {
+                    return match ($email) {
+                        $oldEmail => $oldHash,
+                        $newEmail => $newHash,
+                        default => throw new \LogicException(
+                            sprintf('Unexpected email "%s".', $email)
+                        ),
+                    };
+                }
+            );
+    }
+
+    /**
+     * @return array{0: UserCollection, 1: array<string, string>, 2: list<string>}
+     */
+    private function createBatchWriteFixtures(): array
+    {
+        [$firstUser, $firstHash] = $this->createBatchWriteFixture();
+        [$secondUser, $secondHash] = $this->createBatchWriteFixture();
+
+        return [
+            new UserCollection([$firstUser, $secondUser]),
+            [
+                $firstUser->getEmail() => $firstHash,
+                $secondUser->getEmail() => $secondHash,
+            ],
+            [
+                'user.collection',
+                'user.' . $firstUser->getId(),
+                'user.email.' . $firstHash,
+                'user.' . $secondUser->getId(),
+                'user.email.' . $secondHash,
+            ],
+        ];
+    }
+
+    /**
+     * @return array{0: UserInterface, 1: string}
+     */
+    private function createBatchWriteFixture(): array
+    {
+        return [
+            $this->createUserMock($this->faker->uuid(), $this->faker->email()),
+            $this->faker->sha256(),
+        ];
+    }
+
+    /**
+     * @param array<string, string> $hashesByEmail
+     * @param list<string> $expectedTags
+     */
+    private function expectBatchWrite(
+        string $method,
+        UserCollection $users,
+        array $hashesByEmail,
+        array $expectedTags
+    ): void {
+        $this->innerRepository
+            ->expects($this->once())
+            ->method($method)
+            ->with($users);
+
+        $this->expectHashEmails($hashesByEmail);
+        $this->expectInvalidateTags($expectedTags);
+    }
+
+    /**
+     * @param list<string> $expectedTags
+     */
+    private function expectInvalidateTagsFailure(array $expectedTags): void
+    {
+        $this->cache->expectInvalidateTags(
+            static function (array $tags) use ($expectedTags): never {
+                self::assertSame($expectedTags, $tags);
+
+                throw new \RuntimeException('Cache error');
+            }
+        );
+    }
+
+    private function expectWriteInvalidationWarning(string $writeOperation): void
+    {
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to invalidate cache after user write',
+                $this->callback(
+                    static fn (array $context): bool => isset($context['error'])
+                        && $context['operation'] === 'cache.invalidation.error'
+                        && $context['write_operation'] === $writeOperation
+                )
+            );
+    }
+
+    private function expectDeleteAllInvalidationWarning(): void
+    {
+        $this->logger
+            ->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Failed to invalidate cache after deleteAll',
+                $this->callback(
+                    static fn (array $context): bool => isset($context['error'])
+                        && $context['operation'] === 'cache.invalidation.error'
+                )
+            );
     }
 }

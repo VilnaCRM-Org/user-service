@@ -19,6 +19,9 @@ final class InMemoryUserRepositoryTest extends UnitTestCase
         $repository = new InMemoryUserRepository($storedUser);
 
         $this->assertCount(0, $repository->findByEmails([mb_strtoupper($email)]));
-        $this->assertSame([$storedUser], iterator_to_array($repository->findByEmails([$email]), false));
+        $this->assertSame(
+            [$storedUser],
+            iterator_to_array($repository->findByEmails([$email]), false)
+        );
     }
 }

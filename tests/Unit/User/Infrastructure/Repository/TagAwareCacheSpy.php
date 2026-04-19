@@ -7,13 +7,16 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 use function array_shift;
 use function count;
 use Override;
+use PHPUnit\Framework\Assert;
 use function sprintf;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class TagAwareCacheSpy implements TagAwareCacheInterface
 {
     /**
-     * @var list<callable(string, callable, ?float, ?array): array|bool|float|int|object|string|null>
+     * @var list<
+     *     callable(string, callable, ?float, ?array): array|bool|float|int|object|string|null
+     * >
      */
     private array $getExpectations = [];
 
@@ -48,14 +51,11 @@ final class TagAwareCacheSpy implements TagAwareCacheInterface
         callable $callback,
         ?float $beta = null,
         ?array &$metadata = null
-    ): mixed {
-        $expectation = array_shift($this->getExpectations);
-
-        if ($expectation === null) {
-            throw new \LogicException(
-                sprintf('Unexpected cache get call for key "%s".', $key)
-            );
-        }
+    ): array|bool|float|int|object|string|null {
+        $expectation = $this->takeExpectation(
+            $this->getExpectations,
+            sprintf('Unexpected cache get call for key "%s".', $key)
+        );
 
         return $expectation($key, $callback, $beta, $metadata);
     }
@@ -63,13 +63,10 @@ final class TagAwareCacheSpy implements TagAwareCacheInterface
     #[Override]
     public function delete(string $key): bool
     {
-        $expectation = array_shift($this->deleteExpectations);
-
-        if ($expectation === null) {
-            throw new \LogicException(
-                sprintf('Unexpected cache delete call for key "%s".', $key)
-            );
-        }
+        $expectation = $this->takeExpectation(
+            $this->deleteExpectations,
+            sprintf('Unexpected cache delete call for key "%s".', $key)
+        );
 
         return $expectation($key) ?? true;
     }
@@ -80,36 +77,48 @@ final class TagAwareCacheSpy implements TagAwareCacheInterface
     #[Override]
     public function invalidateTags(array $tags): bool
     {
-        $expectation = array_shift($this->invalidateTagsExpectations);
-
-        if ($expectation === null) {
-            throw new \LogicException('Unexpected cache tag invalidation call.');
-        }
+        $expectation = $this->takeExpectation(
+            $this->invalidateTagsExpectations,
+            'Unexpected cache tag invalidation call.'
+        );
 
         return $expectation($tags) ?? true;
     }
 
     public function assertExpectationsMet(): void
     {
-        if ($this->getExpectations !== []) {
-            throw new \LogicException(
-                sprintf('Unmet cache get expectations: %d.', count($this->getExpectations))
-            );
+        $this->assertQueueEmpty($this->getExpectations, 'Unmet cache get expectations: %d.');
+        $this->assertQueueEmpty(
+            $this->deleteExpectations,
+            'Unmet cache delete expectations: %d.'
+        );
+        $this->assertQueueEmpty(
+            $this->invalidateTagsExpectations,
+            'Unmet cache invalidation expectations: %d.'
+        );
+    }
+
+    /**
+     * @param array<int, callable> $expectations
+     */
+    private function takeExpectation(array &$expectations, string $message): callable
+    {
+        $expectation = array_shift($expectations);
+
+        if ($expectation === null) {
+            Assert::fail($message);
         }
 
-        if ($this->deleteExpectations !== []) {
-            throw new \LogicException(
-                sprintf('Unmet cache delete expectations: %d.', count($this->deleteExpectations))
-            );
-        }
+        return $expectation;
+    }
 
-        if ($this->invalidateTagsExpectations !== []) {
-            throw new \LogicException(
-                sprintf(
-                    'Unmet cache invalidation expectations: %d.',
-                    count($this->invalidateTagsExpectations)
-                )
-            );
+    /**
+     * @param array<int, callable> $expectations
+     */
+    private function assertQueueEmpty(array $expectations, string $message): void
+    {
+        if ($expectations !== []) {
+            Assert::fail(sprintf($message, count($expectations)));
         }
     }
 }
