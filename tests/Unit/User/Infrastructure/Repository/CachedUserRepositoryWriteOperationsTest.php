@@ -47,6 +47,23 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->saveBatch($users);
     }
 
+    public function testFindByEmailsDelegatesToInnerRepository(): void
+    {
+        $firstEmail = $this->faker->unique()->email();
+        $secondEmail = $this->faker->unique()->email();
+        $user = $this->createUserMock($this->faker->uuid(), $firstEmail);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmails')
+            ->with([$firstEmail, $secondEmail])
+            ->willReturn(new UserCollection([$user]));
+
+        $result = $this->repository->findByEmails([$firstEmail, $secondEmail]);
+
+        self::assertSame([$user], iterator_to_array($result));
+    }
+
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
         $users = new UserCollection([

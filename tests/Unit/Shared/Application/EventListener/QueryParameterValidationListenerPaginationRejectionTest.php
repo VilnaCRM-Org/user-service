@@ -201,7 +201,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
     private function createAllowedParametersRule(): QP\AllowedParametersRule
     {
         $violationFactory = new QueryParameterViolationFactory();
-        $params = ['/api/users' => ['page', 'itemsPerPage']];
+        $params = ['/api/users' => ['page', 'itemsPerPage', 'partial']];
         return new QP\AllowedParametersRule($params, $violationFactory);
     }
 

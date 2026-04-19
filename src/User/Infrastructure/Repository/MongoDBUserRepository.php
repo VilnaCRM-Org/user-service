@@ -54,6 +54,35 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     }
 
     /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $uniqueEmails = array_values(array_unique($emails));
+
+        if ($uniqueEmails === []) {
+            return new UserCollection();
+        }
+
+        $result = $this->createQueryBuilder()
+            ->field('email')->in($uniqueEmails)
+            ->getQuery()
+            ->execute();
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    /**
      * @return User|null
      */
     #[\Override]

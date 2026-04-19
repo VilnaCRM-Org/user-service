@@ -45,6 +45,28 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->findUserBy($matcher);
     }
 
+    /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $requestedEmails = array_flip(array_map($this->emailKey(...), $emails));
+        $users = [];
+
+        foreach ($this->users as $user) {
+            $emailKey = $this->emailKey($user->getEmail());
+
+            if (!isset($requestedEmails[$emailKey])) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
     #[\Override]
     public function findById(string $id): ?UserInterface
     {
@@ -91,5 +113,10 @@ final class InMemoryUserRepository implements UserRepositoryInterface
             }
         }
         return null;
+    }
+
+    private function emailKey(string $email): string
+    {
+        return mb_strtolower($email);
     }
 }

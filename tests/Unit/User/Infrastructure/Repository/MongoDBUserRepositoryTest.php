@@ -94,6 +94,54 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->assertSame($expectedUser, $user);
     }
 
+    public function testFindByEmailsReturnsUsersKeyedByNormalizedEmail(): void
+    {
+        $firstEmail = $this->faker->unique()->email();
+        $secondEmail = $this->faker->unique()->email();
+        $firstUser = $this->createUserWithEmail($firstEmail);
+        $secondUser = $this->createUserWithEmail($secondEmail);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [$firstEmail, $secondEmail],
+            [$firstUser, $secondUser]
+        );
+
+        $users = $repository->findByEmails([$firstEmail, $firstEmail, $secondEmail]);
+
+        $this->assertSame([$firstUser, $secondUser], iterator_to_array($users));
+    }
+
+    public function testFindByEmailsReturnsEmptyArrayWhenInputIsEmpty(): void
+    {
+        [$repository] = $this->createQueryBuilderRepository();
+
+        $repository->expects($this->never())
+            ->method('createQueryBuilder');
+
+        $this->assertCount(0, $repository->findByEmails([]));
+    }
+
+    public function testFindByEmailsSkipsNonUserResults(): void
+    {
+        $email = $this->faker->unique()->email();
+        $user = $this->createUserWithEmail($email);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [$email],
+            [$user, new \stdClass()]
+        );
+
+        $this->assertSame([$user], iterator_to_array($repository->findByEmails([$email])));
+    }
+
     public function testFindById(): void
     {
         $id = $this->faker->uuid();
@@ -321,5 +369,86 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->willReturn($user);
 
         $this->userRepository = $repository;
+    }
+
+    /**
+     * @return array{MongoDBUserRepository, Builder, Query}
+     */
+    private function createQueryBuilderRepository(): array
+    {
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                self::BATCH_SIZE,
+            ])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        return [$repository, $queryBuilder, $query];
+    }
+
+    /**
+     * @param list<string> $emails
+     * @param list<object> $queryResult
+     */
+    private function expectFindByEmailsQuery(
+        MongoDBUserRepository $repository,
+        Builder $queryBuilder,
+        Query $query,
+        array $emails,
+        array $queryResult
+    ): void {
+        $this->expectQueryBuilder($repository, $queryBuilder, $emails);
+        $this->expectQueryExecution($queryBuilder, $query, $queryResult);
+    }
+
+    /**
+     * @param list<string> $emails
+     */
+    private function expectQueryBuilder(
+        MongoDBUserRepository $repository,
+        Builder $queryBuilder,
+        array $emails
+    ): void {
+        $repository->expects($this->once())
+            ->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+        $queryBuilder->expects($this->once())
+            ->method('field')
+            ->with('email')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('in')
+            ->with($emails)
+            ->willReturnSelf();
+    }
+
+    /**
+     * @param list<object> $queryResult
+     */
+    private function expectQueryExecution(
+        Builder $queryBuilder,
+        Query $query,
+        array $queryResult
+    ): void {
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('execute')
+            ->willReturn($queryResult);
+    }
+
+    private function createUserWithEmail(string $email): User
+    {
+        return $this->userFactory->create(
+            $email,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
     }
 }

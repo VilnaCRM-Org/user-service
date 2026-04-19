@@ -35,6 +35,22 @@ final class QueryParameterValidationListenerAllowedParametersTest extends UnitTe
         $this->assertFalse($event->hasResponse());
     }
 
+    public function testAllowsPartialPaginationParameter(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET', ['partial' => 'true']);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
     public function testBlocksUnknownParameters(): void
     {
         $listener = $this->createListener();
@@ -145,7 +161,7 @@ final class QueryParameterValidationListenerAllowedParametersTest extends UnitTe
     private function createAllowedParametersRule(): QP\AllowedParametersRule
     {
         $violationFactory = new QueryParameterViolationFactory();
-        $params = ['/api/users' => ['page', 'itemsPerPage']];
+        $params = ['/api/users' => ['page', 'itemsPerPage', 'partial']];
         return new QP\AllowedParametersRule($params, $violationFactory);
     }
 

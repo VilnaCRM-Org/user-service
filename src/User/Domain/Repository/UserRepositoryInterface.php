@@ -17,6 +17,11 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserInterface;
 
+    /**
+     * @param array<int, string> $emails
+     */
+    public function findByEmails(array $emails): UserCollection;
+
     public function findById(string $id): ?UserInterface;
 
     /**
