@@ -305,6 +305,14 @@ memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load t
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
 	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$(MEMORY_SOAK_SCENARIOS)" tests/Load/run-worker-memory-soak.sh
 
+memory-load-soak-tests-full: build-k6-docker ## Run exhaustive worker-mode smoke load tests across every load scenario
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
+	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(DOCKER_COMPOSE_LOAD_TEST) restart php
+	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$$(./tests/Load/get-load-test-scenarios.sh | paste -sd, -)" tests/Load/run-worker-memory-soak.sh
+
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)

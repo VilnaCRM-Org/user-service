@@ -34,11 +34,10 @@ mkdir -p "$(dirname "$memorySoakResultsFile")"
 printf 'round,timestamp_utc,rss_kb,rss_mib,delta_from_baseline_kb,is_warmup\n' > "$memorySoakResultsFile"
 
 discover_memory_soak_scenarios() {
-  mapfile -t scenarios < <(
-    find "$REPO_ROOT/tests/Load/scripts" -type f -name '*.js' -printf '%f\n' \
-      | sed 's/\.js$//' \
-      | sort
-  )
+  local scenarios_output
+
+  scenarios_output=$("$REPO_ROOT/tests/Load/get-worker-memory-soak-scenarios.sh")
+  mapfile -t scenarios <<< "$scenarios_output"
 
   if [ "${#scenarios[@]}" -eq 0 ]; then
     echo "Error: failed to discover load-test scenarios for worker memory soak." >&2

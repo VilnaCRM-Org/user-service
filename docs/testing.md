@@ -65,7 +65,7 @@ Run `make memory-tests` to execute the dedicated memory suite. This target appli
 - **100% inventory coverage** against the authoritative feature baseline from `tests/Load/scripts/rest-api/*.js`, `tests/Load/scripts/graphql/*.js`, and the Behat feature files under `/features`
 - **100% line coverage** for the owned memory-suite scaffolding under `/tests/Memory/Support` and `/tests/Memory/Inventory`
 
-Run `make memory-load-soak-tests` to execute the repeated worker-mode soak pass that replays the full REST, GraphQL, and OAuth load-script inventory against the same FrankenPHP worker process and fails on sustained RSS growth. Override `MEMORY_SOAK_SCENARIOS` only when you need to narrow a local diagnostic run.
+Run `make memory-load-soak-tests` to execute the repeated worker-mode soak pass against a curated REST, GraphQL, and OAuth canary set that exercises the highest-signal worker-mode leak surfaces while keeping CI runtime bounded. Run `make memory-load-soak-tests-full` when you need the exhaustive replay across every load script, and override `MEMORY_SOAK_SCENARIOS` only when you need a narrower local diagnostic run.
 
 The suite uses `phpunit.memory.xml.dist` and runs as a separate GitHub Actions workflow in `.github/workflows/memory-tests.yml`, so worker-mode regressions appear as an isolated CI check instead of being folded into the main PHPUnit workflow.
 
