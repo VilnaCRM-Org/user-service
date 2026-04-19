@@ -1,0 +1,67 @@
+services:
+  php:
+    build:
+      target: frankenphp_dev
+    command:
+      - frankenphp
+      - run
+      - --config
+      - /etc/caddy/Caddyfile
+    environment:
+      APP_ENV: test
+      APP_DEBUG: 0
+      CADDY_PHP_APP_ENV: test
+      CADDY_PHP_APP_DEBUG: 0
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      SERVER_NAME: :80
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+    volumes:
+      - ./:/srv/app
+      - ./infrastructure/docker/php/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./infrastructure/docker/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint:ro
+      - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 120s
+
+  app-prod:
+    profiles: ['manual']
+
+  workers:
+    profiles: ['manual']
+
+  mailer:
+    image: schickling/mailcatcher
+    ports:
+      - '${MAILCATCHER_SMTP_PORT:-1025}:1025'
+      - '${MAILCATCHER_HTTP_PORT:-1080}:1080'
+
+  localstack:
+    image: localstack/localstack:3.4.0
+    ports:
+      - '${LOCALSTACK_PORT:-4566}:4566'
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+    volumes:
+      - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://localhost:4566/_localstack/health | grep -q "\"sqs\": \"running\""',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  structurizr:
+    profiles: ['manual']

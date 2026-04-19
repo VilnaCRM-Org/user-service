@@ -296,9 +296,18 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
+  cache.account_lockout:
+    class: Symfony\Component\Cache\Adapter\RedisAdapter
+    arguments:
+      - '@app.account_lockout_redis_connection'
+      - 'account_lockout'
+      - 0
+    tags:
+      - { name: kernel.reset, method: reset }
+
   App\User\Infrastructure\Provider\RedisAccountLockoutProvider:
     arguments:
-      $cachePool: '@cache.app'
+      $cachePool: '@cache.account_lockout'
 
   App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor:
     arguments:
@@ -401,6 +410,12 @@ services:
     factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
     arguments:
       - '%env(REDIS_URL)%'
+
+  app.account_lockout_redis_connection:
+    class: \Redis
+    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+    arguments:
+      - '%env(resolve:REDIS_LOCKOUT_URL)%'
 
   oauth.guzzle_handler_stack:
     class: GuzzleHttp\HandlerStack

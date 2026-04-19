@@ -24,7 +24,9 @@ final class UserContext implements Context
     public function __construct(
         private CacheItemPoolInterface $cachePool,
         private CacheItemPoolInterface $rateLimiterCachePool,
+        private CacheItemPoolInterface $accountLockoutCachePool,
         private readonly UserContextUserManagementServices $userManagement,
+        private readonly RedisDatabaseMirror $redisDatabaseMirror,
     ) {
         $this->faker = Factory::create();
     }
@@ -34,7 +36,9 @@ final class UserContext implements Context
      */
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
+        $this->redisDatabaseMirror->flushDefaultAndHttpDatabases();
         $this->cachePool->clear();
+        $this->accountLockoutCachePool->clear();
         self::$lastPasswordResetToken = '';
         self::$userIdsByEmail = [];
         self::$currentTokenUserEmail = '';

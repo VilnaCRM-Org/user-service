@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+SCHEMATHESIS_IMAGE=${SCHEMATHESIS_IMAGE:-schemathesis/schemathesis:4.9.5}
+SCHEMATHESIS_API_PORT=${SCHEMATHESIS_API_PORT:-8081}
+SCHEMATHESIS_BASE_URL=${SCHEMATHESIS_BASE_URL:-http://localhost:${SCHEMATHESIS_API_PORT}}
+SCHEMATHESIS_REPORT_DIR=$(mktemp -d "${TMPDIR:-/tmp}/schemathesis-report.XXXXXX")
+
+readonly ROOT_DIR
+readonly SCHEMATHESIS_IMAGE
+readonly SCHEMATHESIS_API_PORT
+readonly SCHEMATHESIS_BASE_URL
+readonly SCHEMATHESIS_REPORT_DIR
+
+cleanup() {
+    local exit_code=$?
+
+    set +e
+    if [ "$exit_code" -eq 0 ]; then
+        rm -rf "$SCHEMATHESIS_REPORT_DIR"
+        return
+    fi
+
+    echo "Schemathesis reports preserved at: $SCHEMATHESIS_REPORT_DIR" >&2
+}
+
+trap cleanup EXIT
+
+compose_schemathesis() {
+    docker compose -f docker-compose.yml -f docker-compose.schemathesis.yml "$@"
+}
+
+php_schemathesis() {
+    compose_schemathesis exec -T php "$@"
+}
+
+refresh_seed_data() {
+    php_schemathesis bin/console cache:pool:clear cache.app >/dev/null
+    php_schemathesis bin/console app:seed-schemathesis-data >/dev/null
+}
+
+sign_in_access_token() {
+    local email=$1
+    local password=$2
+    local body
+    local token
+
+    if ! body=$(curl --fail-with-body -sS \
+        --connect-timeout 5 \
+        --max-time 30 \
+        -X POST \
+        "${SCHEMATHESIS_BASE_URL}/api/signin" \
+        -H 'Content-Type: application/json' \
+        --data "{\"email\":\"${email}\",\"password\":\"${password}\",\"rememberMe\":false}"); then
+        if [ -n "${body:-}" ]; then
+            echo "$body" >&2
+        fi
+
+        return 1
+    fi
+
+    if ! token=$(python3 -c '
+import json
+import sys
+
+try:
+    payload = json.load(sys.stdin)
+except json.JSONDecodeError as error:
+    print(f"Invalid sign-in response: {error}", file=sys.stderr)
+    raise SystemExit(1)
+
+access_token = payload.get("access_token")
+if not isinstance(access_token, str) or access_token == "":
+    print("Sign-in response did not contain access_token.", file=sys.stderr)
+    raise SystemExit(1)
+
+print(access_token)
+' <<<"$body"); then
+        echo "$body" >&2
+
+        return 1
+    fi
+
+    printf '%s' "$token"
+}
+
+service_access_token() {
+    php_schemathesis sh tests/Load/generate-service-token.sh | tr -d '\r\n'
+}
+
+run_schemathesis() {
+    local label=$1
+    shift
+
+    local log_file="${SCHEMATHESIS_REPORT_DIR}/${label}.log"
+
+    echo
+    echo "==> ${label}"
+
+    set +e
+    docker run --rm --network=host \
+        -v "${ROOT_DIR}/.github/openapi-spec:/data:ro" \
+        "${SCHEMATHESIS_IMAGE}" \
+        run \
+        --no-color \
+        --checks all \
+        /data/spec.yaml \
+        --url "${SCHEMATHESIS_BASE_URL}" \
+        --header 'X-Schemathesis-Test: cleanup-users' \
+        "$@" 2>&1 | tee "${log_file}"
+    local status=${PIPESTATUS[0]}
+    set -e
+
+    if [ "$status" -ne 0 ]; then
+        return "$status"
+    fi
+
+    if grep -q '^=================================== WARNINGS' "${log_file}"; then
+        echo "Schemathesis emitted warnings for ${label}; failing the validation run." >&2
+        return 1
+    fi
+}
+
+require_token() {
+    local label=$1
+    local token=$2
+
+    if [ -n "$token" ]; then
+        return 0
+    fi
+
+    echo "Unable to obtain ${label} access token for Schemathesis validation." >&2
+    exit 1
+}
+
+compose_schemathesis up --detach --wait php redis mailer localstack >/dev/null
+compose_schemathesis restart php >/dev/null
+compose_schemathesis up --detach --wait php >/dev/null
+php_schemathesis bin/console cache:clear >/dev/null
+
+refresh_seed_data
+run_schemathesis \
+    examples-public \
+    --phases=examples \
+    --include-operation-id create_http \
+    --include-operation-id confirm_http \
+    --include-operation-id request_password_reset \
+    --include-operation-id confirm_password_reset
+
+refresh_seed_data
+user_token=$(sign_in_access_token 'user@example.com' 'Password1!')
+require_token 'user' "$user_token"
+run_schemathesis \
+    examples-user-self \
+    --phases=examples \
+    --include-operation-id api_users_id_get \
+    --include-path '/api/users/{id}/resend-confirmation-email' \
+    --header "Authorization: Bearer ${user_token}"
+
+refresh_seed_data
+update_token=$(sign_in_access_token 'update-user@example.com' 'Password1!')
+require_token 'update user' "$update_token"
+run_schemathesis \
+    examples-user-update \
+    --phases=examples \
+    --include-operation-id api_users_id_put \
+    --include-operation-id api_users_id_patch \
+    --header "Authorization: Bearer ${update_token}"
+
+refresh_seed_data
+delete_token=$(sign_in_access_token 'delete-user@example.com' 'Password1!')
+require_token 'delete user' "$delete_token"
+run_schemathesis \
+    examples-user-delete \
+    --phases=examples \
+    --include-operation-id api_users_id_delete \
+    --header "Authorization: Bearer ${delete_token}"
+
+refresh_seed_data
+service_token=$(service_access_token)
+require_token 'service' "$service_token"
+run_schemathesis \
+    examples-service \
+    --phases=examples \
+    --include-operation-id create_batch_http \
+    --header "Authorization: Bearer ${service_token}"
+
+refresh_seed_data
+run_schemathesis \
+    coverage-public \
+    --phases=coverage \
+    -n 1 \
+    --include-operation-id create_http \
+    --include-operation-id request_password_reset \
+    --include-operation-id api_health_get
+
+refresh_seed_data
+user_token=$(sign_in_access_token 'user@example.com' 'Password1!')
+require_token 'user' "$user_token"
+run_schemathesis \
+    coverage-user-self \
+    --phases=coverage \
+    -n 1 \
+    --include-operation-id api_users_get_collection \
+    --include-operation-id api_users_id_get \
+    --include-path '/api/users/{id}/resend-confirmation-email' \
+    --include-operation-id setup_2fa_http \
+    --header "Authorization: Bearer ${user_token}"
+
+refresh_seed_data
+run_schemathesis \
+    fuzzing-public \
+    --phases=fuzzing \
+    -n 1 \
+    --include-operation-id create_http \
+    --include-operation-id request_password_reset \
+    --include-operation-id api_health_get
+
+refresh_seed_data
+user_token=$(sign_in_access_token 'user@example.com' 'Password1!')
+require_token 'user' "$user_token"
+run_schemathesis \
+    fuzzing-user-self \
+    --phases=fuzzing \
+    -n 1 \
+    --include-operation-id api_users_get_collection \
+    --include-operation-id api_users_id_get \
+    --include-operation-id setup_2fa_http \
+    --header "Authorization: Bearer ${user_token}"

@@ -8,18 +8,17 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Behat\Behat\Context\Context;
 use RuntimeException;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 final readonly class RateLimitingAdditionalContext implements Context
 {
     public function __construct(
         private UserOperationsState $state,
         private UserRepositoryInterface $userRepository,
-        private RateLimiterFactory $passwordResetConfirmLimiter,
-        private RateLimiterFactory $recoveryCodesLimiter,
-        private RateLimiterFactory $signoutLimiter,
-        private RateLimiterFactory $signoutAllLimiter,
-        private RedisDatabaseMirror $redisDatabaseMirror,
+        private \Symfony\Component\RateLimiter\RateLimiterFactory $passwordResetConfirmLimiter,
+        private \Symfony\Component\RateLimiter\RateLimiterFactory $recoveryCodesLimiter,
+        private \Symfony\Component\RateLimiter\RateLimiterFactory $signoutLimiter,
+        private \Symfony\Component\RateLimiter\RateLimiterFactory $signoutAllLimiter,
+        private RateLimiterTestHelper $rateLimiterTestHelper,
     ) {
     }
 
@@ -28,7 +27,11 @@ final readonly class RateLimitingAdditionalContext implements Context
      */
     public function passwordResetConfirmRequestsFromTheSameIpWithinMinute(int $count): void
     {
-        $this->consume($this->passwordResetConfirmLimiter, $this->buildIpKey(), $count);
+        $this->rateLimiterTestHelper->consumeLoopbackLimiter(
+            $this->passwordResetConfirmLimiter,
+            $this->state,
+            $count
+        );
     }
 
     /**
@@ -36,9 +39,9 @@ final readonly class RateLimitingAdditionalContext implements Context
      */
     public function recoveryCodeRegenerationRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume(
+        $this->rateLimiterTestHelper->consume(
             $this->recoveryCodesLimiter,
-            $this->buildUserKey($this->resolveCurrentUserId()),
+            $this->rateLimiterTestHelper->buildUserKey($this->resolveCurrentUserId()),
             $count
         );
     }
@@ -48,9 +51,9 @@ final readonly class RateLimitingAdditionalContext implements Context
      */
     public function signoutRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume(
+        $this->rateLimiterTestHelper->consume(
             $this->signoutLimiter,
-            $this->buildUserKey($this->resolveCurrentUserId()),
+            $this->rateLimiterTestHelper->buildUserKey($this->resolveCurrentUserId()),
             $count
         );
     }
@@ -60,9 +63,9 @@ final readonly class RateLimitingAdditionalContext implements Context
      */
     public function signoutAllRequestsHaveBeenSentWithinMinute(int $count): void
     {
-        $this->consume(
+        $this->rateLimiterTestHelper->consume(
             $this->signoutAllLimiter,
-            $this->buildUserKey($this->resolveCurrentUserId()),
+            $this->rateLimiterTestHelper->buildUserKey($this->resolveCurrentUserId()),
             $count
         );
     }
@@ -82,26 +85,5 @@ final readonly class RateLimitingAdditionalContext implements Context
         }
 
         return $user->getId();
-    }
-
-    private function consume(RateLimiterFactory $limiter, string $key, int $count): void
-    {
-        for ($i = 0; $i < $count; ++$i) {
-            $limiter->create($key)->consume();
-        }
-        $this->redisDatabaseMirror->mirrorDefaultLimiterStateToHttpDatabase();
-    }
-
-    private function buildUserKey(string $userId): string
-    {
-        return sprintf('user:%s', $userId);
-    }
-
-    private function buildIpKey(): string
-    {
-        $clientIpAddress = '::1';
-        $this->state->clientIpAddress = $clientIpAddress;
-
-        return sprintf('ip:%s', $clientIpAddress);
     }
 }

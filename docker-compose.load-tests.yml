@@ -28,7 +28,10 @@ services:
       - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
     environment:
       APP_ENV: load_test
+      APP_DEBUG: 0
       CADDY_PHP_APP_ENV: load_test
+      CADDY_PHP_APP_DEBUG: 0
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
       FRANKENPHP_CONFIG: import worker.Caddyfile
       LOAD_TEST_API_PORT: ${LOAD_TEST_API_PORT:-18081}
       SERVER_NAME: :80

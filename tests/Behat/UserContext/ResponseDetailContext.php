@@ -6,24 +6,30 @@ namespace App\Tests\Behat\UserContext;
 
 use App\Tests\Behat\UserContext\Input\CompleteTwoFactorInput;
 use Behat\Behat\Context\Context;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Assert;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 final class ResponseDetailContext implements Context
 {
     private const DEFAULT_TOTP_SECRET = 'JBSWY3DPEHPK3PXP';
 
-    private RequestBodySerializer $bodySerializer;
+    private UserRequestContext $userRequestContext;
 
     public function __construct(
         private UserOperationsState $state,
-        private readonly KernelInterface $kernel,
-        SerializerInterface $serializer,
     ) {
-        $this->bodySerializer = new RequestBodySerializer($serializer);
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $this->userRequestContext = $scope
+            ->getEnvironment()
+            ->getContext(UserRequestContext::class);
     }
 
     /**
@@ -205,36 +211,22 @@ final class ResponseDetailContext implements Context
 
     private function measureControlTwoFactorResponse(): float
     {
-        $startedAt = microtime(true);
-        $controlResponse = $this->kernel->handle($this->createControlRequest());
-        $controlResponseTime = (microtime(true) - $startedAt) * 1000;
+        $requestBody = $this->state->requestBody;
+        $this->state->requestBody = new CompleteTwoFactorInput(
+            $this->resolvePendingSessionId(),
+            $this->generateValidTotpCode()
+        );
+        $this->userRequestContext->requestSendTo('POST', '/api/signin/2fa');
+
+        $controlResponse = $this->state->response;
+        $controlResponseTime = $this->state->lastResponseTimeMs;
+        $this->state->requestBody = $requestBody;
+
+        Assert::assertInstanceOf(Response::class, $controlResponse);
+        Assert::assertIsFloat($controlResponseTime);
         Assert::assertSame(200, $controlResponse->getStatusCode());
 
         return $controlResponseTime;
-    }
-
-    private function createControlRequest(): Request
-    {
-        return Request::create(
-            '/api/signin/2fa',
-            'POST',
-            [],
-            [],
-            [],
-            $this->buildTwoFactorTimingHeaders(),
-            $this->buildControlRequestBody()
-        );
-    }
-
-    private function buildControlRequestBody(): string
-    {
-        return $this->bodySerializer->serialize(
-            new CompleteTwoFactorInput(
-                $this->resolvePendingSessionId(),
-                $this->generateValidTotpCode()
-            ),
-            'POST'
-        );
     }
 
     private function assertTimingDeviationWithinRange(
@@ -267,33 +259,6 @@ final class ResponseDetailContext implements Context
         $this->state->requestBody = $snapshot['requestBody'];
         $this->state->response = $snapshot['response'];
         $this->state->lastResponseTimeMs = $snapshot['responseTimeMs'];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function buildTwoFactorTimingHeaders(): array
-    {
-        $headers = [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_ACCEPT_LANGUAGE' => is_string($this->state->language)
-                ? $this->state->language
-                : 'en',
-        ];
-
-        $userAgent = $this->state->userAgentHeader;
-        if (is_string($userAgent) && $userAgent !== '') {
-            $headers['HTTP_USER_AGENT'] = $userAgent;
-        }
-
-        $clientIpAddress = $this->state->clientIpAddress
-            ?? $this->state->expectedIpAddress;
-        if (is_string($clientIpAddress) && $clientIpAddress !== '') {
-            $headers['REMOTE_ADDR'] = $clientIpAddress;
-        }
-
-        return $headers;
     }
 
     private function resolvePendingSessionId(): string
