@@ -163,46 +163,6 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         self::assertSame($user, $result);
     }
 
-    private function expectHashEmail(string $email, string $hash): void
-    {
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('hashEmail')
-            ->with($email)
-            ->willReturn($hash);
-    }
-
-    /**
-     * @param array<string, string> $hashesByEmail
-     */
-    private function expectHashEmails(array $hashesByEmail): void
-    {
-        $this->cacheKeyBuilder
-            ->expects($this->exactly(count($hashesByEmail)))
-            ->method('hashEmail')
-            ->willReturnCallback(
-                static function (string $email) use ($hashesByEmail): string {
-                    self::assertArrayHasKey($email, $hashesByEmail);
-
-                    return $hashesByEmail[$email];
-                }
-            );
-    }
-
-    /**
-     * @param list<string> $expectedTags
-     */
-    private function expectInvalidateTags(array $expectedTags): void
-    {
-        $this->cache->expectInvalidateTags(
-            static function (array $tags) use ($expectedTags): bool {
-                self::assertSame($expectedTags, $tags);
-
-                return true;
-            }
-        );
-    }
-
     private function expectSingleUserWrite(
         string $method,
         UserInterface $user,
@@ -216,20 +176,6 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectHashEmail($user->getEmail(), $hash);
         $this->expectInvalidateTags($this->singleUserTags($user, $hash));
     }
-
-    /**
-     * @return list<string>
-     */
-    private function singleUserTags(UserInterface $user, string $hash): array
-    {
-        return [
-            'user',
-            'user.collection',
-            'user.' . $user->getId(),
-            'user.email.' . $hash,
-        ];
-    }
-
     private function expectSaveWithPreviousEmail(
         UserInterface $user,
         string $oldEmail,

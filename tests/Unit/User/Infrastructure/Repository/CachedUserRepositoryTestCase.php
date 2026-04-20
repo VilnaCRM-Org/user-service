@@ -62,4 +62,57 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
 
         return $user;
     }
+
+    protected function expectHashEmail(string $email, string $hash): void
+    {
+        $this->cacheKeyBuilder
+            ->expects($this->once())
+            ->method('hashEmail')
+            ->with($email)
+            ->willReturn($hash);
+    }
+
+    /**
+     * @param array<string, string> $hashesByEmail
+     */
+    protected function expectHashEmails(array $hashesByEmail): void
+    {
+        $this->cacheKeyBuilder
+            ->expects($this->exactly(count($hashesByEmail)))
+            ->method('hashEmail')
+            ->willReturnCallback(
+                static function (string $email) use ($hashesByEmail): string {
+                    self::assertArrayHasKey($email, $hashesByEmail);
+
+                    return $hashesByEmail[$email];
+                }
+            );
+    }
+
+    /**
+     * @param list<string> $expectedTags
+     */
+    protected function expectInvalidateTags(array $expectedTags): void
+    {
+        $this->cache->expectInvalidateTags(
+            static function (array $tags) use ($expectedTags): bool {
+                self::assertSame($expectedTags, $tags);
+
+                return true;
+            }
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function singleUserTags(UserInterface $user, string $hash): array
+    {
+        return [
+            'user',
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $hash,
+        ];
+    }
 }
