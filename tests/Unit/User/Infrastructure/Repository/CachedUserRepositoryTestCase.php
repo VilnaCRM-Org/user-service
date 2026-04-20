@@ -104,6 +104,20 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
     }
 
     /**
+     * @param list<string> $expectedTags
+     */
+    protected function expectInvalidateTagsCanonicalizing(array $expectedTags): void
+    {
+        $this->cache->expectInvalidateTags(
+            static function (array $tags) use ($expectedTags): bool {
+                self::assertEqualsCanonicalizing($expectedTags, $tags);
+
+                return true;
+            }
+        );
+    }
+
+    /**
      * @return list<string>
      */
     protected function singleUserTags(UserInterface $user, string $hash): array

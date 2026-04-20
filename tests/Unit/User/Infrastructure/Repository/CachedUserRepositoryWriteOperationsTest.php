@@ -176,6 +176,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectHashEmail($user->getEmail(), $hash);
         $this->expectInvalidateTags($this->singleUserTags($user, $hash));
     }
+
+    /**
+     * @param list<string> $hashedEmails
+     */
     private function expectSaveWithPreviousEmail(
         UserInterface $user,
         string $oldEmail,
@@ -186,28 +190,14 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
     ): void {
         $this->expectSaveDelegation($user);
         $this->expectOriginalEmail($user, $oldEmail);
-        $this->expectHashEmailsForSave(
-            $oldEmail,
-            $oldHash,
-            $newEmail,
-            $newHash,
-            $hashedEmails
-        );
-        $expectedTags = [
+        $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash, $hashedEmails);
+        $this->expectInvalidateTagsCanonicalizing([
             'user',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $newHash,
             'user.email.' . $oldHash,
-        ];
-
-        $this->cache->expectInvalidateTags(
-            static function (array $tags) use ($expectedTags): bool {
-                self::assertEqualsCanonicalizing($expectedTags, $tags);
-
-                return true;
-            }
-        );
+        ]);
     }
 
     private function expectSaveDelegation(UserInterface $user): void
@@ -227,6 +217,9 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->willReturn(['email' => $oldEmail]);
     }
 
+    /**
+     * @param list<string> $hashedEmails
+     */
     private function expectHashEmailsForSave(
         string $oldEmail,
         string $oldHash,
