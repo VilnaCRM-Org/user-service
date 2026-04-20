@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-use Override;
-use PHPUnit\Framework\Assert;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use function array_shift;
 use function count;
+use Override;
+use PHPUnit\Framework\Assert;
 use function sprintf;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class TagAwareCacheSpy implements TagAwareCacheInterface
 {

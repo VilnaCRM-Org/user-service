@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByIdMergeFallbackTest
-    extends CachedUserRepositoryFindByIdTestCase
+final class CachedUserRepositoryFindByIdMergeFallbackTest extends CachedUserRepositoryFindByIdTestCase
 {
     public function testFindByIdFallsBackToDatabaseWhenReloadFails(): void
     {
@@ -15,6 +14,19 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest
         $freshUser = $this->createUserMock($id);
 
         $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectReloadFailure($cachedUser, $id);
+        $this->expectReloadWarning($cacheKey, $id);
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($id)
+            ->willReturn($freshUser);
+
+        self::assertSame($freshUser, $this->repository->findById($id));
+    }
+
+    private function expectReloadFailure(object $cachedUser, string $id): void
+    {
         $this->documentManager
             ->expects($this->once())
             ->method('contains')
@@ -25,14 +37,6 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest
             ->method('find')
             ->with($cachedUser::class, $id)
             ->willThrowException(new \RuntimeException('Reload failed'));
-        $this->expectReloadWarning($cacheKey, $id);
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($id)
-            ->willReturn($freshUser);
-
-        self::assertSame($freshUser, $this->repository->findById($id));
     }
 
     private function expectReloadWarning(string $cacheKey, string $id): void

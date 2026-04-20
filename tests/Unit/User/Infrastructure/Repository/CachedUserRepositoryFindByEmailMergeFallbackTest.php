@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByEmailMergeFallbackTest
-    extends CachedUserRepositoryFindByEmailTestCase
+final class CachedUserRepositoryFindByEmailMergeFallbackTest extends CachedUserRepositoryFindByEmailTestCase
 {
     public function testFindByEmailFallsBackToDatabaseWhenReloadFails(): void
     {
@@ -16,6 +15,19 @@ final class CachedUserRepositoryFindByEmailMergeFallbackTest
 
         $this->expectBuildUserEmailKey($email, $cacheKey);
         $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectReloadFailure($cachedUser);
+        $this->expectReloadWarning($cacheKey, $cachedUser->getId());
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($freshUser);
+
+        self::assertSame($freshUser, $this->repository->findByEmail($email));
+    }
+
+    private function expectReloadFailure(object $cachedUser): void
+    {
         $this->documentManager
             ->expects($this->once())
             ->method('contains')
@@ -26,14 +38,6 @@ final class CachedUserRepositoryFindByEmailMergeFallbackTest
             ->method('find')
             ->with($cachedUser::class, $cachedUser->getId())
             ->willThrowException(new \RuntimeException('Reload failed'));
-        $this->expectReloadWarning($cacheKey, $cachedUser->getId());
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($freshUser);
-
-        self::assertSame($freshUser, $this->repository->findByEmail($email));
     }
 
     private function expectReloadWarning(string $cacheKey, string $userId): void

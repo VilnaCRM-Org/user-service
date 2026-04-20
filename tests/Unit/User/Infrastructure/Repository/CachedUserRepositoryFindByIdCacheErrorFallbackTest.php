@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByIdCacheErrorFallbackTest
-    extends CachedUserRepositoryFindByIdTestCase
+final class CachedUserRepositoryFindByIdCacheErrorFallbackTest extends CachedUserRepositoryFindByIdTestCase
 {
     public function testFindByIdFallsBackToDatabaseOnCacheError(): void
     {
