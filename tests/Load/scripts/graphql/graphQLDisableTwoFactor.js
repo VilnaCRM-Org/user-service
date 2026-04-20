@@ -1,4 +1,4 @@
-import counter from 'k6/x/counter';
+import exec from 'k6/execution';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
@@ -44,24 +44,28 @@ function confirmWithCandidateCodes(accessToken, secret) {
 }
 
 export default function graphQLDisableTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = data.users[exec.scenario.iterationInTest % data.users.length];
   utils.checkUserIsDefined(user);
 
-  const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(
-    signInResult.response,
-    'sign-in for graphQL disable 2fa is status 200',
-    res => res.status === 200
-  );
+  let accessToken = user.accessToken;
 
-  const accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
+    const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
     utils.checkResponse(
       signInResult.response,
-      'sign-in returns access token for graphQL disable 2fa',
-      () => false
+      'sign-in for graphQL disable 2fa is status 200',
+      res => res.status === 200
     );
-    return;
+
+    accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
+      utils.checkResponse(
+        signInResult.response,
+        'sign-in returns access token for graphQL disable 2fa',
+        () => false
+      );
+      return;
+    }
   }
 
   const setupResult = graphQLAuthFlowUtils.setupTwoFactor(accessToken);

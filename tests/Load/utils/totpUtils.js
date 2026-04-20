@@ -9,7 +9,7 @@ export default class TotpUtils {
 
   generateCandidateCodes(secret, timestamp = Math.floor(Date.now() / 1000)) {
     const candidates = [];
-    const windows = [-2, -1, 0, 1, 2].map(offset => offset * this.period);
+    const windows = [0, -1, 1, -2, 2].map(offset => offset * this.period);
 
     for (const offset of windows) {
       const candidate = this.generateCode(secret, timestamp + offset);
