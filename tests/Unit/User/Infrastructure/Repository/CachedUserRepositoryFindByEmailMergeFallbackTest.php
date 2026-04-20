@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByEmailMergeFallbackTest extends CachedUserRepositoryFindByEmailTestCase
+final class CachedUserRepositoryFindByEmailMergeFallbackTest
+    extends CachedUserRepositoryFindByEmailTestCase
 {
     public function testFindByEmailFallsBackToDatabaseWhenMergeFails(): void
     {
