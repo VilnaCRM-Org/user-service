@@ -215,13 +215,21 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectSaveDelegation($user);
         $this->expectOriginalEmail($user, $oldEmail);
         $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash);
-        $this->expectInvalidateTagsCanonicalizing([
+        $expectedTags = [
             'user',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $newHash,
             'user.email.' . $oldHash,
-        ]);
+        ];
+
+        $this->cache->expectInvalidateTags(
+            static function (array $tags) use ($expectedTags): bool {
+                self::assertEqualsCanonicalizing($expectedTags, $tags);
+
+                return true;
+            }
+        );
     }
 
     private function expectSaveDelegation(UserInterface $user): void
@@ -332,20 +340,6 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
                 self::assertSame($expectedTags, $tags);
 
                 throw new \RuntimeException('Cache error');
-            }
-        );
-    }
-
-    /**
-     * @param list<string> $expectedTags
-     */
-    private function expectInvalidateTagsCanonicalizing(array $expectedTags): void
-    {
-        $this->cache->expectInvalidateTags(
-            static function (array $tags) use ($expectedTags): bool {
-                self::assertEqualsCanonicalizing($expectedTags, $tags);
-
-                return true;
             }
         );
     }
