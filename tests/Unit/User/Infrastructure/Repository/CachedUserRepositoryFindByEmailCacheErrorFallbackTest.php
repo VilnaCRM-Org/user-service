@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByEmailCacheErrorFallbackTest extends CachedUserRepositoryFindByEmailTestCase
+final class CachedUserRepositoryFindByEmailCacheErrorFallbackTest extends
+    CachedUserRepositoryFindByEmailTestCase
 {
     public function testFindByEmailFallsBackToDatabaseOnCacheError(): void
     {

@@ -6,7 +6,8 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use Symfony\Contracts\Cache\ItemInterface;
 
-final class CachedUserRepositoryFindByEmailCacheStoreTest extends CachedUserRepositoryFindByEmailTestCase
+final class CachedUserRepositoryFindByEmailCacheStoreTest extends
+    CachedUserRepositoryFindByEmailTestCase
 {
     public function testFindByEmailCacheMissLoadsFromDatabaseAndCaches(): void
     {

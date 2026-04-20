@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-final class CachedUserRepositoryFindByEmailCacheHitTest extends CachedUserRepositoryFindByEmailTestCase
+final class CachedUserRepositoryFindByEmailCacheHitTest extends
+    CachedUserRepositoryFindByEmailTestCase
 {
     public function testFindByEmailReturnsCachedUserWhenManaged(): void
     {
