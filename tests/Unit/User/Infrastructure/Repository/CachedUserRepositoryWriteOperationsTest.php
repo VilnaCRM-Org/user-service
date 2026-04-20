@@ -27,15 +27,19 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $newHash = $this->faker->sha256();
         $user = $this->createUserMock($this->faker->uuid(), $newEmail);
 
+        $hashedEmails = [];
         $this->expectSaveWithPreviousEmail(
             $user,
             $oldEmail,
             $oldHash,
             $newEmail,
-            $newHash
+            $newHash,
+            $hashedEmails
         );
 
         $this->repository->save($user);
+
+        self::assertSame([$oldEmail, $newEmail], $hashedEmails);
     }
 
     public function testDeleteDelegatesToInnerRepository(): void
@@ -81,6 +85,27 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectBatchWrite('deleteBatch', $users, $hashesByEmail, $expectedTags);
 
         $this->repository->deleteBatch($users);
+    }
+
+    public function testSaveBatchIgnoresNonUserEntriesDuringInvalidation(): void
+    {
+        $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
+        $hash = $this->faker->sha256();
+        $users = new UserCollection([new \stdClass(), $user]);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('saveBatch')
+            ->with($users);
+        $this->expectHashEmails([$user->getEmail() => $hash]);
+        $this->expectInvalidateTags([
+            'user',
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $hash,
+        ]);
+
+        $this->repository->saveBatch($users);
     }
 
     public function testSaveLogsWarningWhenInvalidationFails(): void
@@ -210,11 +235,18 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         string $oldEmail,
         string $oldHash,
         string $newEmail,
-        string $newHash
+        string $newHash,
+        array &$hashedEmails
     ): void {
         $this->expectSaveDelegation($user);
         $this->expectOriginalEmail($user, $oldEmail);
-        $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash);
+        $this->expectHashEmailsForSave(
+            $oldEmail,
+            $oldHash,
+            $newEmail,
+            $newHash,
+            $hashedEmails
+        );
         $expectedTags = [
             'user',
             'user.collection',
@@ -253,7 +285,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         string $oldEmail,
         string $oldHash,
         string $newEmail,
-        string $newHash
+        string $newHash,
+        array &$hashedEmails
     ): void {
         $this->cacheKeyBuilder
             ->method('hashEmail')
@@ -262,8 +295,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
                     $oldEmail,
                     $oldHash,
                     $newEmail,
-                    $newHash
+                    $newHash,
+                    &$hashedEmails
                 ): string {
+                    $hashedEmails[] = $email;
+
                     return match ($email) {
                         $oldEmail => $oldHash,
                         $newEmail => $newHash,

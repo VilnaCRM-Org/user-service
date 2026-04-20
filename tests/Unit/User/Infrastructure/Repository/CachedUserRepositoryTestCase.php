@@ -36,7 +36,6 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
         $this->documentManager = $this->createMock(DocumentManager::class);
         $this->unitOfWork = $this->createMock(UnitOfWork::class);
         $this->documentManager->method('getUnitOfWork')->willReturn($this->unitOfWork);
-        $this->unitOfWork->method('getOriginalDocumentData')->willReturn([]);
 
         $this->repository = new CachedUserRepository(
             $this->innerRepository,

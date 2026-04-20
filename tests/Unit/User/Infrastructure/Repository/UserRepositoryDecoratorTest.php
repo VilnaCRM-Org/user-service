@@ -75,6 +75,54 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
         $decorator->deleteAll();
     }
 
+    public function testSaveDelegatesToInnerRepository(): void
+    {
+        $user = new \stdClass();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('save')
+            ->with($user);
+
+        $this->createDecorator($innerRepository)->save($user);
+    }
+
+    public function testDeleteDelegatesToInnerRepository(): void
+    {
+        $user = new \stdClass();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('delete')
+            ->with($user);
+
+        $this->createDecorator($innerRepository)->delete($user);
+    }
+
+    public function testSaveBatchDelegatesToInnerRepository(): void
+    {
+        $users = new UserCollection();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('saveBatch')
+            ->with($users);
+
+        $this->createDecorator($innerRepository)->saveBatch($users);
+    }
+
+    public function testDeleteBatchDelegatesToInnerRepository(): void
+    {
+        $users = new UserCollection();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('deleteBatch')
+            ->with($users);
+
+        $this->createDecorator($innerRepository)->deleteBatch($users);
+    }
+
     private function createDecorator(
         UserRepositoryInterface $innerRepository
     ): UserRepositoryDecorator {
