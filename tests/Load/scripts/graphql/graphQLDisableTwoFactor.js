@@ -29,13 +29,13 @@ function confirmWithCandidateCodes(accessToken, secret) {
   const candidateCodes = totpUtils.generateCandidateCodes(secret);
   let lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[0]);
 
-  if (lastAttempt.response.status === 200) {
+  if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
     return lastAttempt;
   }
 
   for (let index = 1; index < candidateCodes.length; index += 1) {
     lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[index]);
-    if (lastAttempt.response.status === 200) {
+    if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
       return lastAttempt;
     }
   }

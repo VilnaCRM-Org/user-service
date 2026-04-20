@@ -35,6 +35,12 @@ export default class GraphQLAuthFlowUtils {
     return this.postWithAuth(mutation, accessToken);
   }
 
+  hasConfirmedTwoFactor(result) {
+    const recoveryCodes = result?.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes;
+
+    return Array.isArray(recoveryCodes) && recoveryCodes.length > 0;
+  }
+
   disableTwoFactor(accessToken, twoFactorCode) {
     const mutation = `mutation { disableTwoFactorUser(input: { twoFactorCode: "${twoFactorCode}" }) { user { success } } }`;
 

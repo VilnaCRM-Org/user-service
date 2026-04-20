@@ -354,6 +354,8 @@ final class CachedUserRepository extends UserRepositoryDecorator
         ?string $previousEmailTag = null
     ): void {
         $this->invalidateTags([
+            'user',
+            'user.email',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
@@ -365,7 +367,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
         UserCollection $users,
         string $operation
     ): void {
-        $tags = ['user.collection'];
+        $tags = ['user', 'user.email', 'user.collection'];
 
         foreach ($users as $user) {
             if (!$user instanceof UserInterface) {

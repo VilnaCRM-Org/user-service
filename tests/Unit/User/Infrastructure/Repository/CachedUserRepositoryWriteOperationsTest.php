@@ -198,6 +198,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
     private function singleUserTags(UserInterface $user, string $hash): array
     {
         return [
+            'user',
+            'user.email',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $hash,
@@ -215,6 +217,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectOriginalEmail($user, $oldEmail);
         $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash);
         $this->expectInvalidateTags([
+            'user',
+            'user.email',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $newHash,
@@ -280,6 +284,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
                 $secondUser->getEmail() => $secondHash,
             ],
             [
+                'user',
+                'user.email',
                 'user.collection',
                 'user.' . $firstUser->getId(),
                 'user.email.' . $firstHash,

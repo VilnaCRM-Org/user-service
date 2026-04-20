@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserContext;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -17,6 +18,7 @@ final readonly class DocumentManagerResetter
 
     public function clear(): void
     {
+        $this->userCachePool()->clear();
         $this->documentManager()->clear();
     }
 
@@ -38,5 +40,15 @@ final readonly class DocumentManagerResetter
         }
 
         return $container;
+    }
+
+    private function userCachePool(): CacheItemPoolInterface
+    {
+        $cachePool = $this->container()->get('cache.user');
+        if (!$cachePool instanceof CacheItemPoolInterface) {
+            throw new RuntimeException('User cache pool is not available');
+        }
+
+        return $cachePool;
     }
 }
