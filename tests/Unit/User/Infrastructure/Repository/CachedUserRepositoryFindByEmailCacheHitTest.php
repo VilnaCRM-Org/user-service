@@ -25,7 +25,7 @@ final class CachedUserRepositoryFindByEmailCacheHitTest
         self::assertSame($cachedUser, $this->repository->findByEmail($email));
     }
 
-    public function testFindByEmailReattachesDetachedCachedUserWithoutDatabaseQuery(): void
+    public function testFindByEmailReloadsDetachedCachedUserByIdentifier(): void
     {
         $email = $this->faker->email();
         $cacheKey = 'user.email.' . $this->faker->sha256();
@@ -41,8 +41,8 @@ final class CachedUserRepositoryFindByEmailCacheHitTest
             ->willReturn(false);
         $this->documentManager
             ->expects($this->once())
-            ->method('merge')
-            ->with($cachedUser)
+            ->method('find')
+            ->with($cachedUser::class, $cachedUser->getId())
             ->willReturn($managedUser);
         $this->innerRepository->expects($this->never())->method('findByEmail');
 

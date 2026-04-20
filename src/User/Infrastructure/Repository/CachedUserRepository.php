@@ -21,6 +21,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Cache key management via CacheKeyBuilder
  * - Cache hit/miss logging for observability
  * - Graceful fallback to database on cache errors
+ * - Immediate tag invalidation after write operations
  * - Delegates ALL persistence operations to inner repository
  *
  * Decorator Pattern:
@@ -29,8 +30,8 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Transparent to consumers (implements same interface)
  *
  * Cache Invalidation:
- * - Handled by UserCacheInvalidationSubscriber via domain events
- * - This class only reads from cache, never invalidates
+ * - Synchronous tag invalidation inside repository write operations
+ * - Event-driven invalidation via UserCacheInvalidationSubscriber
  */
 final class CachedUserRepository extends UserRepositoryDecorator
 {
@@ -53,7 +54,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
      * Key Pattern: user.{id}
      * TTL: 600s (10 minutes)
      * Consistency: Stale-While-Revalidate (beta: 1.0)
-     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
      * Tags: [user, user.{id}]
      * Notes: Read-heavy operation, tolerates brief staleness
      * Note: This is a Doctrine method, not part of UserRepositoryInterface.
@@ -76,7 +77,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
      * Key Pattern: user.{id}
      * TTL: 600s (10 minutes)
      * Consistency: Stale-While-Revalidate (beta: 1.0)
-     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
      * Tags: [user, user.{id}]
      * Notes: Read-heavy operation, tolerates brief staleness
      */
@@ -99,7 +100,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
      * Key Pattern: user.email.{hash}
      * TTL: 300s (5 minutes)
      * Consistency: Eventual
-     * Invalidation: Via UserCacheInvalidationSubscriber on email change
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
      * Tags: [user, user.email, user.email.{hash}]
      * Notes: Common authentication/lookup operation
      */
@@ -271,34 +272,37 @@ final class CachedUserRepository extends UserRepositoryDecorator
         callable $fallback
     ): ?UserInterface {
         try {
-            return $this->mergeCachedUser($cached, $cacheKey) ?? $fallback();
+            return $this->reloadCachedUser($cached, $cacheKey) ?? $fallback();
         } catch (\Throwable $e) {
             $this->logReattachWarning(
-                'Failed to reattach cached user - falling back to database',
+                'Failed to reload detached cached user - falling back to database',
                 $cacheKey,
                 $cached,
-                'cache.merge.error',
+                'cache.reload.error',
                 $e
             );
         }
+
         return $fallback();
     }
 
-    private function mergeCachedUser(
+    private function reloadCachedUser(
         UserInterface $cached,
         string $cacheKey
     ): ?UserInterface {
-        $managedUser = $this->documentManager->merge($cached);
+        $managedUser = $this->documentManager->find($cached::class, $cached->getId());
 
         if ($managedUser instanceof UserInterface) {
             return $managedUser;
         }
 
         $this->logReattachWarning(
-            'Cache merge returned an unexpected value - falling back to database',
+            $managedUser === null
+                ? 'Detached cached user was not found - falling back to database'
+                : 'Cache reload returned an unexpected value - falling back to database',
             $cacheKey,
             $cached,
-            'cache.merge.invalid'
+            $managedUser === null ? 'cache.reload.miss' : 'cache.reload.invalid'
         );
 
         return null;
@@ -355,7 +359,6 @@ final class CachedUserRepository extends UserRepositoryDecorator
     ): void {
         $this->invalidateTags([
             'user',
-            'user.email',
             'user.collection',
             'user.' . $user->getId(),
             'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
@@ -367,7 +370,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
         UserCollection $users,
         string $operation
     ): void {
-        $tags = ['user', 'user.email', 'user.collection'];
+        $tags = ['user', 'user.collection'];
 
         foreach ($users as $user) {
             if (!$user instanceof UserInterface) {

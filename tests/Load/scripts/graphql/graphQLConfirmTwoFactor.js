@@ -94,11 +94,11 @@ export default function graphQLConfirmTwoFactor(data) {
   const recoveryCodes = confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes;
 
   utils.checkResponse(confirmResult.response, 'graphQL confirm 2fa returns recovery codes', () =>
-    Array.isArray(recoveryCodes)
+    graphQLAuthFlowUtils.hasConfirmedTwoFactor(confirmResult)
   );
 
   if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
-    return;
+    throw new Error('GraphQL confirm 2FA did not return recovery codes.');
   }
 
   const disableResult = graphQLAuthFlowUtils.disableTwoFactor(accessToken, recoveryCodes[0]);

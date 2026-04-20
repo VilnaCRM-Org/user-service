@@ -8,7 +8,7 @@ final class CachedUserRepositoryFindByIdCacheHitTest extends CachedUserRepositor
 {
     public function testFindReturnsCachedUserWhenManaged(): void
     {
-        $id = (string) $this->faker->numberBetween(1, 9999);
+        $id = $this->faker->uuid();
         $cacheKey = $this->expectBuildUserKey($id);
         $cachedUser = $this->createUserMock($id);
 
@@ -23,7 +23,7 @@ final class CachedUserRepositoryFindByIdCacheHitTest extends CachedUserRepositor
         self::assertSame($cachedUser, $this->repository->find($id));
     }
 
-    public function testFindByIdReattachesDetachedCachedUserWithoutDatabaseQuery(): void
+    public function testFindByIdReloadsDetachedCachedUserByIdentifier(): void
     {
         $id = $this->faker->uuid();
         $cacheKey = $this->expectBuildUserKey($id);
@@ -38,8 +38,8 @@ final class CachedUserRepositoryFindByIdCacheHitTest extends CachedUserRepositor
             ->willReturn(false);
         $this->documentManager
             ->expects($this->once())
-            ->method('merge')
-            ->with($cachedUser)
+            ->method('find')
+            ->with($cachedUser::class, $id)
             ->willReturn($managedUser);
         $this->innerRepository->expects($this->never())->method('findById');
 
