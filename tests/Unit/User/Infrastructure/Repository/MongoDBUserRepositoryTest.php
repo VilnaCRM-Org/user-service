@@ -115,9 +115,10 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->assertSame([$firstUser, $secondUser], iterator_to_array($users));
     }
 
-    public function testFindByEmailsNormalizesEmailCaseBeforeQuerying(): void
+    public function testFindByEmailsQueriesOriginalAndNormalizedEmailCandidates(): void
     {
         $email = $this->faker->unique()->email();
+        $inputEmail = mb_strtoupper($email);
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
@@ -125,11 +126,11 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             $repository,
             $queryBuilder,
             $query,
-            [mb_strtolower($email)],
+            [$inputEmail, mb_strtolower($email)],
             [$user]
         );
 
-        $users = $repository->findByEmails([mb_strtoupper($email)]);
+        $users = $repository->findByEmails([$inputEmail]);
 
         $this->assertSame([$user], iterator_to_array($users));
     }

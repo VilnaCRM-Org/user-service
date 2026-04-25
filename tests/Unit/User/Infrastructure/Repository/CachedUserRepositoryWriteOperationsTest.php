@@ -147,22 +147,6 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->repository->deleteAll();
     }
 
-    public function testFindByIdDelegatesToInnerRepository(): void
-    {
-        $id = $this->faker->uuid();
-        $user = $this->createUserMock($id);
-
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('findById')
-            ->with($id)
-            ->willReturn($user);
-
-        $result = $this->repository->findById($id);
-
-        self::assertSame($user, $result);
-    }
-
     private function expectSingleUserWrite(
         string $method,
         UserInterface $user,

@@ -10,6 +10,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 use function array_map;
+use function array_merge;
 use function array_unique;
 use function array_values;
 
@@ -66,10 +67,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $uniqueEmails = array_values(array_unique(array_map(
-            static fn (string $email): string => mb_strtolower($email),
-            $emails
-        )));
+        $uniqueEmails = $this->uniqueEmailCandidates($emails);
 
         if ($uniqueEmails === []) {
             return new UserCollection();
@@ -90,6 +88,22 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         }
 
         return new UserCollection($users);
+    }
+
+    /**
+     * @param array<int, string> $emails
+     *
+     * @return list<string>
+     */
+    private function uniqueEmailCandidates(array $emails): array
+    {
+        return array_values(array_unique(array_merge(
+            $emails,
+            array_map(
+                static fn (string $email): string => mb_strtolower($email),
+                $emails
+            )
+        )));
     }
 
     /**

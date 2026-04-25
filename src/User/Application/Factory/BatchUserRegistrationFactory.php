@@ -35,7 +35,7 @@ final readonly class BatchUserRegistrationFactory
         $returnedUsers = [];
         $usersToPersist = new UserCollection();
         $events = new DomainEventCollection();
-        $knownUsersByEmail = $this->knownUserPositions($knownUsers);
+        $knownUsersByEmail = $this->knownUsersByEmail($knownUsers);
         $hasher = null;
 
         foreach ($command->users as $user) {
@@ -58,7 +58,7 @@ final readonly class BatchUserRegistrationFactory
 
     /**
      * @param array{email: string, initials: string, password: string} $user
-     * @param array<string, int> $knownUsersByEmail
+     * @param array<string, UserInterface> $knownUsersByEmail
      */
     private function registerUser(
         array $user,
@@ -69,7 +69,7 @@ final readonly class BatchUserRegistrationFactory
         ?PasswordHasherInterface &$hasher
     ): UserInterface {
         $emailKey = $this->emailKey($user['email']);
-        $existingUser = $this->knownUser($emailKey, $knownUsers, $knownUsersByEmail);
+        $existingUser = $this->knownUser($emailKey, $knownUsersByEmail);
 
         if ($existingUser !== null) {
             return $existingUser;
@@ -111,7 +111,7 @@ final readonly class BatchUserRegistrationFactory
     }
 
     /**
-     * @param array<string, int> $knownUsersByEmail
+     * @param array<string, UserInterface> $knownUsersByEmail
      */
     private function rememberUser(
         UserInterface $createdUser,
@@ -122,36 +122,35 @@ final readonly class BatchUserRegistrationFactory
     ): void {
         $usersToPersist->add($createdUser);
         $knownUsers->add($createdUser);
-        $knownUsersByEmail[$emailKey] = $knownUsers->count() - 1;
+        $knownUsersByEmail[$emailKey] = $createdUser;
     }
 
     /**
-     * @return array<string, int>
+     * @return array<string, UserInterface>
      */
-    private function knownUserPositions(UserCollection $knownUsers): array
+    private function knownUsersByEmail(UserCollection $knownUsers): array
     {
-        $positions = [];
+        $usersByEmail = [];
 
-        foreach ($knownUsers as $position => $knownUser) {
-            $positions[$this->emailKey($knownUser->getEmail())] = $position;
+        foreach ($knownUsers as $knownUser) {
+            $usersByEmail[$this->emailKey($knownUser->getEmail())] = $knownUser;
         }
 
-        return $positions;
+        return $usersByEmail;
     }
 
     /**
-     * @param array<string, int> $knownUsersByEmail
+     * @param array<string, UserInterface> $knownUsersByEmail
      */
     private function knownUser(
         string $emailKey,
-        UserCollection $knownUsers,
         array $knownUsersByEmail
     ): ?UserInterface {
         if (!isset($knownUsersByEmail[$emailKey])) {
             return null;
         }
 
-        return $knownUsers[$knownUsersByEmail[$emailKey]];
+        return $knownUsersByEmail[$emailKey];
     }
 
     private function emailKey(string $email): string

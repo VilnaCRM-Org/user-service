@@ -129,9 +129,26 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->assertDuplicateBatchResponse($command);
     }
 
-    /**
-     * Initialize the command handler
-     */
+    public function testInvokeDeduplicatesNewUsersWithSparseKnownUserKeys(): void
+    {
+        $testData = $this->createDuplicateBatchRegistrationTestData();
+        $knownUser = $this->createUserWithCredentials(
+            $this->faker->unique()->email(),
+            $this->faker->word(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+        $command = new RegisterUserBatchCommand(
+            new UserCollection($testData['usersData'])
+        );
+
+        $this->expectSparseKnownUserBatchRegistration($testData, $knownUser);
+
+        $this->handler->__invoke($command);
+
+        $this->assertDuplicateBatchResponse($command);
+    }
+
     private function setHandler(): void
     {
         $batchUserRegistrationFactory = new BatchUserRegistrationFactory(
@@ -366,6 +383,30 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     private function expectDuplicateBatchRegistration(array $testData): void
     {
         $this->expectBatchLookup($testData['usersData']);
+        $this->expectDuplicateBatchCreation($testData);
+        $this->expectDuplicateBatchPersistence(
+            $testData['createdUser'],
+            $testData['event']
+        );
+    }
+
+    /**
+     * @param array{
+     *     createdUser: UserInterface,
+     *     event: UserRegisteredEvent,
+     *     hashedPassword: string,
+     *     userId: \App\Shared\Domain\ValueObject\Uuid,
+     *     usersData: list<array{email: string, initials: string, password: string}>
+     * } $testData
+     */
+    private function expectSparseKnownUserBatchRegistration(
+        array $testData,
+        UserInterface $knownUser
+    ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmails')
+            ->with(array_column($testData['usersData'], 'email'))
+            ->willReturn(new UserCollection([5 => $knownUser]));
         $this->expectDuplicateBatchCreation($testData);
         $this->expectDuplicateBatchPersistence(
             $testData['createdUser'],
