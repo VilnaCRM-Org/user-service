@@ -44,7 +44,18 @@ loadTestApiHost=${LOAD_TEST_API_HOST:-localhost}
 loadTestApiPort=${LOAD_TEST_API_PORT:-18081}
 loadTestMailCatcherHttpPort=${LOAD_TEST_MAILCATCHER_HTTP_PORT:-1180}
 disableDurationThresholds=${LOAD_TEST_DISABLE_DURATION_THRESHOLDS:-false}
+loadTestK6MemoryLimit=${LOAD_TEST_K6_MEMORY_LIMIT-4g}
+loadTestK6MemorySwapLimit=${LOAD_TEST_K6_MEMORY_SWAP_LIMIT-$loadTestK6MemoryLimit}
 composeCmd=(docker compose -p "$loadTestComposeProject")
+k6ResourceLimits=()
+
+if [ -n "$loadTestK6MemoryLimit" ]; then
+  k6ResourceLimits+=(--memory "$loadTestK6MemoryLimit")
+
+  if [ -n "$loadTestK6MemorySwapLimit" ]; then
+    k6ResourceLimits+=(--memory-swap "$loadTestK6MemorySwapLimit")
+  fi
+fi
 
 IFS=':' read -r -a composeFiles <<< "$loadTestComposeFile"
 
@@ -94,6 +105,7 @@ k6Cmd=(
   --net=host
   --rm
   --user "$(id -u)"
+  "${k6ResourceLimits[@]}"
   k6
   run
   --summary-trend-stats=avg,min,med,max,p\(95\),p\(99\)

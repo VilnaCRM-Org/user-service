@@ -17,13 +17,17 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
 
 export const options = scenarioUtils.getOptions();
+
+function getUser(data) {
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+
+  return users[(messageNumber - 1) % users.length];
+}
 
 function confirmWithCandidateCodes(accessToken, secret) {
   const candidateCodes = totpUtils.generateCandidateCodes(secret);
@@ -44,7 +48,7 @@ function confirmWithCandidateCodes(accessToken, secret) {
 }
 
 export default function graphQLCompleteTwoFactor(data) {
-  const user = data.users[exec.scenario.iterationInTest % data.users.length];
+  const user = getUser(data);
   utils.checkUserIsDefined(user);
 
   const firstSignInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);

@@ -35,19 +35,19 @@ export function setup() {
     console.log(`All ${expectedEmails} password reset emails arrived`);
   }
 
-  return {
-    users: users,
-  };
 }
 
 export const options = scenarioUtils.getOptions();
 
 export default async function graphQLConfirmPasswordReset(data) {
-  const num = exec.scenario.iterationInTest + 1;
-  const user = data.users[num % data.users.length];
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+  const user = users[(messageNumber - 1) % users.length];
   utils.checkUserIsDefined(user);
 
-  const token = await mailCatcherUtils.getPasswordResetToken(num);
+  const token = await mailCatcherUtils.getPasswordResetToken(messageNumber);
 
   const newPassword = utils.generateValidPassword();
   const result = graphQLAuthFlowUtils.confirmPasswordReset(token, newPassword);

@@ -14,21 +14,19 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users: users,
-  };
-}
 
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {
-  const num = exec.scenario.iterationInTest + 1;
-  const user = data.users[num % data.users.length];
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+  const user = users[(messageNumber - 1) % users.length];
   utils.checkUserIsDefined(user);
   const mutationName = 'confirmUser';
 
-  const token = await mailCatcherUtils.getConfirmationToken(num);
+  const token = await mailCatcherUtils.getConfirmationToken(messageNumber);
 
   const mutation = `
      mutation {

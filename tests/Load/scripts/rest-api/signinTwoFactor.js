@@ -17,11 +17,6 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
 
 export const options = scenarioUtils.getOptions();
 
@@ -44,7 +39,7 @@ function confirmWithCandidateCodes(accessToken, secret) {
 }
 
 export default function completeSignInTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = users[counter.up() % users.length];
   utils.checkUserIsDefined(user);
 
   const firstSignInResult = authFlowUtils.signIn(user.email, user.password);

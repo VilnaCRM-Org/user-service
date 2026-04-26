@@ -14,16 +14,11 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users: users,
-  };
-}
 
 export const options = scenarioUtils.getOptions();
 
 export default function getUsers(data) {
-  const user = data.users[utils.getRandomNumber(0, data.users.length - 1)];
+  const user = users[utils.getRandomNumber(0, users.length - 1)];
   utils.checkUserIsDefined(user);
 
   const page = utils.getRandomNumber(1, 5);
