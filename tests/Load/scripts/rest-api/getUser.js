@@ -14,7 +14,6 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-
 export const options = scenarioUtils.getOptions();
 
 export default function getUser(data) {

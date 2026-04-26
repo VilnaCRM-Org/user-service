@@ -61,73 +61,73 @@ The table below compares the retained targeted smoke latency block for the same 
 
 | Scenario          | Avg Before | Avg After | Avg Change | P99 Before | P99 After  | P99 Change |
 | ----------------- | ---------- | --------- | ---------: | ---------- | ---------- | ---------: |
-| `apiContextUser`  | `4.37ms`   | `2.37ms`  | `-45.8%`   | `14.48ms`  | `8.91ms`   | `-38.5%`   |
-| `getUser`         | `11.89ms`  | `5.82ms`  | `-51.1%`   | `63.23ms`  | `17.63ms`  | `-72.1%`   |
-| `getUsers`        | `28.43ms`  | `21.43ms` | `-24.6%`   | `66.94ms`  | `45.10ms`  | `-32.6%`   |
-| `graphQLGetUser`  | `22.13ms`  | `14.20ms` | `-35.8%`   | `97.21ms`  | `33.77ms`  | `-65.3%`   |
-| `graphQLGetUsers` | `319.49ms` | `56.46ms` | `-82.3%`   | `1.25s`    | `133.87ms` | `-89.3%`   |
-| `updateUser`      | `149.62ms` | `67.63ms` | `-54.8%`   | `387.10ms` | `94.28ms`  | `-75.6%`   |
-| `replaceUser`     | `177.16ms` | `61.86ms` | `-65.1%`   | `335.19ms` | `72.43ms`  | `-78.4%`   |
-| `deleteUser`      | `18.25ms`  | `5.48ms`  | `-70.0%`   | `51.54ms`  | `9.19ms`   | `-82.2%`   |
-| `signin`          | `34.18ms`  | `9.65ms`  | `-71.8%`   | `104.45ms` | `23.17ms`  | `-77.8%`   |
-| `refreshToken`    | `29.95ms`  | `8.91ms`  | `-70.3%`   | `117.98ms` | `15.52ms`  | `-86.8%`   |
+| `apiContextUser`  | `4.37ms`   | `2.37ms`  |   `-45.8%` | `14.48ms`  | `8.91ms`   |   `-38.5%` |
+| `getUser`         | `11.89ms`  | `5.82ms`  |   `-51.1%` | `63.23ms`  | `17.63ms`  |   `-72.1%` |
+| `getUsers`        | `28.43ms`  | `21.43ms` |   `-24.6%` | `66.94ms`  | `45.10ms`  |   `-32.6%` |
+| `graphQLGetUser`  | `22.13ms`  | `14.20ms` |   `-35.8%` | `97.21ms`  | `33.77ms`  |   `-65.3%` |
+| `graphQLGetUsers` | `319.49ms` | `56.46ms` |   `-82.3%` | `1.25s`    | `133.87ms` |   `-89.3%` |
+| `updateUser`      | `149.62ms` | `67.63ms` |   `-54.8%` | `387.10ms` | `94.28ms`  |   `-75.6%` |
+| `replaceUser`     | `177.16ms` | `61.86ms` |   `-65.1%` | `335.19ms` | `72.43ms`  |   `-78.4%` |
+| `deleteUser`      | `18.25ms`  | `5.48ms`  |   `-70.0%` | `51.54ms`  | `9.19ms`   |   `-82.2%` |
+| `signin`          | `34.18ms`  | `9.65ms`  |   `-71.8%` | `104.45ms` | `23.17ms`  |   `-77.8%` |
+| `refreshToken`    | `29.95ms`  | `8.91ms`  |   `-70.3%` | `117.98ms` | `15.52ms`  |   `-86.8%` |
 
 ### Full-Suite Load Results
 
 Final scenario status: **50/50 passed**. Each row is an all-profile run with smoke, average, stress, and spike enabled in the same K6 invocation. The `Notes` column identifies which clean result superseded earlier interrupted or pre-patch output.
 
-| Scenario | Surface | Req/s | Iter/s | Avg | P95 | P99 | Dropped | Checks | Status | Notes |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
-| `oauth` | REST | 48.374117 | 48.368562 | 413.62ms | 1.95s | 2.07s | 389 | 8708/8708 | Pass | full-load |
-| `apiContextUser` | REST | 39.438543 | 39.438543 | 1.72ms | 2.73ms | 3.67ms | - | 7099/7099 | Pass | Expected 401; full-load |
-| `apiDocs` | REST | 39.432863 | 39.432863 | 1.73ms | 2.23ms | 2.63ms | - | 7098/7098 | Pass | full-load |
-| `apiEntrypoint` | REST | 39.433034 | 39.433034 | 2.31ms | 4.67ms | 5.95ms | - | 7098/7098 | Pass | Expected 401; full-load |
-| `apiErrors400` | REST | 39.433084 | 39.433084 | 1.65ms | 2.24ms | 2.85ms | - | 7098/7098 | Pass | Expected 401; full-load |
-| `apiValidationErrors` | REST | 39.438497 | 39.438497 | 2.38ms | 4.71ms | 7.12ms | - | 7099/7099 | Pass | Expected 401; full-load |
-| `apiWellKnownGenid` | REST | 39.427433 | 39.427433 | 2.56ms | 3.47ms | 6.77ms | - | 7097/7097 | Pass | Expected 404; full-load |
-| `cachePerformance` | REST | - | - | 182.22ms | 950.25ms | 1167.82ms | - | custom | Pass | Custom cache summary; 76.63% <100ms; full-load |
-| `confirmTwoFactor` | REST | 1.318487 | 0.437695 | 2.37s | 8.96s | 10.8s | 139 | 405/405 | Pass | patched rerun |
-| `confirmUser` | REST | 75.48563 | 37.740141 | 13.22ms | 80.25ms | 216.7ms | 42 | 7056/7056 | Pass | patched rerun |
-| `createUser` | REST | 26.974562 | 26.969084 | 941.31ms | 2.53s | 2.75s | 925 | 4923/4923 | Pass | resume3 |
-| `createUserBatch` | REST | 5.225969 | 5.221282 | 9.01s | 20.38s | 20.82s | 4734 | 1114/1114 | Pass | resume3 |
-| `deleteUser` | REST | 45.347703 | 45.342584 | 309.58ms | 892.56ms | 998.85ms | 240 | 17716/17716 | Pass | resume3 |
-| `disableTwoFactor` | REST | 1.293421 | 0.429351 | 2.38s | 8.94s | 11.35s | 139 | 320/320 | Pass | patched rerun |
-| `getUser` | REST | 43.646282 | 43.641436 | 314.89ms | 1.12s | 1.31s | 3844 | 18010/18010 | Pass | resume3 |
-| `getUsers` | REST | 7.454378 | 7.450069 | 11.76s | 26.51s | 26.7s | 11119 | 3458/3458 | Pass | resume3 |
-| `graphQLCompleteTwoFactor` | GraphQL | 1.896128 | 0.378145 | 1.58s | 8.01s | 10.74s | 148 | 490/490 | Pass | patched rerun |
-| `graphQLConfirmPasswordReset` | GraphQL | 25.661271 | 6.718462 | 451.44ms | 2.81s | 3.52s | 2804 | 12882/12882 | Pass | patched rerun |
-| `graphQLConfirmTwoFactor` | GraphQL | 1.253784 | 0.41615 | 2.58s | 10.31s | 11.64s | 141 | 468/468 | Pass | patched rerun |
-| `graphQLConfirmUser` | GraphQL | 60.827284 | 30.41098 | 452.17ms | 1.7s | 2.07s | 1385 | 11426/11426 | Pass | patched rerun |
-| `graphQLCreateUser` | GraphQL | 20.452036 | 20.435987 | 1.57s | 4.57s | 4.79s | 2028 | 3821/3821 | Pass | resume3 |
-| `graphQLDeleteUser` | GraphQL | 34.746163 | 34.741008 | 1s | 2.84s | 3.13s | 2360 | 13478/13478 | Pass | resume3 |
-| `graphQLDisableTwoFactor` | GraphQL | 1.163208 | 0.385924 | 2.58s | 9.67s | 12.49s | 148 | 355/355 | Pass | patched rerun |
-| `graphQLGetUser` | GraphQL | 32.494856 | 32.490108 | 1.33s | 3.43s | 3.62s | 6006 | 13684/13684 | Pass | resume3 |
-| `graphQLGetUsers` | GraphQL | 3.138399 | 3.134553 | 18.18s | 40.6s | 45.08s | 11739 | 1925/1925 | Pass | resume3 |
-| `graphQLRefreshToken` | GraphQL | 8.328528 | 4.161489 | 16.38ms | 24.56ms | 31.03ms | - | 3750/3750 | Pass | resume3 |
-| `graphQLRegenerateRecoveryCodes` | GraphQL | 0.92329 | 0.223684 | 4.31s | 20.99s | 29.17s | 172 | 286/286 | Pass | resume3 |
-| `graphQLRequestPasswordReset` | GraphQL | 3.196824 | 3.191274 | 58.93ms | 65.57ms | 75.14ms | - | 1725/1725 | Pass | resume3 |
-| `graphQLResendEmailToUser` | GraphQL | 24.440627 | 24.435638 | 1.24s | 2.85s | 3.41s | 2199 | 9796/9796 | Pass | resume3 |
-| `graphQLSetupTwoFactor` | GraphQL | 5.97883 | 2.986639 | 14.44ms | 19.54ms | 25.07ms | - | 2690/2690 | Pass | resume3 |
-| `graphQLSignin` | GraphQL | 4.158057 | 4.152505 | 15.25ms | 21.01ms | 26.17ms | - | 2244/2244 | Pass | resume3 |
-| `graphQLSignout` | GraphQL | 8.327075 | 4.160764 | 15.3ms | 23.83ms | 36.12ms | - | 3000/3000 | Pass | resume3 |
-| `graphQLSignoutAll` | GraphQL | 8.32043 | 4.15744 | 16.22ms | 24.02ms | 28.01ms | - | 2996/2996 | Pass | resume3 |
-| `graphQLUpdateUser` | GraphQL | 18.978093 | 18.973119 | 1.82s | 3.53s | 3.95s | 3283 | 7630/7630 | Pass | resume3 |
-| `health` | REST | 39.433037 | 39.433037 | 8.58ms | 13.08ms | 97.7ms | - | 7098/7098 | Pass | resume3 |
-| `oauthAuthorize` | REST | 39.433097 | 39.433097 | 1.76ms | 2.39ms | 3.28ms | - | 7098/7098 | Pass | resume3 |
-| `oauthSocialCallback` | REST | 87.644465 | 43.822232 | 443.25ms | 1.38s | 1.62s | 1199 | 15800/15800 | Pass | final rerun |
-| `oauthSocialInitiate` | REST | 50.549411 | 50.549411 | 2.34ms | 3.14ms | 4.17ms | - | 9099/9099 | Pass | resume3 |
-| `refreshToken` | REST | 8.320536 | 4.157493 | 8.9ms | 11.62ms | 13.83ms | - | 3745/3745 | Pass | resume3 |
-| `regenerateRecoveryCodes` | REST | 1.087341 | 0.270509 | 3.05s | 9.77s | 11.28s | 170 | 306/306 | Pass | resume3 |
-| `replaceUser` | REST | 22.469206 | 22.464322 | 1.34s | 3.3s | 4.12s | 2499 | 9200/9200 | Pass | resume3 |
-| `resendEmailToUser` | REST | 26.274168 | 26.269293 | 1.11s | 1.97s | 2.08s | 1709 | 10778/10778 | Pass | resume3 |
-| `resetPassword` | REST | 3.191142 | 3.185592 | 53.75ms | 63.93ms | 72.07ms | - | 1148/1148 | Pass | resume3 |
-| `resetPasswordConfirm` | REST | 27.895229 | 7.768972 | 375.43ms | 2.13s | 2.51s | 2186 | 9824/9824 | Pass | patched rerun |
-| `setupTwoFactor` | REST | 6.000656 | 2.997553 | 7.96ms | 12.77ms | 23.26ms | - | 2700/2700 | Pass | resume3 |
-| `signin` | REST | 4.163738 | 4.158186 | 9.35ms | 13.03ms | 18.12ms | - | 1498/1498 | Pass | resume3 |
-| `signinTwoFactor` | REST | 1.865781 | 0.372078 | 1.29s | 6.2s | 7.8s | 106 | 483/483 | Pass | resume3 |
-| `signout` | REST | 8.331509 | 4.162979 | 8.8ms | 14.2ms | 18.69ms | - | 2250/2250 | Pass | resume3 |
-| `signoutAll` | REST | 8.32185 | 4.158149 | 8.57ms | 12.05ms | 15.64ms | - | 2247/2247 | Pass | resume3 |
-| `updateUser` | REST | 23.002379 | 22.99748 | 1.37s | 2.59s | 2.69s | 2405 | 9388/9388 | Pass | resume3 |
+| Scenario                         | Surface |     Req/s |    Iter/s |      Avg |      P95 |       P99 | Dropped | Checks      | Status | Notes                                          |
+| -------------------------------- | ------- | --------: | --------: | -------: | -------: | --------: | ------: | ----------- | ------ | ---------------------------------------------- |
+| `oauth`                          | REST    | 48.374117 | 48.368562 | 413.62ms |    1.95s |     2.07s |     389 | 8708/8708   | Pass   | full-load                                      |
+| `apiContextUser`                 | REST    | 39.438543 | 39.438543 |   1.72ms |   2.73ms |    3.67ms |       - | 7099/7099   | Pass   | Expected 401; full-load                        |
+| `apiDocs`                        | REST    | 39.432863 | 39.432863 |   1.73ms |   2.23ms |    2.63ms |       - | 7098/7098   | Pass   | full-load                                      |
+| `apiEntrypoint`                  | REST    | 39.433034 | 39.433034 |   2.31ms |   4.67ms |    5.95ms |       - | 7098/7098   | Pass   | Expected 401; full-load                        |
+| `apiErrors400`                   | REST    | 39.433084 | 39.433084 |   1.65ms |   2.24ms |    2.85ms |       - | 7098/7098   | Pass   | Expected 401; full-load                        |
+| `apiValidationErrors`            | REST    | 39.438497 | 39.438497 |   2.38ms |   4.71ms |    7.12ms |       - | 7099/7099   | Pass   | Expected 401; full-load                        |
+| `apiWellKnownGenid`              | REST    | 39.427433 | 39.427433 |   2.56ms |   3.47ms |    6.77ms |       - | 7097/7097   | Pass   | Expected 404; full-load                        |
+| `cachePerformance`               | REST    |         - |         - | 182.22ms | 950.25ms | 1167.82ms |       - | custom      | Pass   | Custom cache summary; 76.63% <100ms; full-load |
+| `confirmTwoFactor`               | REST    |  1.318487 |  0.437695 |    2.37s |    8.96s |     10.8s |     139 | 405/405     | Pass   | patched rerun                                  |
+| `confirmUser`                    | REST    |  75.48563 | 37.740141 |  13.22ms |  80.25ms |   216.7ms |      42 | 7056/7056   | Pass   | patched rerun                                  |
+| `createUser`                     | REST    | 26.974562 | 26.969084 | 941.31ms |    2.53s |     2.75s |     925 | 4923/4923   | Pass   | resume3                                        |
+| `createUserBatch`                | REST    |  5.225969 |  5.221282 |    9.01s |   20.38s |    20.82s |    4734 | 1114/1114   | Pass   | resume3                                        |
+| `deleteUser`                     | REST    | 45.347703 | 45.342584 | 309.58ms | 892.56ms |  998.85ms |     240 | 17716/17716 | Pass   | resume3                                        |
+| `disableTwoFactor`               | REST    |  1.293421 |  0.429351 |    2.38s |    8.94s |    11.35s |     139 | 320/320     | Pass   | patched rerun                                  |
+| `getUser`                        | REST    | 43.646282 | 43.641436 | 314.89ms |    1.12s |     1.31s |    3844 | 18010/18010 | Pass   | resume3                                        |
+| `getUsers`                       | REST    |  7.454378 |  7.450069 |   11.76s |   26.51s |     26.7s |   11119 | 3458/3458   | Pass   | resume3                                        |
+| `graphQLCompleteTwoFactor`       | GraphQL |  1.896128 |  0.378145 |    1.58s |    8.01s |    10.74s |     148 | 490/490     | Pass   | patched rerun                                  |
+| `graphQLConfirmPasswordReset`    | GraphQL | 25.661271 |  6.718462 | 451.44ms |    2.81s |     3.52s |    2804 | 12882/12882 | Pass   | patched rerun                                  |
+| `graphQLConfirmTwoFactor`        | GraphQL |  1.253784 |   0.41615 |    2.58s |   10.31s |    11.64s |     141 | 468/468     | Pass   | patched rerun                                  |
+| `graphQLConfirmUser`             | GraphQL | 60.827284 |  30.41098 | 452.17ms |     1.7s |     2.07s |    1385 | 11426/11426 | Pass   | patched rerun                                  |
+| `graphQLCreateUser`              | GraphQL | 20.452036 | 20.435987 |    1.57s |    4.57s |     4.79s |    2028 | 3821/3821   | Pass   | resume3                                        |
+| `graphQLDeleteUser`              | GraphQL | 34.746163 | 34.741008 |       1s |    2.84s |     3.13s |    2360 | 13478/13478 | Pass   | resume3                                        |
+| `graphQLDisableTwoFactor`        | GraphQL |  1.163208 |  0.385924 |    2.58s |    9.67s |    12.49s |     148 | 355/355     | Pass   | patched rerun                                  |
+| `graphQLGetUser`                 | GraphQL | 32.494856 | 32.490108 |    1.33s |    3.43s |     3.62s |    6006 | 13684/13684 | Pass   | resume3                                        |
+| `graphQLGetUsers`                | GraphQL |  3.138399 |  3.134553 |   18.18s |    40.6s |    45.08s |   11739 | 1925/1925   | Pass   | resume3                                        |
+| `graphQLRefreshToken`            | GraphQL |  8.328528 |  4.161489 |  16.38ms |  24.56ms |   31.03ms |       - | 3750/3750   | Pass   | resume3                                        |
+| `graphQLRegenerateRecoveryCodes` | GraphQL |   0.92329 |  0.223684 |    4.31s |   20.99s |    29.17s |     172 | 286/286     | Pass   | resume3                                        |
+| `graphQLRequestPasswordReset`    | GraphQL |  3.196824 |  3.191274 |  58.93ms |  65.57ms |   75.14ms |       - | 1725/1725   | Pass   | resume3                                        |
+| `graphQLResendEmailToUser`       | GraphQL | 24.440627 | 24.435638 |    1.24s |    2.85s |     3.41s |    2199 | 9796/9796   | Pass   | resume3                                        |
+| `graphQLSetupTwoFactor`          | GraphQL |   5.97883 |  2.986639 |  14.44ms |  19.54ms |   25.07ms |       - | 2690/2690   | Pass   | resume3                                        |
+| `graphQLSignin`                  | GraphQL |  4.158057 |  4.152505 |  15.25ms |  21.01ms |   26.17ms |       - | 2244/2244   | Pass   | resume3                                        |
+| `graphQLSignout`                 | GraphQL |  8.327075 |  4.160764 |   15.3ms |  23.83ms |   36.12ms |       - | 3000/3000   | Pass   | resume3                                        |
+| `graphQLSignoutAll`              | GraphQL |   8.32043 |   4.15744 |  16.22ms |  24.02ms |   28.01ms |       - | 2996/2996   | Pass   | resume3                                        |
+| `graphQLUpdateUser`              | GraphQL | 18.978093 | 18.973119 |    1.82s |    3.53s |     3.95s |    3283 | 7630/7630   | Pass   | resume3                                        |
+| `health`                         | REST    | 39.433037 | 39.433037 |   8.58ms |  13.08ms |    97.7ms |       - | 7098/7098   | Pass   | resume3                                        |
+| `oauthAuthorize`                 | REST    | 39.433097 | 39.433097 |   1.76ms |   2.39ms |    3.28ms |       - | 7098/7098   | Pass   | resume3                                        |
+| `oauthSocialCallback`            | REST    | 87.644465 | 43.822232 | 443.25ms |    1.38s |     1.62s |    1199 | 15800/15800 | Pass   | final rerun                                    |
+| `oauthSocialInitiate`            | REST    | 50.549411 | 50.549411 |   2.34ms |   3.14ms |    4.17ms |       - | 9099/9099   | Pass   | resume3                                        |
+| `refreshToken`                   | REST    |  8.320536 |  4.157493 |    8.9ms |  11.62ms |   13.83ms |       - | 3745/3745   | Pass   | resume3                                        |
+| `regenerateRecoveryCodes`        | REST    |  1.087341 |  0.270509 |    3.05s |    9.77s |    11.28s |     170 | 306/306     | Pass   | resume3                                        |
+| `replaceUser`                    | REST    | 22.469206 | 22.464322 |    1.34s |     3.3s |     4.12s |    2499 | 9200/9200   | Pass   | resume3                                        |
+| `resendEmailToUser`              | REST    | 26.274168 | 26.269293 |    1.11s |    1.97s |     2.08s |    1709 | 10778/10778 | Pass   | resume3                                        |
+| `resetPassword`                  | REST    |  3.191142 |  3.185592 |  53.75ms |  63.93ms |   72.07ms |       - | 1148/1148   | Pass   | resume3                                        |
+| `resetPasswordConfirm`           | REST    | 27.895229 |  7.768972 | 375.43ms |    2.13s |     2.51s |    2186 | 9824/9824   | Pass   | patched rerun                                  |
+| `setupTwoFactor`                 | REST    |  6.000656 |  2.997553 |   7.96ms |  12.77ms |   23.26ms |       - | 2700/2700   | Pass   | resume3                                        |
+| `signin`                         | REST    |  4.163738 |  4.158186 |   9.35ms |  13.03ms |   18.12ms |       - | 1498/1498   | Pass   | resume3                                        |
+| `signinTwoFactor`                | REST    |  1.865781 |  0.372078 |    1.29s |     6.2s |      7.8s |     106 | 483/483     | Pass   | resume3                                        |
+| `signout`                        | REST    |  8.331509 |  4.162979 |    8.8ms |   14.2ms |   18.69ms |       - | 2250/2250   | Pass   | resume3                                        |
+| `signoutAll`                     | REST    |   8.32185 |  4.158149 |   8.57ms |  12.05ms |   15.64ms |       - | 2247/2247   | Pass   | resume3                                        |
+| `updateUser`                     | REST    | 23.002379 |  22.99748 |    1.37s |    2.59s |     2.69s |    2405 | 9388/9388   | Pass   | resume3                                        |
 
 ### Outcome
 

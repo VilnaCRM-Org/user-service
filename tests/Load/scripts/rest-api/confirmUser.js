@@ -14,7 +14,6 @@ const insertUsersUtils = new InsertUsersUtils(utils, scenarioName);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-
 export const options = scenarioUtils.getOptions();
 
 export default async function confirmUser(data) {

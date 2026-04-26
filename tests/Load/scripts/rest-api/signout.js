@@ -15,7 +15,6 @@ const authFlowUtils = new AuthFlowUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-
 export const options = scenarioUtils.getOptions();
 
 export default function signOutCurrentSession(data) {

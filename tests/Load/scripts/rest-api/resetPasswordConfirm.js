@@ -32,7 +32,6 @@ export function setup() {
   } else {
     console.log(`All ${expectedEmails} password reset emails arrived`);
   }
-
 }
 
 export const options = scenarioUtils.getOptions();

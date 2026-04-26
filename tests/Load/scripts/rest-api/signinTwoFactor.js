@@ -17,7 +17,6 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-
 export const options = scenarioUtils.getOptions();
 
 function confirmWithCandidateCodes(accessToken, secret) {

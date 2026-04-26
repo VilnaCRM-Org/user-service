@@ -15,7 +15,6 @@ const graphQLAuthFlowUtils = new GraphQLAuthFlowUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-
 export const options = scenarioUtils.getOptions();
 
 export default function graphQLSignoutAll(data) {
