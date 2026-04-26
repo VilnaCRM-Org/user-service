@@ -8,7 +8,7 @@ jobs:
   openapi-diff:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Start application
@@ -25,11 +25,11 @@ jobs:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
       - name: Check out head branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: head
       - name: Check out master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
           path: base
