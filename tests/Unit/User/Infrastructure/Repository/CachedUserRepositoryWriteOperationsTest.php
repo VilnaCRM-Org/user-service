@@ -303,8 +303,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         );
     }
 
-    private function expectInvalidationWarning(string $message, ?string $writeOperation = null): void
-    {
+    private function expectInvalidationWarning(
+        string $message,
+        ?string $writeOperation = null
+    ): void {
         $this->logger
             ->expects($this->once())
             ->method('warning')
@@ -313,10 +315,8 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
                 $this->callback(
                     static fn (array $context): bool => isset($context['error'])
                         && $context['operation'] === 'cache.invalidation.error'
-                        && (
-                            $writeOperation === null
-                            || $context['write_operation'] === $writeOperation
-                        )
+                        && ($writeOperation === null
+                            || $context['write_operation'] === $writeOperation)
                 )
             );
     }

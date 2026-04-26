@@ -1,10 +1,11 @@
-import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import exec from 'k6/execution';
+
+import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'graphQLRegenerateRecoveryCodes';
 
@@ -37,9 +38,12 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function graphQLRegenerateRecoveryCodes(data) {
-  const user = users[counter.up() % users.length];
-  utils.checkUserIsDefined(user);
+export default function graphQLRegenerateRecoveryCodes() {
+  const user = insertUsersUtils.pickUserForProfile(
+    users,
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
 
   const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
   utils.checkResponse(
@@ -103,6 +107,6 @@ export default function graphQLRegenerateRecoveryCodes(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

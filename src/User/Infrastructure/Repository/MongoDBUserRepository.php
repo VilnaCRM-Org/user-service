@@ -91,22 +91,6 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     }
 
     /**
-     * @param array<int, string> $emails
-     *
-     * @return list<string>
-     */
-    private function uniqueEmailCandidates(array $emails): array
-    {
-        return array_values(array_unique(array_merge(
-            $emails,
-            array_map(
-                static fn (string $email): string => mb_strtolower($email),
-                $emails
-            )
-        )));
-    }
-
-    /**
      * @return User|null
      */
     #[\Override]
@@ -134,6 +118,22 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             ->remove()
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @param array<int, string> $emails
+     *
+     * @return list<string>
+     */
+    private function uniqueEmailCandidates(array $emails): array
+    {
+        return array_values(array_unique(array_merge(
+            $emails,
+            array_map(
+                static fn (string $email): string => mb_strtolower($email),
+                $emails
+            )
+        )));
     }
 
     private function persistUsersInBatch(UserCollection $users): void

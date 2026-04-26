@@ -93,12 +93,14 @@ export default function confirmTwoFactor() {
   );
   const recoveryCodes = confirmResult.body?.recovery_codes;
 
-  utils.checkResponse(confirmResult.response, 'confirm 2fa returns recovery codes array', () =>
-    Array.isArray(recoveryCodes)
+  utils.checkResponse(
+    confirmResult.response,
+    'confirm 2fa returns non-empty recovery codes array',
+    () => Array.isArray(recoveryCodes) && recoveryCodes.length > 0
   );
 
   if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
-    return;
+    throw new Error('Confirm 2FA did not return recovery codes.');
   }
 
   const disableResult = authFlowUtils.disableTwoFactor(accessToken, recoveryCodes[0]);

@@ -1,10 +1,11 @@
 import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'regenerateRecoveryCodes';
 
@@ -37,9 +38,8 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function regenerateRecoveryCodes(data) {
-  const user = users[counter.up() % users.length];
-  utils.checkUserIsDefined(user);
+export default function regenerateRecoveryCodes() {
+  const user = insertUsersUtils.pickUser(users, counter.up());
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
   utils.checkResponse(
@@ -95,6 +95,6 @@ export default function regenerateRecoveryCodes(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

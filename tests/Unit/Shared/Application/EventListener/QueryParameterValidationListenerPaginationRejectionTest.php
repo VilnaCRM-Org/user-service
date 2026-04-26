@@ -21,7 +21,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 {
     private const USERS_PATH = '/api/users';
     private const INVALID_PAGINATION_TITLE = 'Invalid pagination value';
-    private const INVALID_PAGINATION_DETAIL = 'Page and itemsPerPage must be greater than or equal to 1.';
+    private const PAGINATION_DETAIL = 'Page and itemsPerPage must be greater than or equal to 1.';
     private const INVALID_PARTIAL_TITLE = 'Invalid partial pagination value';
     private const INVALID_PARTIAL_DETAIL = 'The partial parameter must be either true or false.';
 
@@ -41,7 +41,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -61,7 +61,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -85,7 +85,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -105,7 +105,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -126,7 +126,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -150,7 +150,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 
@@ -170,7 +170,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
         $this->assertProblemJson(
             $event,
             self::INVALID_PAGINATION_TITLE,
-            self::INVALID_PAGINATION_DETAIL
+            self::PAGINATION_DETAIL
         );
     }
 

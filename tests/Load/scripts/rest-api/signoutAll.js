@@ -1,9 +1,10 @@
 import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'signoutAll';
 
@@ -17,9 +18,8 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export const options = scenarioUtils.getOptions();
 
-export default function signOutAllSessions(data) {
-  const user = users[counter.up() % users.length];
-  utils.checkUserIsDefined(user);
+export default function signOutAllSessions() {
+  const user = insertUsersUtils.pickUser(users, counter.up());
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
   utils.checkResponse(
@@ -46,6 +46,6 @@ export default function signOutAllSessions(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

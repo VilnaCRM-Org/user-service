@@ -11,6 +11,28 @@ export default class InsertUsersUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
+    this.profileDefinitions = [
+      {
+        name: 'smoke',
+        key: 'run_smoke',
+        countRequests: () => this.countSmokeRequest(),
+      },
+      {
+        name: 'average',
+        key: 'run_average',
+        countRequests: () => this.countAverageRequest(),
+      },
+      {
+        name: 'stress',
+        key: 'run_stress',
+        countRequests: () => this.countStressRequest(),
+      },
+      {
+        name: 'spike',
+        key: 'run_spike',
+        countRequests: () => this.countSpikeRequest(),
+      },
+    ];
   }
 
   loadInsertedUsers() {
@@ -152,36 +174,38 @@ export default class InsertUsersUtils {
       }
     }
 
-    return requests;
+    throw new Error(`Unknown load test profile "${profileName}"`);
   }
 
   getMessageNumberForProfile(profileName, iterationInTest) {
     return this.countPreparedUsersBeforeProfile(profileName) + iterationInTest + 1;
   }
 
+  pickUser(users, userIndex) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    const user = users[userIndex % users.length];
+    this.utils.checkUserIsDefined(user);
+
+    return user;
+  }
+
+  pickUserForProfile(users, profileName, iterationInTest) {
+    return this.pickUser(users, this.getMessageNumberForProfile(profileName, iterationInTest) - 1);
+  }
+
+  wrapMessageNumberForUsers(users, messageNumber) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    return ((messageNumber - 1) % users.length) + 1;
+  }
+
   getProfileDefinitions() {
-    return [
-      {
-        name: 'smoke',
-        key: 'run_smoke',
-        countRequests: this.countSmokeRequest.bind(this),
-      },
-      {
-        name: 'average',
-        key: 'run_average',
-        countRequests: this.countAverageRequest.bind(this),
-      },
-      {
-        name: 'stress',
-        key: 'run_stress',
-        countRequests: this.countStressRequest.bind(this),
-      },
-      {
-        name: 'spike',
-        key: 'run_spike',
-        countRequests: this.countSpikeRequest.bind(this),
-      },
-    ];
+    return this.profileDefinitions;
   }
 
   countSmokeRequest() {

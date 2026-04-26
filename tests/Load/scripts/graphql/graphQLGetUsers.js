@@ -1,8 +1,9 @@
 import http from 'k6/http';
+
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
+import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
-import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 
 const scenarioName = 'graphQLGetUsers';
 
@@ -16,7 +17,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export const options = scenarioUtils.getOptions();
 
-export default function getUsers(data) {
+export default function getUsers() {
   const user = users[utils.getRandomNumber(0, users.length - 1)];
   utils.checkUserIsDefined(user);
 
@@ -40,10 +41,10 @@ export default function getUsers(data) {
   utils.checkResponse(
     response,
     'users returned',
-    res => JSON.parse(res.body).users.edges.length === usersToGetInOneRequest
+    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
