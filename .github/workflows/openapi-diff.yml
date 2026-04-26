@@ -15,6 +15,8 @@ jobs:
         run: make start
       - name: Generate openapi spec
         run: make generate-openapi-spec
+      - name: Format generated OpenAPI spec
+        run: npx --yes prettier@3.5.3 --write --ignore-path /dev/null .github/openapi-spec/spec.yaml
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
