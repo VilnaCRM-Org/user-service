@@ -6,7 +6,6 @@ namespace App\Tests\Behat\UserContext;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Psr\Cache\CacheItemPoolInterface;
-use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -26,7 +25,7 @@ final readonly class DocumentManagerResetter
     {
         $documentManager = $this->container()->get(DocumentManager::class);
         if (!$documentManager instanceof DocumentManager) {
-            throw new RuntimeException('Document manager is not available');
+            throw DocumentManagerResetterException::documentManagerUnavailable();
         }
 
         return $documentManager;
@@ -36,7 +35,7 @@ final readonly class DocumentManagerResetter
     {
         $container = $this->kernel->getContainer()->get('test.service_container');
         if (!$container instanceof ContainerInterface) {
-            throw new RuntimeException('Test container is not available');
+            throw DocumentManagerResetterException::testContainerUnavailable();
         }
 
         return $container;
@@ -46,7 +45,7 @@ final readonly class DocumentManagerResetter
     {
         $cachePool = $this->container()->get('cache.user');
         if (!$cachePool instanceof CacheItemPoolInterface) {
-            throw new RuntimeException('User cache pool is not available');
+            throw DocumentManagerResetterException::userCachePoolUnavailable();
         }
 
         return $cachePool;

@@ -116,7 +116,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $this->expectSaveDelegation($user);
         $this->expectHashEmail($user->getEmail(), $hash);
         $this->expectInvalidateTagsFailure($this->singleUserTags($user, $hash));
-        $this->expectWriteInvalidationWarning('save');
+        $this->expectInvalidationWarning('Failed to invalidate cache after user write', 'save');
 
         $this->repository->save($user);
     }
@@ -142,7 +142,7 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->expects($this->once())
             ->method('deleteAll');
         $this->expectInvalidateTagsFailure(['user', 'user.collection']);
-        $this->expectDeleteAllInvalidationWarning();
+        $this->expectInvalidationWarning('Failed to invalidate cache after deleteAll');
 
         $this->repository->deleteAll();
     }
@@ -298,36 +298,25 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             static function (array $tags) use ($expectedTags): never {
                 self::assertSame($expectedTags, $tags);
 
-                throw new \RuntimeException('Cache error');
+                throw CacheOperationFailedException::invalidationFailed();
             }
         );
     }
 
-    private function expectWriteInvalidationWarning(string $writeOperation): void
+    private function expectInvalidationWarning(string $message, ?string $writeOperation = null): void
     {
         $this->logger
             ->expects($this->once())
             ->method('warning')
             ->with(
-                'Failed to invalidate cache after user write',
+                $message,
                 $this->callback(
                     static fn (array $context): bool => isset($context['error'])
                         && $context['operation'] === 'cache.invalidation.error'
-                        && $context['write_operation'] === $writeOperation
-                )
-            );
-    }
-
-    private function expectDeleteAllInvalidationWarning(): void
-    {
-        $this->logger
-            ->expects($this->once())
-            ->method('warning')
-            ->with(
-                'Failed to invalidate cache after deleteAll',
-                $this->callback(
-                    static fn (array $context): bool => isset($context['error'])
-                        && $context['operation'] === 'cache.invalidation.error'
+                        && (
+                            $writeOperation === null
+                            || $context['write_operation'] === $writeOperation
+                        )
                 )
             );
     }

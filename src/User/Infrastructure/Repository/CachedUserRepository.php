@@ -88,7 +88,18 @@ final class CachedUserRepository extends UserRepositoryDecorator
 
         return $this->fetchUser(
             $cacheKey,
-            fn (ItemInterface $item) => $this->loadUserByIdFromDb($id, $cacheKey, $item),
+            function (ItemInterface $item) use ($id, $cacheKey): ?UserInterface {
+                $item->expiresAfter(self::TTL_BY_ID);
+                $item->tag(['user', "user.{$id}"]);
+
+                $this->logger->info('Cache miss - loading user by ID from database', [
+                    'cache_key' => $cacheKey,
+                    'user_id' => $id,
+                    'operation' => 'cache.miss',
+                ]);
+
+                return $this->inner->findById($id);
+            },
             fn () => $this->inner->findById($id),
             1.0
         );
@@ -111,7 +122,22 @@ final class CachedUserRepository extends UserRepositoryDecorator
 
         return $this->fetchUser(
             $cacheKey,
-            fn (ItemInterface $item) => $this->loadUserByEmailFromDb($email, $cacheKey, $item),
+            function (ItemInterface $item) use ($email, $cacheKey): ?UserInterface {
+                $item->expiresAfter(self::TTL_BY_EMAIL);
+                $emailHash = $this->cacheKeyBuilder->hashEmail($email);
+                $item->tag([
+                    'user',
+                    'user.email',
+                    "user.email.{$emailHash}",
+                ]);
+
+                $this->logger->info('Cache miss - loading user by email', [
+                    'cache_key' => $cacheKey,
+                    'operation' => 'cache.miss',
+                ]);
+
+                return $this->inner->findByEmail($email);
+            },
             fn () => $this->inner->findByEmail($email)
         );
     }
@@ -175,50 +201,6 @@ final class CachedUserRepository extends UserRepositoryDecorator
                 'operation' => 'cache.invalidation.error',
             ]);
         }
-    }
-
-    /**
-     * Load user by ID from database and configure cache item
-     */
-    private function loadUserByIdFromDb(
-        string $id,
-        string $cacheKey,
-        ItemInterface $item
-    ): ?UserInterface {
-        $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
-        $item->tag(['user', "user.{$id}"]);
-
-        $this->logger->info('Cache miss - loading user by ID from database', [
-            'cache_key' => $cacheKey,
-            'user_id' => $id,
-            'operation' => 'cache.miss',
-        ]);
-
-        return $this->inner->findById($id);
-    }
-
-    /**
-     * Load user by email from database and configure cache item
-     */
-    private function loadUserByEmailFromDb(
-        string $email,
-        string $cacheKey,
-        ItemInterface $item
-    ): ?UserInterface {
-        $item->expiresAfter(self::TTL_BY_EMAIL);  // 5 minutes TTL
-        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-        $item->tag([
-            'user',
-            'user.email',
-            "user.email.{$emailHash}",
-        ]);
-
-        $this->logger->info('Cache miss - loading user by email', [
-            'cache_key' => $cacheKey,
-            'operation' => 'cache.miss',
-        ]);
-
-        return $this->inner->findByEmail($email);
     }
 
     /**

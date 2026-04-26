@@ -19,10 +19,16 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class QueryParameterValidationListenerPaginationRejectionTest extends UnitTestCase
 {
+    private const USERS_PATH = '/api/users';
+    private const INVALID_PAGINATION_TITLE = 'Invalid pagination value';
+    private const INVALID_PAGINATION_DETAIL = 'Page and itemsPerPage must be greater than or equal to 1.';
+    private const INVALID_PARTIAL_TITLE = 'Invalid partial pagination value';
+    private const INVALID_PARTIAL_DETAIL = 'The partial parameter must be either true or false.';
+
     public function testInvalidPaginationValueTriggersError(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['itemsPerPage' => 0]);
+        $request = Request::create(self::USERS_PATH, 'GET', ['itemsPerPage' => 0]);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -34,15 +40,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
     public function testRejectsNonIntegerPaginationValues(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['page' => '2.5']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['page' => '2.5']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -54,8 +60,8 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
@@ -63,7 +69,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
     {
         $listener = $this->createListener();
         $request = Request::create(
-            '/api/users',
+            self::USERS_PATH,
             'GET',
             ['itemsPerPage' => 101]
         );
@@ -78,15 +84,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
     public function testBlankItemsPerPageTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['itemsPerPage' => '']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['itemsPerPage' => '']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -98,15 +104,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
     public function testEmptyArrayPaginationValuesTriggerViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET');
+        $request = Request::create(self::USERS_PATH, 'GET');
         $request->query->set('itemsPerPage', []);
 
         $event = new RequestEvent(
@@ -119,8 +125,8 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
@@ -128,7 +134,7 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
     {
         $listener = $this->createListener();
         $request = Request::create(
-            '/api/users',
+            self::USERS_PATH,
             'GET',
             ['page' => '   ', 'itemsPerPage' => '   ']
         );
@@ -143,15 +149,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
     public function testZeroPageTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['page' => 0]);
+        $request = Request::create(self::USERS_PATH, 'GET', ['page' => 0]);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -163,15 +169,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid pagination value',
-            'Page and itemsPerPage must be greater than or equal to 1.'
+            self::INVALID_PAGINATION_TITLE,
+            self::INVALID_PAGINATION_DETAIL
         );
     }
 
     public function testBlankPartialValueTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['partial' => '']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['partial' => '']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -183,15 +189,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            self::INVALID_PARTIAL_TITLE,
+            self::INVALID_PARTIAL_DETAIL
         );
     }
 
     public function testInvalidPartialValueTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['partial' => 'garbage']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['partial' => 'garbage']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -203,15 +209,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            self::INVALID_PARTIAL_TITLE,
+            self::INVALID_PARTIAL_DETAIL
         );
     }
 
     public function testNumericPartialValueTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['partial' => '1']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['partial' => '1']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -223,15 +229,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            self::INVALID_PARTIAL_TITLE,
+            self::INVALID_PARTIAL_DETAIL
         );
     }
 
     public function testAliasPartialValueTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET', ['partial' => 'yes']);
+        $request = Request::create(self::USERS_PATH, 'GET', ['partial' => 'yes']);
 
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -243,15 +249,15 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            self::INVALID_PARTIAL_TITLE,
+            self::INVALID_PARTIAL_DETAIL
         );
     }
 
     public function testArrayPartialValueTriggersViolation(): void
     {
         $listener = $this->createListener();
-        $request = Request::create('/api/users', 'GET');
+        $request = Request::create(self::USERS_PATH, 'GET');
         $request->query->set('partial', ['true']);
 
         $event = new RequestEvent(
@@ -264,8 +270,8 @@ final class QueryParameterValidationListenerPaginationRejectionTest extends Unit
 
         $this->assertProblemJson(
             $event,
-            'Invalid partial pagination value',
-            'The partial parameter must be either true or false.'
+            self::INVALID_PARTIAL_TITLE,
+            self::INVALID_PARTIAL_DETAIL
         );
     }
 

@@ -1,10 +1,11 @@
 import exec from 'k6/execution';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+
+import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'graphQLCompleteTwoFactor';
 
@@ -19,7 +20,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export const options = scenarioUtils.getOptions();
 
-function getUser(data) {
+function getUser() {
   const messageNumber = insertUsersUtils.getMessageNumberForProfile(
     exec.scenario.name,
     exec.scenario.iterationInTest
@@ -46,8 +47,8 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function graphQLCompleteTwoFactor(data) {
-  const user = getUser(data);
+export default function graphQLCompleteTwoFactor() {
+  const user = getUser();
   utils.checkUserIsDefined(user);
 
   const firstSignInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
@@ -133,6 +134,6 @@ export default function graphQLCompleteTwoFactor(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

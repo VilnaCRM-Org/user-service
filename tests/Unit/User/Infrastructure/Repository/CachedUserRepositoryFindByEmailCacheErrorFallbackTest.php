@@ -38,7 +38,7 @@ final class CachedUserRepositoryFindByEmailCacheErrorFallbackTest extends
                 self::assertIsCallable($callback);
                 self::assertNull($beta);
 
-                throw new \RuntimeException('Cache unavailable');
+                throw CacheOperationFailedException::unavailable();
             }
         );
     }
@@ -49,7 +49,7 @@ final class CachedUserRepositoryFindByEmailCacheErrorFallbackTest extends
             'Cache error - falling back to database',
             $this->callback(
                 static fn (array $context): bool => $context['cache_key'] === $cacheKey
-                    && $context['error'] === 'Cache unavailable'
+                    && $context['error'] === CacheOperationFailedException::UNAVAILABLE_MESSAGE
                     && $context['operation'] === 'cache.error'
             )
         );

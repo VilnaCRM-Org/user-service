@@ -1,5 +1,6 @@
-import http from 'k6/http';
 import { SharedArray } from 'k6/data';
+import http from 'k6/http';
+
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
     this.utils = utils;
@@ -102,16 +103,12 @@ export default class InsertUsersUtils {
             users.push(user);
           });
         } catch (parseError) {
-          console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
           throw new Error(`Failed to parse batch response: ${response.body}`);
         }
 
         return;
       }
 
-      console.log(
-        `Batch request ${index + 1} failed with status ${response.status}: ${response.body}`
-      );
       throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
     });
 

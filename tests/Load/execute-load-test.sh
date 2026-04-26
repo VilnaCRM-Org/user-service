@@ -108,7 +108,7 @@ k6Cmd=(
   "${k6ResourceLimits[@]}"
   k6
   run
-  --summary-trend-stats=avg,min,med,max,p\(95\),p\(99\)
+  '--summary-trend-stats=avg,min,med,max,p(95),p(99)'
   --out "web-dashboard=period=1s&export=/loadTests/loadTestsResults/${htmlPrefix}${scenario}.html"
 )
 

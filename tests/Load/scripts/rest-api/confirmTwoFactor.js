@@ -1,10 +1,11 @@
 import exec from 'k6/execution';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'confirmTwoFactor';
 
@@ -19,7 +20,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 
 export const options = scenarioUtils.getOptions();
 
-function getUser(data) {
+function getUser() {
   const messageNumber = insertUsersUtils.getMessageNumberForProfile(
     exec.scenario.name,
     exec.scenario.iterationInTest
@@ -46,8 +47,8 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function confirmTwoFactor(data) {
-  const user = getUser(data);
+export default function confirmTwoFactor() {
+  const user = getUser();
   utils.checkUserIsDefined(user);
 
   let accessToken = user.accessToken;
@@ -108,6 +109,6 @@ export default function confirmTwoFactor(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
