@@ -35,8 +35,9 @@ final class PartialParameterValidator
     /**
      * @param array<string, scalar|null>|scalar|null $partialValue
      */
-    private function validatePartialValue(array|string|int|float|bool|null $partialValue): ?QueryParameterViolation
-    {
+    private function validatePartialValue(
+        array|string|int|float|bool|null $partialValue,
+    ): ?QueryParameterViolation {
         if (!$this->valueValidator->wasParameterSent($partialValue)) {
             return null;
         }
