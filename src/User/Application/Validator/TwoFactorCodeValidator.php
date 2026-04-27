@@ -73,14 +73,7 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
     #[\Override]
     public function countRemainingCodes(string $userId): int
     {
-        $count = 0;
-        foreach ($this->recoveryCodeRepository->findByUserId($userId) as $code) {
-            if (!$code->isUsed()) {
-                ++$count;
-            }
-        }
-
-        return $count;
+        return $this->recoveryCodeRepository->countUnusedByUserId($userId);
     }
 
     private function tryVerifyTotp(User $user, string $code): ?string

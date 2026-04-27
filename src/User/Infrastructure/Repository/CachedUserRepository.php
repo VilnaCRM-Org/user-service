@@ -119,27 +119,19 @@ final class CachedUserRepository extends UserRepositoryDecorator
     public function findByEmail(string $email): ?UserInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserEmailKey($email);
+        $fallback = fn () => $this->inner->findByEmail($email);
 
-        return $this->fetchUser(
+        $user = $this->fetchUser(
             $cacheKey,
-            function (ItemInterface $item) use ($email, $cacheKey): ?UserInterface {
-                $item->expiresAfter(self::TTL_BY_EMAIL);
-                $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-                $item->tag([
-                    'user',
-                    'user.email',
-                    "user.email.{$emailHash}",
-                ]);
-
-                $this->logger->info('Cache miss - loading user by email', [
-                    'cache_key' => $cacheKey,
-                    'operation' => 'cache.miss',
-                ]);
-
-                return $this->inner->findByEmail($email);
-            },
-            fn () => $this->inner->findByEmail($email)
+            fn (ItemInterface $item): ?UserInterface => $this->loadUserByEmail(
+                $item,
+                $email,
+                $cacheKey
+            ),
+            $fallback
         );
+
+        return $this->ensureEmailCacheHitMatches($user, $email, $cacheKey, $fallback);
     }
 
     /**
@@ -320,6 +312,51 @@ final class CachedUserRepository extends UserRepositoryDecorator
             'error' => $e->getMessage(),
             'operation' => 'cache.error',
         ]);
+    }
+
+    private function loadUserByEmail(
+        ItemInterface $item,
+        string $email,
+        string $cacheKey
+    ): ?UserInterface {
+        $item->expiresAfter(self::TTL_BY_EMAIL);
+        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
+        $item->tag(['user', 'user.email', "user.email.{$emailHash}"]);
+
+        $this->logger->info('Cache miss - loading user by email', [
+            'cache_key' => $cacheKey,
+            'operation' => 'cache.miss',
+        ]);
+
+        return $this->inner->findByEmail($email);
+    }
+
+    /**
+     * @param callable(): mixed $fallback
+     */
+    private function ensureEmailCacheHitMatches(
+        ?UserInterface $user,
+        string $requestedEmail,
+        string $cacheKey,
+        callable $fallback
+    ): ?UserInterface {
+        if ($user === null) {
+            return null;
+        }
+
+        if ($this->normalizeEmail($user->getEmail()) === $this->normalizeEmail($requestedEmail)) {
+            return $user;
+        }
+
+        $this->cache->delete($cacheKey);
+        $freshUser = $fallback();
+
+        return $freshUser instanceof UserInterface ? $freshUser : null;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return strtolower(trim($email));
     }
 
     private function previousEmailTag(UserInterface $user): ?string

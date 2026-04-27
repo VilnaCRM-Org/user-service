@@ -603,13 +603,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 1,
         "vus": 5,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -619,7 +619,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -629,7 +629,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -642,13 +642,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 2500,
         "rps": 1,
         "vus": 5,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 2500,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -658,7 +658,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 2500,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -668,7 +668,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 2500,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -681,13 +681,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 1,
         "vus": 3,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -697,7 +697,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -707,7 +707,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -720,13 +720,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 1000,
         "rps": 1,
         "vus": 3,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 1000,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -736,7 +736,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 1000,
         "rps": 3,
         "vus": 6,
         "duration": {
@@ -746,7 +746,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 1000,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -1501,13 +1501,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 1,
         "vus": 3,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -1517,7 +1517,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -1527,7 +1527,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -1618,13 +1618,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 1,
         "vus": 5,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -1634,7 +1634,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -1644,7 +1644,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -1657,13 +1657,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 1,
         "vus": 3,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -1673,7 +1673,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -1683,7 +1683,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 1500,
         "rps": 6,
         "vus": 12,
         "duration": {
@@ -1696,13 +1696,13 @@
       "setupTimeoutInMinutes": 30,
       "teardownTimeoutInMinutes": 30,
       "smoke": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 1,
         "vus": 3,
         "duration": 10
       },
       "average": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 2,
         "vus": 4,
         "duration": {
@@ -1712,7 +1712,7 @@
         }
       },
       "stress": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 4,
         "vus": 8,
         "duration": {
@@ -1722,7 +1722,7 @@
         }
       },
       "spike": {
-        "threshold": 10000,
+        "threshold": 3000,
         "rps": 6,
         "vus": 12,
         "duration": {

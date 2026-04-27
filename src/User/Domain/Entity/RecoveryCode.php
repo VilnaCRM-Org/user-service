@@ -11,6 +11,9 @@ final class RecoveryCode
     public const COUNT = 8;
     public const SEGMENT_LENGTH = 4;
     private const LEGACY_HASH_ALGORITHM = 'sha256';
+    private const HASH_MEMORY_COST = 8192;
+    private const HASH_TIME_COST = 1;
+    private const HASH_THREADS = 1;
 
     private ?DateTimeImmutable $usedAt = null;
 
@@ -73,7 +76,11 @@ final class RecoveryCode
 
     private function hash(string $value): string
     {
-        return password_hash($this->normalizeCode($value), PASSWORD_ARGON2ID);
+        return password_hash($this->normalizeCode($value), PASSWORD_ARGON2ID, [
+            'memory_cost' => self::HASH_MEMORY_COST,
+            'time_cost' => self::HASH_TIME_COST,
+            'threads' => self::HASH_THREADS,
+        ]);
     }
 
     private function legacyHash(string $value): string

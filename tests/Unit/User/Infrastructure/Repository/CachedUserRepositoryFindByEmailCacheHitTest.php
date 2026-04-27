@@ -34,18 +34,41 @@ final class CachedUserRepositoryFindByEmailCacheHitTest extends
 
         $this->expectBuildUserEmailKey($email, $cacheKey);
         $this->expectCacheGet($cacheKey, $cachedUser);
-        $this->documentManager
-            ->expects($this->once())
-            ->method('contains')
-            ->with($cachedUser)
-            ->willReturn(false);
-        $this->documentManager
-            ->expects($this->once())
-            ->method('find')
-            ->with($cachedUser::class, $cachedUser->getId())
-            ->willReturn($managedUser);
+        $this->expectDetachedCachedUserReload($cachedUser, $managedUser);
         $this->innerRepository->expects($this->never())->method('findByEmail');
 
         self::assertSame($managedUser, $this->repository->findByEmail($email));
+    }
+
+    public function testFindByEmailDeletesStaleEmailCacheKeyWhenReloadedEmailDiffers(): void
+    {
+        $oldEmail = $this->faker->email();
+        $newEmail = $this->faker->email();
+        $cacheKey = 'user.email.' . $this->faker->sha256();
+        $cachedUser = $this->createUserMock($this->faker->uuid(), $oldEmail);
+        $managedUser = $this->createUserMock($cachedUser->getId(), $newEmail);
+
+        $this->expectBuildUserEmailKey($oldEmail, $cacheKey);
+        $this->expectCacheGet($cacheKey, $cachedUser);
+        $this->expectDetachedCachedUserReload($cachedUser, $managedUser);
+        $this->expectCacheDelete($cacheKey);
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($oldEmail)
+            ->willReturn(null);
+
+        self::assertNull($this->repository->findByEmail($oldEmail));
+    }
+
+    private function expectCacheDelete(string $cacheKey): void
+    {
+        $this->cache->expectDelete(
+            static function (string $actualCacheKey) use ($cacheKey): bool {
+                self::assertSame($cacheKey, $actualCacheKey);
+
+                return true;
+            }
+        );
     }
 }

@@ -11,6 +11,8 @@ use App\User\Infrastructure\Repository\MongoDBAuthSessionRepository;
 use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Query\Builder;
+use Doctrine\ODM\MongoDB\Query\Query;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
@@ -108,6 +110,110 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
         $this->repository->delete($session);
     }
 
+    public function testRevokeOtherActiveByUserId(): void
+    {
+        $userId = $this->faker->uuid();
+        $currentSessionId = $this->faker->uuid();
+        $revokedAt = new DateTimeImmutable();
+        $repository = $this->createRepositoryWithBulkRevokeResult(
+            $userId,
+            $currentSessionId,
+            $revokedAt,
+            3
+        );
+
+        $this->documentManager
+            ->expects($this->once())
+            ->method('clear')
+            ->with(AuthSession::class);
+
+        $this->assertSame(
+            3,
+            $repository->revokeOtherActiveByUserId($userId, $currentSessionId, $revokedAt)
+        );
+    }
+
+    public function testRevokeOtherActiveByUserIdDoesNotClearWhenNothingWasModified(): void
+    {
+        $userId = $this->faker->uuid();
+        $currentSessionId = $this->faker->uuid();
+        $revokedAt = new DateTimeImmutable();
+        $repository = $this->createRepositoryWithBulkRevokeResult(
+            $userId,
+            $currentSessionId,
+            $revokedAt,
+            0
+        );
+
+        $this->documentManager->expects($this->never())->method('clear');
+
+        $this->assertSame(
+            0,
+            $repository->revokeOtherActiveByUserId($userId, $currentSessionId, $revokedAt)
+        );
+    }
+
+    public function testRevokeOtherActiveByUserIdUsesModifiedCountObject(): void
+    {
+        $userId = $this->faker->uuid();
+        $currentSessionId = $this->faker->uuid();
+        $revokedAt = new DateTimeImmutable();
+        $repository = $this->createRepositoryWithBulkRevokeResult(
+            $userId,
+            $currentSessionId,
+            $revokedAt,
+            $this->modifiedCountResult(2)
+        );
+
+        $this->documentManager
+            ->expects($this->once())
+            ->method('clear')
+            ->with(AuthSession::class);
+
+        $this->assertSame(
+            2,
+            $repository->revokeOtherActiveByUserId($userId, $currentSessionId, $revokedAt)
+        );
+    }
+
+    public function testRevokeOtherActiveByUserIdReturnsZeroWhenModifiedCountIsNotInt(): void
+    {
+        $userId = $this->faker->uuid();
+        $currentSessionId = $this->faker->uuid();
+        $revokedAt = new DateTimeImmutable();
+        $repository = $this->createRepositoryWithBulkRevokeResult(
+            $userId,
+            $currentSessionId,
+            $revokedAt,
+            $this->modifiedCountResult('3')
+        );
+
+        $this->assertSame(
+            0,
+            $repository->revokeOtherActiveByUserId($userId, $currentSessionId, $revokedAt)
+        );
+    }
+
+    public function testRevokeOtherActiveByUserIdReturnsZeroWithoutModifiedCount(): void
+    {
+        $userId = $this->faker->uuid();
+        $currentSessionId = $this->faker->uuid();
+        $revokedAt = new DateTimeImmutable();
+        $repository = $this->createRepositoryWithBulkRevokeResult(
+            $userId,
+            $currentSessionId,
+            $revokedAt,
+            new \stdClass()
+        );
+
+        $this->documentManager->expects($this->never())->method('clear');
+
+        $this->assertSame(
+            0,
+            $repository->revokeOtherActiveByUserId($userId, $currentSessionId, $revokedAt)
+        );
+    }
+
     private function createAuthSession(): AuthSession
     {
         $createdAt = new DateTimeImmutable();
@@ -121,5 +227,101 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
             $createdAt->modify('+1 hour'),
             false
         );
+    }
+
+    private function createRepositoryWithBulkRevokeResult(
+        string $expectedUserId,
+        string $expectedCurrentSessionId,
+        DateTimeImmutable $expectedRevokedAt,
+        mixed $updateResult
+    ): MongoDBAuthSessionRepository {
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+        $repository = $this->createRepositoryWithQueryBuilder($queryBuilder);
+
+        $queryBuilder->expects($this->once())->method('updateMany')->willReturnSelf();
+        $this->expectBulkRevokeFields($queryBuilder, $expectedUserId);
+        $this->expectBulkRevokeUpdate(
+            $queryBuilder,
+            $expectedCurrentSessionId,
+            $expectedRevokedAt
+        );
+        $this->expectQueryResult($queryBuilder, $query, $updateResult);
+
+        return $repository;
+    }
+
+    private function createRepositoryWithQueryBuilder(
+        Builder $queryBuilder
+    ): MongoDBAuthSessionRepository {
+        $repository = $this->getMockBuilder(MongoDBAuthSessionRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        return $repository;
+    }
+
+    private function expectBulkRevokeFields(Builder $queryBuilder, string $expectedUserId): void
+    {
+        $queryBuilder
+            ->expects($this->exactly(4))
+            ->method('field')
+            ->willReturnCallback(
+                static function (string $field) use ($queryBuilder): Builder {
+                    self::assertContains($field, ['userId', 'id', 'revokedAt']);
+
+                    return $queryBuilder;
+                }
+            );
+        $queryBuilder
+            ->expects($this->exactly(2))
+            ->method('equals')
+            ->willReturnCallback(
+                static function (mixed $value) use ($expectedUserId, $queryBuilder): Builder {
+                    self::assertContains($value, [$expectedUserId, null]);
+
+                    return $queryBuilder;
+                }
+            );
+    }
+
+    private function expectBulkRevokeUpdate(
+        Builder $queryBuilder,
+        string $expectedCurrentSessionId,
+        DateTimeImmutable $expectedRevokedAt
+    ): void {
+        $queryBuilder
+            ->expects($this->once())
+            ->method('notEqual')
+            ->with($expectedCurrentSessionId)
+            ->willReturnSelf();
+        $queryBuilder
+            ->expects($this->once())
+            ->method('set')
+            ->with($expectedRevokedAt)
+            ->willReturnSelf();
+    }
+
+    private function expectQueryResult(Builder $queryBuilder, Query $query, mixed $result): void
+    {
+        $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
+        $query->expects($this->once())->method('execute')->willReturn($result);
+    }
+
+    private function modifiedCountResult(int|string $modifiedCount): object
+    {
+        return new class($modifiedCount) {
+            public function __construct(private readonly int|string $modifiedCount)
+            {
+            }
+
+            public function getModifiedCount(): int|string
+            {
+                return $this->modifiedCount;
+            }
+        };
     }
 }

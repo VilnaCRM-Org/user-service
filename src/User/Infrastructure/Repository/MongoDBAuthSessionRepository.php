@@ -7,6 +7,7 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
+use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -50,5 +51,49 @@ final class MongoDBAuthSessionRepository extends ServiceDocumentRepository imple
     {
         $this->documentManager->remove($authSession);
         $this->documentManager->flush();
+    }
+
+    #[\Override]
+    public function revokeOtherActiveByUserId(
+        string $userId,
+        string $currentSessionId,
+        DateTimeImmutable $revokedAt
+    ): int {
+        $result = $this->createQueryBuilder()
+            ->updateMany()
+            ->field('userId')->equals($userId)
+            ->field('id')->notEqual($currentSessionId)
+            ->field('revokedAt')->equals(null)
+            ->field('revokedAt')->set($revokedAt)
+            ->getQuery()
+            ->execute();
+
+        $modifiedCount = $this->modifiedDocumentCount($result);
+        if ($modifiedCount > 0) {
+            $this->documentManager->clear(AuthSession::class);
+        }
+
+        return $modifiedCount;
+    }
+
+    /**
+     * @psalm-return int<0, max>
+     */
+    private function modifiedDocumentCount(mixed $result): int
+    {
+        if (is_int($result)) {
+            return max(0, $result);
+        }
+
+        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
+            return 0;
+        }
+
+        $modifiedCount = $result->getModifiedCount();
+        if (!is_int($modifiedCount)) {
+            return 0;
+        }
+
+        return max(0, $modifiedCount);
     }
 }

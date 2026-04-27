@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
+use App\User\Domain\Entity\UserInterface;
+
 abstract class CachedUserRepositoryFindByEmailTestCase extends CachedUserRepositoryTestCase
 {
     protected function expectBuildUserEmailKey(string $email, string $cacheKey): void
@@ -32,5 +34,21 @@ abstract class CachedUserRepositoryFindByEmailTestCase extends CachedUserReposit
                 return $value;
             }
         );
+    }
+
+    protected function expectDetachedCachedUserReload(
+        UserInterface $cachedUser,
+        ?UserInterface $managedUser
+    ): void {
+        $this->documentManager
+            ->expects($this->once())
+            ->method('contains')
+            ->with($cachedUser)
+            ->willReturn(false);
+        $this->documentManager
+            ->expects($this->once())
+            ->method('find')
+            ->with($cachedUser::class, $cachedUser->getId())
+            ->willReturn($managedUser);
     }
 }

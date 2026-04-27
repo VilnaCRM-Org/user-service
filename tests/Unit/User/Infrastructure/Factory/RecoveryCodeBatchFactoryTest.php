@@ -49,8 +49,8 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         $recoveryCode = $this->createMock(RecoveryCode::class);
         $this->recoveryCodeFactory->method('create')->willReturn($recoveryCode);
 
-        $this->recoveryCodeRepository->expects($this->exactly(RecoveryCode::COUNT))
-            ->method('save');
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('saveAll');
 
         $codes = $this->factory->create($user);
 
@@ -101,6 +101,9 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
                 $this->matchesRegularExpression('/^[A-Z0-9]{4}-[A-Z0-9]{4}$/')
             )
             ->willReturn($recoveryCode);
+
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('saveAll');
 
         $this->factory->create($user);
     }

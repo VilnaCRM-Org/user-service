@@ -144,31 +144,25 @@ final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
     public function testRevokeBySessionId(): void
     {
         $sessionId = $this->faker->uuid();
-        $activeToken = $this->createAuthRefreshToken();
-        $alreadyRevokedToken = $this->createAuthRefreshToken();
-        $alreadyRevokedToken->revoke();
+        $repository = $this->createRepositoryWithRevokeBySessionIdResult($sessionId, 2);
 
-        $repositoryClass = MongoDBAuthRefreshTokenRepository::class;
-        $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
-            ->onlyMethods(['findBySessionId'])
-            ->getMock();
-
-        $repository->expects($this->once())
-            ->method('findBySessionId')
-            ->with($sessionId)
-            ->willReturn([$activeToken, $alreadyRevokedToken]);
-
-        $this->documentManager->expects($this->once())
-            ->method('persist')
-            ->with($activeToken);
-
-        $this->documentManager->expects($this->once())
-            ->method('flush');
+        $this->documentManager->expects($this->never())->method('persist');
+        $this->documentManager->expects($this->never())->method('flush');
+        $this->documentManager
+            ->expects($this->once())
+            ->method('clear')
+            ->with(AuthRefreshToken::class);
 
         $repository->revokeBySessionId($sessionId);
+    }
 
-        $this->assertNotNull($activeToken->getRevokedAt());
+    public function testRevokeBySessionIdDoesNotClearWhenNothingWasModified(): void
+    {
+        $sessionId = $this->faker->uuid();
+        $repository = $this->createRepositoryWithRevokeBySessionIdResult($sessionId, 0);
+
+        $this->documentManager->expects($this->never())->method('clear');
+        $repository->revokeBySessionId($sessionId);
     }
 
     public function testMarkAsRotatedIfActiveReturnsTrueWhenUpdateReturnsPositiveInt(): void
@@ -278,5 +272,75 @@ final class MongoDBAuthRefreshTokenRepositoryTest extends UnitTestCase
         $repository->method('createQueryBuilder')->willReturn($queryBuilder);
 
         return $repository;
+    }
+
+    private function createRepositoryWithRevokeBySessionIdResult(
+        string $expectedSessionId,
+        mixed $updateResult
+    ): MongoDBAuthRefreshTokenRepository {
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
+        $repository = $this->createRepositoryWithQueryBuilder($queryBuilder);
+
+        $queryBuilder->expects($this->once())->method('updateMany')->willReturnSelf();
+        $this->expectRevokeBySessionIdFields($queryBuilder, $expectedSessionId);
+        $this->expectRevokeTimestampUpdate($queryBuilder);
+        $this->expectQueryResult($queryBuilder, $query, $updateResult);
+
+        return $repository;
+    }
+
+    private function createRepositoryWithQueryBuilder(
+        Builder $queryBuilder
+    ): MongoDBAuthRefreshTokenRepository {
+        $repository = $this->getMockBuilder(MongoDBAuthRefreshTokenRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+
+        return $repository;
+    }
+
+    private function expectRevokeBySessionIdFields(
+        Builder $queryBuilder,
+        string $expectedSessionId
+    ): void {
+        $queryBuilder
+            ->expects($this->exactly(3))
+            ->method('field')
+            ->willReturnCallback(
+                static function (string $field) use ($queryBuilder): Builder {
+                    self::assertContains($field, ['sessionId', 'revokedAt']);
+
+                    return $queryBuilder;
+                }
+            );
+        $queryBuilder
+            ->expects($this->exactly(2))
+            ->method('equals')
+            ->willReturnCallback(
+                static function (mixed $value) use ($expectedSessionId, $queryBuilder): Builder {
+                    self::assertContains($value, [$expectedSessionId, null]);
+
+                    return $queryBuilder;
+                }
+            );
+    }
+
+    private function expectRevokeTimestampUpdate(Builder $queryBuilder): void
+    {
+        $queryBuilder
+            ->expects($this->once())
+            ->method('set')
+            ->with($this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturnSelf();
+    }
+
+    private function expectQueryResult(Builder $queryBuilder, Query $query, mixed $result): void
+    {
+        $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
+        $query->expects($this->once())->method('execute')->willReturn($result);
     }
 }

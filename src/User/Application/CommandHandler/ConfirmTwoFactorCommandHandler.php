@@ -9,12 +9,12 @@ use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
-use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SessionPublisherInterface;
 use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
+use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
@@ -71,23 +71,11 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
      */
     private function revokeOtherSessions(User $user, string $currentSessionId): int
     {
-        $sessions = $this->authSessionRepository->findByUserId($user->getId());
-        $revokedCount = 0;
-
-        foreach ($sessions as $session) {
-            if ($this->shouldRevoke($session, $currentSessionId)) {
-                $session->revoke();
-                $this->authSessionRepository->save($session);
-                $revokedCount++;
-            }
-        }
-
-        return $revokedCount;
-    }
-
-    private function shouldRevoke(AuthSession $session, string $currentSessionId): bool
-    {
-        return $session->getId() !== $currentSessionId && !$session->isRevoked();
+        return $this->authSessionRepository->revokeOtherActiveByUserId(
+            $user->getId(),
+            $currentSessionId,
+            new DateTimeImmutable()
+        );
     }
 
     private function publishEvents(User $user, int $revokedCount): void

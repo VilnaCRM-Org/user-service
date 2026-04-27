@@ -203,9 +203,8 @@ abstract class DualAuthenticatorTestCase extends UnitTestCase
         ?User $user
     ): void {
         $this->expectJwtDecode($tokenValue, $payload);
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($subject)->willReturn(null);
+        $this->userRepository->expects($this->never())
+            ->method('findByEmail');
         $this->userRepository->expects($this->once())
             ->method('findById')
             ->with($subject)->willReturn($user);

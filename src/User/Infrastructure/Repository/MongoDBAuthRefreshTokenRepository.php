@@ -68,16 +68,17 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
     #[\Override]
     public function revokeBySessionId(string $sessionId): void
     {
-        $tokens = $this->findBySessionId($sessionId);
+        $result = $this->createQueryBuilder()
+            ->updateMany()
+            ->field('sessionId')->equals($sessionId)
+            ->field('revokedAt')->equals(null)
+            ->field('revokedAt')->set(new DateTimeImmutable())
+            ->getQuery()
+            ->execute();
 
-        foreach ($tokens as $token) {
-            if ($token->getRevokedAt() === null) {
-                $token->revoke();
-                $this->documentManager->persist($token);
-            }
+        if ($this->wasDocumentUpdated($result)) {
+            $this->documentManager->clear(AuthRefreshToken::class);
         }
-
-        $this->documentManager->flush();
     }
 
     #[\Override]

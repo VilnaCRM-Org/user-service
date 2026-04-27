@@ -21,6 +21,7 @@
             </index>
             <index>
                 <key name="sessionId" order="asc" />
+                <key name="revokedAt" order="asc" />
             </index>
             <index>
                 <key name="expiresAt" order="asc" />

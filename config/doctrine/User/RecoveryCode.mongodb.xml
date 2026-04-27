@@ -15,6 +15,7 @@
         <indexes>
             <index>
                 <key name="userId" order="asc" />
+                <key name="usedAt" order="asc" />
             </index>
             <index>
                 <key name="usedAt" order="asc" />
