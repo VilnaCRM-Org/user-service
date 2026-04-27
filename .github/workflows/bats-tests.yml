@@ -30,7 +30,7 @@ jobs:
         run: make start
 
       - name: Setup Bats and bats libs
-        uses: bats-core/bats-action@2.0.0
+        uses: bats-core/bats-action@472edde1138d59aca53ff162fb8d996666d21e4a # 2.0.0
         with:
           bats-version: 1.11.0
           detik-install: false
