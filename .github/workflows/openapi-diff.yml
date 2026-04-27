@@ -8,28 +8,24 @@ jobs:
   openapi-diff:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Start application
         run: make start
       - name: Generate openapi spec
         run: make generate-openapi-spec
-      - name: Format generated OpenAPI spec
-        run: |
-          sudo chown "$(id -u):$(id -g)" .github/openapi-spec/spec.yaml
-          npx --yes prettier@3.5.3 --write --ignore-path /dev/null .github/openapi-spec/spec.yaml
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
       - name: Check out head branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           path: head
       - name: Check out master branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           ref: main
           path: base

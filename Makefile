@@ -428,6 +428,16 @@ coverage-xml: ## Create the code coverage report with PHPUnit
 
 generate-openapi-spec:
 	$(EXEC_PHP) php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+	@if command -v npx >/dev/null 2>&1; then \
+		if [ ! -w .github/openapi-spec/spec.yaml ] && command -v sudo >/dev/null 2>&1; then \
+			sudo chown "$$(id -u):$$(id -g)" .github/openapi-spec/spec.yaml; \
+		fi; \
+		if [ -w .github/openapi-spec/spec.yaml ]; then \
+			npx --yes prettier@3.5.3 --write --ignore-path /dev/null .github/openapi-spec/spec.yaml; \
+		else \
+			echo "Skipping OpenAPI spec formatting because .github/openapi-spec/spec.yaml is not writable"; \
+		fi; \
+	fi
 
 validate-openapi-spec: generate-openapi-spec build-spectral-docker ## Generate and lint the OpenAPI spec with Spectral
 	./scripts/validate-openapi-spec.sh
