@@ -84,28 +84,28 @@ The table below compares the retained targeted smoke latency block for the same 
 The April 27 rerun measured the eight previously weak 2FA and recovery-code scenarios after the MongoDB and hashing changes. All rows below beat both `origin/main` and the earlier PR measurement.
 
 | Scenario                         | Surface | Main req/s | Earlier PR req/s | Optimized PR req/s | Main p99 | Earlier PR p99 | Optimized PR p99 | Dropped main -> optimized |
-| -------------------------------- | ------- | ---------: | ---------------: | -----------------: | -------: | -------------: | ----------------: | ------------------------- |
-| `confirmTwoFactor`               | REST    |   1.619441 |         1.318487 |           3.654515 |   10.19s |          10.8s |          852.72ms | 120 -> 0                  |
-| `disableTwoFactor`               | REST    |   1.925533 |         1.293421 |           3.654364 |    9.68s |         11.35s |             574ms | 131 -> 0                  |
-| `signinTwoFactor`                | REST    |   1.784215 |         1.865781 |           4.809812 |    9.65s |           7.8s |             519ms | 110 -> 0                  |
-| `regenerateRecoveryCodes`        | REST    |   1.130708 |         1.087341 |           4.841409 |    10.7s |         11.28s |          837.33ms | 168 -> 2                  |
-| `graphQLCompleteTwoFactor`       | GraphQL |   2.285527 |         1.896128 |           5.196825 |   10.79s |         10.74s |             1.79s | 136 -> 32                 |
-| `graphQLConfirmTwoFactor`        | GraphQL |   1.555889 |         1.253784 |            3.66804 |   11.85s |         11.64s |          581.64ms | 125 -> 0                  |
-| `graphQLDisableTwoFactor`        | GraphQL |   1.985124 |         1.163208 |           3.646914 |    9.82s |         12.49s |          617.63ms | 128 -> 0                  |
-| `graphQLRegenerateRecoveryCodes` | GraphQL |   1.091036 |          0.92329 |           4.589935 |   14.49s |         29.17s |             1.95s | 169 -> 13                 |
+| -------------------------------- | ------- | ---------: | ---------------: | -----------------: | -------: | -------------: | ---------------: | ------------------------- |
+| `confirmTwoFactor`               | REST    |   1.619441 |         1.318487 |           3.654515 |   10.19s |          10.8s |         852.72ms | 120 -> 0                  |
+| `disableTwoFactor`               | REST    |   1.925533 |         1.293421 |           3.654364 |    9.68s |         11.35s |            574ms | 131 -> 0                  |
+| `signinTwoFactor`                | REST    |   1.784215 |         1.865781 |           4.809812 |    9.65s |           7.8s |            519ms | 110 -> 0                  |
+| `regenerateRecoveryCodes`        | REST    |   1.130708 |         1.087341 |           4.841409 |    10.7s |         11.28s |         837.33ms | 168 -> 2                  |
+| `graphQLCompleteTwoFactor`       | GraphQL |   2.285527 |         1.896128 |           5.196825 |   10.79s |         10.74s |            1.79s | 136 -> 32                 |
+| `graphQLConfirmTwoFactor`        | GraphQL |   1.555889 |         1.253784 |            3.66804 |   11.85s |         11.64s |         581.64ms | 125 -> 0                  |
+| `graphQLDisableTwoFactor`        | GraphQL |   1.985124 |         1.163208 |           3.646914 |    9.82s |         12.49s |         617.63ms | 128 -> 0                  |
+| `graphQLRegenerateRecoveryCodes` | GraphQL |   1.091036 |          0.92329 |           4.589935 |   14.49s |         29.17s |            1.95s | 169 -> 13                 |
 
 ### Tightened Threshold Validation
 
 The targeted scenarios were also rerun with duration thresholds enabled. These thresholds replace the old blanket `10000ms` limits for the same scenarios.
 
-| Scenario                         | Threshold p99 | Req/s    | Avg      | P99      | Dropped | Checks    | Result |
+| Scenario                         | Threshold p99 |    Req/s |      Avg |      P99 | Dropped | Checks    | Result |
 | -------------------------------- | ------------: | -------: | -------: | -------: | ------: | --------- | ------ |
-| `confirmTwoFactor`               |      `1500ms` | 3.671430 | 80.91ms  | 394.13ms |       0 | 1100/1100 | Pass   |
+| `confirmTwoFactor`               |      `1500ms` | 3.671430 |  80.91ms | 394.13ms |       0 | 1100/1100 | Pass   |
 | `disableTwoFactor`               |      `2500ms` | 3.651192 | 179.95ms |    1.34s |       0 | 876/876   | Pass   |
-| `signinTwoFactor`                |      `1000ms` | 4.837621 | 83.23ms  | 433.6ms  |       0 | 1218/1218 | Pass   |
-| `regenerateRecoveryCodes`        |      `1500ms` | 4.909762 | 89.28ms  |    288ms |       0 | 1326/1326 | Pass   |
-| `graphQLCompleteTwoFactor`       |      `3000ms` | 6.126888 | 89.74ms  | 461.22ms |       0 | 1547/1547 | Pass   |
-| `graphQLConfirmTwoFactor`        |      `1500ms` | 3.654977 | 92.34ms  | 340.69ms |       0 | 1314/1314 | Pass   |
+| `signinTwoFactor`                |      `1000ms` | 4.837621 |  83.23ms |  433.6ms |       0 | 1218/1218 | Pass   |
+| `regenerateRecoveryCodes`        |      `1500ms` | 4.909762 |  89.28ms |    288ms |       0 | 1326/1326 | Pass   |
+| `graphQLCompleteTwoFactor`       |      `3000ms` | 6.126888 |  89.74ms | 461.22ms |       0 | 1547/1547 | Pass   |
+| `graphQLConfirmTwoFactor`        |      `1500ms` | 3.654977 |  92.34ms | 340.69ms |       0 | 1314/1314 | Pass   |
 | `graphQLDisableTwoFactor`        |      `1500ms` | 3.648348 |    144ms | 685.28ms |       0 | 1095/1095 | Pass   |
 | `graphQLRegenerateRecoveryCodes` |      `3000ms` | 4.337197 | 381.53ms |    1.96s |      24 | 1170/1170 | Pass   |
 
@@ -123,25 +123,25 @@ Final scenario status: **50/50 passed**. Each row is an all-profile run with smo
 | `apiValidationErrors`            | REST    | 39.438497 | 39.438497 |   2.38ms |   4.71ms |    7.12ms |       - | 7099/7099   | Pass   | Expected 401; full-load                        |
 | `apiWellKnownGenid`              | REST    | 39.427433 | 39.427433 |   2.56ms |   3.47ms |    6.77ms |       - | 7097/7097   | Pass   | Expected 404; full-load                        |
 | `cachePerformance`               | REST    |         - |         - | 182.22ms | 950.25ms | 1167.82ms |       - | custom      | Pass   | Custom cache summary; 76.63% <100ms; full-load |
-| `confirmTwoFactor`               | REST    |  3.654515 |   1.21632 | 140.56ms | 533.69ms | 852.72ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                    |
+| `confirmTwoFactor`               | REST    |  3.654515 |   1.21632 | 140.56ms | 533.69ms |  852.72ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                     |
 | `confirmUser`                    | REST    |  75.48563 | 37.740141 |  13.22ms |  80.25ms |   216.7ms |      42 | 7056/7056   | Pass   | patched rerun                                  |
 | `createUser`                     | REST    | 26.974562 | 26.969084 | 941.31ms |    2.53s |     2.75s |     925 | 4923/4923   | Pass   | resume3                                        |
 | `createUserBatch`                | REST    |  5.225969 |  5.221282 |    9.01s |   20.38s |    20.82s |    4734 | 1114/1114   | Pass   | resume3                                        |
 | `deleteUser`                     | REST    | 45.347703 | 45.342584 | 309.58ms | 892.56ms |  998.85ms |     240 | 17716/17716 | Pass   | resume3                                        |
-| `disableTwoFactor`               | REST    |  3.654364 |   1.21627 | 106.73ms | 368.13ms |    574ms |       0 | 876/876     | Pass   | optimized rerun 2026-04-27                    |
+| `disableTwoFactor`               | REST    |  3.654364 |   1.21627 | 106.73ms | 368.13ms |     574ms |       0 | 876/876     | Pass   | optimized rerun 2026-04-27                     |
 | `getUser`                        | REST    | 43.646282 | 43.641436 | 314.89ms |    1.12s |     1.31s |    3844 | 18010/18010 | Pass   | resume3                                        |
 | `getUsers`                       | REST    |  7.454378 |  7.450069 |   11.76s |   26.51s |     26.7s |   11119 | 3458/3458   | Pass   | resume3                                        |
-| `graphQLCompleteTwoFactor`       | GraphQL |  5.196825 |  1.038254 | 288.92ms |     1.2s |     1.79s |      32 | 1309/1309   | Pass   | optimized rerun 2026-04-27                    |
+| `graphQLCompleteTwoFactor`       | GraphQL |  5.196825 |  1.038254 | 288.92ms |     1.2s |     1.79s |      32 | 1309/1309   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLConfirmPasswordReset`    | GraphQL | 25.661271 |  6.718462 | 451.44ms |    2.81s |     3.52s |    2804 | 12882/12882 | Pass   | patched rerun                                  |
-| `graphQLConfirmTwoFactor`        | GraphQL |   3.66804 |   1.22083 | 151.88ms | 413.14ms | 581.64ms |       0 | 1320/1320   | Pass   | optimized rerun 2026-04-27                    |
+| `graphQLConfirmTwoFactor`        | GraphQL |   3.66804 |   1.22083 | 151.88ms | 413.14ms |  581.64ms |       0 | 1320/1320   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLConfirmUser`             | GraphQL | 60.827284 |  30.41098 | 452.17ms |     1.7s |     2.07s |    1385 | 11426/11426 | Pass   | patched rerun                                  |
 | `graphQLCreateUser`              | GraphQL | 20.452036 | 20.435987 |    1.57s |    4.57s |     4.79s |    2028 | 3821/3821   | Pass   | resume3                                        |
 | `graphQLDeleteUser`              | GraphQL | 34.746163 | 34.741008 |       1s |    2.84s |     3.13s |    2360 | 13478/13478 | Pass   | resume3                                        |
-| `graphQLDisableTwoFactor`        | GraphQL |  3.646914 |   1.21379 | 134.96ms | 448.23ms | 617.63ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                    |
+| `graphQLDisableTwoFactor`        | GraphQL |  3.646914 |   1.21379 | 134.96ms | 448.23ms |  617.63ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLGetUser`                 | GraphQL | 32.494856 | 32.490108 |    1.33s |    3.43s |     3.62s |    6006 | 13684/13684 | Pass   | resume3                                        |
 | `graphQLGetUsers`                | GraphQL |  3.138399 |  3.134553 |   18.18s |    40.6s |    45.08s |   11739 | 1925/1925   | Pass   | resume3                                        |
 | `graphQLRefreshToken`            | GraphQL |  8.328528 |  4.161489 |  16.38ms |  24.56ms |   31.03ms |       - | 3750/3750   | Pass   | resume3                                        |
-| `graphQLRegenerateRecoveryCodes` | GraphQL |  4.589935 |    1.1461 | 296.81ms |    1.08s |     1.95s |      13 | 1242/1242   | Pass   | optimized rerun 2026-04-27                    |
+| `graphQLRegenerateRecoveryCodes` | GraphQL |  4.589935 |    1.1461 | 296.81ms |    1.08s |     1.95s |      13 | 1242/1242   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLRequestPasswordReset`    | GraphQL |  3.196824 |  3.191274 |  58.93ms |  65.57ms |   75.14ms |       - | 1725/1725   | Pass   | resume3                                        |
 | `graphQLResendEmailToUser`       | GraphQL | 24.440627 | 24.435638 |    1.24s |    2.85s |     3.41s |    2199 | 9796/9796   | Pass   | resume3                                        |
 | `graphQLSetupTwoFactor`          | GraphQL |   5.97883 |  2.986639 |  14.44ms |  19.54ms |   25.07ms |       - | 2690/2690   | Pass   | resume3                                        |
@@ -154,14 +154,14 @@ Final scenario status: **50/50 passed**. Each row is an all-profile run with smo
 | `oauthSocialCallback`            | REST    | 87.644465 | 43.822232 | 443.25ms |    1.38s |     1.62s |    1199 | 15800/15800 | Pass   | final rerun                                    |
 | `oauthSocialInitiate`            | REST    | 50.549411 | 50.549411 |   2.34ms |   3.14ms |    4.17ms |       - | 9099/9099   | Pass   | resume3                                        |
 | `refreshToken`                   | REST    |  8.320536 |  4.157493 |    8.9ms |  11.62ms |   13.83ms |       - | 3745/3745   | Pass   | resume3                                        |
-| `regenerateRecoveryCodes`        | REST    |  4.841409 |  1.208966 | 159.21ms | 545.28ms | 837.33ms |       2 | 1308/1308   | Pass   | optimized rerun 2026-04-27                    |
+| `regenerateRecoveryCodes`        | REST    |  4.841409 |  1.208966 | 159.21ms | 545.28ms |  837.33ms |       2 | 1308/1308   | Pass   | optimized rerun 2026-04-27                     |
 | `replaceUser`                    | REST    | 22.469206 | 22.464322 |    1.34s |     3.3s |     4.12s |    2499 | 9200/9200   | Pass   | resume3                                        |
 | `resendEmailToUser`              | REST    | 26.274168 | 26.269293 |    1.11s |    1.97s |     2.08s |    1709 | 10778/10778 | Pass   | resume3                                        |
 | `resetPassword`                  | REST    |  3.191142 |  3.185592 |  53.75ms |  63.93ms |   72.07ms |       - | 1148/1148   | Pass   | resume3                                        |
 | `resetPasswordConfirm`           | REST    | 27.895229 |  7.768972 | 375.43ms |    2.13s |     2.51s |    2186 | 9824/9824   | Pass   | patched rerun                                  |
 | `setupTwoFactor`                 | REST    |  6.000656 |  2.997553 |   7.96ms |  12.77ms |   23.26ms |       - | 2700/2700   | Pass   | resume3                                        |
 | `signin`                         | REST    |  4.163738 |  4.158186 |   9.35ms |  13.03ms |   18.12ms |       - | 1498/1498   | Pass   | resume3                                        |
-| `signinTwoFactor`                | REST    |  4.809812 |  0.960852 | 102.19ms | 357.17ms |    519ms |       0 | 1211/1211   | Pass   | optimized rerun 2026-04-27                    |
+| `signinTwoFactor`                | REST    |  4.809812 |  0.960852 | 102.19ms | 357.17ms |     519ms |       0 | 1211/1211   | Pass   | optimized rerun 2026-04-27                     |
 | `signout`                        | REST    |  8.331509 |  4.162979 |    8.8ms |   14.2ms |   18.69ms |       - | 2250/2250   | Pass   | resume3                                        |
 | `signoutAll`                     | REST    |   8.32185 |  4.158149 |   8.57ms |  12.05ms |   15.64ms |       - | 2247/2247   | Pass   | resume3                                        |
 | `updateUser`                     | REST    | 23.002379 |  22.99748 |    1.37s |    2.59s |     2.69s |    2405 | 9388/9388   | Pass   | resume3                                        |
