@@ -37,6 +37,20 @@ final class CachedUserRepository extends UserRepositoryDecorator
 {
     private const TTL_BY_ID = 600;
     private const TTL_BY_EMAIL = 300;
+    private const CACHE_RELOAD_MESSAGES = [
+        'cache.reload.error' => [
+            'Failed to reload detached cached user -',
+            'falling back to database',
+        ],
+        'cache.reload.invalid' => [
+            'Cache reload returned an unexpected value -',
+            'falling back to database',
+        ],
+        'cache.reload.miss' => [
+            'Detached cached user was not found -',
+            'falling back to database',
+        ],
+    ];
 
     public function __construct(
         UserRepositoryInterface $inner,
@@ -210,7 +224,11 @@ final class CachedUserRepository extends UserRepositoryDecorator
 
             return $this->normalizeCachedUser($user, $cacheKey, $fallback);
         } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
+            $this->logger->error('Cache error - falling back to database', [
+                'cache_key' => $cacheKey,
+                'error' => $e->getMessage(),
+                'operation' => 'cache.error',
+            ]);
 
             return $fallback();
         }
@@ -246,72 +264,42 @@ final class CachedUserRepository extends UserRepositoryDecorator
         callable $fallback
     ): ?UserInterface {
         try {
-            return $this->reloadCachedUser($cached, $cacheKey) ?? $fallback();
+            $managedUser = $this->documentManager->find($cached::class, $cached->getId());
         } catch (\Throwable $e) {
-            $this->logReattachWarning(
-                'Failed to reload detached cached user - falling back to database',
-                $cacheKey,
-                $cached,
-                'cache.reload.error',
-                $e
-            );
+            return $this->warnAndFallback($cached, $cacheKey, $fallback, 'cache.reload.error', $e);
         }
 
-        return $fallback();
-    }
+        if (!$managedUser instanceof UserInterface) {
+            $operation = $managedUser === null ? 'cache.reload.miss' : 'cache.reload.invalid';
 
-    private function reloadCachedUser(
-        UserInterface $cached,
-        string $cacheKey
-    ): ?UserInterface {
-        $managedUser = $this->documentManager->find($cached::class, $cached->getId());
-
-        if ($managedUser instanceof UserInterface) {
-            return $managedUser;
+            return $this->warnAndFallback($cached, $cacheKey, $fallback, $operation);
         }
 
-        $this->logReattachWarning(
-            $managedUser === null
-                ? 'Detached cached user was not found - falling back to database'
-                : 'Cache reload returned an unexpected value - falling back to database',
-            $cacheKey,
-            $cached,
-            $managedUser === null ? 'cache.reload.miss' : 'cache.reload.invalid'
-        );
-
-        return null;
-    }
-
-    private function logReattachWarning(
-        string $message,
-        string $cacheKey,
-        UserInterface $cached,
-        string $operation,
-        ?\Throwable $e = null
-    ): void {
-        $context = [
-            'cache_key' => $cacheKey,
-            'user_id' => $cached->getId(),
-            'operation' => $operation,
-        ];
-
-        if ($e instanceof \Throwable) {
-            $context['error'] = $e->getMessage();
-        }
-
-        $this->logger->warning($message, $context);
+        return $managedUser;
     }
 
     /**
-     * Log cache errors for observability
+     * @param 'cache.reload.error'|'cache.reload.miss'|'cache.reload.invalid' $operation
      */
-    private function logCacheError(string $cacheKey, \Throwable $e): void
-    {
-        $this->logger->error('Cache error - falling back to database', [
-            'cache_key' => $cacheKey,
-            'error' => $e->getMessage(),
-            'operation' => 'cache.error',
-        ]);
+    private function warnAndFallback(
+        UserInterface $cached,
+        string $cacheKey,
+        callable $fallback,
+        string $operation,
+        ?\Throwable $e = null
+    ): ?UserInterface {
+        $this->logger->warning(
+            implode(' ', self::CACHE_RELOAD_MESSAGES[$operation]),
+            array_filter([
+                'cache_key' => $cacheKey,
+                'user_id' => $cached->getId(),
+                'operation' => $operation,
+                'error' => $e?->getMessage(),
+            ])
+        );
+        $this->cache->delete($cacheKey);
+
+        return $fallback();
     }
 
     private function loadUserByEmail(
@@ -344,7 +332,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
             return null;
         }
 
-        if ($this->normalizeEmail($user->getEmail()) === $this->normalizeEmail($requestedEmail)) {
+        if (strtolower(trim($user->getEmail())) === strtolower(trim($requestedEmail))) {
             return $user;
         }
 
@@ -352,11 +340,6 @@ final class CachedUserRepository extends UserRepositoryDecorator
         $freshUser = $fallback();
 
         return $freshUser instanceof UserInterface ? $freshUser : null;
-    }
-
-    private function normalizeEmail(string $email): string
-    {
-        return strtolower(trim($email));
     }
 
     private function previousEmailTag(UserInterface $user): ?string

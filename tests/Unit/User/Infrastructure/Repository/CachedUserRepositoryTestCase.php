@@ -117,6 +117,17 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
         );
     }
 
+    protected function expectCacheDelete(string $cacheKey): void
+    {
+        $this->cache->expectDelete(
+            static function (string $actualCacheKey) use ($cacheKey): bool {
+                self::assertSame($cacheKey, $actualCacheKey);
+
+                return true;
+            }
+        );
+    }
+
     /**
      * @return list<string>
      */

@@ -21,6 +21,7 @@ final class MongoDBAuthSessionRepository extends ServiceDocumentRepository imple
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
+        private readonly MongoDBWriteResultCounter $writeResultCounter,
     ) {
         parent::__construct($registry, AuthSession::class);
     }
@@ -68,32 +69,11 @@ final class MongoDBAuthSessionRepository extends ServiceDocumentRepository imple
             ->getQuery()
             ->execute();
 
-        $modifiedCount = $this->modifiedDocumentCount($result);
+        $modifiedCount = $this->writeResultCounter->modifiedDocumentCount($result);
         if ($modifiedCount > 0) {
             $this->documentManager->clear(AuthSession::class);
         }
 
         return $modifiedCount;
-    }
-
-    /**
-     * @psalm-return int<0, max>
-     */
-    private function modifiedDocumentCount(mixed $result): int
-    {
-        if (is_int($result)) {
-            return max(0, $result);
-        }
-
-        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
-            return 0;
-        }
-
-        $modifiedCount = $result->getModifiedCount();
-        if (!is_int($modifiedCount)) {
-            return 0;
-        }
-
-        return max(0, $modifiedCount);
     }
 }

@@ -17,6 +17,7 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
         $this->expectCacheGet($cacheKey, $cachedUser);
         $this->expectReloadFailure($cachedUser, $id);
         $this->expectReloadWarning($cacheKey, $id);
+        $this->expectCacheDelete($cacheKey);
         $this->innerRepository
             ->expects($this->once())
             ->method('findById')
@@ -36,6 +37,7 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
         $this->expectCacheGet($cacheKey, $cachedUser);
         $this->expectReloadMiss($cachedUser, $id);
         $this->expectReloadMissWarning($cacheKey, $id);
+        $this->expectCacheDelete($cacheKey);
         $this->expectFindByIdFallback($id, $freshUser);
 
         self::assertSame($freshUser, $this->repository->findById($id));
@@ -51,6 +53,7 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
         $this->expectCacheGet($cacheKey, $cachedUser);
         $this->expectInvalidReloadValue($cachedUser, $id);
         $this->expectInvalidReloadWarning($cacheKey, $id);
+        $this->expectCacheDelete($cacheKey);
         $this->expectFindByIdFallback($id, $freshUser);
 
         self::assertSame($freshUser, $this->repository->findById($id));

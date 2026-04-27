@@ -18,6 +18,7 @@ final class CachedUserRepositoryFindByEmailMergeFallbackTest extends
         $this->expectCacheGet($cacheKey, $cachedUser);
         $this->expectReloadFailure($cachedUser);
         $this->expectReloadWarning($cacheKey, $cachedUser->getId());
+        $this->expectCacheDelete($cacheKey);
         $this->innerRepository
             ->expects($this->once())
             ->method('findByEmail')

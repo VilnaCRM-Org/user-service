@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Collection\AuthSessionCollection;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Infrastructure\Repository\MongoDBAuthSessionRepository;
+use App\User\Infrastructure\Repository\MongoDBWriteResultCounter;
 use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -15,10 +15,11 @@ use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
+final class MongoDBAuthSessionRepositoryTest extends MongoDBRepositoryTestCase
 {
     private DocumentManager|MockObject $documentManager;
     private ManagerRegistry|MockObject $registry;
+    private MongoDBWriteResultCounter $writeResultCounter;
     private MongoDBAuthSessionRepository $repository;
 
     #[\Override]
@@ -33,10 +34,12 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
             ->method('getManagerForClass')
             ->with(AuthSession::class)
             ->willReturn($this->documentManager);
+        $this->writeResultCounter = new MongoDBWriteResultCounter();
 
         $this->repository = new MongoDBAuthSessionRepository(
             $this->documentManager,
-            $this->registry
+            $this->registry,
+            $this->writeResultCounter
         );
     }
 
@@ -59,7 +62,11 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
         $expectedSession = $this->createAuthSession();
         $repositoryClass = MongoDBAuthSessionRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ])
             ->onlyMethods(['find'])
             ->getMock();
 
@@ -74,18 +81,13 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
     public function testFindByUserId(): void
     {
         $userId = $this->faker->uuid();
-        $sessions = [
-            $this->createAuthSession(),
-            $this->createAuthSession(),
-        ];
+        $sessions = [$this->createAuthSession(), $this->createAuthSession()];
 
-        $repositoryClass = MongoDBAuthSessionRepository::class;
-        $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs(
-                [$this->documentManager, $this->registry]
-            )
-            ->onlyMethods(['findBy'])
-            ->getMock();
+        $repository = $this->createRepositoryMock(
+            MongoDBAuthSessionRepository::class,
+            [$this->documentManager, $this->registry, $this->writeResultCounter],
+            ['findBy']
+        );
 
         $repository->expects($this->once())
             ->method('findBy')
@@ -237,7 +239,11 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
     ): MongoDBAuthSessionRepository {
         $queryBuilder = $this->createMock(Builder::class);
         $query = $this->createMock(Query::class);
-        $repository = $this->createRepositoryWithQueryBuilder($queryBuilder);
+        $repository = $this->createRepositoryMockWithQueryBuilder(
+            MongoDBAuthSessionRepository::class,
+            [$this->documentManager, $this->registry, $this->writeResultCounter],
+            $queryBuilder
+        );
 
         $queryBuilder->expects($this->once())->method('updateMany')->willReturnSelf();
         $this->expectBulkRevokeFields($queryBuilder, $expectedUserId);
@@ -247,19 +253,6 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
             $expectedRevokedAt
         );
         $this->expectQueryResult($queryBuilder, $query, $updateResult);
-
-        return $repository;
-    }
-
-    private function createRepositoryWithQueryBuilder(
-        Builder $queryBuilder
-    ): MongoDBAuthSessionRepository {
-        $repository = $this->getMockBuilder(MongoDBAuthSessionRepository::class)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
-            ->onlyMethods(['createQueryBuilder'])
-            ->getMock();
-
-        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
 
         return $repository;
     }
@@ -313,15 +306,6 @@ final class MongoDBAuthSessionRepositoryTest extends UnitTestCase
 
     private function modifiedCountResult(int|string $modifiedCount): object
     {
-        return new class($modifiedCount) {
-            public function __construct(private readonly int|string $modifiedCount)
-            {
-            }
-
-            public function getModifiedCount(): int|string
-            {
-                return $this->modifiedCount;
-            }
-        };
+        return new WriteCountResult($modifiedCount);
     }
 }

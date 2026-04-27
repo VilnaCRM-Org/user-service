@@ -60,15 +60,4 @@ final class CachedUserRepositoryFindByEmailCacheHitTest extends
 
         self::assertNull($this->repository->findByEmail($oldEmail));
     }
-
-    private function expectCacheDelete(string $cacheKey): void
-    {
-        $this->cache->expectDelete(
-            static function (string $actualCacheKey) use ($cacheKey): bool {
-                self::assertSame($cacheKey, $actualCacheKey);
-
-                return true;
-            }
-        );
-    }
 }

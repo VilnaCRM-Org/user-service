@@ -21,6 +21,7 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
+        private readonly MongoDBWriteResultCounter $writeResultCounter,
     ) {
         parent::__construct($registry, RecoveryCode::class);
     }
@@ -84,7 +85,7 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
             ->getQuery()
             ->execute();
 
-        if (!$this->wasDocumentUpdated($result)) {
+        if (!$this->writeResultCounter->wasDocumentUpdated($result)) {
             return false;
         }
 
@@ -112,48 +113,12 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
             ->getQuery()
             ->execute();
 
-        $deletedCount = $this->removedDocumentCount($result);
+        $deletedCount = $this->writeResultCounter->removedDocumentCount($result);
         if ($deletedCount > 0) {
             $this->documentManager->clear(RecoveryCode::class);
         }
 
         return $deletedCount;
-    }
-
-    private function wasDocumentUpdated(mixed $result): bool
-    {
-        if (is_int($result)) {
-            return $result > 0;
-        }
-
-        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
-            return false;
-        }
-
-        $modifiedCount = $result->getModifiedCount();
-
-        return is_int($modifiedCount) && $modifiedCount > 0;
-    }
-
-    /**
-     * @psalm-return int<0, max>
-     */
-    private function removedDocumentCount(mixed $result): int
-    {
-        if (is_int($result)) {
-            return max(0, $result);
-        }
-
-        if (!is_object($result) || !method_exists($result, 'getDeletedCount')) {
-            return 0;
-        }
-
-        $deletedCount = $result->getDeletedCount();
-        if (!is_int($deletedCount)) {
-            return 0;
-        }
-
-        return max(0, $deletedCount);
     }
 
     private function syncManagedRecoveryCodeUsage(string $id, DateTimeImmutable $usedAt): void

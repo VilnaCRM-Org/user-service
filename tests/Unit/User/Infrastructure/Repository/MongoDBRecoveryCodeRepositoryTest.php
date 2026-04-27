@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Collection\RecoveryCodeCollection;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository;
+use App\User\Infrastructure\Repository\MongoDBWriteResultCounter;
 use DateTimeImmutable;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -15,10 +15,11 @@ use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
+final class MongoDBRecoveryCodeRepositoryTest extends MongoDBRepositoryTestCase
 {
     private DocumentManager|MockObject $documentManager;
     private ManagerRegistry|MockObject $registry;
+    private MongoDBWriteResultCounter $writeResultCounter;
     private MongoDBRecoveryCodeRepository $repository;
 
     #[\Override]
@@ -33,10 +34,12 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
             ->method('getManagerForClass')
             ->with(RecoveryCode::class)
             ->willReturn($this->documentManager);
+        $this->writeResultCounter = new MongoDBWriteResultCounter();
 
         $this->repository = new MongoDBRecoveryCodeRepository(
             $this->documentManager,
-            $this->registry
+            $this->registry,
+            $this->writeResultCounter
         );
     }
 
@@ -77,7 +80,11 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $expectedRecoveryCode = $this->createRecoveryCode();
         $repositoryClass = MongoDBRecoveryCodeRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ])
             ->onlyMethods(['find'])
             ->getMock();
 
@@ -96,7 +103,11 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $code2 = $this->createRecoveryCode();
         $repositoryClass = MongoDBRecoveryCodeRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ])
             ->onlyMethods(['findBy'])
             ->getMock();
 
@@ -171,12 +182,7 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
 
     public function testMarkAsUsedIfUnusedReturnsFalseWhenModifiedCountIsNotInt(): void
     {
-        $repository = $this->createRepositoryWithMarkAsUsedResult(new class() {
-            public function getModifiedCount(): string
-            {
-                return '1';
-            }
-        });
+        $repository = $this->createRepositoryWithMarkAsUsedResult(new WriteCountResult('1'));
 
         $this->assertFalse(
             $repository->markAsUsedIfUnused($this->faker->uuid(), new DateTimeImmutable())
@@ -222,12 +228,7 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
         $userId = $this->faker->uuid();
         $repository = $this->createRepositoryWithDeleteByUserIdResult(
             $userId,
-            new class() {
-                public function getDeletedCount(): int
-                {
-                    return 2;
-                }
-            }
+            new WriteCountResult(2)
         );
 
         $this->documentManager
@@ -241,12 +242,7 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     public function testDeleteByUserIdReturnsZeroForUnexpectedDeleteResults(): void
     {
         $userId = $this->faker->uuid();
-        $invalidDeletedCount = new class() {
-            public function getDeletedCount(): string
-            {
-                return '2';
-            }
-        };
+        $invalidDeletedCount = new WriteCountResult('2');
 
         $this->documentManager
             ->expects($this->never())
@@ -304,7 +300,15 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     ): MongoDBRecoveryCodeRepository {
         $queryBuilder = $this->createMock(Builder::class);
         $query = $this->createMock(Query::class);
-        $repository = $this->createRepositoryWithQueryBuilder($queryBuilder);
+        $repository = $this->createRepositoryMockWithQueryBuilder(
+            MongoDBRecoveryCodeRepository::class,
+            [
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ],
+            $queryBuilder
+        );
 
         $this->expectDeleteByUserIdQuery($queryBuilder, $query, $expectedUserId, $deleteResult);
 
@@ -338,7 +342,15 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
     ): MongoDBRecoveryCodeRepository {
         $queryBuilder = $this->createMock(Builder::class);
         $query = $this->createMock(Query::class);
-        $repository = $this->createRepositoryWithQueryBuilder($queryBuilder);
+        $repository = $this->createRepositoryMockWithQueryBuilder(
+            MongoDBRecoveryCodeRepository::class,
+            [
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ],
+            $queryBuilder
+        );
 
         $this->expectCountUnusedFields($queryBuilder, $expectedUserId);
         $queryBuilder->expects($this->once())->method('count')->willReturnSelf();
@@ -372,29 +384,18 @@ final class MongoDBRecoveryCodeRepositoryTest extends UnitTestCase
             );
     }
 
-    private function createRepositoryWithQueryBuilder(
-        Builder $queryBuilder
-    ): MongoDBRecoveryCodeRepository {
-        $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
-            ->onlyMethods(['createQueryBuilder'])
-            ->getMock();
-
-        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
-
-        return $repository;
-    }
-
     private function createRepositoryWithQueryBuilderAndFind(
         Builder $queryBuilder
     ): MongoDBRecoveryCodeRepository {
-        $repository = $this->getMockBuilder(MongoDBRecoveryCodeRepository::class)
-            ->setConstructorArgs([$this->documentManager, $this->registry])
-            ->onlyMethods(['createQueryBuilder', 'find'])
-            ->getMock();
-
-        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
-
-        return $repository;
+        return $this->createRepositoryMockWithQueryBuilder(
+            MongoDBRecoveryCodeRepository::class,
+            [
+                $this->documentManager,
+                $this->registry,
+                $this->writeResultCounter,
+            ],
+            $queryBuilder,
+            ['find']
+        );
     }
 }
