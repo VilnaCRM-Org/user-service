@@ -123,8 +123,13 @@ RUN apk add --no-cache \
     bats=~1.11 \
     bc=~1.07
 
-RUN curl -sS https://get.symfony.com/cli/installer | bash \
- && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+RUN curl --fail --location --show-error --silent \
+    --retry 5 --retry-delay 2 --retry-max-time 120 \
+    https://get.symfony.com/cli/installer \
+    --output /tmp/symfony-installer \
+ && bash /tmp/symfony-installer \
+ && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony \
+ && rm /tmp/symfony-installer
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
