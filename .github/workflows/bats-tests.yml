@@ -33,6 +33,8 @@ jobs:
         uses: bats-core/bats-action@2.0.0
         with:
           bats-version: 1.11.0
+          detik-install: false
+          file-install: false
           support-path: ${{ github.workspace }}/tests/CLI/bats/bats-support
           assert-path: ${{ github.workspace }}/tests/CLI/bats/bats-assert
 
