@@ -42,6 +42,7 @@ Quick Decision Tree:
 │
 ├─ Create something new
 │   ├─ Full BMALPH specs from short prompt → bmad-autonomous-planning
+│   ├─ New LLM-powered module or prompt workflow → clean-architecture-llm
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
@@ -125,7 +126,7 @@ Complex skills have multi-file structure:
 - Need detailed patterns → `reference/*.md`
 - Want complete examples → `examples/*.md`
 
-## Available Skills (19 Total)
+## Available Skills (20 Total)
 
 ### 🤖 Autonomous Planning Skills
 
@@ -155,6 +156,7 @@ Preferred Codex trigger for this skill:
 | **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                                       |
 | **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, processors & validation                                 |
 | **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
+| **Clean Architecture LLM**   | `clean-architecture-llm/SKILL.md`        | LLM ports/adapters, prompt boundaries, deterministic tests, privacy review |
 | **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing                                  |
 | **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl                           |
 
@@ -213,6 +215,16 @@ Preferred Codex trigger for this skill:
 3. **Execute in the current session**: Follow the skill and run analyst research, create-brief, create-prd, create-architecture, create-epics-stories, and implementation-readiness as separate subagents using `gpt-5.4` with `xhigh` reasoning
 4. **Inspect outputs**: Review the generated bundle artifacts and unresolved questions
 5. **Validate**: Run `make ci` if you changed the skill docs, tests, or supporting guidance
+
+### Example 2c: User asks to "add an LLM-powered review workflow"
+
+**Your workflow:**
+
+1. **Identify skill**: Read `SKILL-DECISION-GUIDE.md` → Points to `clean-architecture-llm`
+2. **Read skill**: Open `.claude/skills/clean-architecture-llm/SKILL.md`
+3. **Use examples**: Check `.claude/skills/clean-architecture-llm/examples/llm-module-template.md`
+4. **Review**: Apply `.claude/skills/clean-architecture-llm/reference/review-checklist.md`
+5. **Validate**: Run default CI for runtime code, or `git diff --check` for docs-only changes
 
 ### Example 3: User asks to "run tests"
 
@@ -290,12 +302,13 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 ### Creating New Features
 
 1. Read: `implementing-ddd-architecture/SKILL.md` - Design domain model
-2. Read: `database-migrations/SKILL.md` - Configure persistence
-3. Read: `api-platform-crud/SKILL.md` - Add API endpoints
-4. Read: `testing-workflow/SKILL.md` - Write tests
-5. Read: `structurizr-architecture-sync/SKILL.md` - Update architecture diagrams
-6. Read: `documentation-sync/SKILL.md` - Update docs
-7. Read: `ci-workflow/SKILL.md` - Validate everything
+2. Read: `clean-architecture-llm/SKILL.md` - Design provider/prompt boundaries when the feature uses LLMs
+3. Read: `database-migrations/SKILL.md` - Configure persistence
+4. Read: `api-platform-crud/SKILL.md` - Add API endpoints
+5. Read: `testing-workflow/SKILL.md` - Write tests
+6. Read: `structurizr-architecture-sync/SKILL.md` - Update architecture diagrams
+7. Read: `documentation-sync/SKILL.md` - Update docs
+8. Read: `ci-workflow/SKILL.md` - Validate everything
 
 ### Fixing Quality Issues
 
@@ -328,6 +341,11 @@ Never normalize "merge with red CI" as a general workflow. It is a human excepti
 │   ├── REFERENCE.md            # Detailed workflows
 │   ├── DIRECTORY-STRUCTURE.md  # File placement guide
 │   └── examples/               # Working code examples
+│
+├── clean-architecture-llm/
+│   ├── SKILL.md                # LLM Clean Architecture workflow
+│   ├── examples/               # Provider-neutral templates
+│   └── reference/              # LLM PR review checklist
 │
 ├── deptrac-fixer/
 │   ├── SKILL.md                # Core diagnostic patterns
