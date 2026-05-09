@@ -14,6 +14,7 @@ use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\SecondTestEventSubscriber;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestCommand;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestEvent;
 use App\Tests\Unit\UnitTestCase;
+use Symfony\Component\Messenger\Handler\HandlerDescriptor;
 use Symfony\Component\Messenger\MessageBus;
 
 final class MessageBusFactoryTest extends UnitTestCase
@@ -48,7 +49,10 @@ final class MessageBusFactoryTest extends UnitTestCase
         $messageBus->dispatch(new TestCommand());
         self::assertTrue($regularHandlerCalled, 'Regular handler should be called');
 
-        $messageBus->dispatch(new TestEvent('event-id', '2024-01-01 00:00:00'));
+        $messageBus->dispatch(new TestEvent(
+            $this->faker->uuid(),
+            $this->faker->dateTime()->format('Y-m-d H:i:s')
+        ));
         self::assertTrue($subscriberCalled, 'Subscriber should be called');
     }
 
@@ -137,12 +141,34 @@ final class MessageBusFactoryTest extends UnitTestCase
         $reflection = new \ReflectionMethod(MessageBusFactory::class, 'buildHandlersMap');
         $this->makeAccessible($reflection);
 
-        /** @var array<string, array<DomainEventSubscriberInterface>> $handlersMap */
+        /** @var array<string, array<HandlerDescriptor>> $handlersMap */
         $handlersMap = $reflection->invoke($factory, [$subscriber]);
 
         self::assertArrayHasKey(TestEvent::class, $handlersMap);
         self::assertCount(1, $handlersMap[TestEvent::class]);
-        self::assertSame($subscriber, $handlersMap[TestEvent::class][0]);
+        self::assertInstanceOf(HandlerDescriptor::class, $handlersMap[TestEvent::class][0]);
+    }
+
+    public function testSubscribersUsingSameDecoratorClassAreNotDeduplicated(): void
+    {
+        $firstSubscriberCalled = false;
+        $secondSubscriberCalled = false;
+
+        $factory = new MessageBusFactory(
+            new CallableFirstParameterExtractor(new InvokeParameterExtractor())
+        );
+        $messageBus = $factory->create([
+            $this->createEventSubscriber($firstSubscriberCalled),
+            $this->createEventSubscriber($secondSubscriberCalled),
+        ]);
+
+        $messageBus->dispatch(new TestEvent(
+            $this->faker->uuid(),
+            $this->faker->dateTime()->format('Y-m-d H:i:s')
+        ));
+
+        self::assertTrue($firstSubscriberCalled);
+        self::assertTrue($secondSubscriberCalled);
     }
 
     private function createRegularHandler(bool &$called): object
