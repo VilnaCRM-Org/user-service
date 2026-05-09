@@ -193,6 +193,7 @@ Preferred Codex trigger for this skill:
 **Your workflow:**
 
 1. **Identify skills**: Need multiple skills:
+
    - `implementing-ddd-architecture` - Design the entity
    - `database-migrations` - Configure persistence
    - `api-platform-crud` - Add REST endpoints
