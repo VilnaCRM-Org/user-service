@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   openapi-diff:
     runs-on: ubuntu-latest
@@ -11,24 +15,35 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
       - name: Start application
         run: make start
       - name: Generate openapi spec
         run: make generate-openapi-spec
       - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '.github/openapi-spec/spec.yaml'
-          message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/openapi-spec/spec.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(#${PR_NUMBER}): generate openapi spec"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" \
+            push origin "HEAD:${HEAD_REF}"
       - name: Check out head branch
         uses: actions/checkout@v4
         with:
           path: head
+          persist-credentials: false
       - name: Check out master branch
         uses: actions/checkout@v4
         with:
           ref: main
           path: base
+          persist-credentials: false
       - name: Run OpenAPI Diff (from HEAD revision)
         uses: docker://openapitools/openapi-diff:latest
         with:
