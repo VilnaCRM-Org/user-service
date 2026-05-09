@@ -136,7 +136,7 @@ Final scenario status: **50/50 passed**. Each row is an all-profile run with smo
 | `graphQLConfirmPasswordReset`    | GraphQL | 25.661271 |  6.718462 | 451.44ms |    2.81s |     3.52s |    2804 | 12882/12882 | Pass   | patched rerun                                  |
 | `graphQLConfirmTwoFactor`        | GraphQL |   3.66804 |   1.22083 | 151.88ms | 413.14ms |  581.64ms |       0 | 1320/1320   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLConfirmUser`             | GraphQL | 60.827284 |  30.41098 | 452.17ms |     1.7s |     2.07s |    1385 | 11426/11426 | Pass   | patched rerun                                  |
-| `graphQLCreateUser`              | GraphQL | 24.479915 | 24.463792 |    1.14s |     3.4s |     3.63s |    1297 | 4553/4553   | Pass   | targeted rerun 2026-05-09                     |
+| `graphQLCreateUser`              | GraphQL | 24.479915 | 24.463792 |    1.14s |     3.4s |     3.63s |    1297 | 4553/4553   | Pass   | targeted rerun 2026-05-09                      |
 | `graphQLDeleteUser`              | GraphQL | 34.746163 | 34.741008 |       1s |    2.84s |     3.13s |    2360 | 13478/13478 | Pass   | resume3                                        |
 | `graphQLDisableTwoFactor`        | GraphQL |  3.646914 |   1.21379 | 134.96ms | 448.23ms |  617.63ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLGetUser`                 | GraphQL | 32.494856 | 32.490108 |    1.33s |    3.43s |     3.62s |    6006 | 13684/13684 | Pass   | resume3                                        |
