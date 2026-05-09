@@ -43,13 +43,13 @@ Design LLM modules so:
 
 ## Layer Rules
 
-| Layer | Owns | Must Not Own |
-| ----- | ---- | ------------ |
-| Domain | Business rules, value objects, entities, domain events | Provider names, prompts, tokens, HTTP clients, SDK classes, model IDs |
-| Application | Use cases, command/query handlers, ports, request/response DTOs, provider-neutral prompt factories | Direct SDK calls, environment reads, logging secrets, live network calls |
-| Infrastructure | Provider adapters, SDK/HTTP clients, auth, retries, timeouts, rate-limit handling, telemetry exporters | Business rules, domain decisions, prompt policy decisions |
-| Interface/API | Controllers, processors, CLI commands, serializers | Prompt assembly, provider choice, retry policy, domain decisions |
-| Tooling/Docs | Agent skills, examples, review checklists, BMAD specs | Runtime secrets or production-only behavior |
+| Layer          | Owns                                                                                                   | Must Not Own                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Domain         | Business rules, value objects, entities, domain events                                                 | Provider names, prompts, tokens, HTTP clients, SDK classes, model IDs    |
+| Application    | Use cases, command/query handlers, ports, request/response DTOs, provider-neutral prompt factories     | Direct SDK calls, environment reads, logging secrets, live network calls |
+| Infrastructure | Provider adapters, SDK/HTTP clients, auth, retries, timeouts, rate-limit handling, telemetry exporters | Business rules, domain decisions, prompt policy decisions                |
+| Interface/API  | Controllers, processors, CLI commands, serializers                                                     | Prompt assembly, provider choice, retry policy, domain decisions         |
+| Tooling/Docs   | Agent skills, examples, review checklists, BMAD specs                                                  | Runtime secrets or production-only behavior                              |
 
 ## Execution Steps
 
@@ -204,13 +204,13 @@ Before opening a PR, confirm:
 
 ## Design Patterns
 
-| Pattern | Use When | Avoid When |
-| ------- | -------- | ---------- |
-| Adapter | Wrapping provider SDK/HTTP APIs behind an Application port | Business rules are being hidden in Infrastructure |
-| Strategy | Selecting model, provider, prompt, or safety policy by use case | There is only one fixed path |
-| Factory | Building prompts, provider requests, or typed DTOs from inputs | It only forwards parameters without construction logic |
-| Decorator | Adding retries, metrics, caching, or redaction around a port | It changes business behavior unexpectedly |
-| Pipeline | A workflow has several ordered, independently testable steps | A simple handler would stay clearer |
+| Pattern   | Use When                                                        | Avoid When                                             |
+| --------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| Adapter   | Wrapping provider SDK/HTTP APIs behind an Application port      | Business rules are being hidden in Infrastructure      |
+| Strategy  | Selecting model, provider, prompt, or safety policy by use case | There is only one fixed path                           |
+| Factory   | Building prompts, provider requests, or typed DTOs from inputs  | It only forwards parameters without construction logic |
+| Decorator | Adding retries, metrics, caching, or redaction around a port    | It changes business behavior unexpectedly              |
+| Pipeline  | A workflow has several ordered, independently testable steps    | A simple handler would stay clearer                    |
 
 ## Anti-Patterns
 

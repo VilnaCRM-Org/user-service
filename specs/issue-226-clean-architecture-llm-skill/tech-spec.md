@@ -75,12 +75,12 @@ Then update the existing skill catalogs and onboarding docs:
 
 The skill should reinforce these boundaries:
 
-| Layer | Responsibility | LLM Rule |
-| ----- | -------------- | -------- |
-| Domain | Business invariants and domain events | No prompts, provider SDKs, HTTP clients, or model-specific concepts |
-| Application | Use cases, command/query handlers, ports, DTOs | Own provider-neutral interfaces and orchestration |
-| Infrastructure | HTTP/SDK provider adapters, retries, timeouts, persistence | Implements ports and hides provider details |
-| Tooling/Docs | Agent skills, BMAD specs, prompt playbooks | Documents workflows without leaking into runtime code |
+| Layer          | Responsibility                                             | LLM Rule                                                            |
+| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| Domain         | Business invariants and domain events                      | No prompts, provider SDKs, HTTP clients, or model-specific concepts |
+| Application    | Use cases, command/query handlers, ports, DTOs             | Own provider-neutral interfaces and orchestration                   |
+| Infrastructure | HTTP/SDK provider adapters, retries, timeouts, persistence | Implements ports and hides provider details                         |
+| Tooling/Docs   | Agent skills, BMAD specs, prompt playbooks                 | Documents workflows without leaking into runtime code               |
 
 ## Acceptance Criteria
 
