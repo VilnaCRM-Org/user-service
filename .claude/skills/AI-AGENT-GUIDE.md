@@ -192,13 +192,9 @@ Preferred Codex trigger for this skill:
 
 **Your workflow:**
 
-1. **Identify skills**: Need multiple skills:
-
-   - `implementing-ddd-architecture` - Design the entity
-   - `database-migrations` - Configure persistence
-   - `api-platform-crud` - Add REST endpoints
-   - `testing-workflow` - Write tests
-   - `ci-workflow` - Validate everything
+1. **Identify skills**: Use `implementing-ddd-architecture` for the entity,
+   `database-migrations` for persistence, `api-platform-crud` for REST endpoints,
+   `testing-workflow` for tests, and `ci-workflow` for validation.
 
 2. **Read each skill** in order and execute steps
 
