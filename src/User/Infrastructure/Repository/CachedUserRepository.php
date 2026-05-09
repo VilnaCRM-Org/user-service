@@ -126,7 +126,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
      * TTL: 300s (5 minutes)
      * Consistency: Eventual
      * Invalidation: Immediate on repository writes and via domain-event subscribers
-     * Tags: [user, user.email, user.email.{hash}]
+     * Tags: [user, user.email.{hash}]
      * Notes: Common authentication/lookup operation
      */
     #[\Override]
@@ -243,6 +243,10 @@ final class CachedUserRepository extends UserRepositoryDecorator
         callable $fallback
     ): ?UserInterface {
         if (!$user instanceof UserInterface) {
+            if ($user === null) {
+                return null;
+            }
+
             $this->cache->delete($cacheKey);
 
             return $fallback();
@@ -309,7 +313,7 @@ final class CachedUserRepository extends UserRepositoryDecorator
     ): ?UserInterface {
         $item->expiresAfter(self::TTL_BY_EMAIL);
         $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-        $item->tag(['user', 'user.email', "user.email.{$emailHash}"]);
+        $item->tag(['user', "user.email.{$emailHash}"]);
 
         $this->logger->info('Cache miss - loading user by email', [
             'cache_key' => $cacheKey,
@@ -344,6 +348,10 @@ final class CachedUserRepository extends UserRepositoryDecorator
 
     private function previousEmailTag(UserInterface $user): ?string
     {
+        if (!$this->documentManager->contains($user)) {
+            return null;
+        }
+
         $originalData = $this->documentManager->getUnitOfWork()->getOriginalDocumentData($user);
         $previousEmail = $originalData['email'] ?? null;
 

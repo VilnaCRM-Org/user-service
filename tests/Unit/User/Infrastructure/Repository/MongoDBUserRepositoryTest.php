@@ -135,6 +135,27 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->assertSame([$user], iterator_to_array($users));
     }
 
+    public function testFindByEmailsQueriesTrimmedAndNormalizedEmailCandidates(): void
+    {
+        $email = $this->faker->unique()->email();
+        $trimmedEmail = mb_strtoupper($email);
+        $inputEmail = '  ' . $trimmedEmail . '  ';
+        $user = $this->createUserWithEmail($email);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [$inputEmail, $trimmedEmail, mb_strtolower($email)],
+            [$user]
+        );
+
+        $users = $repository->findByEmails([$inputEmail]);
+
+        $this->assertSame([$user], iterator_to_array($users));
+    }
+
     public function testFindByEmailsReturnsEmptyArrayWhenInputIsEmpty(): void
     {
         [$repository] = $this->createQueryBuilderRepository();

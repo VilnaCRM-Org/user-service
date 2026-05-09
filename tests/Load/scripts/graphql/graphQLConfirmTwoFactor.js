@@ -101,7 +101,7 @@ export default function graphQLConfirmTwoFactor() {
     graphQLAuthFlowUtils.hasConfirmedTwoFactor(confirmResult)
   );
 
-  if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
+  if (!graphQLAuthFlowUtils.hasConfirmedTwoFactor(confirmResult)) {
     throw new Error('GraphQL confirm 2FA did not return recovery codes.');
   }
 

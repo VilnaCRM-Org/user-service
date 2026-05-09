@@ -25,6 +25,31 @@ final class CachedUserRepositoryFindByEmailCacheStoreTest extends
         self::assertSame($user, $this->repository->findByEmail($email));
     }
 
+    public function testFindByEmailCacheMissStoresNegativeLookupWithoutSecondQuery(): void
+    {
+        $email = $this->faker->email();
+        $hash = $this->faker->sha256();
+        $cacheKey = 'user.email.' . $hash;
+        $item = $this->createMock(ItemInterface::class);
+
+        $this->expectBuildUserEmailKey($email, $cacheKey);
+        $this->cacheKeyBuilder
+            ->expects($this->once())
+            ->method('hashEmail')
+            ->with($email)
+            ->willReturn($hash);
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn(null);
+        $this->documentManager->expects($this->never())->method('contains');
+        $this->expectCacheMissLog($cacheKey);
+        $this->expectCacheStore($item, $cacheKey, $hash);
+
+        self::assertNull($this->repository->findByEmail($email));
+    }
+
     private function expectCacheMissDependencies(string $email, string $hash, object $user): void
     {
         $this->cacheKeyBuilder
@@ -60,7 +85,7 @@ final class CachedUserRepositoryFindByEmailCacheStoreTest extends
         $item->expects($this->once())->method('expiresAfter')->with(300);
         $item->expects($this->once())
             ->method('tag')
-            ->with(['user', 'user.email', "user.email.{$hash}"]);
+            ->with(['user', "user.email.{$hash}"]);
         $this->cache->expectGet(
             static function (
                 string $actualCacheKey,

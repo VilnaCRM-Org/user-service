@@ -20,6 +20,7 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 
 use function mb_strtolower;
+use function trim;
 
 /**
  * @extends ServiceDocumentRepository<User>
@@ -63,6 +64,9 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
 
     /**
      * @param array<int, string> $emails
+     *
+     * Matches each email exactly, with defensive trimmed and lowercase
+     * candidates for callers that pass already-normalized user input variants.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -127,11 +131,17 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      */
     private function uniqueEmailCandidates(array $emails): array
     {
+        $trimmedEmails = array_map(
+            static fn (string $email): string => trim($email),
+            $emails
+        );
+
         return array_values(array_unique(array_merge(
             $emails,
+            $trimmedEmails,
             array_map(
                 static fn (string $email): string => mb_strtolower($email),
-                $emails
+                $trimmedEmails
             )
         )));
     }

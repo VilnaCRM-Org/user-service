@@ -6,6 +6,7 @@ This report compares the PR 278 load-test results with an `origin/main` rerun on
 
 - PR source: branch `codex/pr278-optimize`, measured on April 26, 2026.
 - Optimized targeted PR rerun: branch `codex/pr278-optimize`, measured on April 27, 2026 after recovery-code hashing, bulk write/delete, lookup, and index changes. Raw logs are under `tests/Load/loadTestsResults/pr278-optimized-logs/*-after-argon2-tune.log`.
+- GraphQL create-user follow-up rerun: branch `codex/pr278-optimize`, measured on May 9, 2026 after negative email lookup caching and new-user save-path cleanup.
 - Main source: `origin/main`, commit `e8437d752b438e0a497739946513fb089579efd9`, rerun locally on April 26, 2026.
 - Load stack: `docker-compose.load-tests.yml`.
 - Threshold mode: `LOAD_TEST_DISABLE_DURATION_THRESHOLDS=true`; functional check thresholds remained enabled.
@@ -21,7 +22,7 @@ The main rerun attempted all 50 load scenarios. It produced usable metrics for 3
 
 - PR 278 completed **50/50** scenarios.
 - Old main completed **35/50** scenarios under the same bounded local runner and failed **15/50** with `Error 137`.
-- On the 34 rows with numeric request throughput on both branches, PR throughput increased in **12**, stayed flat within 1% in **21**, and decreased in **1**.
+- On the 34 rows with numeric request throughput on both branches, PR throughput increased in **13**, stayed flat within 1% in **21**, and decreased in **0**.
 - On the rows with comparable p99 latency, PR p99 improved in **22**, regressed in **12**, and was effectively flat in **1**.
 - The eight previously weak 2FA/recovery-code rows now all beat main on throughput and tail latency after the targeted April 27 optimization pass.
 - The old-main memory failures are the major result: old scripts duplicate large `users.json` data into VUs; PR now uses `SharedArray`, avoids returning the full user list from `setup()`, and caps k6 by default.
@@ -38,13 +39,14 @@ The main rerun attempted all 50 load scenarios. It produced usable metrics for 3
 - `regenerateRecoveryCodes`: req/s improved from `1.130708` to `4.841409` (`+328.2%`), p99 improved from `10.7s` to `837.33ms`, and dropped iterations fell from `168` to `2`.
 - `graphQLCompleteTwoFactor`: req/s improved from `2.285527` to `5.196825` (`+127.4%`), and p99 improved from `10.79s` to `1.79s`.
 - `graphQLConfirmTwoFactor`: req/s improved from `1.555889` to `3.66804` (`+135.8%`), p99 improved from `11.85s` to `581.64ms`, and dropped iterations fell from `125` to `0`.
+- `graphQLCreateUser`: req/s improved from `21.182024` to `24.479915` (`+15.6%`), p99 improved from `4.89s` to `3.63s`, and dropped iterations fell from `1914` to `1297`.
 - `graphQLDisableTwoFactor`: req/s improved from `1.985124` to `3.646914` (`+83.7%`), p99 improved from `9.82s` to `617.63ms`, and dropped iterations fell from `128` to `0`.
 - `graphQLRegenerateRecoveryCodes`: req/s improved from `1.091036` to `4.589935` (`+320.7%`), p99 improved from `14.49s` to `1.95s`, and dropped iterations fell from `169` to `13`.
 - Several fixed-rate scenarios held throughput flat but improved tail latency, including `apiContextUser`, `apiDocs`, `apiErrors400`, `oauthSocialInitiate`, `refreshToken`, and `resetPassword`.
 
 ## Where Performance Did Not Increase
 
-- `graphQLCreateUser` remains the only numeric-throughput row with a clear decrease, dropping `3.4%` req/s while still improving p99 from `4.89s` to `4.79s`.
+- No numeric-throughput row remains with a clear decrease after the targeted `graphQLCreateUser` follow-up rerun.
 - Some fixed-rate lightweight endpoints held req/s flat but had worse p99, including `apiEntrypoint`, `apiValidationErrors`, `apiWellKnownGenid`, `health`, and `oauthAuthorize`.
 - `cachePerformance` improved average duration slightly (`187.57ms` to `182.22ms`) but p99 was slightly worse (`1122.14ms` to `1167.82ms`).
 
@@ -80,7 +82,7 @@ The watchdog never had to kill tests for host-level pressure. The lowest importa
 | `graphQLConfirmPasswordReset`    | `oom137`     |          - | 25.661271 |            - |        - | 451.44ms |         - |     3.52s |          - | - -> 2804          | OOM on main                   |
 | `graphQLConfirmTwoFactor`        | `ok`         |   1.555889 |   3.66804 |      +135.8% |    1.88s | 151.88ms |    11.85s |  581.64ms |     -95.1% | 125 -> 0           | better throughput, better p99 |
 | `graphQLConfirmUser`             | `oom137`     |          - | 60.827284 |            - |        - | 452.17ms |         - |     2.07s |          - | - -> 1385          | OOM on main                   |
-| `graphQLCreateUser`              | `ok`         |  21.182024 | 20.452036 |        -3.4% |    1.45s |    1.57s |     4.89s |     4.79s |      -2.0% | 1914 -> 2028       | lower throughput              |
+| `graphQLCreateUser`              | `ok`         |  21.182024 | 24.479915 |       +15.6% |    1.45s |    1.14s |     4.89s |     3.63s |     -25.8% | 1914 -> 1297       | better throughput, better p99 |
 | `graphQLDeleteUser`              | `oom137`     |          - | 34.746163 |            - |        - |       1s |         - |     3.13s |          - | - -> 2360          | OOM on main                   |
 | `graphQLDisableTwoFactor`        | `ok`         |   1.985124 |  3.646914 |       +83.7% |    1.49s | 134.96ms |     9.82s |  617.63ms |     -93.7% | 128 -> 0           | better throughput, better p99 |
 | `graphQLGetUser`                 | `oom137`     |          - | 32.494856 |            - |        - |    1.33s |         - |     3.62s |          - | - -> 6006          | OOM on main                   |
@@ -117,4 +119,4 @@ Most scenarios use fixed arrival rates. When the application or local Docker sta
 
 The earlier degraded rows were concentrated in stateful auth, 2FA, and recovery-code flows. The April 27 optimization pass removed that bottleneck by reducing Argon2id recovery-code cost to an explicit service setting, batching recovery-code writes, deleting/counting recovery codes with MongoDB queries, revoking sessions/tokens in bulk, resolving UUID subjects before email lookup, and adding compound indexes for the hot MongoDB filters.
 
-The remaining throughput decrease is `graphQLCreateUser` at `-3.4%`, where p99 still improved slightly. The old-main memory failures are a separate issue in the load generator: old scripts load and pass large user fixtures in a way that multiplies memory per VU. PR 278 now avoids that pattern with shared fixture data and default Docker memory limits for k6.
+The remaining latency-only p99 regressions are concentrated in fixed-rate lightweight scenarios where throughput is already at the configured arrival rate and absolute timings are in the low-millisecond range. The old-main memory failures are a separate issue in the load generator: old scripts load and pass large user fixtures in a way that multiplies memory per VU. PR 278 now avoids that pattern with shared fixture data and default Docker memory limits for k6.

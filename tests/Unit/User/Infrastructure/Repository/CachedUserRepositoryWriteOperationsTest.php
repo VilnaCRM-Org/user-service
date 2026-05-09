@@ -42,6 +42,29 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         self::assertSame([$oldEmail, $newEmail], $hashedEmails);
     }
 
+    public function testSaveSkipsPreviousEmailTagWhenEmailDoesNotChange(): void
+    {
+        $email = $this->faker->unique()->email();
+        $hash = $this->faker->sha256();
+        $user = $this->createUserMock($this->faker->uuid(), $email);
+
+        $this->expectSaveDelegation($user);
+        $this->documentManager
+            ->expects($this->once())
+            ->method('contains')
+            ->with($user)
+            ->willReturn(true);
+        $this->unitOfWork
+            ->expects($this->once())
+            ->method('getOriginalDocumentData')
+            ->with($user)
+            ->willReturn(['email' => $email]);
+        $this->expectHashEmail($email, $hash);
+        $this->expectInvalidateTags($this->singleUserTags($user, $hash));
+
+        $this->repository->save($user);
+    }
+
     public function testDeleteDelegatesToInnerRepository(): void
     {
         $user = $this->createUserMock($this->faker->uuid(), $this->faker->email());
@@ -173,6 +196,11 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         array &$hashedEmails
     ): void {
         $this->expectSaveDelegation($user);
+        $this->documentManager
+            ->expects($this->once())
+            ->method('contains')
+            ->with($user)
+            ->willReturn(true);
         $this->expectOriginalEmail($user, $oldEmail);
         $this->expectHashEmailsForSave($oldEmail, $oldHash, $newEmail, $newHash, $hashedEmails);
         $this->expectInvalidateTagsCanonicalizing([

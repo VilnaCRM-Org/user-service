@@ -42,13 +42,14 @@ The optimized build now:
 - Uses explicit Argon2id recovery-code cost parameters instead of PHP defaults, reducing an 8-code batch on this workstation from about `5.7s` to about `138ms` while keeping Argon2id.
 - Persists generated recovery codes with one batch flush, deletes and counts recovery codes with MongoDB queries, and revokes sessions/refresh tokens with bulk updates.
 - Resolves UUID access-token subjects by ID before falling back to email lookup and protects the cached email lookup from stale-key mismatches.
+- Keeps negative email lookup cache misses from performing a second repository lookup, reducing the create-user hot path after the pre-create duplicate-email check.
 - Adds compound MongoDB indexes for the hot `sessionId + revokedAt`, `userId + revokedAt`, and `userId + usedAt` filters.
 
 For the detailed same-PC comparison with a fresh `origin/main` rerun, see [PR 278 Vs Main Load Test Comparison](./pr278-main-load-test-comparison.md).
 
 ### Measurement Setup
 
-- Date: 2026-04-26 full PR run; 2026-04-27 targeted optimized rerun for 2FA/recovery-code scenarios.
+- Date: 2026-04-26 full PR run; 2026-04-27 targeted optimized rerun for 2FA/recovery-code scenarios; 2026-05-09 targeted `graphQLCreateUser` rerun.
 - Worktree: `user-service-pr278-opt`
 - Branch: `codex/pr278-optimize`
 - Load stack: `docker-compose.load-tests.yml`
@@ -59,7 +60,7 @@ For the detailed same-PC comparison with a fresh `origin/main` rerun, see [PR 27
 - Threshold mode: `LOAD_TEST_DISABLE_DURATION_THRESHOLDS=true`; check thresholds remained active.
 - Threshold validation: a separate April 27 run used `LOAD_TEST_DISABLE_DURATION_THRESHOLDS=false` against the tightened p99 thresholds listed below.
 - k6 safety limit: `LOAD_TEST_K6_MEMORY_LIMIT=4g` and `LOAD_TEST_K6_MEMORY_SWAP_LIMIT=4g`.
-- Raw logs: `/tmp/pr278-load/full-load-20260426T105949Z.log`, `/tmp/pr278-load/full-load-resume3-20260426T120319Z.log`, `/tmp/pr278-load/patched-stateful-reruns-20260426T152750Z.log`, `/tmp/pr278-load/oauthSocialCallback-rerun-20260426T162535Z.log`, `tests/Load/loadTestsResults/pr278-optimized-logs/*-after-argon2-tune.log`, and `tests/Load/loadTestsResults/pr278-threshold-logs/*-threshold-*.log`.
+- Raw logs and generated reports: `/tmp/pr278-load/full-load-20260426T105949Z.log`, `/tmp/pr278-load/full-load-resume3-20260426T120319Z.log`, `/tmp/pr278-load/patched-stateful-reruns-20260426T152750Z.log`, `/tmp/pr278-load/oauthSocialCallback-rerun-20260426T162535Z.log`, `tests/Load/loadTestsResults/pr278-optimized-logs/*-after-argon2-tune.log`, `tests/Load/loadTestsResults/pr278-threshold-logs/*-threshold-*.log`, and `tests/Load/loadTestsResults/graphQLCreateUser.html`.
 - Same-PC baseline: `origin/main` commit `e8437d752b438e0a497739946513fb089579efd9`, compose project `user-service-main-local-load`, base URL `http://localhost:58081`, raw logs under `/tmp/main-load/continuation`.
 
 ### Before / After Smoke Results
@@ -135,7 +136,7 @@ Final scenario status: **50/50 passed**. Each row is an all-profile run with smo
 | `graphQLConfirmPasswordReset`    | GraphQL | 25.661271 |  6.718462 | 451.44ms |    2.81s |     3.52s |    2804 | 12882/12882 | Pass   | patched rerun                                  |
 | `graphQLConfirmTwoFactor`        | GraphQL |   3.66804 |   1.22083 | 151.88ms | 413.14ms |  581.64ms |       0 | 1320/1320   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLConfirmUser`             | GraphQL | 60.827284 |  30.41098 | 452.17ms |     1.7s |     2.07s |    1385 | 11426/11426 | Pass   | patched rerun                                  |
-| `graphQLCreateUser`              | GraphQL | 20.452036 | 20.435987 |    1.57s |    4.57s |     4.79s |    2028 | 3821/3821   | Pass   | resume3                                        |
+| `graphQLCreateUser`              | GraphQL | 24.479915 | 24.463792 |    1.14s |     3.4s |     3.63s |    1297 | 4553/4553   | Pass   | targeted rerun 2026-05-09                     |
 | `graphQLDeleteUser`              | GraphQL | 34.746163 | 34.741008 |       1s |    2.84s |     3.13s |    2360 | 13478/13478 | Pass   | resume3                                        |
 | `graphQLDisableTwoFactor`        | GraphQL |  3.646914 |   1.21379 | 134.96ms | 448.23ms |  617.63ms |       0 | 1095/1095   | Pass   | optimized rerun 2026-04-27                     |
 | `graphQLGetUser`                 | GraphQL | 32.494856 | 32.490108 |    1.33s |    3.43s |     3.62s |    6006 | 13684/13684 | Pass   | resume3                                        |
@@ -175,7 +176,7 @@ Final scenario status: **50/50 passed**. Each row is an all-profile run with smo
 - The slowest local-stack p99 values are now concentrated in collection/write-heavy flows: `graphQLGetUsers` at `45.08s`, `getUsers` at `26.7s`, and `createUserBatch` at `20.82s`. Recovery-code p99 is now below `2s` in both REST and GraphQL targeted reruns.
 - The previously failing `graphQLCompleteTwoFactor` all-profile script now passes with `1309/1309` checks after profile-aware user selection and the hot-path optimizations.
 - In the same-PC comparison, PR 278 completed `50/50` scenarios. Old main produced usable metrics for `35/50` scenarios and failed `15/50` with Docker/k6 `Error 137` at the 4 GiB safety cap.
-- Across the 34 rows with numeric request throughput on both branches, PR throughput improved in `12`, was flat within 1% in `21`, and decreased in `1`. Comparable p99 latency improved in `22`, regressed in `12`, and was effectively flat in `1`.
+- Across the 34 rows with numeric request throughput on both branches, PR throughput improved in `13`, was flat within 1% in `21`, and decreased in `0`. Comparable p99 latency improved in `22`, regressed in `12`, and was effectively flat in `1`.
 - The largest same-PC throughput and tail-latency wins were `regenerateRecoveryCodes` (`+328.2%` req/s, p99 `10.7s` to `837.33ms`), `graphQLRegenerateRecoveryCodes` (`+320.7%` req/s, p99 `14.49s` to `1.95s`), `signinTwoFactor` (`+169.6%` req/s, p99 `9.65s` to `519ms`), `graphQLConfirmTwoFactor` (`+135.8%` req/s, p99 `11.85s` to `581.64ms`), and `graphQLCompleteTwoFactor` (`+127.4%` req/s, p99 `10.79s` to `1.79s`).
 
 ### Regression Sweep Notes
