@@ -43,6 +43,18 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
 5. Do not claim the feature is complete until this gate is finished.
 
+### ✅ Post-Implementation Protocol: Skill Sweep
+
+After generating or modifying feature code, perform a mandatory **Skill Sweep** before declaring the task complete:
+
+1. Scan the `.claude/skills/` directory and enumerate every skill directory that contains a `SKILL.md` file.
+2. Iterate through **every** discovered skill, including skills that appear unrelated at first glance.
+3. Apply each skill's rules, checklists, examples, and validation commands to the newly created or modified feature.
+4. Record violations or mark the skill **"Not applicable"** with a concrete reason.
+5. Refactor or self-correct every violation immediately, then rerun the relevant validation before moving on.
+
+This protocol covers both **finding** violations and **refactoring** them. A feature is not complete while any Skill Sweep violation remains unresolved.
+
 **Skills to execute for every new feature:**
 
 - `api-platform-crud`
