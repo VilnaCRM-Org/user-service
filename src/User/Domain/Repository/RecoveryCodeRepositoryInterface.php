@@ -12,9 +12,13 @@ interface RecoveryCodeRepositoryInterface
 {
     public function save(RecoveryCode $recoveryCode): void;
 
+    public function saveAll(RecoveryCode ...$recoveryCodes): void;
+
     public function findById(string $id): ?RecoveryCode;
 
     public function findByUserId(string $userId): RecoveryCodeCollection;
+
+    public function countUnusedByUserId(string $userId): int;
 
     public function markAsUsedIfUnused(string $id, DateTimeImmutable $usedAt): bool;
 

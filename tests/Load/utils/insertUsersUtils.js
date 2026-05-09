@@ -1,4 +1,6 @@
+import { SharedArray } from 'k6/data';
 import http from 'k6/http';
+
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
     this.utils = utils;
@@ -9,10 +11,36 @@ export default class InsertUsersUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
+    this.profileDefinitions = [
+      {
+        name: 'smoke',
+        key: 'run_smoke',
+        countRequests: () => this.countSmokeRequest(),
+      },
+      {
+        name: 'average',
+        key: 'run_average',
+        countRequests: () => this.countAverageRequest(),
+      },
+      {
+        name: 'stress',
+        key: 'run_stress',
+        countRequests: () => this.countStressRequest(),
+      },
+      {
+        name: 'spike',
+        key: 'run_spike',
+        countRequests: () => this.countSpikeRequest(),
+      },
+    ];
   }
 
   loadInsertedUsers() {
-    return JSON.parse(open(`/loadTests/${this.utils.getConfig()['usersFileName']}`));
+    const usersFileName = this.utils.getConfig().usersFileName;
+
+    return new SharedArray(`${this.scenarioName}-inserted-users`, () =>
+      JSON.parse(open(`/loadTests/${usersFileName}`))
+    );
   }
 
   *usersGenerator(numberOfUsers) {
@@ -97,16 +125,12 @@ export default class InsertUsersUtils {
             users.push(user);
           });
         } catch (parseError) {
-          console.log(`Failed to parse response body for batch ${index}: ${response.body}`);
           throw new Error(`Failed to parse batch response: ${response.body}`);
         }
 
         return;
       }
 
-      console.log(
-        `Batch request ${index + 1} failed with status ${response.status}: ${response.body}`
-      );
       throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
     });
 
@@ -124,22 +148,64 @@ export default class InsertUsersUtils {
   }
 
   countTotalRequest() {
-    const requestsMap = {
-      run_smoke: this.countSmokeRequest.bind(this),
-      run_average: this.countAverageRequest.bind(this),
-      run_stress: this.countStressRequest.bind(this),
-      run_spike: this.countSpikeRequest.bind(this),
-    };
+    const totalRequests = this.getProfileDefinitions()
+      .filter(profile => this.utils.getCLIVariable(profile.key) !== 'false')
+      .reduce((requests, profile) => requests + profile.countRequests(), 0);
 
-    let totalRequests = 0;
+    return Math.round(totalRequests * this.additionalUsersRatio);
+  }
 
-    for (const key in requestsMap) {
-      if (this.utils.getCLIVariable(key) !== 'false') {
-        totalRequests += requestsMap[key]();
+  countPreparedUsersBeforeProfile(profileName) {
+    const totalRequests = this.countRequestsBeforeProfile(profileName);
+
+    return Math.round(totalRequests * this.additionalUsersRatio);
+  }
+
+  countRequestsBeforeProfile(profileName) {
+    let requests = 0;
+
+    for (const profile of this.getProfileDefinitions()) {
+      if (profile.name === profileName) {
+        return requests;
+      }
+
+      if (this.utils.getCLIVariable(profile.key) !== 'false') {
+        requests += profile.countRequests();
       }
     }
 
-    return Math.round(totalRequests * this.additionalUsersRatio);
+    throw new Error(`Unknown load test profile "${profileName}"`);
+  }
+
+  getMessageNumberForProfile(profileName, iterationInTest) {
+    return this.countPreparedUsersBeforeProfile(profileName) + iterationInTest + 1;
+  }
+
+  pickUser(users, userIndex) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    const user = users[userIndex % users.length];
+    this.utils.checkUserIsDefined(user);
+
+    return user;
+  }
+
+  pickUserForProfile(users, profileName, iterationInTest) {
+    return this.pickUser(users, this.getMessageNumberForProfile(profileName, iterationInTest) - 1);
+  }
+
+  wrapMessageNumberForUsers(users, messageNumber) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    return ((messageNumber - 1) % users.length) + 1;
+  }
+
+  getProfileDefinitions() {
+    return this.profileDefinitions;
   }
 
   countSmokeRequest() {

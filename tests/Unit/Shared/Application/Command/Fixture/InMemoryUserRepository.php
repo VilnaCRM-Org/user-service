@@ -45,6 +45,26 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->findUserBy($matcher);
     }
 
+    /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $requestedEmails = array_flip($emails);
+        $users = [];
+
+        foreach ($this->users as $user) {
+            if (!isset($requestedEmails[$user->getEmail()])) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
     #[\Override]
     public function findById(string $id): ?UserInterface
     {

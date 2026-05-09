@@ -33,8 +33,9 @@ export function setup() {
   const warmupCount = Math.min(users.length, 100);
   let warmupSuccesses = 0;
 
-  for (let i = 0; i < warmupCount; i++) {
-    const user = users[i];
+  for (let index = 0; index < warmupCount; index += 1) {
+    const user = users[index];
+
     const response = http.get(
       `${utils.getBaseHttpUrl()}/${user.id}`,
       utils.getJsonHeaderWithAuth(user.accessToken)
@@ -52,7 +53,6 @@ export function setup() {
   }
 
   return {
-    users: users,
     warmupCount: warmupCount,
   };
 }
@@ -61,7 +61,7 @@ export const options = scenarioUtils.getOptions();
 
 export default function cachePerformance(data) {
   const userIndex = counter.up() % data.warmupCount;
-  const user = data.users[userIndex];
+  const user = users[userIndex];
   utils.checkUserIsDefined(user);
 
   const { id } = user;

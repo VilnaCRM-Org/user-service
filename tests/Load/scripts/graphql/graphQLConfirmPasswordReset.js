@@ -1,10 +1,11 @@
 import exec from 'k6/execution';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
+import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
-import InsertUsersUtils from '../../utils/insertUsersUtils.js';
-import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
 
 const scenarioName = 'graphQLConfirmPasswordReset';
 
@@ -25,29 +26,26 @@ export function setup() {
   }
 
   const expectedEmails = users.length;
-  console.log(`Waiting for ${expectedEmails} password reset emails to arrive in mailcatcher...`);
-  const arrived = mailCatcherUtils.waitForEmails(expectedEmails, 60);
-  if (!arrived) {
-    console.log(
-      `Warning: Only ${mailCatcherUtils.getMessageCount()} of ${expectedEmails} emails arrived`
+  if (!mailCatcherUtils.waitForEmails(expectedEmails, 60)) {
+    throw new Error(
+      `Only ${mailCatcherUtils.getMessageCount()} of ${expectedEmails} password reset emails arrived`
     );
-  } else {
-    console.log(`All ${expectedEmails} password reset emails arrived`);
   }
-
-  return {
-    users: users,
-  };
 }
 
 export const options = scenarioUtils.getOptions();
 
-export default async function graphQLConfirmPasswordReset(data) {
-  const num = exec.scenario.iterationInTest + 1;
-  const user = data.users[num % data.users.length];
+export default async function graphQLConfirmPasswordReset() {
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+  const wrappedMessageNumber = insertUsersUtils.wrapMessageNumberForUsers(users, messageNumber);
+  const user = users[wrappedMessageNumber - 1];
+
   utils.checkUserIsDefined(user);
 
-  const token = await mailCatcherUtils.getPasswordResetToken(num);
+  const token = await mailCatcherUtils.getPasswordResetToken(wrappedMessageNumber);
 
   const newPassword = utils.generateValidPassword();
   const result = graphQLAuthFlowUtils.confirmPasswordReset(token, newPassword);
@@ -66,6 +64,6 @@ export default async function graphQLConfirmPasswordReset(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

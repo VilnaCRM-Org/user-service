@@ -250,18 +250,10 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
 
-        $usedCode = $this->createMock(RecoveryCode::class);
-        $usedCode->method('isUsed')->willReturn(true);
-
-        $unusedCode1 = $this->createMock(RecoveryCode::class);
-        $unusedCode1->method('isUsed')->willReturn(false);
-
-        $unusedCode2 = $this->createMock(RecoveryCode::class);
-        $unusedCode2->method('isUsed')->willReturn(false);
-
-        $this->recoveryCodeRepository->method('findByUserId')
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('countUnusedByUserId')
             ->with($userId)
-            ->willReturn(new RecoveryCodeCollection($usedCode, $unusedCode1, $unusedCode2));
+            ->willReturn(2);
 
         $this->assertSame(2, $this->verifier->countRemainingCodes($userId));
     }
@@ -270,12 +262,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
     {
         $userId = $this->faker->uuid();
 
-        $usedCode = $this->createMock(RecoveryCode::class);
-        $usedCode->method('isUsed')->willReturn(true);
-
         $this->recoveryCodeRepository
-            ->method('findByUserId')
-            ->willReturn(new RecoveryCodeCollection($usedCode));
+            ->method('countUnusedByUserId')
+            ->willReturn(0);
 
         $this->assertSame(0, $this->verifier->countRemainingCodes($userId));
     }

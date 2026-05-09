@@ -35,16 +35,18 @@ final readonly class AccessTokenUserResolver
 
         $this->validateSession($sid);
 
-        $user = $this->userRepository->findByEmail($subject);
-        if ($user instanceof DomainUserInterface) {
-            return $this->userTransformer->transformToAuthorizationUser($user);
-        }
-
         if ($this->looksLikeUuid($subject)) {
             $user = $this->userRepository->findById($subject);
             if ($user instanceof DomainUserInterface) {
                 return $this->userTransformer->transformToAuthorizationUser($user);
             }
+
+            throw new CustomUserMessageAuthenticationException('Authentication required.');
+        }
+
+        $user = $this->userRepository->findByEmail($subject);
+        if ($user instanceof DomainUserInterface) {
+            return $this->userTransformer->transformToAuthorizationUser($user);
         }
 
         throw new CustomUserMessageAuthenticationException('Authentication required.');

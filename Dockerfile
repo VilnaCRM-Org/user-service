@@ -3,6 +3,8 @@ FROM mlocati/php-extension-installer:2.7 AS php_extension_installer
 
 FROM dunglas/frankenphp:1.4-php8.4-alpine AS frankenphp_base
 
+SHELL ["/bin/ash", "-e", "-o", "pipefail", "-c"]
+
 WORKDIR /srv/app
 
 COPY --from=php_extension_installer --link /usr/bin/install-php-extensions /usr/local/bin/
@@ -123,8 +125,33 @@ RUN apk add --no-cache \
     bats=~1.11 \
     bc=~1.07
 
-RUN curl -sS https://get.symfony.com/cli/installer | bash \
- && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+ARG SYMFONY_CLI_VERSION=5.17.1
+ARG SYMFONY_CLI_LINUX_386_SHA256=632119f11cf1ccfe31ff1c4f36b460c13cc24c43ca8cc415a2e283a131691a27
+ARG SYMFONY_CLI_LINUX_AMD64_SHA256=526c26e029427a94f275f06298a12119ed95c7df037ca13b93f29405740d2f4e
+ARG SYMFONY_CLI_LINUX_ARM64_SHA256=05e8f3be5db216e614bd5a6c6047d84e643735b98bc26fb734080e73aeddfdec
+ARG SYMFONY_CLI_LINUX_ARMV6_SHA256=d17806ad7ab688c3019faa7ed4d8de951239a0a488a5dc9a8f6426bc3f04cdb9
+
+# qlty-ignore(radarlint-iac:docker:S7026): curl is paired with retry flags and hardcoded SHA-256 verification.
+RUN set -eux; \
+    apk_arch="$(apk --print-arch)"; \
+    case "${apk_arch}" in \
+        x86) symfony_cli_arch=386; symfony_cli_sha256="${SYMFONY_CLI_LINUX_386_SHA256}" ;; \
+        x86_64) symfony_cli_arch=amd64; symfony_cli_sha256="${SYMFONY_CLI_LINUX_AMD64_SHA256}" ;; \
+        aarch64) symfony_cli_arch=arm64; symfony_cli_sha256="${SYMFONY_CLI_LINUX_ARM64_SHA256}" ;; \
+        armhf|armv7) symfony_cli_arch=armv6; symfony_cli_sha256="${SYMFONY_CLI_LINUX_ARMV6_SHA256}" ;; \
+        *) echo "Unsupported Symfony CLI architecture: ${apk_arch}" >&2; exit 1 ;; \
+    esac; \
+    symfony_cli_archive="/tmp/symfony-cli_linux_${symfony_cli_arch}.tar.gz"; \
+    symfony_cli_checksum="/tmp/symfony-cli_linux_${symfony_cli_arch}.sha256"; \
+    curl --fail --location --show-error --silent \
+        --retry 5 --retry-delay 2 --retry-max-time 120 \
+        "https://github.com/symfony-cli/symfony-cli/releases/download/v${SYMFONY_CLI_VERSION}/symfony-cli_linux_${symfony_cli_arch}.tar.gz" \
+        --output "${symfony_cli_archive}"; \
+    printf '%s  %s\n' "${symfony_cli_sha256}" "${symfony_cli_archive}" > "${symfony_cli_checksum}"; \
+    sha256sum -c "${symfony_cli_checksum}"; \
+    tar -xzf "${symfony_cli_archive}" -C /usr/local/bin symfony; \
+    chmod +x /usr/local/bin/symfony; \
+    rm "${symfony_cli_archive}" "${symfony_cli_checksum}"
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 

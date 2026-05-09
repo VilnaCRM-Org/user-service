@@ -1,10 +1,11 @@
-import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import exec from 'k6/execution';
+
+import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'graphQLDisableTwoFactor';
 
@@ -17,25 +18,28 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
+
+function getUser() {
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+
+  return users[(messageNumber - 1) % users.length];
+}
 
 function confirmWithCandidateCodes(accessToken, secret) {
   const candidateCodes = totpUtils.generateCandidateCodes(secret);
   let lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[0]);
 
-  if (lastAttempt.response.status === 200) {
+  if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
     return lastAttempt;
   }
 
   for (let index = 1; index < candidateCodes.length; index += 1) {
     lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[index]);
-    if (lastAttempt.response.status === 200) {
+    if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
       return lastAttempt;
     }
   }
@@ -43,25 +47,29 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function graphQLDisableTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+export default function graphQLDisableTwoFactor() {
+  const user = getUser();
   utils.checkUserIsDefined(user);
 
-  const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(
-    signInResult.response,
-    'sign-in for graphQL disable 2fa is status 200',
-    res => res.status === 200
-  );
+  let accessToken = user.accessToken;
 
-  const accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
+    const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
     utils.checkResponse(
       signInResult.response,
-      'sign-in returns access token for graphQL disable 2fa',
-      () => false
+      'sign-in for graphQL disable 2fa is status 200',
+      res => res.status === 200
     );
-    return;
+
+    accessToken = signInResult.body?.data?.signInUser?.user?.accessToken;
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
+      utils.checkResponse(
+        signInResult.response,
+        'sign-in returns access token for graphQL disable 2fa',
+        () => false
+      );
+      return;
+    }
   }
 
   const setupResult = graphQLAuthFlowUtils.setupTwoFactor(accessToken);
@@ -111,6 +119,6 @@ export default function graphQLDisableTwoFactor(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

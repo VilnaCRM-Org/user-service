@@ -81,7 +81,7 @@ final class AccessTokenUserResolverTest extends UnitTestCase
         $validSession = $this->createValidSession($sid);
 
         $this->authSessionRepository->method('findById')->willReturn($validSession);
-        $this->userRepository->method('findByEmail')->with($uuid)->willReturn(null);
+        $this->userRepository->expects($this->never())->method('findByEmail');
         $this->userRepository->expects($this->once())
             ->method('findById')
             ->with($uuid)
@@ -114,7 +114,7 @@ final class AccessTokenUserResolverTest extends UnitTestCase
         $validSession = $this->createValidSession($sid);
 
         $this->authSessionRepository->method('findById')->willReturn($validSession);
-        $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->userRepository->expects($this->never())->method('findByEmail');
         $this->userRepository->method('findById')->willReturn(null);
 
         $this->expectException(CustomUserMessageAuthenticationException::class);

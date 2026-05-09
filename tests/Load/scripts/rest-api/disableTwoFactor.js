@@ -1,10 +1,11 @@
-import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import exec from 'k6/execution';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'disableTwoFactor';
 
@@ -17,13 +18,16 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
+
+function getUser() {
+  const messageNumber = insertUsersUtils.getMessageNumberForProfile(
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
+
+  return users[(messageNumber - 1) % users.length];
+}
 
 function confirmWithCandidateCodes(accessToken, secret) {
   const candidateCodes = totpUtils.generateCandidateCodes(secret);
@@ -43,25 +47,29 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function disableTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+export default function disableTwoFactor() {
+  const user = getUser();
   utils.checkUserIsDefined(user);
 
-  const signInResult = authFlowUtils.signIn(user.email, user.password);
-  utils.checkResponse(
-    signInResult.response,
-    'sign-in for disable 2fa is status 200',
-    res => res.status === 200
-  );
+  let accessToken = user.accessToken;
 
-  const accessToken = signInResult.body?.access_token;
   if (typeof accessToken !== 'string' || accessToken.length === 0) {
+    const signInResult = authFlowUtils.signIn(user.email, user.password);
     utils.checkResponse(
       signInResult.response,
-      'sign-in returns access token for disable 2fa',
-      () => false
+      'sign-in for disable 2fa is status 200',
+      res => res.status === 200
     );
-    return;
+
+    accessToken = signInResult.body?.access_token;
+    if (typeof accessToken !== 'string' || accessToken.length === 0) {
+      utils.checkResponse(
+        signInResult.response,
+        'sign-in returns access token for disable 2fa',
+        () => false
+      );
+      return;
+    }
   }
 
   const setupResult = authFlowUtils.setupTwoFactor(accessToken);
@@ -102,6 +110,6 @@ export default function disableTwoFactor(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

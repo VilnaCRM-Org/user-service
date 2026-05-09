@@ -15,16 +15,10 @@ const authFlowUtils = new AuthFlowUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
 
 export default function setupTwoFactor(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = users[counter.up() % users.length];
   utils.checkUserIsDefined(user);
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);

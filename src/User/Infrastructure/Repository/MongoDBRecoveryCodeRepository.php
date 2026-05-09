@@ -21,6 +21,7 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
+        private readonly MongoDBWriteResultCounter $writeResultCounter,
     ) {
         parent::__construct($registry, RecoveryCode::class);
     }
@@ -29,6 +30,16 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     public function save(RecoveryCode $recoveryCode): void
     {
         $this->documentManager->persist($recoveryCode);
+        $this->documentManager->flush();
+    }
+
+    #[\Override]
+    public function saveAll(RecoveryCode ...$recoveryCodes): void
+    {
+        foreach ($recoveryCodes as $recoveryCode) {
+            $this->documentManager->persist($recoveryCode);
+        }
+
         $this->documentManager->flush();
     }
 
@@ -47,6 +58,23 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     }
 
     #[\Override]
+    public function countUnusedByUserId(string $userId): int
+    {
+        $result = $this->createQueryBuilder()
+            ->field('userId')->equals($userId)
+            ->field('usedAt')->equals(null)
+            ->count()
+            ->getQuery()
+            ->execute();
+
+        if (!is_int($result)) {
+            return 0;
+        }
+
+        return max(0, $result);
+    }
+
+    #[\Override]
     public function markAsUsedIfUnused(string $id, DateTimeImmutable $usedAt): bool
     {
         $result = $this->createQueryBuilder()
@@ -57,7 +85,7 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
             ->getQuery()
             ->execute();
 
-        if (!$this->wasDocumentUpdated($result)) {
+        if (!$this->writeResultCounter->wasDocumentUpdated($result)) {
             return false;
         }
 
@@ -79,28 +107,18 @@ final class MongoDBRecoveryCodeRepository extends ServiceDocumentRepository impl
     #[\Override]
     public function deleteByUserId(string $userId): int
     {
-        $codes = $this->findByUserId($userId);
-        foreach ($codes as $code) {
-            $this->documentManager->remove($code);
-        }
-        $this->documentManager->flush();
+        $result = $this->createQueryBuilder()
+            ->remove()
+            ->field('userId')->equals($userId)
+            ->getQuery()
+            ->execute();
 
-        return count($codes);
-    }
-
-    private function wasDocumentUpdated(mixed $result): bool
-    {
-        if (is_int($result)) {
-            return $result > 0;
+        $deletedCount = $this->writeResultCounter->removedDocumentCount($result);
+        if ($deletedCount > 0) {
+            $this->documentManager->clear(RecoveryCode::class);
         }
 
-        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
-            return false;
-        }
-
-        $modifiedCount = $result->getModifiedCount();
-
-        return is_int($modifiedCount) && $modifiedCount > 0;
+        return $deletedCount;
     }
 
     private function syncManagedRecoveryCodeUsage(string $id, DateTimeImmutable $usedAt): void

@@ -1,9 +1,10 @@
 import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+
+import AuthFlowUtils from '../../utils/authFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import AuthFlowUtils from '../../utils/authFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'signout';
 
@@ -15,17 +16,10 @@ const authFlowUtils = new AuthFlowUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
 
-export default function signOutCurrentSession(data) {
-  const user = data.users[counter.up() % data.users.length];
-  utils.checkUserIsDefined(user);
+export default function signOutCurrentSession() {
+  const user = insertUsersUtils.pickUser(users, counter.up());
 
   const signInResult = authFlowUtils.signIn(user.email, user.password);
   utils.checkResponse(
@@ -48,6 +42,6 @@ export default function signOutCurrentSession(data) {
   utils.checkResponse(signOutResult.response, 'signout is status 204', res => res.status === 204);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

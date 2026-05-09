@@ -8,10 +8,19 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function array_values;
+
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
+
+use function mb_strtolower;
+use function trim;
 
 /**
  * @extends ServiceDocumentRepository<User>
@@ -54,6 +63,38 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     }
 
     /**
+     * @param array<int, string> $emails
+     *
+     * Matches each email exactly, with defensive trimmed and lowercase
+     * candidates for callers that pass already-normalized user input variants.
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $uniqueEmails = $this->uniqueEmailCandidates($emails);
+
+        if ($uniqueEmails === []) {
+            return new UserCollection();
+        }
+
+        $result = $this->createQueryBuilder()
+            ->field('email')->in($uniqueEmails)
+            ->getQuery()
+            ->execute();
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    /**
      * @return User|null
      */
     #[\Override]
@@ -81,6 +122,28 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             ->remove()
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * @param array<int, string> $emails
+     *
+     * @return list<string>
+     */
+    private function uniqueEmailCandidates(array $emails): array
+    {
+        $trimmedEmails = array_map(
+            static fn (string $email): string => trim($email),
+            $emails
+        );
+
+        return array_values(array_unique(array_merge(
+            $emails,
+            $trimmedEmails,
+            array_map(
+                static fn (string $email): string => mb_strtolower($email),
+                $trimmedEmails
+            )
+        )));
     }
 
     private function persistUsersInBatch(UserCollection $users): void

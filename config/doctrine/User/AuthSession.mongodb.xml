@@ -19,6 +19,7 @@
         <indexes>
             <index>
                 <key name="userId" order="asc" />
+                <key name="revokedAt" order="asc" />
             </index>
             <index>
                 <key name="expiresAt" order="asc" />

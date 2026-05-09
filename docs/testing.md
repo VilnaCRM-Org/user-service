@@ -201,6 +201,16 @@ By default, all load types will be executed, but you can disable some of them by
 
 After the load test execution, you'll find `.html` reports in a `/tests/Load/loadTestsResults` folder.
 
+### Local Resource Limits
+
+The k6 container runs with a default `4g` memory cap and the same swap cap, so a local load test fails inside Docker instead of consuming all host memory. Override the cap only when the machine has enough free memory:
+
+```bash
+    LOAD_TEST_K6_MEMORY_LIMIT=8g LOAD_TEST_K6_MEMORY_SWAP_LIMIT=8g make load-tests
+```
+
+Set `LOAD_TEST_K6_MEMORY_LIMIT=` to opt out of the Docker memory cap for a controlled CI runner or an isolated benchmark host.
+
 ## End-to-End (E2E) Testing
 
 End-to-end (E2E) testing is a critical phase in the application development lifecycle, aimed at simulating real user scenarios to ensure the system meets external requirements and behaves as expected across the entire application. This type of testing validates the integrated components of the application in a production-like environment, from the user interface down to the database operations and network communications.

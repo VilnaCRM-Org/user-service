@@ -15,16 +15,10 @@ const graphQLAuthFlowUtils = new GraphQLAuthFlowUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
 
 export default function graphQLRequestPasswordReset(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = users[counter.up() % users.length];
   utils.checkUserIsDefined(user);
 
   const result = graphQLAuthFlowUtils.requestPasswordReset(user.email);

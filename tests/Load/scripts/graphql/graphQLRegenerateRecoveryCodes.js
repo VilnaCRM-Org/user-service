@@ -1,10 +1,11 @@
-import counter from 'k6/x/counter';
-import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import exec from 'k6/execution';
+
+import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
-import GraphQLAuthFlowUtils from '../../utils/graphQLAuthFlowUtils.js';
+import ScenarioUtils from '../../utils/scenarioUtils.js';
 import TotpUtils from '../../utils/totpUtils.js';
+import Utils from '../../utils/utils.js';
 
 const scenarioName = 'graphQLRegenerateRecoveryCodes';
 
@@ -17,25 +18,19 @@ const totpUtils = new TotpUtils();
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
 
 function confirmWithCandidateCodes(accessToken, secret) {
   const candidateCodes = totpUtils.generateCandidateCodes(secret);
   let lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[0]);
 
-  if (lastAttempt.response.status === 200) {
+  if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
     return lastAttempt;
   }
 
   for (let index = 1; index < candidateCodes.length; index += 1) {
     lastAttempt = graphQLAuthFlowUtils.confirmTwoFactor(accessToken, candidateCodes[index]);
-    if (lastAttempt.response.status === 200) {
+    if (graphQLAuthFlowUtils.hasConfirmedTwoFactor(lastAttempt)) {
       return lastAttempt;
     }
   }
@@ -43,9 +38,12 @@ function confirmWithCandidateCodes(accessToken, secret) {
   return lastAttempt;
 }
 
-export default function graphQLRegenerateRecoveryCodes(data) {
-  const user = data.users[counter.up() % data.users.length];
-  utils.checkUserIsDefined(user);
+export default function graphQLRegenerateRecoveryCodes() {
+  const user = insertUsersUtils.pickUserForProfile(
+    users,
+    exec.scenario.name,
+    exec.scenario.iterationInTest
+  );
 
   const signInResult = graphQLAuthFlowUtils.signIn(user.email, user.password);
   utils.checkResponse(
@@ -88,7 +86,13 @@ export default function graphQLRegenerateRecoveryCodes(data) {
     res => res.status === 200
   );
 
-  if (confirmResult.response.status !== 200) {
+  const recoveryCodes = confirmResult.body?.data?.confirmTwoFactorUser?.user?.recoveryCodes;
+  if (!Array.isArray(recoveryCodes) || recoveryCodes.length === 0) {
+    utils.checkResponse(
+      confirmResult.response,
+      'confirm 2fa returns recovery codes for graphQL regenerate recovery codes',
+      () => false
+    );
     return;
   }
 
@@ -103,6 +107,6 @@ export default function graphQLRegenerateRecoveryCodes(data) {
   );
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }

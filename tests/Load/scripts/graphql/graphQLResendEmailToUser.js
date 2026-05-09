@@ -14,16 +14,10 @@ const mailCatcherUtils = new MailCatcherUtils(utils);
 
 const users = insertUsersUtils.loadInsertedUsers();
 
-export function setup() {
-  return {
-    users: users,
-  };
-}
-
 export const options = scenarioUtils.getOptions();
 
 export default function resendEmail(data) {
-  const user = data.users[counter.up() % data.users.length];
+  const user = users[counter.up() % users.length];
   utils.checkUserIsDefined(user);
 
   const id = utils.getGraphQLIdPrefix() + user.id;

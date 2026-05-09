@@ -25,8 +25,7 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertSame($id, $recoveryCode->getId());
         $this->assertSame($userId, $recoveryCode->getUserId());
         $this->assertNotSame($plainCode, $recoveryCode->getCodeHash());
-        $hashInfo = password_get_info($recoveryCode->getCodeHash());
-        $this->assertSame('argon2id', (string) $hashInfo['algoName']);
+        $this->assertUsesArgon2idHash($recoveryCode);
         $this->assertTrue($recoveryCode->matchesCode($plainCode));
         $this->assertFalse(
             $recoveryCode->matchesCode(strtolower($this->faker->bothify('????-????')))
@@ -112,5 +111,16 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertFalse(RecoveryCode::isValidFormat('AB!D-EF12'));
         $this->assertFalse(RecoveryCode::isValidFormat('ABCD-EF1'));
         $this->assertFalse(RecoveryCode::isValidFormat('ABCD-EF123'));
+    }
+
+    private function assertUsesArgon2idHash(RecoveryCode $recoveryCode): void
+    {
+        $hashInfo = password_get_info($recoveryCode->getCodeHash());
+
+        $this->assertSame('argon2id', (string) $hashInfo['algoName']);
+        $this->assertSame(
+            PASSWORD_ARGON2_DEFAULT_TIME_COST,
+            $hashInfo['options']['time_cost'] ?? null
+        );
     }
 }

@@ -193,7 +193,7 @@ services:
   App\Shared\Application\QueryParameter\AllowedParametersRule:
     arguments:
       $allowedParameters:
-        '/api/users': ['page', 'itemsPerPage']
+        '/api/users': ['page', 'itemsPerPage', 'partial']
 
   App\Shared\Infrastructure\Observability\Factory\EmfAwsMetadataFactory:
     arguments:

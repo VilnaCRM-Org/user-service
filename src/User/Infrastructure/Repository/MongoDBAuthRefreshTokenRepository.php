@@ -20,6 +20,7 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
+        private readonly MongoDBWriteResultCounter $writeResultCounter,
     ) {
         parent::__construct($registry, AuthRefreshToken::class);
     }
@@ -68,16 +69,17 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
     #[\Override]
     public function revokeBySessionId(string $sessionId): void
     {
-        $tokens = $this->findBySessionId($sessionId);
+        $result = $this->createQueryBuilder()
+            ->updateMany()
+            ->field('sessionId')->equals($sessionId)
+            ->field('revokedAt')->equals(null)
+            ->field('revokedAt')->set(new DateTimeImmutable())
+            ->getQuery()
+            ->execute();
 
-        foreach ($tokens as $token) {
-            if ($token->getRevokedAt() === null) {
-                $token->revoke();
-                $this->documentManager->persist($token);
-            }
+        if ($this->writeResultCounter->wasDocumentUpdated($result)) {
+            $this->documentManager->clear(AuthRefreshToken::class);
         }
-
-        $this->documentManager->flush();
     }
 
     #[\Override]
@@ -95,7 +97,7 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
             ->getQuery()
             ->execute();
 
-        return $this->wasDocumentUpdated($result);
+        return $this->writeResultCounter->wasDocumentUpdated($result);
     }
 
     #[\Override]
@@ -115,21 +117,6 @@ final class MongoDBAuthRefreshTokenRepository extends ServiceDocumentRepository 
             ->getQuery()
             ->execute();
 
-        return $this->wasDocumentUpdated($result);
-    }
-
-    private function wasDocumentUpdated(mixed $result): bool
-    {
-        if (is_int($result)) {
-            return $result > 0;
-        }
-
-        if (!is_object($result) || !method_exists($result, 'getModifiedCount')) {
-            return false;
-        }
-
-        $modifiedCount = $result->getModifiedCount();
-
-        return is_int($modifiedCount) && $modifiedCount > 0;
+        return $this->writeResultCounter->wasDocumentUpdated($result);
     }
 }
