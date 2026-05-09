@@ -123,13 +123,30 @@ RUN apk add --no-cache \
     bats=~1.11 \
     bc=~1.07
 
-RUN curl --fail --location --show-error --silent \
-    --retry 5 --retry-delay 2 --retry-max-time 120 \
-    https://get.symfony.com/cli/installer \
-    --output /tmp/symfony-installer \
- && bash /tmp/symfony-installer \
- && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony \
- && rm /tmp/symfony-installer
+ARG SYMFONY_CLI_VERSION=5.17.1
+ARG SYMFONY_CLI_LINUX_386_SHA256=632119f11cf1ccfe31ff1c4f36b460c13cc24c43ca8cc415a2e283a131691a27
+ARG SYMFONY_CLI_LINUX_AMD64_SHA256=526c26e029427a94f275f06298a12119ed95c7df037ca13b93f29405740d2f4e
+ARG SYMFONY_CLI_LINUX_ARM64_SHA256=05e8f3be5db216e614bd5a6c6047d84e643735b98bc26fb734080e73aeddfdec
+ARG SYMFONY_CLI_LINUX_ARMV6_SHA256=d17806ad7ab688c3019faa7ed4d8de951239a0a488a5dc9a8f6426bc3f04cdb9
+
+RUN set -eux; \
+    apk_arch="$(apk --print-arch)"; \
+    case "${apk_arch}" in \
+        x86) symfony_cli_arch=386; symfony_cli_sha256="${SYMFONY_CLI_LINUX_386_SHA256}" ;; \
+        x86_64) symfony_cli_arch=amd64; symfony_cli_sha256="${SYMFONY_CLI_LINUX_AMD64_SHA256}" ;; \
+        aarch64) symfony_cli_arch=arm64; symfony_cli_sha256="${SYMFONY_CLI_LINUX_ARM64_SHA256}" ;; \
+        armhf|armv7) symfony_cli_arch=armv6; symfony_cli_sha256="${SYMFONY_CLI_LINUX_ARMV6_SHA256}" ;; \
+        *) echo "Unsupported Symfony CLI architecture: ${apk_arch}" >&2; exit 1 ;; \
+    esac; \
+    symfony_cli_archive="/tmp/symfony-cli_linux_${symfony_cli_arch}.tar.gz"; \
+    curl --fail --location --show-error --silent \
+        --retry 5 --retry-delay 2 --retry-max-time 120 \
+        "https://github.com/symfony-cli/symfony-cli/releases/download/v${SYMFONY_CLI_VERSION}/symfony-cli_linux_${symfony_cli_arch}.tar.gz" \
+        --output "${symfony_cli_archive}"; \
+    echo "${symfony_cli_sha256}  ${symfony_cli_archive}" | sha256sum -c -; \
+    tar -xzf "${symfony_cli_archive}" -C /usr/local/bin symfony; \
+    chmod +x /usr/local/bin/symfony; \
+    rm "${symfony_cli_archive}"
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 

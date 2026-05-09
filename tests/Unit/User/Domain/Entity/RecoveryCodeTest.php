@@ -27,6 +27,10 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertNotSame($plainCode, $recoveryCode->getCodeHash());
         $hashInfo = password_get_info($recoveryCode->getCodeHash());
         $this->assertSame('argon2id', (string) $hashInfo['algoName']);
+        $this->assertSame(
+            PASSWORD_ARGON2_DEFAULT_TIME_COST,
+            $hashInfo['options']['time_cost'] ?? null
+        );
         $this->assertTrue($recoveryCode->matchesCode($plainCode));
         $this->assertFalse(
             $recoveryCode->matchesCode(strtolower($this->faker->bothify('????-????')))

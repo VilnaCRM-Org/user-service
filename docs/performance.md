@@ -39,7 +39,7 @@ The optimized build now:
 - Reattaches detached cached users before falling back to the database.
 - Invalidates `user.collection`, `user.{id}`, and `user.email.{hash}` tags immediately after user writes.
 - Uses profile-aware K6 user/message offsets for stateful confirmation, password reset, and 2FA scripts, so smoke, average, stress, and spike profiles do not reuse already-mutated users.
-- Uses explicit Argon2id recovery-code cost parameters instead of PHP defaults, reducing an 8-code batch on this workstation from about `5.7s` to about `138ms` while keeping Argon2id.
+- Uses bounded Argon2id recovery-code memory and thread parameters while retaining PHP's default time cost, keeping the 8-code batch work in the low hundreds of milliseconds while preserving Argon2id.
 - Persists generated recovery codes with one batch flush, deletes and counts recovery codes with MongoDB queries, and revokes sessions/refresh tokens with bulk updates.
 - Resolves UUID access-token subjects by ID before falling back to email lookup and protects the cached email lookup from stale-key mismatches.
 - Keeps negative email lookup cache misses from performing a second repository lookup, reducing the create-user hot path after the pre-create duplicate-email check.

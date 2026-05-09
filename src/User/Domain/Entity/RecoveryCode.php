@@ -12,7 +12,7 @@ final class RecoveryCode
     public const SEGMENT_LENGTH = 4;
     private const LEGACY_HASH_ALGORITHM = 'sha256';
     private const HASH_MEMORY_COST = 8192;
-    private const HASH_TIME_COST = 1;
+    private const HASH_TIME_COST = PASSWORD_ARGON2_DEFAULT_TIME_COST;
     private const HASH_THREADS = 1;
 
     private ?DateTimeImmutable $usedAt = null;
