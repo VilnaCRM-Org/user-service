@@ -20,32 +20,32 @@ use Faker\Generator;
  */
 final class PasskeyServiceTestObjects
 {
-    private readonly string $accessToken;
-    private readonly string $authenticationEmail;
-    private readonly string $challenge;
-    private readonly string $challengeId;
-    private readonly string $credentialId;
-    private readonly string $credentialLabel;
-    private readonly string $credentialRecord;
-    private readonly string $hashedPassword;
-    private readonly string $ipAddress;
-    private readonly string $origin;
-    private readonly string $passkeyId;
-    private readonly string $rawCredentialId;
-    private readonly string $refreshToken;
-    private readonly string $registrationDisplayName;
-    private readonly string $rpId;
-    private readonly string $rpName;
-    private readonly string $sessionId;
-    private readonly string $signupDisplayName;
-    private readonly string $signupEmail;
-    private readonly string $signupInitials;
-    private readonly string $signupLabel;
-    private readonly string $signupUserId;
-    private readonly string $unknownEmail;
-    private readonly string $userAgent;
-    private readonly string $userInitials;
-    private readonly string $userPassword;
+    private string $accessToken;
+    private string $authenticationEmail;
+    private string $challenge;
+    private string $challengeId;
+    private string $credentialId;
+    private string $credentialLabel;
+    private string $credentialRecord;
+    private string $hashedPassword;
+    private string $ipAddress;
+    private string $origin;
+    private string $passkeyId;
+    private string $rawCredentialId;
+    private string $refreshToken;
+    private string $registrationDisplayName;
+    private string $rpId;
+    private string $rpName;
+    private string $sessionId;
+    private string $signupDisplayName;
+    private string $signupEmail;
+    private string $signupInitials;
+    private string $signupLabel;
+    private string $signupUserId;
+    private string $unknownEmail;
+    private string $userAgent;
+    private string $userInitials;
+    private string $userPassword;
 
     public function __construct(private readonly Generator $faker)
     {
@@ -201,11 +201,6 @@ final class PasskeyServiceTestObjects
     public function passkeyId(): string
     {
         return $this->passkeyId;
-    }
-
-    public function rawCredentialId(): string
-    {
-        return $this->rawCredentialId;
     }
 
     public function refreshToken(): string
