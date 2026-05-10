@@ -8,7 +8,9 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class AuthProcessorTestCase extends UnitTestCase
 {
@@ -37,5 +39,72 @@ abstract class AuthProcessorTestCase extends UnitTestCase
                 }
             ))
             ->willReturn($response);
+    }
+
+    /**
+     * @param class-string $commandClass
+     */
+    protected function expectDispatchWithRequestMetadata(
+        CommandBusInterface&MockObject $commandBus,
+        string $commandClass,
+        CommandResponseInterface $response,
+        string $expectedIpAddress,
+        string $expectedUserAgent,
+    ): void {
+        $this->expectDispatchMatchingCommand(
+            $commandBus,
+            $commandClass,
+            $response,
+            function (CommandInterface $cmd) use (
+                $expectedIpAddress,
+                $expectedUserAgent,
+            ): void {
+                $this->assertSame(
+                    $expectedIpAddress,
+                    $this->readStringProperty($cmd, 'ipAddress')
+                );
+                $this->assertSame(
+                    $expectedUserAgent,
+                    $this->readStringProperty($cmd, 'userAgent')
+                );
+            }
+        );
+    }
+
+    protected function stubRequestContextResolver(
+        HttpRequestContextResolverInterface&MockObject $resolver,
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent,
+    ): void {
+        $resolver->method('resolveRequest')->willReturn($request);
+        $this->stubRequestContextMetadata(
+            $resolver,
+            $request,
+            $ipAddress,
+            $userAgent
+        );
+    }
+
+    protected function stubRequestContextMetadata(
+        HttpRequestContextResolverInterface&MockObject $resolver,
+        ?Request $request,
+        string $ipAddress,
+        string $userAgent,
+    ): void {
+        $resolver->method('resolveIpAddress')
+            ->with($request)->willReturn($ipAddress);
+        $resolver->method('resolveUserAgent')
+            ->with($request)->willReturn($userAgent);
+    }
+
+    private function readStringProperty(object $object, string $property): string
+    {
+        $reflectionProperty = new \ReflectionProperty($object, $property);
+        $value = $reflectionProperty->getValue($object);
+
+        self::assertIsString($value);
+
+        return $value;
     }
 }

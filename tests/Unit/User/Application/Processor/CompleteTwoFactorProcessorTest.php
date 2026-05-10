@@ -42,7 +42,7 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         $data = $this->makeTokenScenarioData();
         [$ipAddress, $userAgent, $pendingSessionId, $totpCode, $accessToken, $refreshToken] = $data;
         $request = $this->createMock(Request::class);
-        $this->stubResolver($request, $ipAddress, $userAgent);
+        $this->stubRequestContextResolver($this->requestContextResolver, $request, $ipAddress, $userAgent);
         $dto = new CompleteTwoFactorDto($pendingSessionId, $totpCode);
         $this->expectDispatchValidatingMetadata(
             $pendingSessionId,
@@ -63,7 +63,12 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     public function testProcessAttachesCookieWithRememberMe(): void
     {
         $request = $this->createMock(Request::class);
-        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->stubRequestContextResolver(
+            $this->requestContextResolver,
+            $request,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
         $accessToken = $this->faker->sha256();
         $dto = new CompleteTwoFactorDto(
             $this->faker->lexify('??????????????????????????'),
@@ -84,7 +89,12 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     public function testProcessDoesNotCreateCookieWhenAccessTokenIsEmpty(): void
     {
         $request = $this->createMock(Request::class);
-        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->stubRequestContextResolver(
+            $this->requestContextResolver,
+            $request,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
         $dto = new CompleteTwoFactorDto(
             $this->faker->lexify('??????????????????????????'),
             (string) $this->faker->numberBetween(100000, 999999)
@@ -107,16 +117,18 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         $request = $this->createMock(Request::class);
         $this->requestContextResolver->expects($this->once())->method('resolveRequest')
             ->with($request)->willReturn($request);
-        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
+        $this->stubRequestContextMetadata($this->requestContextResolver, $request, $ipAddress, $userAgent);
         $dto = $this->makeRandomDto();
         $accessToken = $this->faker->sha256();
-        $this->expectDispatchAssertingRequestMetadata(
-            $ipAddress,
-            $userAgent,
+        $this->expectDispatchWithRequestMetadata(
+            $this->commandBus,
+            CompleteTwoFactorCommand::class,
             new CompleteTwoFactorCommandResponse(
                 $accessToken,
                 $this->faker->sha256()
-            )
+            ),
+            $ipAddress,
+            $userAgent
         );
         $response = $this->processDto($dto, $request);
         $this->assertSame(200, $response->getStatusCode());
@@ -129,18 +141,25 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         $resolvedRequest = $this->createMock(Request::class);
         $this->requestContextResolver->expects($this->once())->method('resolveRequest')
             ->with(null)->willReturn($resolvedRequest);
-        $this->stubResolverMetadata($resolvedRequest, $ipAddress, $userAgent);
+        $this->stubRequestContextMetadata(
+            $this->requestContextResolver,
+            $resolvedRequest,
+            $ipAddress,
+            $userAgent
+        );
         $dto = new CompleteTwoFactorDto(
             $this->faker->lexify('??????????????????????????'),
             (string) $this->faker->numberBetween(100000, 999999)
         );
-        $this->expectDispatchAssertingRequestMetadata(
-            $ipAddress,
-            $userAgent,
+        $this->expectDispatchWithRequestMetadata(
+            $this->commandBus,
+            CompleteTwoFactorCommand::class,
             new CompleteTwoFactorCommandResponse(
                 $this->faker->sha256(),
                 $this->faker->sha256()
-            )
+            ),
+            $ipAddress,
+            $userAgent
         );
         $response = $this->processDto($dto);
         $this->assertSame(200, $response->getStatusCode());
@@ -149,7 +168,12 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     public function testProcessIncludesRecoveryCodeWarningFieldsInResponse(): void
     {
         $request = $this->createMock(Request::class);
-        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->stubRequestContextResolver(
+            $this->requestContextResolver,
+            $request,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
         $recoveryCode = $this->faker->regexify('[A-Z0-9]{4}-[A-Z0-9]{4}');
         $dto = new CompleteTwoFactorDto(
             $this->faker->lexify('??????????????????????????'),
@@ -173,7 +197,12 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     public function testProcessOmitsRecoveryCodeFieldsWhenNull(): void
     {
         $request = $this->createMock(Request::class);
-        $this->stubResolver($request, $this->faker->ipv4(), $this->faker->userAgent());
+        $this->stubRequestContextResolver(
+            $this->requestContextResolver,
+            $request,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
         $dto = new CompleteTwoFactorDto(
             $this->faker->lexify('??????????????????????????'),
             (string) $this->faker->numberBetween(100000, 999999)
@@ -189,26 +218,6 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertArrayNotHasKey('recovery_codes_remaining', $body);
         $this->assertArrayNotHasKey('warning', $body);
-    }
-
-    private function stubResolver(
-        ?Request $request,
-        string $ipAddress,
-        string $userAgent
-    ): void {
-        $this->requestContextResolver->method('resolveRequest')->willReturn($request);
-        $this->stubResolverMetadata($request, $ipAddress, $userAgent);
-    }
-
-    private function stubResolverMetadata(
-        ?Request $request,
-        string $ipAddress,
-        string $userAgent
-    ): void {
-        $this->requestContextResolver->method('resolveIpAddress')
-            ->with($request)->willReturn($ipAddress);
-        $this->requestContextResolver->method('resolveUserAgent')
-            ->with($request)->willReturn($userAgent);
     }
 
     private function expectDispatchValidatingMetadata(
@@ -248,22 +257,6 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
                 }
             ))
             ->willReturn($response);
-    }
-
-    private function expectDispatchAssertingRequestMetadata(
-        string $ipAddress,
-        string $userAgent,
-        CompleteTwoFactorCommandResponse $response
-    ): void {
-        $this->expectDispatchMatchingCommand(
-            $this->commandBus,
-            CompleteTwoFactorCommand::class,
-            $response,
-            function (CompleteTwoFactorCommand $cmd) use ($ipAddress, $userAgent): void {
-                $this->assertSame($ipAddress, $cmd->ipAddress);
-                $this->assertSame($userAgent, $cmd->userAgent);
-            }
-        );
     }
 
     private function processDto(
