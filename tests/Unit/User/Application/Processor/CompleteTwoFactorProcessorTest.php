@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
@@ -183,22 +184,22 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         string $refreshToken
     ): void {
         $response = new CompleteTwoFactorCommandResponse($accessToken, $refreshToken);
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                function (CompleteTwoFactorCommand $cmd) use (
-                    $pendingSessionId,
-                    $totpCode,
-                    $ipAddress,
-                    $userAgent,
-                ): bool {
-                    $this->assertSame($pendingSessionId, $cmd->pendingSessionId);
-                    $this->assertSame($totpCode, $cmd->twoFactorCode);
-                    $this->assertSame($ipAddress, $cmd->ipAddress);
-                    $this->assertSame($userAgent, $cmd->userAgent);
-                    return true;
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            CompleteTwoFactorCommand::class,
+            $response,
+            function (CompleteTwoFactorCommand $cmd) use (
+                $pendingSessionId,
+                $totpCode,
+                $ipAddress,
+                $userAgent,
+            ): void {
+                $this->assertSame($pendingSessionId, $cmd->pendingSessionId);
+                $this->assertSame($totpCode, $cmd->twoFactorCode);
+                $this->assertSame($ipAddress, $cmd->ipAddress);
+                $this->assertSame($userAgent, $cmd->userAgent);
+            }
+        );
     }
 
     /**
@@ -220,13 +221,14 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     private function expectDispatchSetsResponse(
         CompleteTwoFactorCommandResponse $response
     ): void {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                static function (CompleteTwoFactorCommand $cmd): bool {
-                    return $cmd->pendingSessionId !== '';
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            CompleteTwoFactorCommand::class,
+            $response,
+            static function (CompleteTwoFactorCommand $cmd): void {
+                self::assertNotSame('', $cmd->pendingSessionId);
+            }
+        );
     }
 
     private function processDto(
@@ -235,6 +237,7 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
     ): mixed {
         $processor = new CompleteTwoFactorProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CompleteTwoFactorCommandFactory(),
             $this->requestContextResolver,
             $this->cookieFactory,

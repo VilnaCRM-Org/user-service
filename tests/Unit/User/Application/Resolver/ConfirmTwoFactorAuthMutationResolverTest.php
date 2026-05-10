@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
@@ -33,6 +34,7 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
         $this->resolver = new ConfirmTwoFactorAuthMutationResolver(
             $this->validator,
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $this->currentUserIdentityResolver(
                 $this->email,

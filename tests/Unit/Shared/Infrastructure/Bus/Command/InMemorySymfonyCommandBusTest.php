@@ -98,23 +98,29 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
     {
         $command = $this->createMock(CommandInterface::class);
         $response = $this->createMock(CommandResponseInterface::class);
-        $messageBus = $this->createMock(MessageBus::class);
-        $messageBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command)
-            ->willReturn(
-                (new Envelope($command))->with(
-                    new HandledStamp($response, 'handler')
-                )
-            );
-        $this->messageBusFactory->method('create')
-            ->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus(
-            $this->messageBusFactory,
-            $this->commandHandlers
-        );
+        $commandBus = $this->createCommandBusReturning($command, $response);
 
         $this->assertSame($response, $commandBus->dispatch($command));
+    }
+
+    public function testDispatchRejectsMultipleHandledResults(): void
+    {
+        $command = $this->createMock(CommandInterface::class);
+        $firstResponse = $this->createMock(CommandResponseInterface::class);
+        $secondResponse = $this->createMock(CommandResponseInterface::class);
+        $commandBus = $this->createCommandBusReturningMultipleResults(
+            $command,
+            $firstResponse,
+            $secondResponse
+        );
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Command %s resolved to 2 handlers; exactly one is required.',
+            $command::class
+        ));
+
+        $commandBus->dispatch($command);
     }
 
     public function testDispatchReturnsNullWhenHandlerHasNoResponse(): void
@@ -157,19 +163,40 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         $commandBus->dispatch($command);
     }
 
+    private function createCommandBusReturningMultipleResults(
+        CommandInterface $command,
+        CommandResponseInterface $firstResponse,
+        CommandResponseInterface $secondResponse
+    ): InMemorySymfonyCommandBus {
+        return $this->createCommandBusDispatchingEnvelope(
+            $command,
+            (new Envelope($command))
+                ->with(new HandledStamp($firstResponse, 'first-handler'))
+                ->with(new HandledStamp($secondResponse, 'second-handler'))
+        );
+    }
+
     private function createCommandBusReturning(
         CommandInterface $command,
         CommandResponseInterface|string|null $result
+    ): InMemorySymfonyCommandBus {
+        return $this->createCommandBusDispatchingEnvelope(
+            $command,
+            (new Envelope($command))->with(
+                new HandledStamp($result, 'handler')
+            )
+        );
+    }
+
+    private function createCommandBusDispatchingEnvelope(
+        CommandInterface $command,
+        Envelope $envelope
     ): InMemorySymfonyCommandBus {
         $messageBus = $this->createMock(MessageBus::class);
         $messageBus->expects($this->once())
             ->method('dispatch')
             ->with($command)
-            ->willReturn(
-                (new Envelope($command))->with(
-                    new HandledStamp($result, 'handler')
-                )
-            );
+            ->willReturn($envelope);
         $this->messageBusFactory->method('create')
             ->willReturn($messageBus);
 

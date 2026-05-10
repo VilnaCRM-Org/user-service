@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Controller;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
@@ -23,7 +24,10 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
         parent::setUp();
 
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->controller = new ConfirmPasswordResetController($this->commandBus);
+        $this->controller = new ConfirmPasswordResetController(
+            $this->commandBus,
+            new CommandResponseTypeGuard()
+        );
     }
 
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
@@ -43,7 +47,10 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     public function testConstructorSetsCommandBus(): void
     {
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $controller = new ConfirmPasswordResetController($commandBus);
+        $controller = new ConfirmPasswordResetController(
+            $commandBus,
+            new CommandResponseTypeGuard()
+        );
 
         $this->assertInstanceOf(ConfirmPasswordResetController::class, $controller);
     }

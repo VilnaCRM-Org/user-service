@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\DTO\AuthPayload;
@@ -28,6 +29,7 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
         $resolver = new RefreshTokenAuthMutationResolver(
             $validator,
             $commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $commandFactory
         );

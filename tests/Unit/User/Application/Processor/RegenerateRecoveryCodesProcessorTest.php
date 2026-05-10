@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
@@ -75,6 +76,7 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory(),
         );
@@ -154,6 +156,7 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
     {
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory()
         );

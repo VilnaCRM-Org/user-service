@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Shared\Application\Bus\Command;
+namespace App\Shared\Application\Bus\Guard;
 
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
 use LogicException;

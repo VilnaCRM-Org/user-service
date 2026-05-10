@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
@@ -23,6 +23,7 @@ final readonly class RegenerateRecoveryCodesProcessor implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private CurrentUserIdentityResolver $userIdentityResolver,
         private RegenerateRecoveryCodesCommandFactoryInterface $regenerateCodesCommandFactory,
     ) {
@@ -50,7 +51,7 @@ final readonly class RegenerateRecoveryCodesProcessor implements
             $sessionId
         );
 
-        $response = (new CommandResponseTypeGuard())->expect(
+        $response = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             RegenerateRecoveryCodesCommandResponse::class
         );

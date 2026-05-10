@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -45,6 +46,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
         $this->processor = new RegisterUserBatchProcessor(
             $this->serializer,
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->commandFactory
         );
         $this->userFactory = new UserFactory();

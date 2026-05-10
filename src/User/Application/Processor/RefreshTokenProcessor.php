@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
@@ -21,6 +21,7 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private RefreshTokenCommandFactoryInterface $refreshTokenCommandFactory,
     ) {
     }
@@ -40,7 +41,7 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
         array $context = []
     ): Response {
         $command = $this->refreshTokenCommandFactory->create($data->refreshTokenValue());
-        $commandResponse = (new CommandResponseTypeGuard())->expect(
+        $commandResponse = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             RefreshTokenCommandResponse::class
         );

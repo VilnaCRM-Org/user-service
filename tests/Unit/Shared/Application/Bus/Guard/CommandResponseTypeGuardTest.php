@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Shared\Application\Bus\Command;
+namespace App\Tests\Unit\Shared\Application\Bus\Guard;
 
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\DTO\RequestPasswordResetCommandResponse;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
@@ -19,6 +19,7 @@ final readonly class CompleteTwoFactorAuthMutationResolver implements
     public function __construct(
         private MutationInputValidator $validator,
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private AuthPayloadFactory $authPayloadFactory,
         private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
@@ -46,7 +47,7 @@ final readonly class CompleteTwoFactorAuthMutationResolver implements
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $response = (new CommandResponseTypeGuard())->expect(
+        $response = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             CompleteTwoFactorCommandResponse::class
         );

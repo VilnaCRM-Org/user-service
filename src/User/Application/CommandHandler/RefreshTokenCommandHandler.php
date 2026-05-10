@@ -7,21 +7,17 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
-use App\User\Application\Factory\AccessTokenFactoryInterface;
-use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenIssuer;
+use App\User\Application\Service\RefreshTokenTheftDetector;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Publisher\RefreshTokenPublisherInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
-/**
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
 final readonly class RefreshTokenCommandHandler implements
     CommandHandlerInterface
 {
@@ -31,9 +27,8 @@ final readonly class RefreshTokenCommandHandler implements
         private AuthRefreshTokenRepositoryInterface $refreshTokenRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private UserRepositoryInterface $userRepository,
-        private AccessTokenFactoryInterface $accessTokenFactory,
-        private AuthTokenFactoryInterface $authTokenFactory,
-        private RefreshTokenPublisherInterface $publisher,
+        private RefreshTokenIssuer $tokenIssuer,
+        private RefreshTokenTheftDetector $theftDetector,
         private int $refreshTokenGraceWindowSeconds = self::DEFAULT_GRACE_WINDOW_SECONDS,
     ) {
     }
@@ -113,7 +108,7 @@ final readonly class RefreshTokenCommandHandler implements
             $currentTime,
             $this->refreshTokenGraceWindowSeconds
         )) {
-            $this->handleTheftDetection($oldToken, $session, $user, 'grace_period_expired');
+            $this->theftDetector->detect($oldToken, $session, $user, 'grace_period_expired');
         }
 
         $tokens = $this->refreshTokenRepository->findBySessionId($session->getId());
@@ -179,7 +174,7 @@ final readonly class RefreshTokenCommandHandler implements
         array $tokens
     ): RefreshTokenCommandResponse {
         if ($this->hasLaterRotation($oldToken, $tokens)) {
-            $this->handleTheftDetection(
+            $this->theftDetector->detect(
                 $oldToken,
                 $session,
                 $user,
@@ -190,91 +185,8 @@ final readonly class RefreshTokenCommandHandler implements
 
         $this->assertGraceWindowIsEligible($oldToken, $session, $user, $currentTime, $tokens);
         $oldToken->markGraceUsed();
-        $response = $this->issueNewTokens($user, $session);
-        $this->publishRotatedEvent($session, $user);
 
-        return $response;
-    }
-
-    /**
-     * @param list<AuthRefreshToken>|null $tokens
-     */
-    private function handleTheftDetection(
-        AuthRefreshToken $oldToken,
-        AuthSession $session,
-        User $user,
-        string $reason,
-        ?array $tokens = null
-    ): never {
-        $this->revokeSessionAndTokens($oldToken, $session, $tokens);
-        $this->publisher->publishTheftDetected(
-            $session->getId(),
-            $user->getId(),
-            $session->getIpAddress(),
-            $reason
-        );
-
-        $this->throwUnauthorized();
-    }
-
-    /**
-     * @param list<AuthRefreshToken>|null $tokens
-     */
-    private function revokeSessionAndTokens(
-        AuthRefreshToken $oldToken,
-        AuthSession $session,
-        ?array $tokens = null
-    ): void {
-        if (!$session->isRevoked()) {
-            $session->revoke();
-            $this->authSessionRepository->save($session);
-        }
-
-        $this->revokeRefreshTokens(
-            $this->resolveTokensForRevocation(
-                $oldToken,
-                $session,
-                $tokens
-            )
-        );
-    }
-
-    /**
-     * @param list<AuthRefreshToken>|null $tokens
-     *
-     * @return list<AuthRefreshToken>
-     */
-    private function resolveTokensForRevocation(
-        AuthRefreshToken $oldToken,
-        AuthSession $session,
-        ?array $tokens
-    ): array {
-        if ($tokens === null) {
-            $tokens = $this->refreshTokenRepository->findBySessionId(
-                $session->getId()
-            );
-        }
-
-        if ($tokens !== []) {
-            return $tokens;
-        }
-
-        return [$oldToken];
-    }
-
-    /**
-     * @param list<AuthRefreshToken> $tokens
-     */
-    private function revokeRefreshTokens(array $tokens): void
-    {
-        foreach ($tokens as $token) {
-            if ($token->isRevoked()) {
-                continue;
-            }
-
-            $token->revoke();
-            $this->refreshTokenRepository->save($token);
-        }
+        return $this->tokenIssuer->issueRotatedTokens($user, $session);
     }
 
     private function resolveSession(string $sessionId): AuthSession
@@ -338,32 +250,8 @@ final readonly class RefreshTokenCommandHandler implements
         DateTimeImmutable $currentTime
     ): RefreshTokenCommandResponse {
         $oldToken->markAsRotated($currentTime);
-        $response = $this->issueNewTokens($user, $session);
-        $this->publishRotatedEvent($session, $user);
 
-        return $response;
-    }
-
-    private function issueNewTokens(
-        User $user,
-        AuthSession $session
-    ): RefreshTokenCommandResponse {
-        $issuedAt = new DateTimeImmutable();
-
-        $newRefreshPlain = $this->authTokenFactory->generateOpaqueToken();
-        $this->refreshTokenRepository->save(
-            $this->authTokenFactory->createRefreshToken(
-                $session->getId(),
-                $newRefreshPlain,
-                $issuedAt
-            )
-        );
-
-        $accessToken = $this->accessTokenFactory->create(
-            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
-        );
-
-        return new RefreshTokenCommandResponse($accessToken, $newRefreshPlain);
+        return $this->tokenIssuer->issueRotatedTokens($user, $session);
     }
 
     /**
@@ -380,7 +268,7 @@ final readonly class RefreshTokenCommandHandler implements
             return;
         }
 
-        $this->handleTheftDetection(
+        $this->theftDetector->detect(
             $oldToken,
             $session,
             $user,
@@ -416,16 +304,6 @@ final readonly class RefreshTokenCommandHandler implements
         }
 
         return $user;
-    }
-
-    private function publishRotatedEvent(
-        AuthSession $session,
-        User $user
-    ): void {
-        $this->publisher->publishTokenRotated(
-            $session->getId(),
-            $user->getId()
-        );
     }
 
     private function throwUnauthorized(): never

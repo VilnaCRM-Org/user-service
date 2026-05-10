@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
@@ -19,6 +19,7 @@ final readonly class ConfirmTwoFactorAuthMutationResolver implements
     public function __construct(
         private MutationInputValidator $validator,
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private AuthPayloadFactory $authPayloadFactory,
         private CurrentUserIdentityResolver $currentUserIdentityResolver,
         private ConfirmTwoFactorCommandFactoryInterface $confirmTwoFactorCommandFactory,
@@ -40,7 +41,7 @@ final readonly class ConfirmTwoFactorAuthMutationResolver implements
             $dto->twoFactorCodeValue(),
             $this->currentUserIdentityResolver->resolveSessionId()
         );
-        $response = (new CommandResponseTypeGuard())->expect(
+        $response = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             ConfirmTwoFactorCommandResponse::class
         );

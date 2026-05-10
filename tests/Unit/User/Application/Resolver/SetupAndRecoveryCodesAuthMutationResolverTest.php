@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\Command\SetupTwoFactorCommand;
@@ -52,6 +53,7 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
         );
         $resolver = new RegenerateRecoveryCodesAuthMutationResolver(
             $commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $this->currentUserIdentityResolver($email, $sessionId, $this->faker->uuid()),
             $commandFactory
@@ -87,6 +89,7 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
     ): SetupTwoFactorAuthMutationResolver {
         return new SetupTwoFactorAuthMutationResolver(
             $commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $this->currentUserIdentityResolver($email, '', $this->faker->uuid()),
             $commandFactory

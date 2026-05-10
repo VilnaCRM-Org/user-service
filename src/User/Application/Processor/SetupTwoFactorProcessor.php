@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
@@ -24,6 +24,7 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private CurrentUserIdentityResolver $userIdentityResolver,
         private SetupTwoFactorCommandFactoryInterface $setupTwoFactorCommandFactory,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
@@ -53,7 +54,7 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->userIdentityResolver->resolveEmail()
         );
-        $response = (new CommandResponseTypeGuard())->expect(
+        $response = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             SetupTwoFactorCommandResponse::class
         );

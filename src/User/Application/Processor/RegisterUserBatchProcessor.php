@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\DTO\UserRegisterBatchDto;
@@ -25,6 +25,7 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
     public function __construct(
         private SerializerInterface $serializer,
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private RegisterUserBatchCommandFactoryInterface $commandFactory
     ) {
     }
@@ -46,7 +47,7 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
         $command = $this->commandFactory->create(
             new UserCollection($data->users)
         );
-        $commandResponse = (new CommandResponseTypeGuard())->expect(
+        $commandResponse = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             RegisterUserBatchCommandResponse::class
         );

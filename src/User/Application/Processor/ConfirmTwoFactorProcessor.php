@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
@@ -22,6 +22,7 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private CurrentUserIdentityResolver $userIdentityResolver,
         private ConfirmTwoFactorCommandFactoryInterface $confirmTwoFactorCommandFactory,
     ) {
@@ -50,7 +51,7 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
             $sessionId
         );
 
-        $response = (new CommandResponseTypeGuard())->expect(
+        $response = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             ConfirmTwoFactorCommandResponse::class
         );

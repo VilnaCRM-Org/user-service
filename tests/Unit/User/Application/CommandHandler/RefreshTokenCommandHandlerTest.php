@@ -21,12 +21,12 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($oldToken, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $accessToken = $this->faker->sha256();
         $capturedPayload = [];
-        $this->expectSuccessfulRotation($session, $user, 'new-access-token', $capturedPayload);
+        $this->expectSuccessfulRotation($session, $user, $accessToken, $capturedPayload);
         $response = $this->invokeHandler($plainToken);
-        $this->assertSame('new-access-token', $response->getAccessToken());
-        $expectedRefresh = 'test-opaque-token-1234567890-abcdefghijklmn';
-        $this->assertSame($expectedRefresh, $response->getRefreshToken());
+        $this->assertSame($accessToken, $response->getAccessToken());
+        $this->assertSame($this->generatedRefreshToken, $response->getRefreshToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isRotated());
         $this->assertJwtPayloadContents($capturedPayload, $user->getId(), $session->getId());
@@ -95,9 +95,10 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
-        $this->expectSuccessfulGraceReuse($session, $user, 'grace-access-token');
+        $accessToken = $this->faker->sha256();
+        $this->expectSuccessfulGraceReuse($session, $user, $accessToken);
         $response = $this->invokeHandler($plainToken);
-        $this->assertSame('grace-access-token', $response->getAccessToken());
+        $this->assertSame($accessToken, $response->getAccessToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($token->isGraceUsed());
     }
@@ -114,9 +115,10 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectFailedAtomicRotation();
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
-        $this->expectSuccessfulGraceReuse($session, $user, 'concurrent-access-token');
+        $accessToken = $this->faker->sha256();
+        $this->expectSuccessfulGraceReuse($session, $user, $accessToken);
         $response = $this->invokeHandler($plainToken);
-        $this->assertSame('concurrent-access-token', $response->getAccessToken());
+        $this->assertSame($accessToken, $response->getAccessToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($latestToken->isGraceUsed());
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
@@ -13,6 +14,7 @@ use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\SignInCommandFactory;
 use App\User\Application\Processor\SignInProcessor;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\SignInCommandDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -221,46 +223,47 @@ final class SignInProcessorTest extends AuthProcessorTestCase
         string $userAgent,
         SignInCommandResponse $response
     ): void {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                function (SignInCommand $cmd) use (
-                    $email,
-                    $password,
-                    $ipAddress,
-                    $userAgent,
-                ): bool {
-                    $this->assertSame($email, $cmd->email);
-                    $this->assertSame($password, $cmd->password);
-                    $this->assertFalse($cmd->rememberMe);
-                    $this->assertSame($ipAddress, $cmd->ipAddress);
-                    $this->assertSame($userAgent, $cmd->userAgent);
-                    return true;
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            SignInCommand::class,
+            $response,
+            function (SignInCommand $cmd) use (
+                $email,
+                $password,
+                $ipAddress,
+                $userAgent,
+            ): void {
+                $this->assertSame($email, $cmd->email);
+                $this->assertSame($password, $cmd->password);
+                $this->assertFalse($cmd->rememberMe);
+                $this->assertSame($ipAddress, $cmd->ipAddress);
+                $this->assertSame($userAgent, $cmd->userAgent);
+            }
+        );
     }
 
     private function expectDispatchWithResponse(SignInCommandResponse $response): void
     {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                static function (SignInCommand $cmd): bool {
-                    return $cmd->email !== '';
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            SignInCommand::class,
+            $response,
+            static function (SignInCommand $cmd): void {
+                self::assertNotSame('', $cmd->email);
+            }
+        );
     }
 
     private function expectDispatchWithRememberMe(SignInCommandResponse $response): void
     {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                function (SignInCommand $cmd): bool {
-                    $this->assertTrue($cmd->rememberMe);
-                    return true;
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            SignInCommand::class,
+            $response,
+            function (SignInCommand $cmd): void {
+                $this->assertTrue($cmd->rememberMe);
+            }
+        );
     }
 
     private function assertTokenResponseBody(
@@ -320,9 +323,12 @@ final class SignInProcessorTest extends AuthProcessorTestCase
     private function createProcessor(): SignInProcessor
     {
         return new SignInProcessor(
-            $this->commandBus,
-            new SignInCommandFactory(),
-            $this->requestContextResolver,
+            new SignInCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                new SignInCommandFactory(),
+                $this->requestContextResolver
+            ),
             $this->cookieFactory,
         );
     }

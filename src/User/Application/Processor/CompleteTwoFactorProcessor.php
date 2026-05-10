@@ -6,7 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
@@ -23,6 +23,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
         private AuthCookieFactoryInterface $authCookieFactory,
@@ -75,7 +76,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        return (new CommandResponseTypeGuard())->expect(
+        return $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             CompleteTwoFactorCommandResponse::class
         );

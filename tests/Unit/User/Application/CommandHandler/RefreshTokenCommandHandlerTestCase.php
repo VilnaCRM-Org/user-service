@@ -12,6 +12,8 @@ use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenIssuer;
+use App\User\Application\Service\RefreshTokenTheftDetector;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
@@ -35,6 +37,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     protected AuthTokenFactoryInterface&MockObject $authTokenFactory;
     protected UserFactory $userFactory;
     protected UuidTransformer $uuidTransformer;
+    protected string $generatedRefreshToken;
 
     #[\Override]
     protected function setUp(): void
@@ -50,6 +53,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+        $this->generatedRefreshToken = $this->faker->regexify('[A-Za-z0-9_-]{43}');
     }
 
     protected function expectTokenLookup(
@@ -192,9 +196,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     {
         $this->authTokenFactory
             ->method('generateOpaqueToken')
-            ->willReturn(
-                'test-opaque-token-1234567890-abcdefghijklmn'
-            );
+            ->willReturn($this->generatedRefreshToken);
         $this->configureCreateRefreshTokenCallback();
         $this->configureJwtPayloadFactory();
     }
@@ -294,13 +296,24 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     protected function createHandler(
         int $refreshTokenGraceWindowSeconds = 60
     ): RefreshTokenCommandHandler {
+        $tokenIssuer = new RefreshTokenIssuer(
+            $this->refreshTokenRepository,
+            $this->accessTokenFactory,
+            $this->authTokenFactory,
+            $this->publisher,
+        );
+        $theftDetector = new RefreshTokenTheftDetector(
+            $this->refreshTokenRepository,
+            $this->authSessionRepository,
+            $this->publisher,
+        );
+
         return new RefreshTokenCommandHandler(
             $this->refreshTokenRepository,
             $this->authSessionRepository,
             $this->userRepository,
-            $this->accessTokenFactory,
-            $this->authTokenFactory,
-            $this->publisher,
+            $tokenIssuer,
+            $theftDetector,
             $refreshTokenGraceWindowSeconds,
         );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -45,6 +46,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $this->createMock(CreateUserMutationInputTransformer::class);
         $this->resolver = new RegisterUserMutationResolver(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->validator,
             $this->transformer,
             $this->mockSignUpCommandFactory

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Post;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
@@ -159,6 +160,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
 
         return new SetupTwoFactorProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
             new HttpRequestContextResolver($requestStack),
