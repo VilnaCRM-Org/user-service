@@ -63,8 +63,8 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): void {
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
-            ->with(hash('sha256', $plainToken))
+            ->method('findByPlainToken')
+            ->with($plainToken)
             ->willReturn($token);
     }
 
@@ -75,8 +75,8 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): void {
         $this->refreshTokenRepository
             ->expects($this->exactly(2))
-            ->method('findByTokenHash')
-            ->with(hash('sha256', $plainToken))
+            ->method('findByPlainToken')
+            ->with($plainToken)
             ->willReturnOnConsecutiveCalls($first, $second);
     }
 

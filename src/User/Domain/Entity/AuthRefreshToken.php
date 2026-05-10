@@ -20,12 +20,7 @@ final class AuthRefreshToken
         string $plainToken,
         private DateTimeImmutable $expiresAt
     ) {
-        $this->tokenHash = self::hashPlainToken($plainToken);
-    }
-
-    public static function hashPlainToken(string $plainToken): string
-    {
-        return hash('sha256', $plainToken);
+        $this->tokenHash = $this->hash($plainToken);
     }
 
     public function getId(): string
@@ -110,6 +105,11 @@ final class AuthRefreshToken
 
     public function matchesToken(string $plainToken): bool
     {
-        return hash_equals($this->tokenHash, self::hashPlainToken($plainToken));
+        return hash_equals($this->tokenHash, $this->hash($plainToken));
+    }
+
+    private function hash(string $value): string
+    {
+        return hash('sha256', $value);
     }
 }

@@ -51,8 +51,7 @@ final readonly class RefreshTokenContextResolver
     private function resolveRefreshToken(
         string $plainToken
     ): AuthRefreshToken {
-        $hash = AuthRefreshToken::hashPlainToken($plainToken);
-        $token = $this->refreshTokenRepository->findByTokenHash($hash);
+        $token = $this->refreshTokenRepository->findByPlainToken($plainToken);
 
         if (!$token instanceof AuthRefreshToken) {
             $this->throwUnauthorized();

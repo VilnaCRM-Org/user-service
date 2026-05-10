@@ -36,7 +36,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
     {
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
+            ->method('findByPlainToken')
             ->willReturn(null);
 
         $this->authSessionRepository
@@ -203,7 +203,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
 
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
+            ->method('findByPlainToken')
             ->willReturn($token);
 
         $this->authSessionRepository
