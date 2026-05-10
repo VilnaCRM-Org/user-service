@@ -43,20 +43,7 @@ final readonly class SignInProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
-
-        $command = $this->signInCommandFactory->create(
-            $data->emailValue(),
-            $data->passwordValue(),
-            $data->isRememberMe(),
-            $this->httpRequestContextResolver->resolveIpAddress($request),
-            $this->httpRequestContextResolver->resolveUserAgent($request)
-        );
-
-        $commandResponse = (new CommandResponseTypeGuard())->expect(
-            $this->commandBus->dispatch($command),
-            SignInCommandResponse::class
-        );
+        $commandResponse = $this->dispatchCommand($data, $context);
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
 
@@ -70,6 +57,29 @@ final readonly class SignInProcessor implements ProcessorInterface
         }
 
         return $response;
+    }
+
+    /**
+     * @param array{request?: object|null, ...} $context
+     */
+    private function dispatchCommand(
+        SignInDto $data,
+        array $context
+    ): SignInCommandResponse {
+        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
+
+        $command = $this->signInCommandFactory->create(
+            $data->emailValue(),
+            $data->passwordValue(),
+            $data->isRememberMe(),
+            $this->httpRequestContextResolver->resolveIpAddress($request),
+            $this->httpRequestContextResolver->resolveUserAgent($request)
+        );
+
+        return (new CommandResponseTypeGuard())->expect(
+            $this->commandBus->dispatch($command),
+            SignInCommandResponse::class
+        );
     }
 
     /**

@@ -28,7 +28,7 @@ abstract class AuthProcessorTestCase extends UnitTestCase
     ): void {
         $commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
-                function (CommandInterface $command) use (
+                static function (CommandInterface $command) use (
                     $commandClass,
                     $assertCommand,
                 ): bool {
@@ -84,6 +84,39 @@ abstract class AuthProcessorTestCase extends UnitTestCase
             $ipAddress,
             $userAgent
         );
+    }
+
+    protected function stubRandomRequestContext(
+        HttpRequestContextResolverInterface&MockObject $resolver,
+        ?Request $request = null,
+    ): Request {
+        $request ??= $this->createMock(Request::class);
+        $this->stubRequestContextResolver(
+            $resolver,
+            $request,
+            $this->faker->ipv4(),
+            $this->faker->userAgent()
+        );
+
+        return $request;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function expectResolvedRequestContext(
+        HttpRequestContextResolverInterface&MockObject $resolver,
+        ?Request $expectedRequest,
+        Request $resolvedRequest,
+    ): array {
+        $ipAddress = $this->faker->ipv4();
+        $userAgent = $this->faker->userAgent();
+        $resolver->expects($this->once())
+            ->method('resolveRequest')->with($expectedRequest)
+            ->willReturn($resolvedRequest);
+        $this->stubRequestContextMetadata($resolver, $resolvedRequest, $ipAddress, $userAgent);
+
+        return [$ipAddress, $userAgent];
     }
 
     protected function stubRequestContextMetadata(

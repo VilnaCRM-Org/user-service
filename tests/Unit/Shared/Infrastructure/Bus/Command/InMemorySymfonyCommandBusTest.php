@@ -138,21 +138,7 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
     public function testDispatchReturnsNullWhenHandlerReturnsNull(): void
     {
         $command = $this->createMock(CommandInterface::class);
-        $messageBus = $this->createMock(MessageBus::class);
-        $messageBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command)
-            ->willReturn(
-                (new Envelope($command))->with(
-                    new HandledStamp(null, 'handler')
-                )
-            );
-        $this->messageBusFactory->method('create')
-            ->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus(
-            $this->messageBusFactory,
-            $this->commandHandlers
-        );
+        $commandBus = $this->createCommandBusReturning($command, null);
 
         $this->assertNull($commandBus->dispatch($command));
     }
@@ -160,21 +146,7 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
     public function testDispatchRejectsUnsupportedHandlerResult(): void
     {
         $command = $this->createMock(CommandInterface::class);
-        $messageBus = $this->createMock(MessageBus::class);
-        $messageBus->expects($this->once())
-            ->method('dispatch')
-            ->with($command)
-            ->willReturn(
-                (new Envelope($command))->with(
-                    new HandledStamp('unexpected-result', 'handler')
-                )
-            );
-        $this->messageBusFactory->method('create')
-            ->willReturn($messageBus);
-        $commandBus = new InMemorySymfonyCommandBus(
-            $this->messageBusFactory,
-            $this->commandHandlers
-        );
+        $commandBus = $this->createCommandBusReturning($command, 'unexpected-result');
 
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage(sprintf(
@@ -183,5 +155,27 @@ final class InMemorySymfonyCommandBusTest extends UnitTestCase
         ));
 
         $commandBus->dispatch($command);
+    }
+
+    private function createCommandBusReturning(
+        CommandInterface $command,
+        CommandResponseInterface|string|null $result
+    ): InMemorySymfonyCommandBus {
+        $messageBus = $this->createMock(MessageBus::class);
+        $messageBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command)
+            ->willReturn(
+                (new Envelope($command))->with(
+                    new HandledStamp($result, 'handler')
+                )
+            );
+        $this->messageBusFactory->method('create')
+            ->willReturn($messageBus);
+
+        return new InMemorySymfonyCommandBus(
+            $this->messageBusFactory,
+            $this->commandHandlers
+        );
     }
 }

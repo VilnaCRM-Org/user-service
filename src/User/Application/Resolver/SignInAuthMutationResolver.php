@@ -39,6 +39,20 @@ final readonly class SignInAuthMutationResolver implements MutationResolverInter
         $dto->setRememberMe((bool) ($args['rememberMe'] ?? false));
         $this->validator->validate($dto);
 
+        $response = $this->dispatchCommand($dto, $context);
+
+        return $this->authPayloadFactory->createFromSignInResponse(
+            $response
+        );
+    }
+
+    /**
+     * @param array{request?: object|null, ...} $context
+     */
+    private function dispatchCommand(
+        SignInDto $dto,
+        array $context
+    ): SignInCommandResponse {
         $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
         $command = $this->signInCommandFactory->create(
             $dto->emailValue(),
@@ -48,13 +62,9 @@ final readonly class SignInAuthMutationResolver implements MutationResolverInter
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $response = (new CommandResponseTypeGuard())->expect(
+        return (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             SignInCommandResponse::class
-        );
-
-        return $this->authPayloadFactory->createFromSignInResponse(
-            $response
         );
     }
 }

@@ -43,19 +43,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
-
-        $command = $this->completeTwoFactorCommandFactory->create(
-            $data->pendingSessionIdValue(),
-            $data->twoFactorCodeValue(),
-            $this->httpRequestContextResolver->resolveIpAddress($request),
-            $this->httpRequestContextResolver->resolveUserAgent($request)
-        );
-
-        $commandResponse = (new CommandResponseTypeGuard())->expect(
-            $this->commandBus->dispatch($command),
-            CompleteTwoFactorCommandResponse::class
-        );
+        $commandResponse = $this->dispatchCommand($data, $context);
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
         $accessToken = $commandResponse->getAccessToken();
@@ -69,6 +57,28 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         }
 
         return $response;
+    }
+
+    /**
+     * @param array{request?: object|null, ...} $context
+     */
+    private function dispatchCommand(
+        CompleteTwoFactorDto $data,
+        array $context
+    ): CompleteTwoFactorCommandResponse {
+        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
+
+        $command = $this->completeTwoFactorCommandFactory->create(
+            $data->pendingSessionIdValue(),
+            $data->twoFactorCodeValue(),
+            $this->httpRequestContextResolver->resolveIpAddress($request),
+            $this->httpRequestContextResolver->resolveUserAgent($request)
+        );
+
+        return (new CommandResponseTypeGuard())->expect(
+            $this->commandBus->dispatch($command),
+            CompleteTwoFactorCommandResponse::class
+        );
     }
 
     /**

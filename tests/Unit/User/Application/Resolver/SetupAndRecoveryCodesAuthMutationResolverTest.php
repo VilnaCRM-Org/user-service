@@ -26,14 +26,15 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
         $commandFactory = $this->createMock(
             SetupTwoFactorCommandFactoryInterface::class
         );
-        $resolver = new SetupTwoFactorAuthMutationResolver(
-            $commandBus,
-            $this->authPayloadFactory(),
-            $this->currentUserIdentityResolver($email, '', $this->faker->uuid()),
-            $commandFactory
-        );
+        $resolver = $this->setupResolver($commandBus, $commandFactory, $email);
 
-        $this->expectSetupResolver($commandBus, $commandFactory, $command, $email, $commandResponse);
+        $this->expectSetupResolver(
+            $commandBus,
+            $commandFactory,
+            $command,
+            $email,
+            $commandResponse
+        );
         $result = $resolver->__invoke(null, []);
 
         $this->assertSetupPayload($result, $commandResponse);
@@ -77,6 +78,19 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
             ->method('dispatch')
             ->with($command)
             ->willReturn($response);
+    }
+
+    private function setupResolver(
+        CommandBusInterface $commandBus,
+        SetupTwoFactorCommandFactoryInterface $commandFactory,
+        string $email,
+    ): SetupTwoFactorAuthMutationResolver {
+        return new SetupTwoFactorAuthMutationResolver(
+            $commandBus,
+            $this->authPayloadFactory(),
+            $this->currentUserIdentityResolver($email, '', $this->faker->uuid()),
+            $commandFactory
+        );
     }
 
     private function expectRecoveryResolver(
