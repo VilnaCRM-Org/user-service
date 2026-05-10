@@ -51,7 +51,7 @@ final readonly class RefreshTokenContextResolver
     private function resolveRefreshToken(
         string $plainToken
     ): AuthRefreshToken {
-        $hash = hash('sha256', $plainToken);
+        $hash = AuthRefreshToken::hashPlainToken($plainToken);
         $token = $this->refreshTokenRepository->findByTokenHash($hash);
 
         if (!$token instanceof AuthRefreshToken) {

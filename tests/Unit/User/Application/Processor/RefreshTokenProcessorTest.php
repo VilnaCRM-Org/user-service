@@ -33,8 +33,10 @@ final class RefreshTokenProcessorTest extends UnitTestCase
     public function testProcessReturnsNewTokensAndSetsCookie(): void
     {
         $refreshToken = $this->faker->sha256();
+        $accessToken = $this->faker->sha256();
+        $newRefreshToken = $this->faker->sha256();
         $dto = new RefreshTokenDto($refreshToken);
-        $this->expectRefreshDispatch($refreshToken);
+        $this->expectRefreshDispatch($refreshToken, $accessToken, $newRefreshToken);
 
         $processor = new RefreshTokenProcessor(
             $this->commandBus,
@@ -43,14 +45,15 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         );
         $response = $processor->process($dto, $this->operation);
 
-        $this->assertRefreshResponse($response);
+        $this->assertRefreshResponse($response, $accessToken, $newRefreshToken);
     }
 
     public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
     {
         $refreshToken = $this->faker->sha256();
+        $newRefreshToken = $this->faker->sha256();
         $dto = new RefreshTokenDto($refreshToken);
-        $this->expectEmptyAccessTokenDispatch($refreshToken);
+        $this->expectEmptyAccessTokenDispatch($refreshToken, $newRefreshToken);
 
         $processor = new RefreshTokenProcessor(
             $this->commandBus,
@@ -63,8 +66,26 @@ final class RefreshTokenProcessorTest extends UnitTestCase
         $this->assertCount(0, $response->headers->getCookies());
     }
 
-    private function expectRefreshDispatch(string $refreshToken): void
-    {
+    private function expectRefreshDispatch(
+        string $refreshToken,
+        string $accessToken,
+        string $newRefreshToken
+    ): void {
+        $this->expectDispatchResponse($refreshToken, $accessToken, $newRefreshToken);
+    }
+
+    private function expectEmptyAccessTokenDispatch(
+        string $refreshToken,
+        string $newRefreshToken
+    ): void {
+        $this->expectDispatchResponse($refreshToken, '', $newRefreshToken);
+    }
+
+    private function expectDispatchResponse(
+        string $refreshToken,
+        string $accessToken,
+        string $newRefreshToken
+    ): void {
         $this->commandBus
             ->expects($this->once())
             ->method('dispatch')
@@ -78,36 +99,19 @@ final class RefreshTokenProcessorTest extends UnitTestCase
                 }
             ))
             ->willReturn(new RefreshTokenCommandResponse(
-                'new-access-token',
-                'new-refresh-token'
+                $accessToken,
+                $newRefreshToken
             ));
     }
 
-    private function expectEmptyAccessTokenDispatch(string $refreshToken): void
-    {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(/**
-             * @return true
-             */
-                function (RefreshTokenCommand $command) use ($refreshToken): bool {
-                    $this->assertSame($refreshToken, $command->refreshToken);
-
-                    return true;
-                }
-            ))
-            ->willReturn(new RefreshTokenCommandResponse(
-                '',
-                'new-refresh-token'
-            ));
-    }
-
-    private function assertRefreshResponse(Response $response): void
-    {
+    private function assertRefreshResponse(
+        Response $response,
+        string $accessToken,
+        string $refreshToken
+    ): void {
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        $this->assertSame('new-access-token', $body['access_token']);
-        $this->assertSame('new-refresh-token', $body['refresh_token']);
+        $this->assertSame($accessToken, $body['access_token']);
+        $this->assertSame($refreshToken, $body['refresh_token']);
     }
 }
