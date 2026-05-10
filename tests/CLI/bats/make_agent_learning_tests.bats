@@ -51,6 +51,29 @@ setup() {
   assert_success
 }
 
+@test "capture-codex-run preserves multiline command arguments" {
+  local learning_dir="${BATS_TEST_TMPDIR}/learning"
+
+  run env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:00:00Z" \
+    ./scripts/agent-learning/capture-codex-run.sh \
+      --skill "${BATS_TEST_TMPDIR}/skill.md" \
+      --skill-version "test-version" \
+      --prompt "capture multiline args" \
+      --trace-id "trace-multiline-command" \
+      -- printf $'first\nsecond\n'
+
+  assert_success
+
+  run jq -e '
+    .command | length == 2
+    and .[0] == "printf"
+    and (.[1] | contains("\n"))
+  ' "${learning_dir}/traces/trace-multiline-command.json"
+  assert_success
+}
+
 @test "record-intervention links learning signals to a source trace" {
   local learning_dir="${BATS_TEST_TMPDIR}/learning"
   mkdir -p "${learning_dir}/traces"
@@ -130,11 +153,22 @@ JSON
 
   mkdir -p "${learning_dir}/interventions"
   printf '{not valid json\n' >"${learning_dir}/interventions/malformed.json"
+  printf '[]\n' >"${learning_dir}/traces/trace-array.json"
+  cat >"${learning_dir}/interventions/signal-array.json" <<'JSON'
+{
+  "trace_id": "trace-array",
+  "signal_id": "signal-array",
+  "created_at": "2026-05-10T00:02:00Z",
+  "type": "reprompt",
+  "summary": "Trace must be an object"
+}
+JSON
 
   run ./scripts/agent-learning/build-episodes.sh --store-dir "${learning_dir}" --output "${learning_dir}/episodes-1.jsonl"
   assert_success
   assert_output --partial "(1 records)"
   assert_output --partial "Warning: skipping malformed intervention"
+  assert_output --partial "Warning: skipping signal-array; malformed trace trace-array"
 
   run ./scripts/agent-learning/build-episodes.sh --store-dir "${learning_dir}" --output "${learning_dir}/episodes-2.jsonl"
   assert_success
@@ -192,6 +226,18 @@ MARKDOWN
   cat >> "${learning_dir}/episodes.jsonl" <<'JSON'
 {"schema_version":"agent-learning.episode.v1","episode_id":"episode-unrelated","skill_ref":"","intervention":{"type":"reprompt","summary":"Unrelated missing skill ref"},"good_output":"Do not include this note"}
 JSON
+  jq -cn \
+    --arg skill_ref "prefix${skill_file}" \
+    '{
+      schema_version: "agent-learning.episode.v1",
+      episode_id: "episode-suffix-collision",
+      skill_ref: $skill_ref,
+      intervention: {
+        type: "reprompt",
+        summary: "Unrelated suffix collision"
+      },
+      good_output: "Do not include this suffix collision"
+    }' >>"${learning_dir}/episodes.jsonl"
 
   before_hash="$(sha256sum "${skill_file}" | awk '{print $1}')"
   run ./scripts/agent-learning/propose-skill-update.sh \
@@ -211,6 +257,19 @@ JSON
   assert_success
   run grep -F "Unrelated missing skill ref" "${learning_dir}/skill.patch"
   assert_failure
+  run grep -F "Unrelated suffix collision" "${learning_dir}/skill.patch"
+  assert_failure
+
+  run ./scripts/agent-learning/propose-skill-update.sh \
+    --store-dir "${learning_dir}" \
+    --skill-file "${skill_file}" \
+    --episodes "${learning_dir}/episodes.jsonl" \
+    --output "${skill_file}"
+
+  assert_failure 2
+  assert_output --partial "Error: --output must not point to --skill-file."
+  after_hash="$(sha256sum "${skill_file}" | awk '{print $1}')"
+  [ "${before_hash}" = "${after_hash}" ]
 }
 
 @test "agent-learning scripts reject missing option values clearly" {
@@ -225,6 +284,10 @@ JSON
   run ./scripts/agent-learning/propose-skill-update.sh --skill-file
   assert_failure 2
   assert_output --partial "Error: --skill-file requires a value."
+
+  run ./scripts/agent-learning/record-intervention.sh --trace-id trace-1 --summary --help
+  assert_failure 2
+  assert_output --partial "Error: --summary requires a value."
 }
 
 @test "verify-gh-codex exposes Agent Lightning proxy wiring" {

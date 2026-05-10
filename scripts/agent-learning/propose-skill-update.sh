@@ -89,6 +89,13 @@ store_dir="$(al_store_dir)"
 output_file="${output_file:-${store_dir}/skill-update.patch}"
 mkdir -p "$(dirname "${output_file}")"
 
+skill_file_path="$(al_absolute_path "${skill_file}")"
+output_file_path="$(al_absolute_path "${output_file}")"
+if [ "${skill_file_path}" = "${output_file_path}" ]; then
+    echo "Error: --output must not point to --skill-file." >&2
+    exit 2
+fi
+
 tmp_dir="$(mktemp -d)"
 cleanup() {
     rm -rf "${tmp_dir}"
@@ -99,7 +106,17 @@ notes_file="${tmp_dir}/notes.md"
 new_skill_file="${tmp_dir}/$(basename "${skill_file}")"
 
 jq -r --arg skill_file "${skill_file}" '
-    select((.skill_ref // "") as $ref | ($ref != "") and (($ref == $skill_file) or ($skill_file | endswith($ref)) or ($ref | endswith($skill_file))))
+    def normalize_path:
+        gsub("^\\./"; "")
+        | gsub("/+"; "/")
+        | sub("/$"; "");
+    def path_matches($left; $right):
+        ($left | normalize_path) as $left_path
+        | ($right | normalize_path) as $right_path
+        | $left_path == $right_path
+          or ($left_path | endswith("/" + $right_path))
+          or ($right_path | endswith("/" + $left_path));
+    select((.skill_ref // "") as $ref | ($ref != "") and path_matches($skill_file; $ref))
     | "- " + (.intervention.type // "learning") + ": " + (.intervention.summary // "capture follow-up")
       + (if ((.good_output // "") | length) > 0 then " Expected behavior: " + ((.good_output // "") | gsub("[\r\n]+"; " ") | .[0:180]) else "" end)
 ' "${episodes_file}" | awk '!seen[$0]++' >"${notes_file}"

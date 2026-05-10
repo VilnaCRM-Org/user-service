@@ -134,7 +134,7 @@ set +e
 exit_code=$?
 set -e
 
-command_json="$(printf '%s\n' "${cmd[@]}" | jq -R . | jq -s .)"
+command_json="$(jq -n --args '$ARGS.positional' "${cmd[@]}")"
 stdout_artifact="$(al_relative_path "${stdout_file}")"
 stderr_artifact="$(al_relative_path "${stderr_file}")"
 

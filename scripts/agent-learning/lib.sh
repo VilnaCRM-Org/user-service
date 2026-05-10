@@ -34,6 +34,20 @@ al_require_option_value() {
         echo "Error: ${option_name} requires a value." >&2
         exit 2
     fi
+
+    if [[ "${option_value}" == --* ]]; then
+        echo "Error: ${option_name} requires a value." >&2
+        exit 2
+    fi
+}
+
+al_absolute_path() {
+    local path dir base
+    path="$1"
+    dir="$(dirname "${path}")"
+    base="$(basename "${path}")"
+
+    printf '%s/%s\n' "$(cd "${dir}" && pwd -P)" "${base}"
 }
 
 al_now() {

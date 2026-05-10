@@ -95,7 +95,7 @@ while IFS= read -r signal_file; do
         continue
     fi
 
-    if ! jq empty "${trace_file}" >/dev/null 2>&1; then
+    if ! jq -e 'type == "object"' "${trace_file}" >/dev/null 2>&1; then
         echo "Warning: skipping ${signal_id}; malformed trace ${trace_id}" >&2
         continue
     fi
