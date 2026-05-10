@@ -79,6 +79,11 @@ final class ConfirmationEmailSendEventSubscriberTest extends UnitTestCase
             'email/confirm.html.twig'
         );
 
+        $this->tokenRepository->expects($this->once())
+            ->method('find')
+            ->with($token->getTokenValue())
+            ->willReturn($token);
+
         $this->testInvokeSetExpectations($token, $email, $emailAddress);
 
         $this->getSubscriber()->__invoke($event);

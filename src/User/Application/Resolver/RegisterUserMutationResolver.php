@@ -23,6 +23,8 @@ final readonly class RegisterUserMutationResolver implements
 
     /**
      * @param array<string,string> $context
+     *
+     * @return \App\User\Domain\Entity\UserInterface
      */
     #[\Override]
     public function __invoke(?object $item, array $context): ?object

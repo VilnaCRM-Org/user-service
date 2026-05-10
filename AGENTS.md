@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Platform 4.1, MySQL, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
+VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.3, API Platform 4.1, MongoDB, and GraphQL. It manages user accounts and authentication (OAuth server, REST API, GraphQL) inside the VilnaCRM ecosystem. The project follows Hexagonal Architecture with DDD & CQRS patterns and includes comprehensive testing across unit, integration, E2E, and load suites.
 
 **CRITICAL: Always use make commands or docker exec into the PHP container. Never run PHP commands directly on the host.**
 
@@ -14,6 +14,55 @@ VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.2, API Pla
 2. **IDENTIFY** → Use `.claude/skills/SKILL-DECISION-GUIDE.md` to pick the right skill
 3. **EXECUTE** → Open the specific skill file (e.g., `.claude/skills/deptrac-fixer/SKILL.md`)
 4. **FOLLOW** → Execute the step-by-step instructions exactly as written
+
+### ✅ Mandatory Local AI Review Loop (Before Push/Ready)
+
+After `make ci` and before committing/pushing or moving a PR from draft to ready:
+
+1. Run `make ai-review-loop`.
+2. Default agent is Codex. To include Claude, set `AI_REVIEW_AGENTS=codex,claude` or use `AI_REVIEW_AGENT=claude`.
+3. If the loop applies fixes, re-run `make ci` and `make ai-review-loop` until it reports `PASS`.
+4. Requires Codex CLI support for `--output-last-message` (update Codex CLI if missing).
+
+### ✅ Optional BMALPH Setup When Needed
+
+1. Run `make bmalph-codex` or `make bmalph-claude` to install and verify BMALPH locally.
+2. Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview repository initialization safely.
+3. Use `make bmalph-setup` only when you intentionally want the local `_bmad/` and `.ralph/` workflow files in your workspace; it also configures planning artifacts under `specs/`.
+4. If you run `bmalph upgrade --force` directly, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
+
+### ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
 
 ### ❌ DO NOT
 
@@ -126,8 +175,7 @@ The User Service handles user registration, authentication, password reset, and 
 1. `make build` (15-30 min, NEVER CANCEL)
 2. `make start` (5-10 min, includes database, Redis, LocalStack)
 3. `make install` (3-5 min, PHP dependencies)
-4. `make doctrine-migrations-migrate` (1-2 min)
-5. Verify: https://localhost/api/docs, https://localhost/api/graphql
+4. Verify: [https://localhost/api/docs](https://localhost/api/docs), [https://localhost/api/graphql](https://localhost/api/graphql)
 
 ### Essential Development Commands
 
@@ -175,10 +223,8 @@ The User Service handles user registration, authentication, password reset, and 
 
 ### Database & OAuth Commands
 
-- `make doctrine-migrations-migrate`
-- `make doctrine-migrations-generate`
-- `make create-oauth-client CLIENT_NAME=<name>`
-- `make load-fixtures`
+- `make create-oauth-client CLIENT_NAME=<name>` -- Create OAuth client
+- `make load-fixtures` -- Load database fixtures
 
 ### Specification Generation
 
@@ -212,12 +258,13 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **ci-workflow**: Run comprehensive CI checks
 - **code-review**: Retrieve and address PR comments
 - **testing-workflow**: Manage tests (unit, integration, E2E, mutation)
+- **bmad-autonomous-planning**: Generate BMALPH planning artifacts autonomously from a short task description
 - **implementing-ddd-architecture**: Design DDD patterns (entities, value objects, aggregates, CQRS)
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
 - **complexity-management**: Reduce cyclomatic complexity
 - **openapi-development**: OpenAPI endpoint factories / transformers
-- **database-migrations**: Doctrine ORM/MySQL migrations
+- **database-migrations**: Create and manage database schema changes using Doctrine MongoDB ODM
 - **documentation-creation**: Create initial documentation suite from scratch
 - **documentation-sync**: Keep docs synchronized with code changes
 - **api-platform-crud**: Add REST resources with CRUD
@@ -251,7 +298,7 @@ Infrastructure → Application → Domain
 - **User Context**: User registration/update flows.
   - Application (can use Symfony/API Platform): Commands, Command Handlers (`CommandHandlerInterface`), DTOs with YAML validation, Processors/Resolvers, Event Subscribers (`DomainEventSubscriberInterface`).
   - Domain (NO framework imports): Entities (User), Value Objects (Email, Password), Domain Events, Repository interfaces, Domain exceptions.
-  - Infrastructure: MySQL repositories, XML mappings under `config/doctrine/`.
+  - Infrastructure: MongoDB repositories, XML mappings under `config/doctrine/`.
 - **OAuth Context**: OAuth client and token operations.
   - Application: Commands/Handlers, DTOs, validators, processors/resolvers.
   - Domain: Pure entities/value objects/events/exceptions.
@@ -328,9 +375,9 @@ Quick reference:
 
 ### API Platform & Database
 
-- Database: MySQL via Doctrine ORM
+- Database: MongoDB via Doctrine ODM
 - Custom Types: ULID, Domain UUID (`Shared/Infrastructure/DoctrineType`)
-- Mappings: XML in `config/doctrine/*.orm.xml`
+- Mappings: XML in `config/doctrine/*.mongodb.xml`
 - Resource discovery: Entities in `src/{Context}/Domain/Entity`
 - Filters: Order, Search, Range, Date, Boolean (see `services.yaml`)
 - Formats: JSON-LD, JSON Problem (RFC 7807), GraphQL
@@ -372,6 +419,12 @@ config/
 - Application: Command, CommandHandler, DTO, EventSubscriber, Processor/Resolver (can use Symfony/API Platform)
 - Infrastructure: Repository implementations, XML mappings, framework integrations
 
+## BMAD-METHOD Integration
+
+BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace. This repository keeps BMAD planning artifacts under `specs/`, and `make bmalph-setup` reapplies that layout after local init or upgrade.
+
+For non-interactive planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session and let the main agent orchestrate BMALPH subagents without relying on repo-local launcher scripts.
+
 ## Quality Gates
 
 - PHPInsights: Quality 100%, Complexity 94%, Architecture 100%, Style 100%
@@ -388,6 +441,7 @@ config/
 - Strengthen tests for escaped mutants or coverage drops
 - Respect DDD/CQRS boundaries; keep Domain pure
 - Use Faker for all test data (`tests/Unit/UnitTestCase.php`, `tests/Integration/IntegrationTestCase.php`)
+- Never hide problems with suppression/ignore annotations (PHPMD, PHPInsights, Infection, Psalm, PHPStan, PHPCS)
 
 ## Additional Development Guidelines
 
@@ -395,6 +449,12 @@ config/
 
 - **MANDATORY**: Remove inline comments; write self-explanatory code with clear naming.
 - Extract helper methods instead of using comments for explanation.
+
+### Suppressions and Ignore Directives
+
+- **MANDATORY**: Do not use suppression or ignore annotations/directives to make checks pass.
+- Forbidden examples: `@SuppressWarnings(PHPMD.*)`, `@infection-ignore*`, `@codeCoverageIgnore*`, `@psalm-suppress`, `@phpstan-ignore*`, `phpcs:ignore`, `@phpinsights-ignore*`.
+- Fix the root cause in code/tests/architecture instead of muting tools.
 
 ### Symfony & API Platform Built-ins First
 

@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\User\Infrastructure\EventSubscriber;
+
+use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
+use App\User\Domain\Event\RefreshTokenRotatedEvent;
+use App\User\Domain\Event\RefreshTokenTheftDetectedEvent;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Audit logging for refresh token events.
+ *
+ * AC: NFR-33, NFR-34 - Structured logging for security investigation
+ */
+final readonly class RefreshTokenEventLogSubscriber implements DomainEventSubscriberInterface
+{
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
+    }
+
+    public function __invoke(object $event): void
+    {
+        if ($event instanceof RefreshTokenRotatedEvent) {
+            $this->logRefreshTokenRotated($event);
+        } elseif ($event instanceof RefreshTokenTheftDetectedEvent) {
+            $this->logRefreshTokenTheft($event);
+        }
+    }
+
+    /**
+     * @return array<string>
+     *
+     * @psalm-return list{RefreshTokenRotatedEvent::class, RefreshTokenTheftDetectedEvent::class}
+     */
+    #[\Override]
+    public function subscribedTo(): array
+    {
+        return [
+            RefreshTokenRotatedEvent::class,
+            RefreshTokenTheftDetectedEvent::class,
+        ];
+    }
+
+    private function logRefreshTokenRotated(RefreshTokenRotatedEvent $event): void
+    {
+        $this->logger->debug('Refresh token rotated', [
+            'event' => 'user.refresh_token.rotated',
+            'sessionId' => $event->sessionId,
+            'oldTokenRevoked' => true,
+            'timestamp' => $event->occurredOn(),
+        ]);
+    }
+
+    private function logRefreshTokenTheft(RefreshTokenTheftDetectedEvent $event): void
+    {
+        // AC: NFR-34 - Theft detection at CRITICAL level
+        $this->logger->critical('Refresh token theft detected', [
+            'event' => 'user.refresh_token.theft_detected',
+            'sessionId' => $event->sessionId,
+            'userId' => $event->userId,
+            'ip' => $event->ipAddress,
+            'timestamp' => $event->occurredOn(),
+        ]);
+    }
+}

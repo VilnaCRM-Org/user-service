@@ -28,6 +28,8 @@ final readonly class ConfirmUserMutationResolver implements
 
     /**
      * @param array<string,string> $context
+     *
+     * @return \App\User\Domain\Entity\User
      */
     #[\Override]
     public function __invoke(?object $item, array $context): ?object

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Normalizer;
 
+use App\Shared\Application\DTO\BatchEntriesResult;
 use App\Shared\Application\Normalizer\BatchEntriesNormalizer;
-use App\Shared\Application\Normalizer\BatchEntriesResult;
 use App\Tests\Unit\UnitTestCase;
 use ArrayIterator;
 

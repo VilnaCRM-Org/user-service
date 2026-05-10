@@ -2,6 +2,7 @@
 <psalm
         errorLevel="8"
         resolveFromConfigFile="true"
+        findUnusedVariablesAndParams="true"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="https://getpsalm.org/schema/config"
         xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
@@ -15,8 +16,15 @@
         </ignoreFiles>
     </projectFiles>
     <plugins>
+        <plugin filename="scripts/ArchitectureGuardPlugin.php"/>
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
     </plugins>
+    <!-- Forbid raw JSON helpers and guard reviewed architecture regressions in src/.
+         Violations surface as ForbiddenCode and are suppressed in tests/. -->
+    <forbiddenFunctions>
+        <function name="json_encode"/>
+        <function name="json_decode"/>
+    </forbiddenFunctions>
     <!-- Behat contexts use annotations (@Given/@When/@Then) to call methods,
          and properties are serialized to JSON for API requests.
          Psalm 6+ has stricter unused code detection that cannot trace these
@@ -32,20 +40,15 @@
                 <directory name="tests/Behat"/>
             </errorLevel>
         </PossiblyUnusedMethod>
-        <PossiblyUnusedProperty>
-            <errorLevel type="suppress">
-                <directory name="tests/Behat"/>
-            </errorLevel>
-        </PossiblyUnusedProperty>
         <UnusedParam>
             <errorLevel type="suppress">
                 <directory name="tests/Behat"/>
             </errorLevel>
         </UnusedParam>
-        <MissingOverrideAttribute>
+        <ForbiddenCode>
             <errorLevel type="suppress">
-                <directory name="tests/Behat"/>
+                <directory name="tests"/>
             </errorLevel>
-        </MissingOverrideAttribute>
+        </ForbiddenCode>
     </issueHandlers>
 </psalm>

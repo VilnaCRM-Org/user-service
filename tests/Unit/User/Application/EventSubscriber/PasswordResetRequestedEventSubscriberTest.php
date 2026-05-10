@@ -15,6 +15,7 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
 use App\User\Domain\Factory\PasswordResetEmailFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
 {
@@ -22,6 +23,7 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     private PasswordResetTokenRepositoryInterface $tokenRepository;
     private PasswordResetEmailFactoryInterface $emailFactory;
     private SendPasswordResetEmailCommandFactoryInterface $cmdFactory;
+    private UserRepositoryInterface $userRepository;
     private PasswordResetRequestedEventSubscriber $subscriber;
 
     #[\Override]
@@ -33,22 +35,26 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
         $this->tokenRepository = $this->createMock(PasswordResetTokenRepositoryInterface::class);
         $this->emailFactory = $this->createMock(PasswordResetEmailFactoryInterface::class);
         $this->cmdFactory = $this->createMock(SendPasswordResetEmailCommandFactoryInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
 
         $this->subscriber = new PasswordResetRequestedEventSubscriber(
             $this->commandBus,
             $this->tokenRepository,
             $this->emailFactory,
-            $this->cmdFactory
+            $this->cmdFactory,
+            $this->userRepository
         );
     }
 
     public function testInvokeSuccessfully(): void
     {
         $tokenValue = $this->faker->sha256();
+        $userId = $this->faker->uuid();
+        $userEmail = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
 
         $mocks = $this->createMocks();
-        $event = new PasswordResetRequestedEvent($mocks['user'], $tokenValue, $eventId);
+        $event = new PasswordResetRequestedEvent($userId, $userEmail, $tokenValue, $eventId);
 
         $this->setupSuccessfulFlow($tokenValue, $mocks);
 
@@ -58,10 +64,11 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     public function testInvokeWhenTokenNotFound(): void
     {
         $tokenValue = $this->faker->sha256();
+        $userId = $this->faker->uuid();
+        $userEmail = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
 
-        $user = $this->createMock(UserInterface::class);
-        $event = new PasswordResetRequestedEvent($user, $tokenValue, $eventId);
+        $event = new PasswordResetRequestedEvent($userId, $userEmail, $tokenValue, $eventId);
 
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
@@ -90,7 +97,9 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, \PHPUnit\Framework\MockObject\MockObject>
+     * @return (\PHPUnit\Framework\MockObject\MockObject&PasswordResetEmailInterface|\PHPUnit\Framework\MockObject\MockObject&PasswordResetTokenInterface|\PHPUnit\Framework\MockObject\MockObject&SendPasswordResetEmailCommand|\PHPUnit\Framework\MockObject\MockObject&UserInterface)[]
+     *
+     * @psalm-return array{user: \PHPUnit\Framework\MockObject\MockObject&UserInterface, token: \PHPUnit\Framework\MockObject\MockObject&PasswordResetTokenInterface, passwordResetEmail: \PHPUnit\Framework\MockObject\MockObject&PasswordResetEmailInterface, command: \PHPUnit\Framework\MockObject\MockObject&SendPasswordResetEmailCommand}
      */
     private function createMocks(): array
     {
@@ -107,6 +116,11 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
      */
     private function setupSuccessfulFlow(string $tokenValue, array $mocks): void
     {
+        $this->userRepository->expects($this->once())
+            ->method('findById')
+            ->with($this->anything())
+            ->willReturn($mocks['user']);
+
         $this->tokenRepository->expects($this->once())
             ->method('findByToken')
             ->with($tokenValue)

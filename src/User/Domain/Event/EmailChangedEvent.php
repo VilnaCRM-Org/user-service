@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\User\Domain\Entity\User;
-use App\User\Domain\Entity\UserInterface;
 
-final class EmailChangedEvent extends DomainEvent
+final class EmailChangedEvent extends AccountDomainEvent
 {
     public function __construct(
-        public readonly UserInterface $user,
+        public readonly string $userId,
+        public readonly string $newEmail,
+        public readonly string $oldEmail,
         string $eventId,
         ?string $occurredOn = null
     ) {
@@ -19,7 +19,9 @@ final class EmailChangedEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, User> $body
+     * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -27,9 +29,18 @@ final class EmailChangedEvent extends DomainEvent
         string $eventId,
         string $occurredOn
     ): DomainEvent {
-        return new self($body['user'], $eventId, $occurredOn);
+        return new self(
+            $body['userId'],
+            $body['newEmail'],
+            $body['oldEmail'],
+            $eventId,
+            $occurredOn
+        );
     }
 
+    /**
+     * @psalm-return 'email.changed'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -37,13 +48,17 @@ final class EmailChangedEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, User>
+     * @return array<string>
+     *
+     * @psalm-return array{userId: string, newEmail: string, oldEmail: string}
      */
     #[\Override]
     public function toPrimitives(): array
     {
         return [
-            'user' => $this->user,
+            'userId' => $this->userId,
+            'newEmail' => $this->newEmail,
+            'oldEmail' => $this->oldEmail,
         ];
     }
 }

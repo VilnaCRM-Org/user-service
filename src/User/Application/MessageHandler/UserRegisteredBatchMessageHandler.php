@@ -33,7 +33,7 @@ final class UserRegisteredBatchMessageHandler implements BatchHandlerInterface
     }
 
     /**
-     * @param array<UserRegisteredMessage, Acknowledger> $jobs
+     * @param list<array{0: UserRegisteredMessage, 1: Acknowledger}> $jobs
      */
     #[\Override]
     private function process(array $jobs): void

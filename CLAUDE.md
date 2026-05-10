@@ -4,7 +4,7 @@ Guidance for Claude Code (claude.ai/code) and other AI agents when working in th
 
 ## Project Overview
 
-VilnaCRM User Service — PHP 8.3/Symfony 7.2 microservice for user registration, authentication, and account management. Uses API Platform 4.1, MySQL (Doctrine ORM), OAuth 2.0, REST, and GraphQL. Architecture: Hexagonal (Ports & Adapters), DDD, CQRS.
+VilnaCRM User Service — PHP 8.3/Symfony 7.2 microservice for user registration, authentication, and account management. Uses API Platform 4.1, MongoDB (Doctrine ODM), OAuth 2.0, REST, and GraphQL. Architecture: Hexagonal (Ports & Adapters), DDD, CQRS.
 
 ## 🎯 Skills & Workflows
 
@@ -12,23 +12,69 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 
 ### Quick Skill Guide
 
-| Task Type                   | Skill                           | When to Use                               |
-| --------------------------- | ------------------------------- | ----------------------------------------- |
-| **Fix Deptrac violations**  | `deptrac-fixer`                 | Architecture boundary violations detected |
-| **Fix complexity issues**   | `complexity-management`         | PHPInsights complexity score drops        |
-| **Run CI checks**           | `ci-workflow`                   | Before committing, validating changes     |
-| **Debug test failures**     | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
-| **Handle PR feedback**      | `code-review`                   | Processing code review comments           |
-| **Organize code structure** | `code-organization`             | Directory placement, naming, type safety  |
-| **Create DDD patterns**     | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
-| **Add CRUD endpoints**      | `api-platform-crud`             | New API resources with full CRUD          |
-| **Create load tests**       | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
-| **Update entity schema**    | `database-migrations`           | Modifying entities, adding fields         |
-| **Document APIs**           | `openapi-development`           | OpenAPI endpoint factories                |
-| **Sync documentation**      | `documentation-sync`            | After any code changes                    |
-| **Quality overview**        | `quality-standards`             | Understanding protected thresholds        |
+| Task Type                     | Skill                           | When to Use                               |
+| ----------------------------- | ------------------------------- | ----------------------------------------- |
+| **Fix Deptrac violations**    | `deptrac-fixer`                 | Architecture boundary violations detected |
+| **Fix complexity issues**     | `complexity-management`         | PHPInsights complexity score drops        |
+| **Run CI checks**             | `ci-workflow`                   | Before committing, validating changes     |
+| **Debug test failures**       | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
+| **Plan specs autonomously**   | `bmad-autonomous-planning`      | BMALPH-wrapped planning from a short task |
+| **Handle PR feedback**        | `code-review`                   | Processing code review comments           |
+| **Organize code structure**   | `code-organization`             | Directory placement, naming, type safety  |
+| **Create DDD patterns**       | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
+| **Add CRUD endpoints**        | `api-platform-crud`             | New API resources with full CRUD          |
+| **Add caching**               | `cache-management`              | Cache keys, TTLs, invalidation patterns   |
+| **Add business metrics**      | `observability-instrumentation` | AWS EMF metrics for domain events         |
+| **Create load tests**         | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
+| **Update entity schema**      | `database-migrations`           | Modifying entities, adding fields         |
+| **Document APIs**             | `openapi-development`           | OpenAPI endpoint factories                |
+| **Create docs (new project)** | `documentation-creation`        | Initial documentation suite               |
+| **Sync documentation**        | `documentation-sync`            | After any code changes                    |
+| **Quality overview**          | `quality-standards`             | Understanding protected thresholds        |
+| **Query performance**         | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes           |
+| **Architecture diagrams**     | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
 
 > For detailed flows and cross-agent guidance see `.claude/skills/AI-AGENT-GUIDE.md`.
+
+Optional BMALPH setup:
+
+- `make bmalph-claude` installs and verifies the local Claude Code BMALPH flow.
+- `make bmalph-init BMALPH_PLATFORM=claude-code BMALPH_DRY_RUN=true` previews the local BMALPH workspace files before you write them.
+- Run `make bmalph-setup BMALPH_PLATFORM=claude-code` after previewing to write the BMALPH assets locally and configure planning artifacts under `specs/`.
+- If you run `bmalph upgrade --force` directly later, rerun `make bmalph-setup BMALPH_PLATFORM=claude-code` to restore this repository's BMAD planning path defaults.
+
+### ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
 
 ## 🛡️ Quality Standards (Protected Thresholds)
 
@@ -182,11 +228,11 @@ src/
 
 The codebase enforces strict architectural boundaries via Deptrac:
 
-| Layer              | Purpose                   | Contains                                                                                                   | Dependencies            |
-| ------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------- |
-| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                  | None (isolated)         |
-| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                             | Domain + Infrastructure |
-| **Infrastructure** | External concerns         | Repository implementations (MySQL/Doctrine ORM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
+| Layer              | Purpose                   | Contains                                                                                                     | Dependencies            |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| **Domain**         | Pure business logic       | Entities, Value Objects, Aggregates, Events, Commands (interfaces), Repository interfaces                    | None (isolated)         |
+| **Application**    | Use cases & orchestration | Command Handlers, Event Subscribers, DTOs, Transformers, Processors, Resolvers                               | Domain + Infrastructure |
+| **Infrastructure** | External concerns         | Repository implementations (MongoDB/Doctrine ODM), Message buses (Symfony), Doctrine types, Retry strategies | Domain + Application    |
 
 **Rules**: Domain must stay framework-free. Application can use Symfony/API Platform. Infrastructure implements persistence/adapters.
 
@@ -211,9 +257,9 @@ The codebase enforces strict architectural boundaries via Deptrac:
 
 | Component        | Technology   | Location                             | Notes                                |
 | ---------------- | ------------ | ------------------------------------ | ------------------------------------ |
-| **Database**     | MySQL        | -                                    | Doctrine ORM                         |
+| **Database**     | MongoDB      | -                                    | Doctrine ODM                         |
 | **Custom Types** | ULID, UUID   | `Shared/Infrastructure/DoctrineType` | Custom field types                   |
-| **Mappings**     | XML          | `config/doctrine/*.orm.xml`          | Keep Domain entities annotation-free |
+| **Mappings**     | XML          | `config/doctrine/*.mongodb.xml`      | Keep Domain entities annotation-free |
 | **Resources**    | API Platform | `src/{Context}/Domain/Entity`        | Resource discovery enabled           |
 | **Filters**      | API Platform | `services.yaml`                      | Order, Search, Range, Date, Boolean  |
 
@@ -231,13 +277,14 @@ The codebase enforces strict architectural boundaries via Deptrac:
 1. **Design Domain Model** → `implementing-ddd-architecture`
 2. **Create API Endpoint** → `api-platform-crud`
 3. **Configure Database** → `database-migrations`
-4. **Write Tests** → `testing-workflow`
-5. **Update Docs** → `documentation-sync`
-6. **Run CI Validation** → `ci-workflow`
+4. **Add Business Metrics** → `observability-instrumentation`
+5. **Write Tests** → `testing-workflow`
+6. **Update Docs** → `documentation-sync`
+7. **Run CI Validation** → `ci-workflow`
 
 ## 📐 Patterns
 
-- Define entities in `{Context}/Domain/Entity/`, map via `config/doctrine/{Entity}.orm.xml`
+- Define entities in `{Context}/Domain/Entity/`, map via `config/doctrine/{Entity}.mongodb.xml`
 - Add command + handler (implements `CommandInterface`/`CommandHandlerInterface`); handlers are auto-tagged
 - Use `AggregateRoot` for domain events; dispatch via event bus
 - Define custom API filters in `config/services.yaml` and tag with `api_platform.filter`
@@ -250,36 +297,40 @@ Run `make ci` before finishing any task. Checks include PHP CS Fixer, Psalm (+ s
 
 Key variables in `.env`/`.env.test`:
 
-| Variable    | Purpose                      | Example                              |
-| ----------- | ---------------------------- | ------------------------------------ |
-| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                |
-| `DB_URL`    | Database connection string   | `mysql://root:root@database:3306/db` |
-| `AWS_SQS_*` | AWS SQS message queue config | Various                              |
+| Variable    | Purpose                      | Example                                     |
+| ----------- | ---------------------------- | ------------------------------------------- |
+| `APP_ENV`   | Application environment      | `dev`, `test`, `prod`                       |
+| `DB_URL`    | Database connection string   | `mongodb://user:password@database:27017/db` |
+| `AWS_SQS_*` | AWS SQS message queue config | Various                                     |
 
 ## 📂 Directory Organization Conventions
 
 Place files in directories that match their class type. Each directory should contain ONLY the class type indicated by its name.
 
-| Directory Name   | Must Contain             | Example Files                            |
-| ---------------- | ------------------------ | ---------------------------------------- |
-| `Command/`       | Symfony Console Commands | `SeedDataCommand.php`                    |
-| `Factory/`       | Factory classes          | `UserFactory.php`, `OpenApiFactory.php`  |
-| `Validator/`     | Validator classes        | `EmailValidator.php`                     |
-| `Provider/`      | Provider classes         | `UserProvider.php`                       |
-| `EventListener/` | Event Listeners          | `ExceptionListener.php`                  |
-| `Enum/`          | PHP Enums                | `Requirement.php`, `AllowEmptyValue.php` |
-| `ValueObject/`   | Value Objects            | `Header.php`, `Parameter.php`            |
-| `Builder/`       | Builder classes          | `QueryParameterBuilder.php`              |
-| `Seeder/`        | Seeder classes           | `UserSeeder.php`, `OAuthSeeder.php`      |
+| Directory Name   | Must Contain              | Example Files                                         |
+| ---------------- | ------------------------- | ----------------------------------------------------- |
+| `Command/`       | Symfony Console Commands  | `SeedDataCommand.php`                                 |
+| `Factory/`       | Factory classes           | `UserFactory.php`, `OpenApiFactory.php`               |
+| `Validator/`     | Validator classes         | `EmailValidator.php`                                  |
+| `Provider/`      | Provider classes          | `UserProvider.php`                                    |
+| `EventListener/` | Event Listeners           | `ExceptionListener.php`                               |
+| `Enum/`          | PHP Enums                 | `Requirement.php`, `AllowEmptyValue.php`              |
+| `ValueObject/`   | Value Objects             | `Header.php`, `Parameter.php`                         |
+| `Builder/`       | Builder classes           | `QueryParameterBuilder.php`                           |
+| `Seeder/`        | Seeder classes            | `UserSeeder.php`, `OAuthSeeder.php`                   |
+| `DoctrineType/`  | Doctrine custom types     | `OAuth2ScopeType.php`, `DomainUuidType.php`           |
+| `Serializer/`    | Serializers & Normalizers | `UuidNormalizer.php`, `StringableArrayNormalizer.php` |
 
 **Event Listener Registration**: Register event listeners in `config/services.yaml` using tags, NOT via PHP attributes.
 
 **Rules**:
 
 - Never mix class types in a directory
-- Create new directories when introducing new class types
+- **NEVER create new directories autonomously** — every new class-type directory MUST follow a well-known software engineering pattern (Factory, Provider, Builder, Resolver, Validator, etc.) AND be explicitly requested/approved by the user. When in doubt, use an existing directory
+- Do not invent ad-hoc class-type directories or suffixes (`Applier`, `Attacher`, `Enricher`, `Helper`, `Util`, `Service`). The `Service` suffix leads to anemic domain models — use specific pattern names instead (Provider, Factory, Resolver, etc.)
 - Use subdirectories for logical grouping (e.g., `Validator/Http/`, `Provider/Http/`)
 - Respect Deptrac rules—never modify architecture config to accommodate misplaced files
+- Follow DDD and CQRS strictly — all class organization must align with established DDD layers and CQRS patterns
 
 ## 📚 Additional Resources
 

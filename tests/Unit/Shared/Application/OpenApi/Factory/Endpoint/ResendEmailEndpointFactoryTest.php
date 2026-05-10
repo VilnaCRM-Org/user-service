@@ -13,6 +13,7 @@ use App\Shared\Application\OpenApi\Factory\Endpoint\ResendEmailEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Request\EmptyRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\EmailSendFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedMediaTypeFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserNotFoundResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserTimedOutResponseFactory;
@@ -20,7 +21,6 @@ use App\Shared\Application\OpenApi\Factory\UriParameter\UuidUriParameterFactory;
 use App\Tests\Unit\UnitTestCase;
 
 /**
- * @SuppressWarnings(PHPMD.TooManyFields)
  */
 final class ResendEmailEndpointFactoryTest extends UnitTestCase
 {
@@ -29,13 +29,9 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
     private UserTimedOutResponseFactory $timedOutResponseFactory;
     private UnsupportedMediaTypeFactory $unsupportedMediaTypeFactory;
     private BadRequestResponseFactory $badRequestResponseFactory;
+    private UnauthorizedResponseFactory $unauthorizedResponseFactory;
     private EmptyRequestFactory $emptyRequestFactory;
     private UuidUriParameterFactory $parameterFactory;
-    private Response $userNotFoundResponse;
-    private Response $sendAgainResponse;
-    private Response $timedOutResponse;
-    private Response $unsupportedMediaResponse;
-    private Response $badRequestResponse;
     private OpenApi $openApi;
     private Paths $paths;
     private PathItem $pathItem;
@@ -47,7 +43,6 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
         parent::setUp();
 
         $this->initializeFactoryMocks();
-        $this->initializeResponseMocks();
         $this->initializeOpenApiMocks();
     }
 
@@ -65,17 +60,9 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
         $this->timedOutResponseFactory = $this->createMock(UserTimedOutResponseFactory::class);
         $this->unsupportedMediaTypeFactory = $this->createMock(UnsupportedMediaTypeFactory::class);
         $this->badRequestResponseFactory = $this->createMock(BadRequestResponseFactory::class);
+        $this->unauthorizedResponseFactory = $this->createMock(UnauthorizedResponseFactory::class);
         $this->emptyRequestFactory = $this->createMock(EmptyRequestFactory::class);
         $this->parameterFactory = $this->createMock(UuidUriParameterFactory::class);
-    }
-
-    private function initializeResponseMocks(): void
-    {
-        $this->userNotFoundResponse = $this->createMock(Response::class);
-        $this->sendAgainResponse = $this->createMock(Response::class);
-        $this->timedOutResponse = $this->createMock(Response::class);
-        $this->unsupportedMediaResponse = $this->createMock(Response::class);
-        $this->badRequestResponse = $this->createMock(Response::class);
     }
 
     private function initializeOpenApiMocks(): void
@@ -95,6 +82,7 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
             $this->timedOutResponseFactory,
             $this->unsupportedMediaTypeFactory,
             $this->badRequestResponseFactory,
+            $this->unauthorizedResponseFactory,
             $this->emptyRequestFactory,
             $this->parameterFactory
         );
@@ -113,15 +101,17 @@ final class ResendEmailEndpointFactoryTest extends UnitTestCase
     private function setResponseFactoryExpectations(): void
     {
         $this->userNotFoundResponseFactory->expects($this->once())
-            ->method('getResponse')->willReturn($this->userNotFoundResponse);
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->sendAgainResponseFactory->expects($this->once())
-            ->method('getResponse')->willReturn($this->sendAgainResponse);
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->timedOutResponseFactory->expects($this->once())
-            ->method('getResponse')->willReturn($this->timedOutResponse);
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->unsupportedMediaTypeFactory->expects($this->once())
-            ->method('getResponse')->willReturn($this->unsupportedMediaResponse);
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
         $this->badRequestResponseFactory->expects($this->once())
-            ->method('getResponse')->willReturn($this->badRequestResponse);
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
+        $this->unauthorizedResponseFactory->expects($this->once())
+            ->method('getResponse')->willReturn($this->createMock(Response::class));
     }
 
     private function setExpectationsForPaths(): void

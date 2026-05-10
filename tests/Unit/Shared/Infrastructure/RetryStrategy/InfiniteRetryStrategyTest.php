@@ -18,7 +18,7 @@ final class InfiniteRetryStrategyTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->retryStrategy = new InfiniteRetryStrategy();
+        $this->retryStrategy = new InfiniteRetryStrategy(60000);
     }
 
     public function testShouldRetry(): void

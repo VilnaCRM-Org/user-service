@@ -76,12 +76,10 @@ final class ErrorProviderTest extends UnitTestCase
         $this->operation->expects($this->once())
             ->method('getStatus')->willReturn(null);
 
-        $errorText = $this->faker->word();
+        $errorText = $this->faker->unique()->word();
+        $exceptionMessage = $this->faker->unique()->word();
 
-        $exception = new HttpException(
-            Response::HTTP_INTERNAL_SERVER_ERROR,
-            $this->faker->word()
-        );
+        $exception = new HttpException(Response::HTTP_INTERNAL_SERVER_ERROR, $exceptionMessage);
         $request = new Request(attributes: ['exception' => $exception]);
         $context = ['request' => $request];
 
@@ -91,14 +89,11 @@ final class ErrorProviderTest extends UnitTestCase
 
         $errorProvider = $this->errorProvider();
         $error = $errorProvider->provide($this->operation, [], $context);
-
         $this->assertInstanceOf(Error::class, $error);
-
         $this->assertEquals(
             Response::HTTP_INTERNAL_SERVER_ERROR,
             $error->getStatusCode()
         );
-
         $this->assertEquals($errorText, $error->getDetail());
     }
 
@@ -241,6 +236,64 @@ final class ErrorProviderTest extends UnitTestCase
         $this->assertSame($internalError, $error->getDetail());
     }
 
+    public function testContextRequestTakesPrecedenceOverRequestStack(): void
+    {
+        $status = Response::HTTP_BAD_REQUEST;
+        $contextErrorMessage = 'Error from context request';
+        $stackErrorMessage = 'Error from stack request';
+
+        $this->operation->method('getStatus')->willReturn($status);
+
+        $context = $this->setupRequestsWithDifferentExceptions(
+            $status,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+
+        $this->translator->method('trans')->with('error.internal')->willReturn('');
+
+        $errorProvider = $this->errorProvider();
+        $error = $errorProvider->provide($this->operation, [], $context);
+
+        $this->assertContextRequestTakesPrecedence(
+            $error,
+            $contextErrorMessage,
+            $stackErrorMessage
+        );
+    }
+
+    /**
+     * @return array<Request>
+     *
+     * @psalm-return array{request: Request}
+     */
+    private function setupRequestsWithDifferentExceptions(
+        int $status,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): array {
+        $contextException = new HttpException($status, $contextErrorMessage);
+        $stackException = new HttpException($status, $stackErrorMessage);
+
+        $contextRequest = new Request(attributes: ['exception' => $contextException]);
+        $stackRequest = new Request(attributes: ['exception' => $stackException]);
+
+        $this->requestStack->push($stackRequest);
+        self::assertSame($stackRequest, $this->requestStack->getCurrentRequest());
+
+        return ['request' => $contextRequest];
+    }
+
+    private function assertContextRequestTakesPrecedence(
+        Error $error,
+        string $contextErrorMessage,
+        string $stackErrorMessage
+    ): void {
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertSame($contextErrorMessage, $error->getDetail());
+        $this->assertNotSame($stackErrorMessage, $error->getDetail());
+    }
+
     private function setUpDomainExceptionMocks(): void
     {
         $this->status = Response::HTTP_BAD_REQUEST;
@@ -284,7 +337,7 @@ final class ErrorProviderTest extends UnitTestCase
             ->willReturn('');
     }
 
-    private function createApiPlatformHttpException(): ApiPlatformHttpExceptionInterface
+    private function createApiPlatformHttpException(): \RuntimeException
     {
         return new class() extends \RuntimeException implements ApiPlatformHttpExceptionInterface {
             public function __construct()
@@ -292,13 +345,20 @@ final class ErrorProviderTest extends UnitTestCase
                 parent::__construct('Invalid payload');
             }
 
+            /**
+             * @psalm-return 400
+             */
             #[\Override]
             public function getStatusCode(): int
             {
                 return Response::HTTP_BAD_REQUEST;
             }
 
-            /** @return array<string, string> */
+            /**
+             * @return array<string>
+             *
+             * @psalm-return array{'X-Debug': '1'}
+             */
             #[\Override]
             public function getHeaders(): array
             {

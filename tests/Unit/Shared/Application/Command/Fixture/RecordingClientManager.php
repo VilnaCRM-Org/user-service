@@ -37,6 +37,8 @@ final class RecordingClientManager implements ClientManagerInterface
 
     /**
      * @return array<ClientInterface>
+     *
+     * @psalm-return list{0?: ClientInterface, 1?: ClientInterface}
      */
     #[\Override]
     public function list(?ClientFilter $clientFilter): array

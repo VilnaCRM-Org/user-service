@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\QueryParameter\Pagination;
 
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\Pagination\ItemsPerPageRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\QueryParameter\Validator\ExplicitValueValidator;
 use App\Tests\Unit\UnitTestCase;
 
 final class ItemsPerPageRuleTest extends UnitTestCase
@@ -16,18 +16,16 @@ final class ItemsPerPageRuleTest extends UnitTestCase
     public function testDoesNotNormalizeWhenValueIsNotExplicit(): void
     {
         $violation = new QueryParameterViolation('Invalid pagination', 'detail');
-        $valueEvaluator = $this->createValueEvaluatorForNonExplicitValue();
+        $valueValidator = $this->createValueValidatorForNonExplicitValue();
         $normalizer = $this->createNormalizerThatShouldNotBeCalled();
         $violationFactory = $this->createViolationFactory($violation);
-
-        $rule = new ItemsPerPageRule($valueEvaluator, $normalizer, $violationFactory);
-
+        $rule = new ItemsPerPageRule($valueValidator, $normalizer, $violationFactory);
         self::assertSame($violation, $rule->evaluate('   '));
     }
 
-    private function createValueEvaluatorForNonExplicitValue(): ExplicitValueEvaluator
+    private function createValueValidatorForNonExplicitValue(): ExplicitValueValidator
     {
-        $evaluator = $this->createMock(ExplicitValueEvaluator::class);
+        $evaluator = $this->createMock(ExplicitValueValidator::class);
         $evaluator->expects(self::once())
             ->method('wasParameterSent')
             ->with('   ')

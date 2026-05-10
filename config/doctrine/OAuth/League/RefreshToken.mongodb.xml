@@ -1,0 +1,25 @@
+<doctrine-mongo-mapping
+  xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd"
+>
+
+    <document name="League\Bundle\OAuth2ServerBundle\Model\RefreshToken" db="user_service" collection="oauth2_refresh_tokens">
+        <id field-name="identifier" type="string" strategy="NONE" />
+
+        <field field-name="expiry" type="date" />
+        <field field-name="revoked" type="boolean" />
+
+        <reference-one field="accessToken" target-document="League\Bundle\OAuth2ServerBundle\Model\AccessToken" store-as="id" nullable="true" />
+
+        <indexes>
+            <index>
+                <key name="expiry" order="asc" />
+            </index>
+            <index>
+                <key name="accessToken" order="asc" />
+            </index>
+        </indexes>
+    </document>
+</doctrine-mongo-mapping>

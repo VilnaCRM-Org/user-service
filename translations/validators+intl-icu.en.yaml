@@ -10,6 +10,18 @@ initials:
   invalid:
     length: 'This value is too long. It should have {limit} character or less.|This value is too long. It should have {limit} characters or less.'
     type: 'Initials must be a string.'
+emf:
+  key:
+    empty: 'EMF dimension key must contain at least one non-whitespace character'
+    too_long: 'EMF dimension key must not exceed 255 characters'
+    non_ascii: 'EMF dimension key must contain only ASCII characters'
+    control_chars: 'EMF dimension key must not contain ASCII control characters'
+    starts_with_colon: 'EMF dimension key must not start with colon (:)'
+  value:
+    empty: 'EMF dimension value must contain at least one non-whitespace character'
+    too_long: 'EMF dimension value must not exceed 1024 characters'
+    non_ascii: 'EMF dimension value must contain only ASCII characters'
+    control_chars: 'EMF dimension value must not contain ASCII control characters'
 password:
   invalid:
     length: 'Password must be between 8 and 64 characters long'

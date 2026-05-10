@@ -11,6 +11,9 @@ final class PasswordResetTokenAlreadyUsedException extends DomainException
         parent::__construct('Password reset token has already been used');
     }
 
+    /**
+     * @psalm-return 'error.password-reset-token-already-used'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

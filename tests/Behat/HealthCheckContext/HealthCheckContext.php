@@ -6,20 +6,37 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Doctrine\DBAL\Connection;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use Faker\Factory;
+use Faker\Generator;
+use MongoDB\Client;
+use MongoDB\Database;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\TraceableAdapter;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class HealthCheckContext implements Context
 {
     private bool $kernelDirty = false;
-    private KernelInterface $kernel;
+    private RestContext $restContext;
+    private Generator $faker;
 
-    public function __construct(KernelInterface $kernel)
+    public function __construct(
+        private readonly KernelInterface $kernel,
+    ) {
+        $this->faker = Factory::create();
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
     {
-        $this->kernel = $kernel;
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
     }
 
     /**
@@ -28,19 +45,21 @@ final class HealthCheckContext implements Context
     public function theCacheIsNotWorking(): void
     {
         $failingPool = new class() extends ArrayAdapter {
+            /**
+             * @return never
+             */
+            #[\Override]
             public function get(
                 string $key,
                 callable $callback,
                 ?float $beta = null,
                 ?array &$metadata = null
-            ): mixed {
+            ): array|bool|float|int|object|string|null {
                 throw new \RuntimeException('Cache is not working');
             }
         };
 
-        $failingCache = new TraceableAdapter($failingPool);
-
-        $this->replaceService('cache.app', $failingCache);
+        $this->replaceService('cache.app', new TraceableAdapter($failingPool));
     }
 
     /**
@@ -48,8 +67,22 @@ final class HealthCheckContext implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $failingConnection = $this->createFailingConnection();
-        $this->replaceService(Connection::class, $failingConnection);
+        $this->rebootKernelIfNeeded();
+        $documentManager = $this->getDocumentManager();
+
+        $failingClient = new class(sprintf('mongodb://%s', $this->faker->ipv4())) extends Client {
+            /**
+             * @return never
+             */
+            #[\Override]
+            public function selectDatabase(string $databaseName, array $options = []): Database
+            {
+                throw new \RuntimeException('Database is not available');
+            }
+        };
+
+        $reflection = new \ReflectionProperty($documentManager, 'client');
+        $reflection->setValue($documentManager, $failingClient);
     }
 
     /**
@@ -57,8 +90,15 @@ final class HealthCheckContext implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $failingSqsClient = $this->createFailingSqsClient();
-        $this->replaceService(SqsClient::class, $failingSqsClient);
+        $this->replaceService(SqsClient::class, $this->createFailingSqsClient());
+    }
+
+    /**
+     * @Then print last response
+     */
+    public function printLastResponse(): void
+    {
+        echo 'Response content: ' . $this->getResponseContent() . "\n";
     }
 
     /**
@@ -74,6 +114,15 @@ final class HealthCheckContext implements Context
         $this->kernelDirty = false;
     }
 
+    private function getResponseContent(): string
+    {
+        return $this->restContext
+            ->getMink()
+            ->getSession()
+            ->getPage()
+            ->getContent();
+    }
+
     private function createFailingSqsClient(): SqsClient
     {
         return new class() extends SqsClient {
@@ -87,32 +136,38 @@ final class HealthCheckContext implements Context
                 ]);
             }
 
-            public function __call($name, array $args): void
+            #[\Override]
+            public function __call($name, array $args): never
             {
                 throw new \RuntimeException('Message broker is not available');
             }
         };
     }
 
-    private function createFailingConnection(): FailingConnection
-    {
-        $connection = $this->container()->get(Connection::class);
-        assert($connection instanceof Connection);
-        $params = $connection->getParams();
-        $driver = $connection->getDriver();
-        $config = $connection->getConfiguration();
-
-        return new FailingConnection($params, $driver, $config);
-    }
-
     private function replaceService(string $serviceId, object $service): void
     {
-        if ($this->kernelDirty === false) {
-            $this->kernel->reboot(null);
-            $this->kernelDirty = true;
+        $this->rebootKernelIfNeeded();
+        $this->container()->set($serviceId, $service);
+    }
+
+    private function rebootKernelIfNeeded(): void
+    {
+        if ($this->kernelDirty) {
+            return;
         }
 
-        $this->container()->set($serviceId, $service);
+        $this->kernel->reboot(null);
+        $this->kernelDirty = true;
+    }
+
+    private function getDocumentManager(): DocumentManager
+    {
+        $documentManager = $this->container()->get(DocumentManager::class);
+        if (!$documentManager instanceof DocumentManager) {
+            throw new \RuntimeException('Document manager is not available');
+        }
+
+        return $documentManager;
     }
 
     private function container(): ContainerInterface

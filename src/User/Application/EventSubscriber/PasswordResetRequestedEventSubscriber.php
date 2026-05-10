@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\User\Application\EventSubscriber;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
 use App\User\Application\Factory\SendPasswordResetEmailCommandFactoryInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
 use App\User\Domain\Factory\PasswordResetEmailFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
 final readonly class PasswordResetRequestedEventSubscriber implements
     DomainEventSubscriberInterface
@@ -20,17 +20,17 @@ final readonly class PasswordResetRequestedEventSubscriber implements
         private CommandBusInterface $commandBus,
         private PasswordResetTokenRepositoryInterface $tokenRepository,
         private PasswordResetEmailFactoryInterface $emailFactory,
-        private SendPasswordResetEmailCommandFactoryInterface $cmdFactory
+        private SendPasswordResetEmailCommandFactoryInterface $cmdFactory,
+        private UserRepositoryInterface $userRepository
     ) {
     }
 
     public function __invoke(PasswordResetRequestedEvent $event): void
     {
-        $user = $event->user;
-
+        $user = $this->userRepository->findById($event->userId);
         $token = $this->tokenRepository->findByToken($event->token);
 
-        if (!$token instanceof PasswordResetTokenInterface) {
+        if (!$token instanceof PasswordResetTokenInterface || $user === null) {
             return;
         }
 
@@ -42,7 +42,9 @@ final readonly class PasswordResetRequestedEventSubscriber implements
     }
 
     /**
-     * @return array<class-string<DomainEvent>>
+     * @return array<string>
+     *
+     * @psalm-return list{PasswordResetRequestedEvent::class}
      */
     #[\Override]
     public function subscribedTo(): array

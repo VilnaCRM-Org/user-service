@@ -32,6 +32,7 @@ final class EmailChangedEventFactoryTest extends UnitTestCase
     public function testCreateEvent(): void
     {
         $email = $this->faker->email();
+        $oldEmail = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
         $userId = $this->faker->uuid();
@@ -45,9 +46,11 @@ final class EmailChangedEventFactoryTest extends UnitTestCase
 
         $eventId = $this->faker->uuid();
 
-        $event = $this->factory->create($user, $eventId);
+        $event = $this->factory->create($user, $oldEmail, $eventId);
 
         $this->assertInstanceOf(EmailChangedEvent::class, $event);
-        $this->assertEquals($user, $event->user);
+        $this->assertEquals($userId, $event->userId);
+        $this->assertEquals($email, $event->newEmail);
+        $this->assertEquals($oldEmail, $event->oldEmail);
     }
 }

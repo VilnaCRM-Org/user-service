@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 
 final class ConfirmPasswordResetCommand implements CommandInterface
 {
@@ -27,5 +28,10 @@ final class ConfirmPasswordResetCommand implements CommandInterface
         ConfirmPasswordResetCommandResponse $response
     ): void {
         $this->response = $response;
+    }
+
+    public function markCompleted(): void
+    {
+        $this->response = new ConfirmPasswordResetCommandResponse();
     }
 }

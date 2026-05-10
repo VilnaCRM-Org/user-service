@@ -4,13 +4,13 @@ This repo already contains real-world examples under `src/Shared/Application/Ope
 
 Suggested starting points:
 
-- `src/Shared/Application/OpenApi/Sanitizer/PathParametersSanitizer.php`
-- `src/Shared/Application/OpenApi/Sanitizer/PaginationQueryParametersSanitizer.php`
-- `src/Shared/Application/OpenApi/Augmenter/ServerErrorResponseAugmenter.php`
-- `src/Shared/Application/OpenApi/Cleaner/NoContentResponseCleaner.php`
+- `src/Shared/Application/OpenApi/Transformer/ServerErrorResponseTransformer.php`
+- `src/Shared/Application/OpenApi/Transformer/PaginationOperationTransformer.php`
+- `src/Shared/Application/OpenApi/Transformer/PaginationParameterTransformer.php`
+- `src/Shared/Application/OpenApi/Transformer/ResponseContentTransformer.php`
 - `src/Shared/Application/OpenApi/Factory/OpenApiFactory.php`
 
-Use them as templates when adding new transformations.
+Use them as templates when adding new transformations. All new OpenAPI transformations MUST go into the `Transformer/` directory — do NOT create new directories like `Augmenter/`, `Enricher/`, or `Helper/`.
 
 ## Validation commands
 

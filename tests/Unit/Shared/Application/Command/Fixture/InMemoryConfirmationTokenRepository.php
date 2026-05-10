@@ -36,6 +36,9 @@ final class InMemoryConfirmationTokenRepository implements TokenRepositoryInterf
         return $this->matcher->matchesByTokenValue($this->token, $tokenValue);
     }
 
+    /**
+     * @return ConfirmationToken|null
+     */
     #[\Override]
     public function findByUserId(string $userID): ?ConfirmationTokenInterface
     {

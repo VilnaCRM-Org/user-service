@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\User\Domain\Entity\ConfirmationToken;
 
-final class ConfirmationEmailSentEvent extends DomainEvent
+final class ConfirmationEmailSentEvent extends AccountDomainEvent
 {
     public function __construct(
-        public readonly ConfirmationToken $token,
+        public readonly string $tokenValue,
         public readonly string $emailAddress,
         string $eventId,
         ?string $occurredOn = null
@@ -19,7 +18,9 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, string|ConfirmationToken> $body
+     * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -28,13 +29,16 @@ final class ConfirmationEmailSentEvent extends DomainEvent
         string $occurredOn
     ): DomainEvent {
         return new self(
-            $body['token'],
+            $body['tokenValue'],
             $body['emailAddress'],
             $eventId,
             $occurredOn
         );
     }
 
+    /**
+     * @psalm-return 'confirmation_email.send'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -42,14 +46,16 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string|ConfirmationToken>
+     * @return array<string>
+     *
+     * @psalm-return array{emailAddress: string, tokenValue: string}
      */
     #[\Override]
     public function toPrimitives(): array
     {
         return [
             'emailAddress' => $this->emailAddress,
-            'token' => $this->token,
+            'tokenValue' => $this->tokenValue,
         ];
     }
 }

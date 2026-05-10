@@ -1,0 +1,55 @@
+name: Cache Performance Tests
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'src/User/Infrastructure/Repository/CachedUserRepository.php'
+      - 'src/Shared/Infrastructure/Cache/**'
+      - 'src/User/Application/EventSubscriber/*CacheInvalidation*.php'
+      - 'config/packages/cache.yaml'
+      - 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php'
+      - 'tests/Load/scripts/cachePerformance.js'
+      - 'tests/Load/execute-load-test.sh'
+      - 'tests/Load/config.json.dist'
+
+jobs:
+  cache-integration-tests:
+    name: Cache Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Start application
+        run: make start
+
+      - name: Run Cache Performance Integration Tests
+        run: make cache-performance-tests
+
+  cache-load-tests:
+    name: Cache Load Tests
+    runs-on: ubuntu-latest
+    needs: cache-integration-tests
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Start application
+        run: make start
+
+      - name: Setup test database
+        run: make setup-test-db
+
+      - name: Run Cache Performance Load Tests
+        run: make cache-performance-load-tests

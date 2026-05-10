@@ -24,6 +24,7 @@ final readonly class SchemathesisConfirmationTokenSeeder
             $user->getId()
         );
         $token->setAllowedToSendAfter(new DateTimeImmutable('-1 minute'));
+        $token->setTimesSent(5);
 
         $this->tokenRepository->save($token);
     }

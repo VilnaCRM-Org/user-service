@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Domain\Event;
 
-use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
-use App\User\Domain\Factory\UserFactory;
 
 final class PasswordResetEmailSentEventTest extends UnitTestCase
 {
     public function testConstruction(): void
     {
-        $token = $this->createPasswordResetToken();
+        $tokenValue = $this->faker->sha256();
+        $userId = $this->faker->uuid();
         $email = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
 
-        $event = new PasswordResetEmailSentEvent($token, $email, $eventId);
+        $event = new PasswordResetEmailSentEvent($tokenValue, $userId, $email, $eventId);
 
-        $this->assertSame($token, $event->token);
+        $this->assertSame($tokenValue, $event->tokenValue);
+        $this->assertSame($userId, $event->userId);
         $this->assertSame($email, $event->email);
         $this->assertSame($eventId, $event->eventId());
     }
@@ -36,11 +35,10 @@ final class PasswordResetEmailSentEventTest extends UnitTestCase
     {
         $tokenValue = $this->faker->sha256();
         $userId = $this->faker->uuid();
-        $token = $this->createPasswordResetTokenWithValue($tokenValue, $userId);
         $email = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
 
-        $event = new PasswordResetEmailSentEvent($token, $email, $eventId);
+        $event = new PasswordResetEmailSentEvent($tokenValue, $userId, $email, $eventId);
         $primitives = $event->toPrimitives();
 
         $this->assertIsArray($primitives);
@@ -52,48 +50,29 @@ final class PasswordResetEmailSentEventTest extends UnitTestCase
         $this->assertSame($email, $primitives['email']);
     }
 
-    public function testFromPrimitivesThrowsException(): void
+    public function testFromPrimitivesAndToPrimitives(): void
     {
-        $body = [
-            'tokenValue' => $this->faker->sha256(),
-            'userId' => $this->faker->uuid(),
-            'email' => $this->faker->safeEmail(),
-        ];
+        $tokenValue = $this->faker->sha256();
+        $userId = $this->faker->uuid();
+        $email = $this->faker->safeEmail();
         $eventId = $this->faker->uuid();
         $occurredOn = $this->faker->dateTime()->format('Y-m-d H:i:s');
 
-        $this->expectException(\RuntimeException::class);
-
-        PasswordResetEmailSentEvent::fromPrimitives($body, $eventId, $occurredOn);
-    }
-
-    private function createPasswordResetToken(): PasswordResetToken
-    {
-        $userFactory = new UserFactory();
-        $user = $userFactory->create(
-            $this->faker->safeEmail(),
-            $this->faker->lexify('??'),
-            $this->faker->password(),
-            new Uuid($this->faker->uuid())
+        $event = new PasswordResetEmailSentEvent(
+            $tokenValue,
+            $userId,
+            $email,
+            $eventId,
+            $occurredOn
         );
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
 
-        return new PasswordResetToken(
-            $this->faker->sha256(),
-            $user->getId(),
-            $expiresAt,
-            $createdAt
+        $serializedEvent = $event->toPrimitives();
+        $deserializedEvent = PasswordResetEmailSentEvent::fromPrimitives(
+            $serializedEvent,
+            $eventId,
+            $occurredOn
         );
-    }
 
-    private function createPasswordResetTokenWithValue(
-        string $tokenValue,
-        string $userId
-    ): PasswordResetToken {
-        $createdAt = new \DateTimeImmutable();
-        $expiresAt = $createdAt->add(new \DateInterval('PT1H'));
-
-        return new PasswordResetToken($tokenValue, $userId, $expiresAt, $createdAt);
+        $this->assertEquals($event, $deserializedEvent);
     }
 }

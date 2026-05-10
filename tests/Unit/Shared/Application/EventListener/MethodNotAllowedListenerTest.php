@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\MethodNotAllowedListener;
-use App\Shared\Application\Provider\Http\AllowedMethodsProvider;
+use App\Shared\Application\Provider\AllowedMethodsProvider;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -17,10 +17,8 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
     {
         $provider = $this->createProviderMock(['POST']);
         $listener = new MethodNotAllowedListener($provider);
-
         $event = $this->createMainRequestEvent('POST');
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 
@@ -28,10 +26,8 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
     {
         $provider = $this->createProviderMock(['POST']);
         $listener = new MethodNotAllowedListener($provider);
-
         $event = $this->createMainRequestEvent('PUT');
         $listener($event);
-
         $this->assertTrue($event->hasResponse());
         $this->assertResponseIsMethodNotAllowed($event);
     }
@@ -54,10 +50,8 @@ final class MethodNotAllowedListenerTest extends UnitTestCase
         $provider = $this->createProviderMock([], '/api/users');
         $listener = new MethodNotAllowedListener($provider);
         $requestType = HttpKernelInterface::MAIN_REQUEST;
-
         $event = $this->createRequestEvent('DELETE', $requestType, '/api/users');
         $listener($event);
-
         $this->assertFalse($event->hasResponse());
     }
 

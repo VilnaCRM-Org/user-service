@@ -21,7 +21,7 @@ final class UniqueEmailTest extends UnitTestCase
         self::assertSame($groups, $constraint->groups);
         self::assertSame($payload, $constraint->payload);
         self::assertSame(
-            \App\Shared\Application\Validator\UniqueEmailValidator::class,
+            \App\Shared\Application\Validator\UniqueEmailConstraintValidator::class,
             $constraint->validatedBy()
         );
     }

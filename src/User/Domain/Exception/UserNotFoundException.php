@@ -11,6 +11,9 @@ final class UserNotFoundException extends DomainException
         parent::__construct('User not found');
     }
 
+    /**
+     * @psalm-return 'error.user-not-found'
+     */
     #[\Override]
     public function getTranslationTemplate(): string
     {

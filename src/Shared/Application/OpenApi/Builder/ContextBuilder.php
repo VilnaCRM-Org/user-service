@@ -41,6 +41,8 @@ final readonly class ContextBuilder
 
     /**
      * @param array<Parameter> $params
+     *
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|string>|bool|int|string>|bool|int|string>>>
      */
     private function processParams(
         array $params,
@@ -60,8 +62,10 @@ final readonly class ContextBuilder
 
     /**
      * @param array<string, array<string, string|int>> $properties
-     * @param array<string, string|int|array|bool> $example
+     * @param array<string, string|int|array<string, string>|bool> $example
      * @param array<int, string> $required
+     *
+     * @psalm-return ArrayObject<string, array<'example'|'schema', array<int|string, array<array<int|string>|bool|int|string>|bool|int|string>>>
      */
     private function buildContent(
         string $contentType,
@@ -90,7 +94,9 @@ final readonly class ContextBuilder
     /**
      * @param array<Parameter> $params
      *
-     * @return array<string, array<string, string|int>>
+     * @return array<array<int|string|array<string>>>
+     *
+     * @psalm-return array<string, array<string, array<string, string>|int|string>>
      */
     private function collectProperties(array $params): array
     {
@@ -104,13 +110,13 @@ final readonly class ContextBuilder
             $params
         );
 
-        return (array) array_combine($names, $schemas);
+        return array_combine($names, $schemas);
     }
 
     /**
      * @param array<Parameter> $params
      *
-     * @return array<string, string|int|array|bool>
+     * @return array<string, string|int|array<string, string>|bool>
      */
     private function collectExamples(array $params): array
     {
@@ -123,18 +129,23 @@ final readonly class ContextBuilder
             $params
         );
 
-        $combined = (array) array_combine($names, $examples);
+        $combined = array_combine($names, $examples);
 
-        return array_filter(
+        /** @var array<string, string|int|array<string, string>|bool> $filtered */
+        $filtered = array_filter(
             $combined,
             static fn (mixed $value) => $value !== null
         );
+
+        return $filtered;
     }
 
     /**
      * @param array<Parameter> $params
      *
-     * @return array<int, string>
+     * @return array<string>
+     *
+     * @psalm-return list<string>
      */
     private function collectRequired(array $params): array
     {
@@ -150,9 +161,11 @@ final readonly class ContextBuilder
     }
 
     /**
-     * @param array<int|string, array|string|int|bool> $values
+     * @param array<int|string, array<string, string>|string|int|bool> $values
      *
-     * @return array<int|string, array|string|int|bool>|null
+     * @return array<array<string, string>|bool|int|string>|null
+     *
+     * @psalm-return array<int|string, array<string, string>|bool|int|string>|null
      */
     private function emptyArrayToNull(array $values): ?array
     {

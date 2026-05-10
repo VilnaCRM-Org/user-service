@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Tests\Behat\UserContext\Input\RawBodyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -28,8 +29,15 @@ final class RequestBodySerializer
             return $defaultPayload;
         }
 
+        if ($requestBody instanceof RawBodyInput) {
+            return $requestBody->getRawBody();
+        }
+
         if (!$requestBody instanceof RequestInput) {
-            return $this->serializer->serialize($requestBody, 'json');
+            return $this->serializer->serialize(
+                $requestBody,
+                'json'
+            );
         }
 
         return $this->serializeRequestInput($requestBody);
@@ -38,14 +46,14 @@ final class RequestBodySerializer
     private function serializeRequestInput(RequestInput $requestBody): string
     {
         $payload = array_filter(
-            get_object_vars($requestBody),
+            $requestBody->toArray(),
             static fn ($value): bool => self::isNonEmptyValue($value)
         );
 
         return json_encode((object) $payload, JSON_THROW_ON_ERROR);
     }
 
-    private static function isNonEmptyValue(mixed $value): bool
+    private static function isNonEmptyValue(array|bool|float|int|object|string|null $value): bool
     {
         return $value !== null && (!is_string($value) || $value !== '');
     }

@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\User\Domain\Entity\PasswordResetTokenInterface;
-use RuntimeException;
 
-final class PasswordResetEmailSentEvent extends DomainEvent
+final class PasswordResetEmailSentEvent extends PasswordDomainEvent
 {
     public function __construct(
-        public readonly PasswordResetTokenInterface $token,
+        public readonly string $tokenValue,
+        public readonly string $userId,
         public readonly string $email,
         string $eventId,
         ?string $occurredOn = null
@@ -22,7 +21,7 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     /**
      * @param array<string, string> $body
      *
-     * @psalm-return never
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -30,11 +29,18 @@ final class PasswordResetEmailSentEvent extends DomainEvent
         string $eventId,
         string $occurredOn
     ): DomainEvent {
-        throw new RuntimeException(
-            'Cannot reconstruct PasswordResetEmailSentEvent from primitives.'
+        return new self(
+            $body['tokenValue'],
+            $body['userId'],
+            $body['email'],
+            $eventId,
+            $occurredOn
         );
     }
 
+    /**
+     * @psalm-return 'user.password_reset_email_sent'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -42,14 +48,16 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
+     *
+     * @psalm-return array{tokenValue: string, userId: string, email: string}
      */
     #[\Override]
     public function toPrimitives(): array
     {
         return [
-            'tokenValue' => $this->token->getTokenValue(),
-            'userId' => $this->token->getUserID(),
+            'tokenValue' => $this->tokenValue,
+            'userId' => $this->userId,
             'email' => $this->email,
         ];
     }

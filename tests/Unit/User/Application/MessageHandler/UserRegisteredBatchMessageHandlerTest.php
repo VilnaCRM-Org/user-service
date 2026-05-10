@@ -49,6 +49,16 @@ final class UserRegisteredBatchMessageHandlerTest extends UnitTestCase
         );
     }
 
+    #[\Override]
+    protected function tearDown(): void
+    {
+        if (isset($this->ack) && !$this->ack->isAcknowledged()) {
+            $this->ack->ack();
+        }
+
+        parent::tearDown();
+    }
+
     public function testProcess(): void
     {
         $user = $this->createMock(UserInterface::class);

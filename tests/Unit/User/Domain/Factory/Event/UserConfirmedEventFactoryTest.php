@@ -35,6 +35,6 @@ final class UserConfirmedEventFactoryTest extends UnitTestCase
         $event = $this->factory->create($token, $eventId);
 
         $this->assertInstanceOf(UserConfirmedEvent::class, $event);
-        $this->assertEquals($token, $event->token);
+        $this->assertEquals($token->getTokenValue(), $event->tokenValue);
     }
 }

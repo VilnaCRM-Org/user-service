@@ -18,6 +18,9 @@ final readonly class UserPatchUpdateResolver
     ) {
     }
 
+    /**
+     * @param array<string, scalar|null>|null $payload
+     */
     public function resolve(
         UserPatchDto $data,
         UserInterface $user,

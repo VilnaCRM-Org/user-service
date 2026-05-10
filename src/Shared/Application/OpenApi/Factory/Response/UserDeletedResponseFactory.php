@@ -13,7 +13,9 @@ final class UserDeletedResponseFactory implements AbstractResponseFactory
     {
     }
 
-    /** @psalm-suppress PossiblyUnusedReturnValue Used by OpenApi decorator */
+    /**
+     * @psalm-api
+     */
     #[\Override]
     public function getResponse(): Response
     {

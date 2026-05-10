@@ -7,11 +7,13 @@ namespace App\Tests\Unit\Internal\HealthCheck\Infrastructure\EventSubscriber;
 use App\Internal\HealthCheck\Domain\Event\HealthCheckEvent;
 use App\Internal\HealthCheck\Infrastructure\EventSubscriber\DBCheckSubscriber;
 use App\Tests\Unit\UnitTestCase;
-use Doctrine\DBAL\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use MongoDB\Client;
+use MongoDB\Database;
 
 final class DBCheckSubscriberTest extends UnitTestCase
 {
-    private Connection $connection;
+    private DocumentManager $documentManager;
     private DBCheckSubscriber $subscriber;
 
     #[\Override]
@@ -19,17 +21,37 @@ final class DBCheckSubscriberTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->connection = $this->createMock(Connection::class);
+        $this->documentManager = $this->createMock(DocumentManager::class);
         $this->subscriber = new DBCheckSubscriber(
-            $this->connection
+            $this->documentManager
         );
     }
 
     public function testOnHealthCheck(): void
     {
-        $this->connection->expects($this->once())
-            ->method('executeQuery')
-            ->with('SELECT 1');
+        $client = $this->createMock(Client::class);
+        $database = $this->createMock(Database::class);
+        $configuration = $this->createMock(\Doctrine\ODM\MongoDB\Configuration::class);
+        $dbName = $this->faker->word();
+
+        $this->documentManager->expects($this->once())
+            ->method('getConfiguration')
+            ->willReturn($configuration);
+
+        $configuration->expects($this->once())
+            ->method('getDefaultDB')
+            ->willReturn($dbName);
+
+        $this->documentManager->expects($this->once())
+            ->method('getClient')
+            ->willReturn($client);
+
+        $client->expects($this->once())
+            ->method('selectDatabase')
+            ->with($dbName)
+            ->willReturn($database);
+
+        $database->expects($this->once())->method('command')->with(['ping' => 1]);
 
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);

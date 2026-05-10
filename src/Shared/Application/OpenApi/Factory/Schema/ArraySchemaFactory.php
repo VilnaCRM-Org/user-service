@@ -15,7 +15,9 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return array{type: string, items: array<string, string>}
+     * @return array<int|string|array<string>>
+     *
+     * @psalm-return array<'items'|'minItems'|'type', 'array'|array{type: 'object'|'string'}|int>
      */
     public function create(Parameter $param): array
     {
@@ -30,9 +32,13 @@ final readonly class ArraySchemaFactory
     }
 
     /**
-     * @return array<string, string>
+     * @param array<string|array<string, string|bool>>|bool|int|string|null $example
+     *
+     * @return array{type: 'object'|'string'}
+     *
+     * @psalm-return array{type: 'object'|'string'}
      */
-    private function resolveItemsSchema(mixed $example): array
+    private function resolveItemsSchema(array|bool|int|string|null $example): array
     {
         $firstValue = $this->exampleValueExtractor
             ->extract($example);

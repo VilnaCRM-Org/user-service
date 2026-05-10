@@ -17,7 +17,19 @@ resources:
     operations:
       ApiPlatform\Metadata\GetCollection:
         paginationClientItemsPerPage: true
-      ApiPlatform\Metadata\Get: ~
+        paginationClientPartial: true
+        paginationMaximumItemsPerPage: 100
+        cacheHeaders:
+          max_age: 300
+          public: false
+          vary: ['Accept', 'Accept-Language', 'Authorization']
+        etag: true
+      ApiPlatform\Metadata\Get:
+        cacheHeaders:
+          max_age: 600
+          public: false
+          vary: ['Accept', 'Accept-Language', 'Authorization']
+        etag: true
       create_http:
         class: 'ApiPlatform\Metadata\Post'
         input: 'App\User\Application\DTO\UserRegisterDto'
@@ -39,10 +51,15 @@ resources:
       ApiPlatform\Metadata\Patch:
         input: 'App\User\Application\DTO\UserPatchDto'
         processor: 'App\User\Application\Processor\UserPatchProcessor'
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
       ApiPlatform\Metadata\Put:
         input: 'App\User\Application\DTO\UserPutDto'
         processor: 'App\User\Application\Processor\UserPutProcessor'
-      ApiPlatform\Metadata\Delete: ~
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
+      ApiPlatform\Metadata\Delete:
+        processor: 'App\User\Application\Processor\UserDeleteProcessor'
+        output: false
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
       ApiPlatform\Metadata\Post:
         uriTemplate: '/users/{id}/resend-confirmation-email'
         input: 'App\User\Application\DTO\RetryDto'
@@ -50,11 +67,15 @@ resources:
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
+        security: "is_granted('ROLE_USER')"
       - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
+        security: "is_granted('ROLE_USER')"
       - class: 'ApiPlatform\Metadata\GraphQl\DeleteMutation'
         normalizationContext:
           groups: ['deleteMutationOutput']
         name: 'delete'
+        processor: 'App\User\Application\Processor\UserDeleteProcessor'
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
         name: 'confirm'
         resolver: 'App\User\Application\Resolver\ConfirmUserMutationResolver'
@@ -82,6 +103,7 @@ resources:
         deserialize: false
         write: false
         name: 'update'
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
         denormalizationContext:
           groups: []
         extraArgs:
@@ -98,6 +120,7 @@ resources:
       - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
         resolver: 'App\User\Application\Resolver\ResendEmailMutationResolver'
         name: 'resendEmailTo'
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
         denormalizationContext:
           groups: []
         extraArgs:
