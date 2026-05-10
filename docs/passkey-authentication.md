@@ -72,20 +72,18 @@ fields, not the final `PublicKeyCredentialCreationOptions` or
 before starting the browser ceremony:
 
 ```js
-const signupOptions = await fetch('/api/passkeys/signup/options', request)
-  .then((response) => response.json());
-const publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(
-  signupOptions.public_key
+const signupOptions = await fetch('/api/passkeys/signup/options', request).then(response =>
+  response.json()
 );
+const publicKey = PublicKeyCredential.parseCreationOptionsFromJSON(signupOptions.public_key);
 const credential = await navigator.credentials.create({ publicKey });
 ```
 
 ```js
-const signInOptions = await fetch('/api/passkeys/signin/options', request)
-  .then((response) => response.json());
-const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(
-  signInOptions.public_key
+const signInOptions = await fetch('/api/passkeys/signin/options', request).then(response =>
+  response.json()
 );
+const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(signInOptions.public_key);
 const credential = await navigator.credentials.get({ publicKey });
 ```
 
