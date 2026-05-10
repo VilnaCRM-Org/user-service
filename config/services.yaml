@@ -377,7 +377,8 @@ services:
         - { pattern: '#^/api/users/confirm$#', methods: ['PATCH'] }
         - { pattern: '#^/api/reset-password#' }
         - { pattern: '#^/api/signin#' }
-        - { pattern: '#^/api/passkeys/(signup|signin)#', methods: ['POST'] }
+        - { pattern: '#^/api/passkeys/signup/(options|complete)$#', methods: ['POST'] }
+        - { pattern: '#^/api/passkeys/signin/(options|complete)$#', methods: ['POST'] }
         - { pattern: '#^/api/token$#', methods: ['POST'] }
         - { pattern: '#^/api/oauth/token$#', methods: ['POST'] }
         - { pattern: '#^/api/docs#' }

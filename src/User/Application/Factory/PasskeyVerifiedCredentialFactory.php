@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Passkey;
+namespace App\User\Application\Factory;
 
 use App\User\Application\DTO\VerifiedPasskeyCredential;
+use App\User\Application\Passkey\PasskeyEncoding;
+use App\User\Application\Passkey\PasskeyJsonCodecInterface;
 use Webauthn\CredentialRecord;
 
 /**

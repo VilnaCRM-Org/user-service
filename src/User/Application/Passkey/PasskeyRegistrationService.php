@@ -30,13 +30,11 @@ final readonly class PasskeyRegistrationService implements PasskeyRegistrationSe
         string $initials,
         string $displayName
     ): PasskeyOptionsResult {
-        $this->userResolver->assertEmailIsAvailable($email);
-
         return $this->optionsFactory->createSignupOptions(
             $email,
             $initials,
             $displayName,
-            (string) $this->uuidFactory->create()
+            $this->createSignupUserId()
         );
     }
 
@@ -111,5 +109,11 @@ final readonly class PasskeyRegistrationService implements PasskeyRegistrationSe
         $this->challengeStore->delete($challenge);
 
         return $passkeyCredential;
+    }
+
+    private function createSignupUserId(): string
+    {
+        // Signup challenges carry the future domain user id, which must remain UUID-backed.
+        return (string) $this->uuidFactory->create();
     }
 }

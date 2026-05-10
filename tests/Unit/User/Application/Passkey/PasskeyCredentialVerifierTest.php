@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Passkey;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Factory\PasskeyVerifiedCredentialFactory;
 use App\User\Application\Passkey\PasskeyAssertionCredentialRecordVerifier;
 use App\User\Application\Passkey\PasskeyAttestationCredentialRecordVerifier;
 use App\User\Application\Passkey\PasskeyConfiguration;
@@ -12,7 +13,6 @@ use App\User\Application\Passkey\PasskeyCredentialResponseResolver;
 use App\User\Application\Passkey\PasskeyCredentialVerifier;
 use App\User\Application\Passkey\PasskeyEncoding;
 use App\User\Application\Passkey\PasskeyJsonCodecInterface;
-use App\User\Application\Passkey\PasskeyVerifiedCredentialFactory;
 use App\User\Application\Passkey\PasskeyWebauthnFactoryInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;

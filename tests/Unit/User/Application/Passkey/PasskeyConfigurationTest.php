@@ -13,50 +13,58 @@ final class PasskeyConfigurationTest extends UnitTestCase
 {
     public function testAllowedOriginsAreTrimmedAndEmptyEntriesAreIgnored(): void
     {
+        $rpId = $this->faker->domainName();
+        $rpName = $this->faker->company();
+        $firstOrigin = sprintf('https://%s', $this->faker->domainName());
+        $secondOrigin = sprintf('https://%s', $this->faker->domainName());
+        $timeoutSeconds = $this->faker->numberBetween(60, 600);
         $configuration = new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM',
-            ' https://app.example.com, ,https://admin.example.com ',
-            300,
-            120
+            $rpId,
+            $rpName,
+            sprintf(' %s, ,%s ', $firstOrigin, $secondOrigin),
+            $timeoutSeconds,
+            $this->faker->numberBetween(60, 600)
         );
 
         self::assertSame([
-            'https://app.example.com',
-            'https://admin.example.com',
+            $firstOrigin,
+            $secondOrigin,
         ], $configuration->getAllowedOrigins());
-        self::assertSame('localhost', $configuration->getRpId());
-        self::assertSame('VilnaCRM', $configuration->getRpName());
-        self::assertSame(300000, $configuration->getTimeoutMilliseconds());
+        self::assertSame($rpId, $configuration->getRpId());
+        self::assertSame($rpName, $configuration->getRpName());
+        self::assertSame($timeoutSeconds * 1000, $configuration->getTimeoutMilliseconds());
     }
 
     public function testRelyingPartyValuesAreTrimmed(): void
     {
+        $rpId = $this->faker->domainName();
+        $rpName = $this->faker->company();
         $configuration = new PasskeyConfiguration(
-            ' localhost ',
-            ' VilnaCRM ',
-            'https://app.example.com',
-            300,
-            120
+            sprintf(' %s ', $rpId),
+            sprintf(' %s ', $rpName),
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
         );
 
-        self::assertSame('localhost', $configuration->getRpId());
-        self::assertSame('VilnaCRM', $configuration->getRpName());
+        self::assertSame($rpId, $configuration->getRpId());
+        self::assertSame($rpName, $configuration->getRpName());
     }
 
     public function testChallengeExpiryUsesConfiguredTtl(): void
     {
+        $ttlSeconds = $this->faker->numberBetween(60, 600);
         $configuration = new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM',
-            'https://app.example.com',
-            300,
-            120
+            $this->faker->domainName(),
+            $this->faker->company(),
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $ttlSeconds
         );
-        $createdAt = new DateTimeImmutable('2026-05-10 12:00:00');
+        $createdAt = new DateTimeImmutable('@' . $this->faker->unixTime());
 
         self::assertEquals(
-            new DateTimeImmutable('2026-05-10 12:02:00'),
+            $createdAt->modify(sprintf('+%d seconds', $ttlSeconds)),
             $configuration->challengeExpiresAt($createdAt)
         );
     }
@@ -66,7 +74,13 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey relying party ID must be configured.');
 
-        new PasskeyConfiguration('', 'VilnaCRM', 'https://app.example.com', 300, 120);
+        new PasskeyConfiguration(
+            '',
+            $this->faker->company(),
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
+        );
     }
 
     public function testBlankRpIdIsRejectedAfterTrim(): void
@@ -74,7 +88,13 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey relying party ID must be configured.');
 
-        new PasskeyConfiguration('  ', 'VilnaCRM', 'https://app.example.com', 300, 120);
+        new PasskeyConfiguration(
+            '  ',
+            $this->faker->company(),
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
+        );
     }
 
     public function testEmptyRpNameIsRejected(): void
@@ -82,7 +102,13 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey relying party name must be configured.');
 
-        new PasskeyConfiguration('localhost', '', 'https://app.example.com', 300, 120);
+        new PasskeyConfiguration(
+            $this->faker->domainName(),
+            '',
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
+        );
     }
 
     public function testBlankRpNameIsRejectedAfterTrim(): void
@@ -90,7 +116,13 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey relying party name must be configured.');
 
-        new PasskeyConfiguration('localhost', '  ', 'https://app.example.com', 300, 120);
+        new PasskeyConfiguration(
+            $this->faker->domainName(),
+            '  ',
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
+        );
     }
 
     public function testNonPositiveTimeoutIsRejected(): void
@@ -98,7 +130,13 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey timeout must be greater than zero.');
 
-        new PasskeyConfiguration('localhost', 'VilnaCRM', 'https://app.example.com', 0, 120);
+        new PasskeyConfiguration(
+            $this->faker->domainName(),
+            $this->faker->company(),
+            sprintf('https://%s', $this->faker->domainName()),
+            0,
+            $this->faker->numberBetween(60, 600)
+        );
     }
 
     public function testNonPositiveChallengeTtlIsRejected(): void
@@ -106,17 +144,23 @@ final class PasskeyConfigurationTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Passkey challenge TTL must be greater than zero.');
 
-        new PasskeyConfiguration('localhost', 'VilnaCRM', 'https://app.example.com', 300, 0);
+        new PasskeyConfiguration(
+            $this->faker->domainName(),
+            $this->faker->company(),
+            sprintf('https://%s', $this->faker->domainName()),
+            $this->faker->numberBetween(60, 600),
+            0
+        );
     }
 
     public function testEmptyAllowedOriginsAreRejected(): void
     {
         $configuration = new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM',
+            $this->faker->domainName(),
+            $this->faker->company(),
             ' , ',
-            300,
-            120
+            $this->faker->numberBetween(60, 600),
+            $this->faker->numberBetween(60, 600)
         );
 
         $this->expectException(InvalidArgumentException::class);

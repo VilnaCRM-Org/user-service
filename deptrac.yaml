@@ -9,7 +9,9 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider|Passkey).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider).*'
+        - type: className
+          regex: '.*App\\User\\Application\\Passkey\\.*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Converter|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className

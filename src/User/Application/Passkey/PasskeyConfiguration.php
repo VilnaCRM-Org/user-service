@@ -6,14 +6,11 @@ namespace App\User\Application\Passkey;
 
 use function array_filter;
 use function array_map;
+
 use function array_values;
-
 use DateTimeImmutable;
-
 use function explode;
-
 use InvalidArgumentException;
-
 use function sprintf;
 use function trim;
 

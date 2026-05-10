@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Application\Passkey;
 
 use function is_array;
-
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -14,6 +13,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
+
 use Webauthn\PublicKeyCredentialRequestOptions;
 
 final class PasskeyJsonCodec implements PasskeyJsonCodecInterface

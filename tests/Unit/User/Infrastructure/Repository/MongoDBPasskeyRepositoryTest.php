@@ -95,15 +95,19 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
     {
         $credential = $this->createCredential();
         $this->expectRegistryFor(PasskeyCredential::class);
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
         $repository = $this->createRepositoryMock(
             MongoDBPasskeyCredentialRepository::class,
             [$this->documentManager, $this->registry],
-            ['findOneBy', 'findBy']
+            ['findOneBy', 'findBy', 'createQueryBuilder']
         );
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
 
         $this->expectCredentialSaved($credential);
         $this->expectCredentialLookup($repository, $credential);
         $this->expectUserCredentialList($repository, $credential);
+        $this->expectCredentialExistsQuery($queryBuilder, $query);
 
         $repository->save($credential);
         self::assertSame($credential, $repository->findByCredentialId('credential-id'));
@@ -171,7 +175,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         MongoDBPasskeyCredentialRepository&MockObject $repository,
         PasskeyCredential $credential
     ): void {
-        $repository->expects($this->exactly(2))
+        $repository->expects($this->once())
             ->method('findOneBy')
             ->with(['credentialId' => 'credential-id'])
             ->willReturn($credential);
@@ -185,6 +189,25 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
             ->method('findBy')
             ->with(['userId' => 'user-id'])
             ->willReturn([1 => $credential]);
+    }
+
+    private function expectCredentialExistsQuery(Builder $queryBuilder, Query $query): void
+    {
+        $queryBuilder->expects($this->once())
+            ->method('field')
+            ->with('credentialId')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('equals')
+            ->with('credential-id')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('count')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())->method('execute')->willReturn(1);
     }
 
     private function createChallenge(): PasskeyChallenge

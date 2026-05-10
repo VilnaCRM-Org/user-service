@@ -13,24 +13,9 @@ final class PasskeySignUpOptionsDto
      * @psalm-api
      */
     public function __construct(
-        private string $email = '',
-        private string $initials = '',
-        private string $displayName = ''
+        public string $email = '',
+        public string $initials = '',
+        public string $displayName = ''
     ) {
-    }
-
-    public function emailValue(): string
-    {
-        return $this->email;
-    }
-
-    public function initialsValue(): string
-    {
-        return $this->initials;
-    }
-
-    public function displayNameValue(): string
-    {
-        return $this->displayName;
     }
 }

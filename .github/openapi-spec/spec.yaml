@@ -475,8 +475,6 @@ paths:
       responses:
         '200':
           description: 'Passkey creation options generated'
-        '409':
-          description: 'Email is already registered'
         '422':
           description: 'Validation error'
         '500':
@@ -2981,24 +2979,113 @@ components:
           type: string
     EmptyResponse.PasskeyRegistrationCompleteDto:
       type: object
+      required:
+        - challengeId
+      properties:
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          minItems: 1
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: array
+                items:
+                  type: [string, 'null']
+              - type: boolean
+              - type: number
+              - type: integer
+              - type: string
+              - type: 'null'
+        label:
+          maxLength: 100
+          type: string
     EmptyResponse.PasskeyRegistrationOptionsDto:
       type: object
     EmptyResponse.PasskeySignInCompleteDto:
       type: object
+      required:
+        - challengeId
+      properties:
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          minItems: 1
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: array
+                items:
+                  type: [string, 'null']
+              - type: boolean
+              - type: number
+              - type: integer
+              - type: string
+              - type: 'null'
     EmptyResponse.PasskeySignInOptionsDto:
       type: object
+      required:
+        - email
       properties:
+        email:
+          format: email
+          minLength: 1
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
         rememberMe:
-          default: false
           type: boolean
     EmptyResponse.PasskeySignUpCompleteDto:
       type: object
+      required:
+        - challengeId
       properties:
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          minItems: 1
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: array
+                items:
+                  type: [string, 'null']
+              - type: boolean
+              - type: number
+              - type: integer
+              - type: string
+              - type: 'null'
+        label:
+          maxLength: 100
+          type: string
         rememberMe:
-          default: false
           type: boolean
     EmptyResponse.PasskeySignUpOptionsDto:
       type: object
+      required:
+        - email
+        - initials
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          pattern: '^(.*\S.*)$'
+          type: string
+        displayName:
+          maxLength: 255
+          type: string
     EmptyResponse.RefreshTokenDto:
       type: object
       required:

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Passkey;
 
 use App\User\Application\DTO\VerifiedPasskeyCredential;
+use App\User\Application\Factory\PasskeyVerifiedCredentialFactory;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -48,19 +49,11 @@ final class PasskeyCredentialVerifier implements PasskeyCredentialVerifierInterf
         PasskeyChallenge $challenge,
         array $credential
     ): VerifiedPasskeyCredential {
-        try {
-            return $this->verifiedCredentialFactory->create(
+        return $this->verifyCredential(
+            fn (): VerifiedPasskeyCredential => $this->verifiedCredentialFactory->create(
                 $this->attestationVerifier->verify($challenge, $credential)
-            );
-        } catch (BadRequestHttpException $exception) {
-            throw $exception;
-        } catch (Throwable $exception) {
-            throw new UnauthorizedHttpException(
-                'Bearer',
-                'Invalid passkey credential.',
-                $exception
-            );
-        }
+            )
+        );
     }
 
     /**
@@ -72,10 +65,20 @@ final class PasskeyCredentialVerifier implements PasskeyCredentialVerifierInterf
         array $credential,
         PasskeyCredential $storedCredential
     ): VerifiedPasskeyCredential {
-        try {
-            return $this->verifiedCredentialFactory->create(
+        return $this->verifyCredential(
+            fn (): VerifiedPasskeyCredential => $this->verifiedCredentialFactory->create(
                 $this->assertionVerifier->verify($challenge, $storedCredential, $credential)
-            );
+            )
+        );
+    }
+
+    /**
+     * @param callable(): VerifiedPasskeyCredential $verification
+     */
+    private function verifyCredential(callable $verification): VerifiedPasskeyCredential
+    {
+        try {
+            return $verification();
         } catch (BadRequestHttpException $exception) {
             throw $exception;
         } catch (Throwable $exception) {

@@ -18,78 +18,123 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
 
+use function json_encode;
+
+use const JSON_THROW_ON_ERROR;
+
 final class PasskeyDtoTest extends UnitTestCase
 {
     public function testSignUpOptionsExposeInputValues(): void
     {
-        $dto = new PasskeySignUpOptionsDto('person@example.com', 'PE', 'Person Example');
+        $email = $this->faker->safeEmail();
+        $initials = $this->faker->lexify('??');
+        $displayName = $this->faker->name();
+        $dto = new PasskeySignUpOptionsDto($email, $initials, $displayName);
 
-        self::assertSame('person@example.com', $dto->emailValue());
-        self::assertSame('PE', $dto->initialsValue());
-        self::assertSame('Person Example', $dto->displayNameValue());
+        self::assertSame($email, $dto->email);
+        self::assertSame($initials, $dto->initials);
+        self::assertSame($displayName, $dto->displayName);
     }
 
     public function testSignUpCompleteExposesCredentialAndRememberMe(): void
     {
-        $credential = ['id' => 'credential-id'];
-        $dto = new PasskeySignUpCompleteDto('challenge-id', $credential, 'Work laptop');
+        $challengeId = $this->faker->uuid();
+        $credential = ['id' => $this->faker->uuid()];
+        $label = $this->faker->words(2, true);
+        $dto = new PasskeySignUpCompleteDto($challengeId, $credential, $label, true);
 
-        self::assertFalse($dto->isRememberMe());
-        $dto->setRememberMe(true);
+        self::assertSame($challengeId, $dto->challengeId);
+        self::assertSame($credential, $dto->credential);
+        self::assertSame($label, $dto->label);
+        self::assertTrue($dto->rememberMe);
+    }
 
-        self::assertSame('challenge-id', $dto->challengeIdValue());
-        self::assertSame($credential, $dto->credentialValue());
-        self::assertSame('Work laptop', $dto->labelValue());
-        self::assertTrue($dto->isRememberMe());
+    public function testRememberMeDefaultsToFalse(): void
+    {
+        self::assertFalse((new PasskeySignUpCompleteDto())->rememberMe);
+        self::assertFalse((new PasskeySignInOptionsDto())->rememberMe);
     }
 
     public function testSignInOptionsExposeEmailAndRememberMe(): void
     {
-        $dto = new PasskeySignInOptionsDto('person@example.com');
+        $email = $this->faker->safeEmail();
+        $dto = new PasskeySignInOptionsDto($email, true);
 
-        self::assertFalse($dto->isRememberMe());
-        $dto->setRememberMe(true);
-
-        self::assertSame('person@example.com', $dto->emailValue());
-        self::assertTrue($dto->isRememberMe());
+        self::assertSame($email, $dto->email);
+        self::assertTrue($dto->rememberMe);
     }
 
     public function testCompleteDtosExposeCredentialValues(): void
     {
-        $credential = ['id' => 'credential-id'];
-        $signIn = new PasskeySignInCompleteDto('signin-challenge', $credential);
+        $credential = ['id' => $this->faker->uuid()];
+        $signInChallengeId = $this->faker->uuid();
+        $registrationChallengeId = $this->faker->uuid();
+        $label = $this->faker->words(2, true);
+        $signIn = new PasskeySignInCompleteDto($signInChallengeId, $credential);
         $registration = new PasskeyRegistrationCompleteDto(
-            'registration-challenge',
+            $registrationChallengeId,
             $credential,
-            'Security key'
+            $label
         );
 
-        self::assertSame('signin-challenge', $signIn->challengeIdValue());
-        self::assertSame($credential, $signIn->credentialValue());
-        self::assertSame('registration-challenge', $registration->challengeIdValue());
-        self::assertSame($credential, $registration->credentialValue());
-        self::assertSame('Security key', $registration->labelValue());
+        self::assertSame($signInChallengeId, $signIn->challengeId);
+        self::assertSame($credential, $signIn->credential);
+        self::assertSame($registrationChallengeId, $registration->challengeId);
+        self::assertSame($credential, $registration->credential);
+        self::assertSame($label, $registration->label);
     }
 
     public function testResultDtosExposeValues(): void
     {
         $challenge = $this->createChallenge();
-        $options = ['rpId' => 'localhost'];
+        $rpId = $this->faker->domainName();
+        $options = ['rpId' => $rpId];
         $optionsResult = new PasskeyOptionsResult($challenge, $options);
-        $authResult = new PasskeyAuthenticationResult('access-token', 'refresh-token', true);
-        $verified = new VerifiedPasskeyCredential('credential-id', '{"record":true}');
+        $accessToken = $this->faker->sha256();
+        $refreshToken = $this->faker->sha256();
+        $credentialId = $this->faker->uuid();
+        $credentialRecord = json_encode(['record' => $this->faker->boolean()], JSON_THROW_ON_ERROR);
+        $authResult = new PasskeyAuthenticationResult($accessToken, $refreshToken, true);
+        $verified = new VerifiedPasskeyCredential($credentialId, $credentialRecord);
 
+        $this->assertOptionsResult($optionsResult, $challenge, $options);
+        $this->assertAuthenticationResult($authResult, $accessToken, $refreshToken);
+        $this->assertVerifiedCredential($verified, $credentialId, $credentialRecord);
+    }
+
+    /**
+     * @param array<string, string> $options
+     */
+    private function assertOptionsResult(
+        PasskeyOptionsResult $optionsResult,
+        PasskeyChallenge $challenge,
+        array $options
+    ): void {
         self::assertInstanceOf(
             PasskeyRegistrationOptionsDto::class,
             new PasskeyRegistrationOptionsDto()
         );
         self::assertSame($challenge, $optionsResult->getChallenge());
         self::assertSame($options, $optionsResult->getPublicKeyOptions());
-        self::assertSame('access-token', $authResult->getAccessToken());
-        self::assertSame('refresh-token', $authResult->getRefreshToken());
+    }
+
+    private function assertAuthenticationResult(
+        PasskeyAuthenticationResult $authResult,
+        string $accessToken,
+        string $refreshToken
+    ): void {
+        self::assertSame($accessToken, $authResult->getAccessToken());
+        self::assertSame($refreshToken, $authResult->getRefreshToken());
         self::assertTrue($authResult->isRememberMe());
-        self::assertSame('credential-id', $verified->getCredentialId());
-        self::assertSame('{"record":true}', $verified->getCredentialRecord());
+    }
+
+    private function assertVerifiedCredential(
+        VerifiedPasskeyCredential $verified,
+        string $credentialId,
+        string $credentialRecord
+    ): void {
+        self::assertSame($credentialId, $verified->getCredentialId());
+        self::assertSame($credentialRecord, $verified->getCredentialRecord());
     }
 
     private function createChallenge(): PasskeyChallenge
@@ -97,13 +142,16 @@ final class PasskeyDtoTest extends UnitTestCase
         $createdAt = new DateTimeImmutable();
 
         return new PasskeyChallenge(
-            'challenge-id',
+            $this->faker->uuid(),
             PasskeyChallenge::PURPOSE_AUTHENTICATION,
-            'challenge',
-            '{}',
+            $this->faker->sha256(),
+            json_encode(['challenge' => $this->faker->sha256()], JSON_THROW_ON_ERROR),
             $createdAt,
             $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext('person@example.com', userId: 'user-id')
+            new PasskeyChallengeContext(
+                $this->faker->safeEmail(),
+                userId: $this->faker->uuid()
+            )
         );
     }
 }

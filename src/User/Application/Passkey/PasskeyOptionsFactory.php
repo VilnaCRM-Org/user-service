@@ -11,7 +11,6 @@ use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
-
 use function random_bytes;
 use function trim;
 

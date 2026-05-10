@@ -102,7 +102,7 @@ final class PasskeyChallenge
 
     public function isExpired(DateTimeImmutable $now): bool
     {
-        return $now > $this->expiresAt;
+        return $now >= $this->expiresAt;
     }
 
     public function isConsumed(): bool

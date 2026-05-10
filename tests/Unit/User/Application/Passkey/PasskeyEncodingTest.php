@@ -21,6 +21,25 @@ final class PasskeyEncodingTest extends UnitTestCase
 
         self::assertSame('t', $encoding->decode('dA'));
         self::assertSame('te', $encoding->decode('dGU'));
+        self::assertSame('test', $encoding->decode('dGVzdA'));
+    }
+
+    public function testEncodeProducesUrlSafeBase64WithoutPadding(): void
+    {
+        $encodedValue = (new PasskeyEncoding())->encode('test');
+
+        self::assertSame('dGVzdA', $encodedValue);
+        self::assertStringNotContainsString('=', $encodedValue);
+        self::assertStringNotContainsString('+', $encodedValue);
+        self::assertStringNotContainsString('/', $encodedValue);
+    }
+
+    public function testRoundTripEncodingAndDecoding(): void
+    {
+        $encoding = new PasskeyEncoding();
+        $rawValue = $this->faker->sha256();
+
+        self::assertSame($rawValue, $encoding->decode($encoding->encode($rawValue)));
     }
 
     public function testDecodeRejectsInvalidBase64UrlValue(): void

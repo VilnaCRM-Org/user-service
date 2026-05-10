@@ -32,7 +32,7 @@ final readonly class PasskeySignUpCompleteProcessor implements ProcessorInterfac
     /**
      * @param PasskeySignUpCompleteDto $data
      * @param array<string, scalar|array|null> $uriVariables
-     * @param array<string, scalar|array|null> $context
+     * @param array<string, mixed> $context
      */
     #[\Override]
     public function process(
@@ -43,10 +43,10 @@ final readonly class PasskeySignUpCompleteProcessor implements ProcessorInterfac
     ): Response {
         $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
         $result = $this->registrationService->completeSignup(
-            $data->challengeIdValue(),
-            $data->credentialValue(),
-            $data->labelValue(),
-            $data->isRememberMe(),
+            $data->challengeId,
+            $data->credential,
+            $data->label,
+            $data->rememberMe,
             $this->httpRequestContextResolver->resolveIpAddress($request),
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );

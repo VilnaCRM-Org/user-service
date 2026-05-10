@@ -38,9 +38,9 @@ final readonly class PasskeyRegistrationCompleteProcessor implements ProcessorIn
         array $context = []
     ): Response {
         $credential = $this->registrationService->completeRegistration(
-            $data->challengeIdValue(),
-            $data->credentialValue(),
-            $data->labelValue(),
+            $data->challengeId,
+            $data->credential,
+            $data->label,
             $this->userIdentityResolver->resolveUserId()
         );
 

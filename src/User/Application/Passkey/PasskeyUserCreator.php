@@ -13,10 +13,9 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-
 use function bin2hex;
-use function random_bytes;
 
+use function random_bytes;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final readonly class PasskeyUserCreator

@@ -50,6 +50,11 @@ final class MongoDBPasskeyCredentialRepository extends ServiceDocumentRepository
     #[\Override]
     public function existsByCredentialId(string $credentialId): bool
     {
-        return $this->findByCredentialId($credentialId) instanceof PasskeyCredential;
+        return (int) $this->createQueryBuilder()
+            ->field('credentialId')
+            ->equals($credentialId)
+            ->count()
+            ->getQuery()
+            ->execute() > 0;
     }
 }

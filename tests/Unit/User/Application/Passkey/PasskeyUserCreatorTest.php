@@ -22,7 +22,6 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use function ctype_xdigit;
 use DateTimeImmutable;
-
 use function strlen;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 

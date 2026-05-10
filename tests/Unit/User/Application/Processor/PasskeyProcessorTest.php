@@ -34,6 +34,7 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
+use const JSON_THROW_ON_ERROR;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -48,6 +49,24 @@ final class PasskeyProcessorTest extends UnitTestCase
     private PasskeyAuthenticationServiceInterface&MockObject $authenticationService;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
     private AuthCookieFactoryInterface&MockObject $authCookieFactory;
+    /**
+     * @var array{
+     *     email: string,
+     *     initials: string,
+     *     displayName: string,
+     *     userId: string,
+     *     challengeId: string,
+     *     credentialId: string,
+     *     credentialPayload: array<string, string>,
+     *     label: string,
+     *     ipAddress: string,
+     *     userAgent: string,
+     *     accessToken: string,
+     *     refreshToken: string,
+     *     rpId: string
+     * }
+     */
+    private array $fixture;
 
     #[\Override]
     protected function setUp(): void
@@ -63,13 +82,18 @@ final class PasskeyProcessorTest extends UnitTestCase
             HttpRequestContextResolverInterface::class
         );
         $this->authCookieFactory = $this->createMock(AuthCookieFactoryInterface::class);
+        $this->fixture = $this->createFixture();
     }
 
     public function testSignUpOptionsProcessorReturnsChallengeOptions(): void
     {
         $this->registrationService->expects($this->once())
             ->method('startSignup')
-            ->with('person@example.com', 'PE', 'Person Example')
+            ->with(
+                $this->fixture['email'],
+                $this->fixture['initials'],
+                $this->fixture['displayName']
+            )
             ->willReturn($this->createOptionsResult());
 
         $processor = new PasskeySignUpOptionsProcessor(
@@ -78,7 +102,11 @@ final class PasskeyProcessorTest extends UnitTestCase
         );
 
         $this->assertOptionsResponse($processor->process(
-            new PasskeySignUpOptionsDto('person@example.com', 'PE', 'Person Example'),
+            new PasskeySignUpOptionsDto(
+                $this->fixture['email'],
+                $this->fixture['initials'],
+                $this->fixture['displayName']
+            ),
             $this->operation
         ));
     }
@@ -86,8 +114,12 @@ final class PasskeyProcessorTest extends UnitTestCase
     public function testSignUpCompleteProcessorIssuesTokensAndCookie(): void
     {
         $request = new Request();
-        $dto = new PasskeySignUpCompleteDto('challenge-id', ['id' => 'credential-id'], 'Phone');
-        $dto->setRememberMe(true);
+        $dto = new PasskeySignUpCompleteDto(
+            $this->fixture['challengeId'],
+            $this->fixture['credentialPayload'],
+            $this->fixture['label'],
+            true
+        );
         $this->expectSignUpCompletion($request);
 
         $this->assertTokenResponse($this->createSignUpCompleteProcessor()->process(
@@ -137,9 +169,9 @@ final class PasskeyProcessorTest extends UnitTestCase
 
         $response = $this->createRegistrationCompleteProcessor()->process(
             new PasskeyRegistrationCompleteDto(
-                'challenge-id',
-                ['id' => 'credential-id'],
-                'Security key'
+                $this->fixture['challengeId'],
+                $this->fixture['credentialPayload'],
+                $this->fixture['label']
             ),
             $this->operation
         );
@@ -148,11 +180,10 @@ final class PasskeyProcessorTest extends UnitTestCase
 
     public function testSignInOptionsProcessorReturnsAuthenticationOptions(): void
     {
-        $dto = new PasskeySignInOptionsDto('person@example.com');
-        $dto->setRememberMe(true);
+        $dto = new PasskeySignInOptionsDto($this->fixture['email'], true);
         $this->authenticationService->expects($this->once())
             ->method('start')
-            ->with('person@example.com', true)
+            ->with($this->fixture['email'], true)
             ->willReturn($this->createOptionsResult());
 
         $processor = new PasskeySignInOptionsProcessor(
@@ -169,11 +200,52 @@ final class PasskeyProcessorTest extends UnitTestCase
         $this->expectSignInCompletion($request);
 
         $this->assertTokenResponse($this->createSignInCompleteProcessor()->process(
-            new PasskeySignInCompleteDto('challenge-id', ['id' => 'credential-id']),
+            new PasskeySignInCompleteDto(
+                $this->fixture['challengeId'],
+                $this->fixture['credentialPayload']
+            ),
             $this->operation,
             [],
             ['request' => $request]
         ));
+    }
+
+    /**
+     * @return array{
+     *     email: string,
+     *     initials: string,
+     *     displayName: string,
+     *     userId: string,
+     *     challengeId: string,
+     *     credentialId: string,
+     *     credentialPayload: array<string, string>,
+     *     label: string,
+     *     ipAddress: string,
+     *     userAgent: string,
+     *     accessToken: string,
+     *     refreshToken: string,
+     *     rpId: string
+     * }
+     */
+    private function createFixture(): array
+    {
+        $credentialId = $this->faker->uuid();
+
+        return [
+            'email' => $this->faker->safeEmail(),
+            'initials' => $this->faker->lexify('??'),
+            'displayName' => $this->faker->name(),
+            'userId' => $this->faker->uuid(),
+            'challengeId' => $this->faker->uuid(),
+            'credentialId' => $credentialId,
+            'credentialPayload' => ['id' => $credentialId],
+            'label' => $this->faker->words(2, true),
+            'ipAddress' => $this->faker->ipv4(),
+            'userAgent' => $this->faker->userAgent(),
+            'accessToken' => $this->faker->sha256(),
+            'refreshToken' => $this->faker->sha256(),
+            'rpId' => $this->faker->domainName(),
+        ];
     }
 
     private function expectRequestContext(Request $request): void
@@ -185,11 +257,11 @@ final class PasskeyProcessorTest extends UnitTestCase
         $this->requestContextResolver->expects($this->once())
             ->method('resolveIpAddress')
             ->with($request)
-            ->willReturn('203.0.113.10');
+            ->willReturn($this->fixture['ipAddress']);
         $this->requestContextResolver->expects($this->once())
             ->method('resolveUserAgent')
             ->with($request)
-            ->willReturn('Browser');
+            ->willReturn($this->fixture['userAgent']);
     }
 
     private function expectSignUpCompletion(Request $request): void
@@ -198,14 +270,18 @@ final class PasskeyProcessorTest extends UnitTestCase
         $this->registrationService->expects($this->once())
             ->method('completeSignup')
             ->with(
-                'challenge-id',
-                ['id' => 'credential-id'],
-                'Phone',
+                $this->fixture['challengeId'],
+                $this->fixture['credentialPayload'],
+                $this->fixture['label'],
                 true,
-                '203.0.113.10',
-                'Browser'
+                $this->fixture['ipAddress'],
+                $this->fixture['userAgent']
             )
-            ->willReturn(new PasskeyAuthenticationResult('access-token', 'refresh-token', true));
+            ->willReturn(new PasskeyAuthenticationResult(
+                $this->fixture['accessToken'],
+                $this->fixture['refreshToken'],
+                true
+            ));
         $this->expectAccessTokenCookie(true);
     }
 
@@ -217,7 +293,7 @@ final class PasskeyProcessorTest extends UnitTestCase
             ->willReturn($request);
         $this->registrationService->expects($this->once())
             ->method('startRegistration')
-            ->with('018f33bb-1111-7222-8333-111111111111', 'person@example.com')
+            ->with($this->fixture['userId'], $this->fixture['email'])
             ->willReturn($this->createOptionsResult());
     }
 
@@ -226,10 +302,10 @@ final class PasskeyProcessorTest extends UnitTestCase
         $this->registrationService->expects($this->once())
             ->method('completeRegistration')
             ->with(
-                'challenge-id',
-                ['id' => 'credential-id'],
-                'Security key',
-                '018f33bb-1111-7222-8333-111111111111'
+                $this->fixture['challengeId'],
+                $this->fixture['credentialPayload'],
+                $this->fixture['label'],
+                $this->fixture['userId']
             )
             ->willReturn($this->createCredential());
     }
@@ -239,8 +315,17 @@ final class PasskeyProcessorTest extends UnitTestCase
         $this->expectRequestContext($request);
         $this->authenticationService->expects($this->once())
             ->method('complete')
-            ->with('challenge-id', ['id' => 'credential-id'], '203.0.113.10', 'Browser')
-            ->willReturn(new PasskeyAuthenticationResult('access-token', 'refresh-token', false));
+            ->with(
+                $this->fixture['challengeId'],
+                $this->fixture['credentialPayload'],
+                $this->fixture['ipAddress'],
+                $this->fixture['userAgent']
+            )
+            ->willReturn(new PasskeyAuthenticationResult(
+                $this->fixture['accessToken'],
+                $this->fixture['refreshToken'],
+                false
+            ));
         $this->expectAccessTokenCookie(false);
     }
 
@@ -248,8 +333,8 @@ final class PasskeyProcessorTest extends UnitTestCase
     {
         $this->authCookieFactory->expects($this->once())
             ->method('create')
-            ->with('access-token', $rememberMe)
-            ->willReturn(new Cookie('access_token', 'access-token'));
+            ->with($this->fixture['accessToken'], $rememberMe)
+            ->willReturn(new Cookie('access_token', $this->fixture['accessToken']));
     }
 
     private function assertOptionsResponse(Response $response): void
@@ -257,8 +342,8 @@ final class PasskeyProcessorTest extends UnitTestCase
         $payload = json_decode((string) $response->getContent(), true);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
-        self::assertSame('challenge-id', $payload['challenge_id']);
-        self::assertSame('localhost', $payload['public_key']['rpId']);
+        self::assertSame($this->fixture['challengeId'], $payload['challenge_id']);
+        self::assertSame($this->fixture['rpId'], $payload['public_key']['rpId']);
     }
 
     private function assertTokenResponse(Response $response): void
@@ -266,8 +351,8 @@ final class PasskeyProcessorTest extends UnitTestCase
         $payload = json_decode((string) $response->getContent(), true);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
-        self::assertSame('access-token', $payload['access_token']);
-        self::assertSame('refresh-token', $payload['refresh_token']);
+        self::assertSame($this->fixture['accessToken'], $payload['access_token']);
+        self::assertSame($this->fixture['refreshToken'], $payload['refresh_token']);
         self::assertCount(1, $response->headers->getCookies());
     }
 
@@ -276,7 +361,7 @@ final class PasskeyProcessorTest extends UnitTestCase
         $payload = json_decode((string) $response->getContent(), true);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
-        self::assertSame('credential-id', $payload['credential_id']);
+        self::assertSame($this->fixture['credentialId'], $payload['credential_id']);
     }
 
     private function createSignUpCompleteProcessor(): PasskeySignUpCompleteProcessor
@@ -322,28 +407,26 @@ final class PasskeyProcessorTest extends UnitTestCase
     {
         $createdAt = new DateTimeImmutable();
         $challenge = new PasskeyChallenge(
-            'challenge-id',
+            $this->fixture['challengeId'],
             PasskeyChallenge::PURPOSE_AUTHENTICATION,
-            'challenge',
-            '{}',
+            $this->faker->sha256(),
+            json_encode(['challenge' => $this->faker->sha256()], JSON_THROW_ON_ERROR),
             $createdAt,
             $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext('person@example.com', userId: 'user-id')
+            new PasskeyChallengeContext($this->fixture['email'], userId: $this->fixture['userId'])
         );
 
-        return new PasskeyOptionsResult($challenge, ['rpId' => 'localhost']);
+        return new PasskeyOptionsResult($challenge, ['rpId' => $this->fixture['rpId']]);
     }
 
     private function createIdentityResolver(): CurrentUserIdentityResolver
     {
         $security = $this->createMock(Security::class);
         $security->method('getUser')->willReturn(new AuthorizationUserDto(
-            'person@example.com',
-            'PE',
-            'hashed-password',
-            (new UuidTransformer(new UuidFactory()))->transformFromString(
-                '018f33bb-1111-7222-8333-111111111111'
-            ),
+            $this->fixture['email'],
+            $this->fixture['initials'],
+            $this->faker->password(),
+            (new UuidTransformer(new UuidFactory()))->transformFromString($this->fixture['userId']),
             true
         ));
 
@@ -353,11 +436,11 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function createCredential(): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            'credential-id',
-            '{"record":true}',
-            'Security key',
+            $this->faker->uuid(),
+            $this->fixture['userId'],
+            $this->fixture['credentialId'],
+            json_encode(['record' => $this->faker->boolean()], JSON_THROW_ON_ERROR),
+            $this->fixture['label'],
             new DateTimeImmutable()
         );
     }

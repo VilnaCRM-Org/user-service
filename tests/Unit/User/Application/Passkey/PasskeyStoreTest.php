@@ -16,6 +16,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -39,16 +40,41 @@ final class PasskeyStoreTest extends UnitTestCase
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
     }
 
-    public function testRegisterRejectsDuplicateCredentialId(): void
+    public function testRegisterMapsConcurrentDuplicateSaveToConflict(): void
     {
         $this->credentialRepository->expects($this->once())
             ->method('existsByCredentialId')
             ->with('credential-id')
             ->willReturn(true);
-        $this->credentialRepository->expects($this->never())->method('save');
+        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->credentialRepository->expects($this->once())
+            ->method('save')
+            ->willThrowException(new RuntimeException('duplicate key'));
 
         $this->expectException(ConflictHttpException::class);
         $this->expectExceptionMessage('Passkey credential is already registered.');
+
+        $this->createStore()->register(
+            'user-id',
+            new VerifiedPasskeyCredential('credential-id', '{"record":true}'),
+            'Laptop',
+            new DateTimeImmutable()
+        );
+    }
+
+    public function testRegisterRethrowsUnexpectedSaveFailure(): void
+    {
+        $saveFailure = new RuntimeException('storage unavailable');
+        $this->credentialRepository->expects($this->once())
+            ->method('existsByCredentialId')
+            ->with('credential-id')
+            ->willReturn(false);
+        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->credentialRepository->expects($this->once())
+            ->method('save')
+            ->willThrowException($saveFailure);
+
+        $this->expectExceptionObject($saveFailure);
 
         $this->createStore()->register(
             'user-id',
@@ -143,10 +169,7 @@ final class PasskeyStoreTest extends UnitTestCase
 
     public function testRegisterTrimsLabel(): void
     {
-        $this->credentialRepository->expects($this->once())
-            ->method('existsByCredentialId')
-            ->with('credential-id')
-            ->willReturn(false);
+        $this->credentialRepository->expects($this->never())->method('existsByCredentialId');
         $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
         $this->credentialRepository->expects($this->once())
             ->method('save')
@@ -166,10 +189,7 @@ final class PasskeyStoreTest extends UnitTestCase
 
     public function testRegisterUsesDefaultLabelForBlankLabel(): void
     {
-        $this->credentialRepository->expects($this->once())
-            ->method('existsByCredentialId')
-            ->with('credential-id')
-            ->willReturn(false);
+        $this->credentialRepository->expects($this->never())->method('existsByCredentialId');
         $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
         $this->credentialRepository->expects($this->once())
             ->method('save')

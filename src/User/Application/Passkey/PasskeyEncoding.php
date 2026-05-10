@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\User\Application\Passkey;
 
 use function base64_decode;
+
 use function base64_encode;
-
 use InvalidArgumentException;
-
 use function rtrim;
 use function strtr;
 

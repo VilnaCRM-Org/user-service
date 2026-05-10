@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Passkey;
 
 use App\User\Domain\Entity\PasskeyCredential;
-
 use function array_map;
-
 use Cose\Algorithms;
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialCreationOptions;
@@ -15,6 +13,7 @@ use Webauthn\PublicKeyCredentialDescriptor;
 use Webauthn\PublicKeyCredentialParameters;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
+
 use Webauthn\PublicKeyCredentialUserEntity;
 
 final readonly class PasskeyPublicKeyOptionsFactory

@@ -60,30 +60,24 @@ final class PasskeyRegistrationServiceTest extends UnitTestCase
         $this->objects = new PasskeyServiceTestObjects();
     }
 
-    public function testStartSignupRejectsExistingEmail(): void
+    public function testStartSignupDoesNotExposeExistingEmail(): void
     {
-        $email = 'existing@example.com';
-        $this->userRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($this->objects->createUser(
-                '018f33bb-1111-7222-8333-111111111111',
-                $email
-            ));
+        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->idFactory->expects($this->once())->method('create')->willReturn('challenge-id');
+        $this->challengeRepository->expects($this->once())->method('save');
 
-        $this->expectException(ConflictHttpException::class);
-        $this->expectExceptionMessage('Email is already registered.');
+        $result = $this->support()->createService()->startSignup(
+            $this->faker->safeEmail(),
+            $this->faker->lexify('??'),
+            $this->faker->name()
+        );
 
-        $this->support()->createService()->startSignup($email, 'EX', 'Existing User');
+        self::assertSame('challenge-id', $result->getChallenge()->getId());
     }
 
     public function testStartSignupReturnsCreationOptionsForAvailableEmail(): void
     {
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with('new@example.com')
-            ->willReturn(null);
+        $this->userRepository->expects($this->never())->method('findByEmail');
         $this->idFactory->expects($this->once())->method('create')->willReturn('challenge-id');
         $this->challengeRepository->expects($this->once())->method('save');
 
@@ -158,7 +152,6 @@ final class PasskeyRegistrationServiceTest extends UnitTestCase
         $this->expectChallengeLifecycle($challenge);
         $this->expectEmailIsAvailable('new@example.com');
         $this->expectCredentialVerification($challenge, $credentialPayload, $verifiedCredential);
-        $this->expectCredentialIsAvailable('credential-id');
         $this->expectUserCreation();
         $this->expectPasskeyId();
         $this->expectSignupCredentialSaved();
@@ -169,6 +162,33 @@ final class PasskeyRegistrationServiceTest extends UnitTestCase
         $this->support()->assertSignupCompleted($result, $challenge);
     }
 
+    public function testCompleteSignupRejectsEmailRegisteredAfterOptions(): void
+    {
+        $challenge = $this->objects->createSignupChallenge();
+
+        $this->expectClaimedChallenge($challenge);
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with('new@example.com')
+            ->willReturn($this->objects->createUser(
+                '018f33bb-1111-7222-8333-111111111111',
+                'new@example.com'
+            ));
+        $this->credentialVerifier->expects($this->never())->method('verifyAttestation');
+
+        $this->expectException(ConflictHttpException::class);
+        $this->expectExceptionMessage('Email is already registered.');
+
+        $this->support()->createService()->completeSignup(
+            'challenge-id',
+            ['id' => 'credential'],
+            'Laptop',
+            false,
+            '203.0.113.10',
+            'Browser'
+        );
+    }
+
     public function testCompleteRegistrationStoresCredentialForCurrentUser(): void
     {
         $credentialPayload = ['id' => 'credential'];
@@ -177,7 +197,6 @@ final class PasskeyRegistrationServiceTest extends UnitTestCase
 
         $this->expectChallengeLifecycle($challenge);
         $this->expectCredentialVerification($challenge, $credentialPayload, $verifiedCredential);
-        $this->expectCredentialIsAvailable('credential-id');
         $this->expectPasskeyId();
         $this->expectRegistrationCredentialSaved();
 
@@ -293,14 +312,6 @@ final class PasskeyRegistrationServiceTest extends UnitTestCase
             ->method('verifyAttestation')
             ->with($challenge, $credentialPayload)
             ->willReturn($verifiedCredential);
-    }
-
-    private function expectCredentialIsAvailable(string $credentialId): void
-    {
-        $this->credentialRepository->expects($this->once())
-            ->method('existsByCredentialId')
-            ->with($credentialId)
-            ->willReturn(false);
     }
 
     private function expectUserCreation(): void

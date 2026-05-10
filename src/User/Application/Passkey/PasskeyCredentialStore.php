@@ -11,6 +11,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Throwable;
 
 use function trim;
 
@@ -61,14 +62,6 @@ final readonly class PasskeyCredentialStore
         string $label,
         DateTimeImmutable $createdAt
     ): PasskeyCredential {
-        if (
-            $this->credentialRepository->existsByCredentialId(
-                $verifiedCredential->getCredentialId()
-            )
-        ) {
-            throw new ConflictHttpException('Passkey credential is already registered.');
-        }
-
         $credential = new PasskeyCredential(
             $this->idFactory->create(),
             $userId,
@@ -78,9 +71,25 @@ final readonly class PasskeyCredentialStore
             $createdAt
         );
 
-        $this->credentialRepository->save($credential);
+        $this->saveCredential($credential);
 
         return $credential;
+    }
+
+    private function saveCredential(PasskeyCredential $credential): void
+    {
+        try {
+            $this->credentialRepository->save($credential);
+        } catch (Throwable $exception) {
+            if ($this->credentialRepository->existsByCredentialId($credential->getCredentialId())) {
+                throw new ConflictHttpException(
+                    'Passkey credential is already registered.',
+                    $exception
+                );
+            }
+
+            throw $exception;
+        }
     }
 
     private function resolveLabel(string $label): string

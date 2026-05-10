@@ -89,16 +89,13 @@ Acceptance:
 - Tokens are issued through `IssuedSessionFactory`.
 - The sign-in event is published through `SignInPublisher`.
 
-## Nonfunctional Requirements
+## Non-Functional Requirements
 
 - Domain layer remains framework-free.
 - API Platform, validation, serialization, and Doctrine mapping use YAML/XML config.
 - Challenges must expire via MongoDB TTL index.
 - WebAuthn relying party id, name, allowed origins, and timeout must be configurable via environment parameters.
 - CI checks must remain green.
-
-## Non-Functional Requirements
-
 - Security: server-generated challenges must be random, single-use, short-lived, and verified against the original WebAuthn options.
 - Privacy: sign-in option responses must avoid exposing credential records or user existence beyond the email-first flow already present in password sign-in.
 - Compatibility: options and credential responses must use browser WebAuthn JSON payload shapes.

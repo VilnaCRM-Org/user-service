@@ -39,8 +39,8 @@ final readonly class PasskeySignInOptionsProcessor implements ProcessorInterface
     ): Response {
         return new JsonResponse($this->responseFactory->createOptionsResponse(
             $this->authenticationService->start(
-                $data->emailValue(),
-                $data->isRememberMe()
+                $data->email,
+                $data->rememberMe
             )
         ));
     }

@@ -19,9 +19,9 @@ use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use function array_column;
 use Cose\Algorithms;
 use DateTimeImmutable;
+use const JSON_THROW_ON_ERROR;
 use PHPUnit\Framework\MockObject\MockObject;
 use function strlen;
-
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -30,6 +30,17 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
     private PasskeyChallengeRepositoryInterface&MockObject $challengeRepository;
     private IdFactoryInterface&MockObject $idFactory;
     private PasskeyEncoding $encoding;
+    private string $email;
+    private string $initials;
+    private string $displayName;
+    private string $userId;
+    private string $challengeId;
+    private string $registrationChallengeId;
+    private string $rawCredentialId;
+    private string $rpId;
+    private string $rpName;
+    private string $origin;
+    private int $timeoutSeconds;
 
     #[\Override]
     protected function setUp(): void
@@ -39,18 +50,29 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
         $this->challengeRepository = $this->createMock(PasskeyChallengeRepositoryInterface::class);
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
         $this->encoding = new PasskeyEncoding();
+        $this->email = $this->faker->safeEmail();
+        $this->initials = $this->faker->lexify('??');
+        $this->displayName = $this->faker->name();
+        $this->userId = $this->faker->uuid();
+        $this->challengeId = $this->faker->uuid();
+        $this->registrationChallengeId = $this->faker->uuid();
+        $this->rawCredentialId = $this->faker->sha256();
+        $this->rpId = $this->faker->domainName();
+        $this->rpName = $this->faker->company();
+        $this->origin = sprintf('https://%s', $this->rpId);
+        $this->timeoutSeconds = $this->faker->numberBetween(60, 600);
     }
 
     public function testCreateSignupOptionsPersistsChallengeAndReturnsBrowserOptions(): void
     {
-        $this->idFactory->method('create')->willReturn('challenge-id');
+        $this->idFactory->method('create')->willReturn($this->challengeId);
         $this->expectSignupChallengeSaved();
 
         $result = $this->createFactory()->createSignupOptions(
-            'person@example.com',
-            'AB',
-            'Ada Byron',
-            'user-id'
+            $this->email,
+            $this->initials,
+            $this->displayName,
+            $this->userId
         );
 
         $this->assertSignupResult($result);
@@ -58,21 +80,21 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
 
     public function testCreateAuthenticationOptionsIncludesExistingCredentialDescriptors(): void
     {
-        $this->idFactory->method('create')->willReturn('challenge-id');
-        $credentialId = $this->encoding->encode('raw-credential-id');
+        $this->idFactory->method('create')->willReturn($this->challengeId);
+        $credentialId = $this->encoding->encode($this->rawCredentialId);
         $credential = $this->createCredential($credentialId);
 
         $this->expectAuthenticationChallengeSaved();
         $result = $this->createFactory()->createAuthenticationOptions(
-            'person@example.com',
+            $this->email,
             true,
-            'user-id',
+            $this->userId,
             [$credential]
         );
         $publicKey = $result->getPublicKeyOptions();
 
         $this->assertAuthenticationResult($result, $credentialId);
-        self::assertSame('localhost', $publicKey['rpId']);
+        self::assertSame($this->rpId, $publicKey['rpId']);
         self::assertSame(
             PublicKeyCredentialRequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             $publicKey['userVerification']
@@ -81,15 +103,15 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
 
     public function testCreateRegistrationOptionsPersistsAuthenticatedUserChallenge(): void
     {
-        $this->idFactory->method('create')->willReturn('registration-challenge-id');
-        $credentialId = $this->encoding->encode('raw-credential-id');
+        $this->idFactory->method('create')->willReturn($this->registrationChallengeId);
+        $credentialId = $this->encoding->encode($this->rawCredentialId);
 
         $this->expectRegistrationChallengeSaved();
 
         $result = $this->createFactory()->createRegistrationOptions(
-            'person@example.com',
-            'Person Example',
-            'user-id',
+            $this->email,
+            $this->displayName,
+            $this->userId,
             [$this->createCredential($credentialId)]
         );
 
@@ -98,23 +120,23 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
 
     public function testCreateSignupOptionsFallsBackToInitialsForBlankDisplayName(): void
     {
-        $this->idFactory->method('create')->willReturn('challenge-id');
+        $this->idFactory->method('create')->willReturn($this->challengeId);
         $this->challengeRepository->expects($this->once())->method('save');
 
         $result = $this->createFactory()->createSignupOptions(
-            'person@example.com',
-            'PE',
+            $this->email,
+            $this->initials,
             ' ',
-            'user-id'
+            $this->userId
         );
 
-        self::assertSame('PE', $result->getPublicKeyOptions()['user']['displayName']);
+        self::assertSame($this->initials, $result->getPublicKeyOptions()['user']['displayName']);
     }
 
     private function assertSignupResult(PasskeyOptionsResult $result): void
     {
         $publicKey = $result->getPublicKeyOptions();
-        self::assertSame('challenge-id', $result->getChallenge()->getId());
+        self::assertSame($this->challengeId, $result->getChallenge()->getId());
         $this->assertSignupPublicKeyOptions($publicKey);
     }
 
@@ -123,15 +145,15 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
      */
     private function assertSignupPublicKeyOptions(array $publicKey): void
     {
-        self::assertSame('VilnaCRM User Service', $publicKey['rp']['name']);
-        self::assertSame('localhost', $publicKey['rp']['id']);
-        self::assertSame('person@example.com', $publicKey['user']['name']);
-        self::assertSame('Ada Byron', $publicKey['user']['displayName']);
+        self::assertSame($this->rpName, $publicKey['rp']['name']);
+        self::assertSame($this->rpId, $publicKey['rp']['id']);
+        self::assertSame($this->email, $publicKey['user']['name']);
+        self::assertSame($this->displayName, $publicKey['user']['displayName']);
         self::assertSame(
             AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             $publicKey['authenticatorSelection']['userVerification']
         );
-        self::assertSame(300000, $publicKey['timeout']);
+        self::assertSame($this->timeoutSeconds * 1000, $publicKey['timeout']);
         self::assertNotEmpty($publicKey['challenge']);
         self::assertSame(
             [
@@ -146,11 +168,11 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
     {
         $this->challengeRepository->expects($this->once())->method('save')
             ->with(self::callback(function (PasskeyChallenge $challenge): bool {
-                self::assertSame('registration-challenge-id', $challenge->getId());
+                self::assertSame($this->registrationChallengeId, $challenge->getId());
                 self::assertSame(PasskeyChallenge::PURPOSE_REGISTRATION, $challenge->getPurpose());
-                self::assertSame('person@example.com', $challenge->getEmail());
-                self::assertSame('Person Example', $challenge->getDisplayName());
-                self::assertSame('user-id', $challenge->getUserId());
+                self::assertSame($this->email, $challenge->getEmail());
+                self::assertSame($this->displayName, $challenge->getDisplayName());
+                self::assertSame($this->userId, $challenge->getUserId());
                 $this->assertChallengeHasThirtyTwoBytes($challenge);
 
                 return true;
@@ -161,7 +183,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
         PasskeyOptionsResult $result,
         string $credentialId
     ): void {
-        self::assertSame('registration-challenge-id', $result->getChallenge()->getId());
+        self::assertSame($this->registrationChallengeId, $result->getChallenge()->getId());
         self::assertSame(
             $credentialId,
             $result->getPublicKeyOptions()['excludeCredentials'][0]['id']
@@ -178,12 +200,12 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
             ->expects($this->once())
             ->method('save')
             ->with(self::callback(function (PasskeyChallenge $challenge): bool {
-                self::assertSame('challenge-id', $challenge->getId());
+                self::assertSame($this->challengeId, $challenge->getId());
                 self::assertSame(PasskeyChallenge::PURPOSE_SIGNUP, $challenge->getPurpose());
-                self::assertSame('person@example.com', $challenge->getEmail());
-                self::assertSame('AB', $challenge->getInitials());
-                self::assertSame('Ada Byron', $challenge->getDisplayName());
-                self::assertSame('user-id', $challenge->getUserId());
+                self::assertSame($this->email, $challenge->getEmail());
+                self::assertSame($this->initials, $challenge->getInitials());
+                self::assertSame($this->displayName, $challenge->getDisplayName());
+                self::assertSame($this->userId, $challenge->getUserId());
                 self::assertFalse($challenge->isRememberMe());
                 $this->assertChallengeHasThirtyTwoBytes($challenge);
 
@@ -195,13 +217,13 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
     {
         $this->challengeRepository->expects($this->once())->method('save')
             ->with(self::callback(function (PasskeyChallenge $challenge): bool {
-                self::assertSame('challenge-id', $challenge->getId());
+                self::assertSame($this->challengeId, $challenge->getId());
                 self::assertSame(
                     PasskeyChallenge::PURPOSE_AUTHENTICATION,
                     $challenge->getPurpose()
                 );
-                self::assertSame('person@example.com', $challenge->getEmail());
-                self::assertSame('user-id', $challenge->getUserId());
+                self::assertSame($this->email, $challenge->getEmail());
+                self::assertSame($this->userId, $challenge->getUserId());
                 self::assertTrue($challenge->isRememberMe());
                 $this->assertChallengeHasThirtyTwoBytes($challenge);
 
@@ -217,11 +239,11 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
     private function createCredential(string $credentialId): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
+            $this->faker->uuid(),
+            $this->userId,
             $credentialId,
-            '{}',
-            'Laptop',
+            json_encode(['record' => $this->faker->boolean()], JSON_THROW_ON_ERROR),
+            $this->faker->words(2, true),
             new DateTimeImmutable()
         );
     }
@@ -244,10 +266,10 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
     private function createFactory(): PasskeyOptionsFactory
     {
         $configuration = new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM User Service',
-            'https://localhost',
-            300,
+            $this->rpId,
+            $this->rpName,
+            $this->origin,
+            $this->timeoutSeconds,
             300
         );
 
