@@ -33,10 +33,15 @@ jobs:
           git_tag_gpgsign: true
 
       - name: Configure GPG for automated signing
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          export GPG_TTY=$(tty)
-          echo "GPG_TTY=$GPG_TTY" >> $GITHUB_ENV
-          echo "GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }}" >> $GITHUB_ENV
+          GPG_TTY="$(tty)"
+          export GPG_TTY
+          {
+            echo "GPG_TTY=${GPG_TTY}"
+            echo "GPG_PASSPHRASE=${GPG_PASSPHRASE}"
+          } >> "$GITHUB_ENV"
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
           cat > ~/.gnupg/gpg.conf << EOF
@@ -72,7 +77,7 @@ jobs:
 
       - name: Run Super-Linter
         continue-on-error: true
-        uses: super-linter/super-linter@v8.3.1
+        uses: super-linter/super-linter@47984f49b4e87383eed97890fe2dca6063bbd9c3
         env:
           FILTER_REGEX_EXCLUDE: '^\\.github/openapi-spec/'
           VALIDATE_JAVASCRIPT_ES: true
