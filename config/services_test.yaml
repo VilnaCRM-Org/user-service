@@ -38,6 +38,13 @@ services:
       $innerLogger: '@App\Tests\Behat\Support\RecordingLogger.inner'
     public: true
 
+  App\Tests\Behat\Support\TestClientIpHttpRequestContextResolver:
+    decorates: App\User\Application\Resolver\HttpRequestContextResolver
+    arguments:
+      $inner: '@App\Tests\Behat\Support\TestClientIpHttpRequestContextResolver.inner'
+
+  App\User\Application\Resolver\HttpRequestContextResolverInterface: '@App\Tests\Behat\Support\TestClientIpHttpRequestContextResolver'
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
     exclude: '../tests/Behat/Support/*'

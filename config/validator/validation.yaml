@@ -211,6 +211,83 @@ App\User\Application\DTO\SignInDto:
       - Type:
           type: bool
 
+App\User\Application\DTO\PasskeySignUpOptionsDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
+    initials:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          max: 255
+      - App\Shared\Application\Validator\Constraint\Initials: ~
+    displayName:
+      - Length:
+          max: 255
+
+App\User\Application\DTO\PasskeySignUpCompleteDto:
+  properties:
+    challengeId:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
+          max: 255
+    credential:
+      - Type:
+          type: array
+      - Count:
+          min: 1
+    label:
+      - Length:
+          max: 100
+    rememberMe:
+      - Type:
+          type: bool
+
+App\User\Application\DTO\PasskeyRegistrationCompleteDto:
+  properties:
+    challengeId:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
+          max: 255
+    credential:
+      - Type:
+          type: array
+      - Count:
+          min: 1
+    label:
+      - Length:
+          max: 100
+
+App\User\Application\DTO\PasskeySignInOptionsDto:
+  properties:
+    email:
+      - Email: { message: 'email.invalid' }
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
+          max: 255
+    rememberMe:
+      - Type:
+          type: bool
+
+App\User\Application\DTO\PasskeySignInCompleteDto:
+  properties:
+    challengeId:
+      - NotBlank: { message: 'not.blank' }
+      - Length:
+          min: 1
+          max: 255
+    credential:
+      - Type:
+          type: array
+      - Count:
+          min: 1
+
 App\User\Application\DTO\RefreshTokenDto:
   properties:
     refreshToken:

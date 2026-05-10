@@ -64,6 +64,7 @@
     "thecodingmachine/safe": "^3.0",
     "twig/extra-bundle": "^3.10",
     "twig/inky-extra": "^3.8",
+    "web-auth/webauthn-lib": "^5.3",
     "webonyx/graphql-php": "^15.17"
   },
   "config": {

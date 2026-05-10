@@ -9,7 +9,7 @@ parameters:
     - name: Application
       collectors:
         - type: className
-          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider).*'
+          regex: '.*App\\User\\Application\\(Transformer|Command|CommandHandler|DTO|EventListener|EventSubscriber|Factory|MutationInput|Processor|Resolver|ExceptionMessageHandler|Message|Query|Controller|Validator|Metric|Provider|Passkey).*'
         - type: className
           regex: '.*App\\Shared\\Application\\(Validator|Transformer|Provider|Converter|DTO|EventListener|Normalizer|QueryParameter|Resolver|Factory|Observability|Bus|Matcher).*'
         - type: className
@@ -82,6 +82,14 @@ parameters:
       collectors:
         - type: className
           regex: '.*Psr\\Cache\\.*'
+    - name: Webauthn
+      collectors:
+        - type: className
+          regex: '.*Webauthn\\.*'
+    - name: Cose
+      collectors:
+        - type: className
+          regex: '.*Cose\\.*'
   ruleset:
     Application:
       - Domain
@@ -94,6 +102,8 @@ parameters:
       - PhpAttributes
       - Aws
       - Ramsey
+      - Webauthn
+      - Cose
     Infrastructure:
       - Domain
       - Application

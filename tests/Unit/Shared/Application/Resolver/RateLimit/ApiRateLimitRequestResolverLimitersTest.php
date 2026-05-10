@@ -66,6 +66,44 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
         self::assertSame('ip:' . $clientIp, $byName['registration']);
     }
 
+    public function testResolveEndpointLimitersForPasskeySignupOptions(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/passkeys/signup/options',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertArrayHasKey('registration', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['registration']);
+    }
+
+    public function testResolveEndpointLimitersForPasskeySignupComplete(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/passkeys/signup/complete',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertArrayHasKey('registration', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['registration']);
+    }
+
     public function testResolveEndpointLimitersForUserCollectionGet(): void
     {
         $clientIp = $this->faker->ipv4();

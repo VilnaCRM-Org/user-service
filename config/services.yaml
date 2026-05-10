@@ -285,6 +285,12 @@ services:
   App\User\Domain\Repository\RecoveryCodeRepositoryInterface:
     alias: App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository
 
+  App\User\Domain\Repository\PasskeyCredentialRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasskeyCredentialRepository
+
+  App\User\Domain\Repository\PasskeyChallengeRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasskeyChallengeRepository
+
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:
       $apiBaseUrl: '%env(API_BASE_URL)%'
@@ -328,6 +334,19 @@ services:
   App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
   App\User\Application\Validator\UserCredentialValidatorInterface: '@App\User\Application\Validator\UserCredentialValidator'
   App\User\Application\Validator\OwnershipValidatorInterface: '@App\User\Application\Validator\TokenOwnershipValidator'
+  App\User\Application\Passkey\PasskeyCredentialVerifierInterface: '@App\User\Application\Passkey\PasskeyCredentialVerifier'
+  App\User\Application\Passkey\PasskeyWebauthnFactoryInterface: '@App\User\Application\Passkey\PasskeyWebauthnFactory'
+  App\User\Application\Passkey\PasskeyJsonCodecInterface: '@App\User\Application\Passkey\PasskeyJsonCodec'
+  App\User\Application\Passkey\PasskeyAuthenticationServiceInterface: '@App\User\Application\Passkey\PasskeyAuthenticationService'
+  App\User\Application\Passkey\PasskeyRegistrationServiceInterface: '@App\User\Application\Passkey\PasskeyRegistrationService'
+
+  App\User\Application\Passkey\PasskeyConfiguration:
+    arguments:
+      $rpId: '%env(string:PASSKEY_RP_ID)%'
+      $rpName: '%env(string:PASSKEY_RP_NAME)%'
+      $allowedOrigins: '%env(string:PASSKEY_ALLOWED_ORIGINS)%'
+      $timeoutSeconds: '%env(int:PASSKEY_TIMEOUT_SECONDS)%'
+      $challengeTtlSeconds: '%env(int:PASSKEY_CHALLENGE_TTL_SECONDS)%'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
@@ -358,6 +377,7 @@ services:
         - { pattern: '#^/api/users/confirm$#', methods: ['PATCH'] }
         - { pattern: '#^/api/reset-password#' }
         - { pattern: '#^/api/signin#' }
+        - { pattern: '#^/api/passkeys/(signup|signin)#', methods: ['POST'] }
         - { pattern: '#^/api/token$#', methods: ['POST'] }
         - { pattern: '#^/api/oauth/token$#', methods: ['POST'] }
         - { pattern: '#^/api/docs#' }

@@ -87,6 +87,11 @@ Password grant is intentionally disabled (`enable_password_grant: false`); use a
 - `GLOBAL_API_AUTHENTICATED_RATE_LIMIT_INTERVAL`: Time window for authenticated API rate limiting (default: "1 minute").
 - `REGISTRATION_RATE_LIMIT_MAX_REQUESTS`: Maximum registration requests allowed per interval (default: 5).
 - `REGISTRATION_RATE_LIMIT_INTERVAL`: Time window for registration rate limiting (default: "1 minute").
+- `PASSKEY_RP_ID`: WebAuthn relying party id used for passkey registration and authentication.
+- `PASSKEY_RP_NAME`: WebAuthn relying party display name.
+- `PASSKEY_ALLOWED_ORIGINS`: Comma-separated browser origins allowed for WebAuthn ceremonies.
+- `PASSKEY_TIMEOUT_SECONDS`: Browser WebAuthn ceremony timeout in seconds.
+- `PASSKEY_CHALLENGE_TTL_SECONDS`: Server-side passkey challenge TTL in seconds.
 - `OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS`: Maximum token exchange requests allowed per interval (default: 10).
 - `OAUTH_TOKEN_RATE_LIMIT_INTERVAL`: Time window for token exchange rate limiting (default: "1 minute").
 - `SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-in attempts per IP per interval (default: 10).

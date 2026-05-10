@@ -9,6 +9,7 @@ User Service is a fully functional microservice designed to manage user registra
 This service is particularly beneficial for applications that need to:
 
 - **Register new users**: Offering a streamlined and customizable registration process.
+- **Use passkeys**: Supporting WebAuthn passkey sign-up, authenticated passkey enrollment, and passkey sign-in.
 - **Authenticate users**: Securely managing user logins with multiple OAuth grants.
 - **Integrate with other services**: Easily connecting with other microservices or external systems for a cohesive ecosystem.
 

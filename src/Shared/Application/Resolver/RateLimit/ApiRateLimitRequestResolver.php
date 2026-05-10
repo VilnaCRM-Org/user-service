@@ -153,7 +153,8 @@ final readonly class ApiRateLimitRequestResolver
     ): ?array {
         if (
             $method === 'POST'
-            && preg_match('#^/api/users(?:\.[^/]+)?$#', $path) === 1
+            && (preg_match('#^/api/users(?:\.[^/]+)?$#', $path) === 1
+                || preg_match('#^/api/passkeys/signup/(options|complete)$#', $path) === 1)
         ) {
             return ['name' => 'registration', 'key' => $this->buildIpKey($request)];
         }

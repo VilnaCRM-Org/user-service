@@ -6,6 +6,7 @@ security:
     - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
     - { path: ^/api/auth/social, roles: PUBLIC_ACCESS }
     - { path: ^/api/signin, roles: PUBLIC_ACCESS }
+    - { path: ^/api/passkeys/(signup|signin), methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/token$, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/oauth/token$, methods: [POST], roles: PUBLIC_ACCESS }
     - { path: ^/api/docs, roles: PUBLIC_ACCESS }

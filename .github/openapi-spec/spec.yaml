@@ -217,6 +217,306 @@ paths:
             schema:
               $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
         required: true
+  /api/passkeys/register/complete:
+    post:
+      operationId: passkey_register_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey registered'
+        '401':
+          description: 'Authentication required or invalid passkey challenge'
+        '409':
+          description: 'Passkey credential is already registered'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Complete authenticated passkey registration'
+      description: 'Verifies WebAuthn attestation and stores the passkey for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+        required: true
+  /api/passkeys/register/options:
+    post:
+      operationId: passkey_register_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey creation options generated'
+        '401':
+          description: 'Authentication required'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Start authenticated passkey registration'
+      description: 'Creates WebAuthn public key creation options for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+        required: true
+  /api/passkeys/signin/complete:
+    post:
+      operationId: passkey_signin_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey sign-in completed'
+        '401':
+          description: 'Invalid passkey credential or challenge'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Complete passkey sign in'
+      description: 'Verifies WebAuthn assertion, updates the stored credential counter, and issues tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+        required: true
+  /api/passkeys/signin/options:
+    post:
+      operationId: passkey_signin_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey request options generated'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Start passkey sign in'
+      description: 'Creates WebAuthn public key request options for username-first passkey sign in.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+        required: true
+  /api/passkeys/signup/complete:
+    post:
+      operationId: passkey_signup_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey sign-up completed'
+        '401':
+          description: 'Invalid or expired passkey challenge'
+        '409':
+          description: 'Email or passkey credential is already registered'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Complete passkey sign-up'
+      description: 'Verifies WebAuthn attestation, creates the account, stores the passkey, and issues tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+        required: true
+  /api/passkeys/signup/options:
+    post:
+      operationId: passkey_signup_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey creation options generated'
+        '409':
+          description: 'Email is already registered'
+        '422':
+          description: 'Validation error'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {}
+      summary: 'Start passkey sign-up'
+      description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+        required: true
   /api/signin:
     post:
       operationId: signin_http
@@ -2679,6 +2979,26 @@ components:
         twoFactorCode:
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
           type: string
+    EmptyResponse.PasskeyRegistrationCompleteDto:
+      type: object
+    EmptyResponse.PasskeyRegistrationOptionsDto:
+      type: object
+    EmptyResponse.PasskeySignInCompleteDto:
+      type: object
+    EmptyResponse.PasskeySignInOptionsDto:
+      type: object
+      properties:
+        rememberMe:
+          default: false
+          type: boolean
+    EmptyResponse.PasskeySignUpCompleteDto:
+      type: object
+      properties:
+        rememberMe:
+          default: false
+          type: boolean
+    EmptyResponse.PasskeySignUpOptionsDto:
+      type: object
     EmptyResponse.RefreshTokenDto:
       type: object
       required:
@@ -2939,9 +3259,9 @@ components:
         users:
           type: array
           items:
-            type:
-              - string
-              - 'null'
+            type: object
+            additionalProperties:
+              type: string
     User.UserRegisterDto:
       type: object
       additionalProperties: false
