@@ -29,6 +29,8 @@ use App\User\Application\Resolver\SetupTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\SignInAuthMutationResolver;
 use App\User\Application\Resolver\SignOutAllAuthMutationResolver;
 use App\User\Application\Resolver\SignOutAuthMutationResolver;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
 use App\User\Application\Service\SignInCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -80,11 +82,8 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new CompleteTwoFactorAuthMutationResolver(
             $this->createValidator(),
-            $this->createCommandBus(),
-            $this->createCommandResponseTypeGuard(),
             $this->createAuthPayloadFactory(),
-            $this->createMock(CompleteTwoFactorCommandFactoryInterface::class),
-            $this->createMock(HttpRequestContextResolverInterface::class)
+            $this->createCompleteTwoFactorCommandDispatcher()
         );
     }
 
@@ -92,11 +91,8 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new ConfirmTwoFactorAuthMutationResolver(
             $this->createValidator(),
-            $this->createCommandBus(),
-            $this->createCommandResponseTypeGuard(),
             $this->createAuthPayloadFactory(),
-            $this->createCurrentUserIdentityResolver(),
-            $this->createMock(ConfirmTwoFactorCommandFactoryInterface::class)
+            $this->createConfirmTwoFactorCommandDispatcher()
         );
     }
 
@@ -181,6 +177,26 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
             $this->createCommandResponseTypeGuard(),
             $this->createMock(SignInCommandFactoryInterface::class),
             $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createCompleteTwoFactorCommandDispatcher(): CompleteTwoFactorCommandDispatcher
+    {
+        return new CompleteTwoFactorCommandDispatcher(
+            $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
+            $this->createMock(CompleteTwoFactorCommandFactoryInterface::class),
+            $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createConfirmTwoFactorCommandDispatcher(): ConfirmTwoFactorCommandDispatcher
+    {
+        return new ConfirmTwoFactorCommandDispatcher(
+            $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
+            $this->createCurrentUserIdentityResolver(),
+            $this->createMock(ConfirmTwoFactorCommandFactoryInterface::class)
         );
     }
 

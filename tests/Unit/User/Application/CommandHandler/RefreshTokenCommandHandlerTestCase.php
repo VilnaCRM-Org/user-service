@@ -12,6 +12,7 @@ use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenContextResolver;
 use App\User\Application\Service\RefreshTokenIssuer;
 use App\User\Application\Service\RefreshTokenTheftDetector;
 use App\User\Domain\Entity\AuthRefreshToken;
@@ -296,24 +297,11 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     protected function createHandler(
         int $refreshTokenGraceWindowSeconds = 60
     ): RefreshTokenCommandHandler {
-        $tokenIssuer = new RefreshTokenIssuer(
-            $this->refreshTokenRepository,
-            $this->accessTokenFactory,
-            $this->authTokenFactory,
-            $this->publisher,
-        );
-        $theftDetector = new RefreshTokenTheftDetector(
-            $this->refreshTokenRepository,
-            $this->authSessionRepository,
-            $this->publisher,
-        );
-
         return new RefreshTokenCommandHandler(
             $this->refreshTokenRepository,
-            $this->authSessionRepository,
-            $this->userRepository,
-            $tokenIssuer,
-            $theftDetector,
+            $this->createContextResolver(),
+            $this->createTokenIssuer(),
+            $this->createTheftDetector(),
             $refreshTokenGraceWindowSeconds,
         );
     }
@@ -376,6 +364,34 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             $this->uuidTransformer->transformFromString(
                 $this->faker->uuid()
             )
+        );
+    }
+
+    private function createTokenIssuer(): RefreshTokenIssuer
+    {
+        return new RefreshTokenIssuer(
+            $this->refreshTokenRepository,
+            $this->accessTokenFactory,
+            $this->authTokenFactory,
+            $this->publisher,
+        );
+    }
+
+    private function createTheftDetector(): RefreshTokenTheftDetector
+    {
+        return new RefreshTokenTheftDetector(
+            $this->refreshTokenRepository,
+            $this->authSessionRepository,
+            $this->publisher,
+        );
+    }
+
+    private function createContextResolver(): RefreshTokenContextResolver
+    {
+        return new RefreshTokenContextResolver(
+            $this->refreshTokenRepository,
+            $this->authSessionRepository,
+            $this->userRepository,
         );
     }
 }

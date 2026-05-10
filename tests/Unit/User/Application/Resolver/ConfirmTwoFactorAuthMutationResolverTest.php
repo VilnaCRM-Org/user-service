@@ -11,6 +11,7 @@ use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\ConfirmTwoFactorAuthMutationResolver;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 
 final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolverTestCase
@@ -33,15 +34,17 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
         $this->setUpScenario();
         $this->resolver = new ConfirmTwoFactorAuthMutationResolver(
             $this->validator,
-            $this->commandBus,
-            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
-            $this->currentUserIdentityResolver(
-                $this->email,
-                $this->sessionId,
-                $this->faker->uuid()
+            new ConfirmTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                $this->currentUserIdentityResolver(
+                    $this->email,
+                    $this->sessionId,
+                    $this->faker->uuid()
+                ),
+                $this->commandFactory
             ),
-            $this->commandFactory
         );
     }
 

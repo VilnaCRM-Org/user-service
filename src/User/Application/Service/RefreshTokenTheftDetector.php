@@ -24,7 +24,7 @@ final readonly class RefreshTokenTheftDetector
     /**
      * @param list<AuthRefreshToken>|null $tokens
      */
-    public function detect(
+    public function respondToTheft(
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
@@ -32,14 +32,16 @@ final readonly class RefreshTokenTheftDetector
         ?array $tokens = null
     ): never {
         $this->revokeSessionAndTokens($oldToken, $session, $tokens);
-        $this->publisher->publishTheftDetected(
-            $session->getId(),
-            $user->getId(),
-            $session->getIpAddress(),
-            $reason
-        );
-
-        $this->throwUnauthorized();
+        try {
+            $this->publisher->publishTheftDetected(
+                $session->getId(),
+                $user->getId(),
+                $session->getIpAddress(),
+                $reason
+            );
+        } finally {
+            $this->throwUnauthorized();
+        }
     }
 
     /**

@@ -14,6 +14,7 @@ use App\User\Application\Factory\AuthCookieFactoryInterface;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactory;
 use App\User\Application\Processor\CompleteTwoFactorProcessor;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -236,10 +237,12 @@ final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
         ?Request $request = null
     ): mixed {
         $processor = new CompleteTwoFactorProcessor(
-            $this->commandBus,
-            new CommandResponseTypeGuard(),
-            new CompleteTwoFactorCommandFactory(),
-            $this->requestContextResolver,
+            new CompleteTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                new CompleteTwoFactorCommandFactory(),
+                $this->requestContextResolver
+            ),
             $this->cookieFactory,
         );
         if ($request !== null) {

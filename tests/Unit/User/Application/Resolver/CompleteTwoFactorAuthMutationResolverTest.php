@@ -13,6 +13,7 @@ use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\CompleteTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -39,11 +40,13 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
         $this->setUpScenario();
         $this->resolver = new CompleteTwoFactorAuthMutationResolver(
             $this->validator,
-            $this->commandBus,
-            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
-            $this->commandFactory,
-            $this->requestContextResolver
+            new CompleteTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                $this->commandFactory,
+                $this->requestContextResolver
+            )
         );
     }
 

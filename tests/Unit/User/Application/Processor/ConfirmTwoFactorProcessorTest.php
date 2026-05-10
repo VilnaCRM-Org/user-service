@@ -14,6 +14,7 @@ use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactory;
 use App\User\Application\Processor\ConfirmTwoFactorProcessor;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -94,10 +95,12 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
     private function createProcessor(): ConfirmTwoFactorProcessor
     {
         return new ConfirmTwoFactorProcessor(
-            $this->commandBus,
-            new CommandResponseTypeGuard(),
-            new CurrentUserIdentityResolver($this->security),
-            new ConfirmTwoFactorCommandFactory(),
+            new ConfirmTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                new CurrentUserIdentityResolver($this->security),
+                new ConfirmTwoFactorCommandFactory()
+            ),
         );
     }
 
