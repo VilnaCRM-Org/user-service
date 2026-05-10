@@ -24,7 +24,6 @@ flow while preserving current REST and GraphQL registration behavior.
 - Existing query style is represented by `GetUserQueryHandler` and
   `GetUserQueryHandlerInterface`, which live under `User/Application/Query`.
 - The repository already exposes `findByEmail(string $email): ?UserInterface`.
-- `.github/copilot-instructions.md` is not present in this branch.
 
 ## Constraints
 
@@ -45,7 +44,8 @@ flow while preserving current REST and GraphQL registration behavior.
 - `src/User/Application/Resolver/RegisterUserMutationResolver.php`
 - `src/User/Application/Query/GetUserQueryHandler.php`
 - `src/User/Domain/Repository/UserRepositoryInterface.php`
-- `tests/Unit/User/Application/CommandHandler/SignUpCommandHandlerTest.php`
+- `tests/Unit/User/Application/Command/RegisterUserCommandTest.php`
+- `tests/Unit/User/Application/CommandHandler/RegisterUserCommandHandlerTest.php`
 - `tests/Unit/User/Application/Processor/RegisterUserProcessorTest.php`
 - `tests/Unit/User/Application/Resolver/RegisterUserMutationResolverTest.php`
 - `docs/design-and-architecture.md`

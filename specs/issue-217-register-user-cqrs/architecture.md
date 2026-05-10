@@ -51,7 +51,8 @@ It should not query for existing users or set any response data.
 1. Query by email.
 2. Return existing user when found.
 3. Dispatch the command when missing.
-4. Query by email again and return the persisted user.
+4. Query by email again and return the persisted user, or throw
+   `UserNotFoundException` if persistence cannot be observed after dispatch.
 
 The post-dispatch query keeps the API return value on the query side while
 avoiding new response DTOs or write-side return values.

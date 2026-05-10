@@ -33,10 +33,10 @@ final readonly class RegisterUserMutationResolver implements
     public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];
-        $email = $args['email'];
 
         $this->validator->validate($this->transformer->transform($args));
 
+        $email = $args['email'];
         $existingUser = $this->findUserByEmailQueryHandler->find($email);
         if ($existingUser !== null) {
             return $existingUser;

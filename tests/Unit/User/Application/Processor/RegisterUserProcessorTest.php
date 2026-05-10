@@ -9,26 +9,27 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\RegisterUserCommand;
+use App\Tests\Unit\User\Application\Support\RegisterUserCommandExpectationHelper;
 use App\User\Application\DTO\UserRegisterDto;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Processor\RegisterUserProcessor;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
-use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class RegisterUserProcessorTest extends UnitTestCase
 {
-    private Operation $mockOperation;
+    private Operation&MockObject $mockOperation;
     private SignUpCommandFactoryInterface $signUpCommandFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
-    private CommandBusInterface $commandBus;
-    private SignUpCommandFactoryInterface $mockSignUpCommandFactory;
-    private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler;
+    private CommandBusInterface&MockObject $commandBus;
+    private SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
+    private RegisterUserCommandExpectationHelper $commandExpectationHelper;
     private RegisterUserProcessor $processor;
 
     #[\Override]
@@ -48,6 +49,12 @@ final class RegisterUserProcessorTest extends UnitTestCase
         $this->findUserByEmailQueryHandler = $this->createMock(
             FindUserByEmailQueryHandlerInterface::class
         );
+        $this->commandExpectationHelper =
+            new RegisterUserCommandExpectationHelper(
+                $this->findUserByEmailQueryHandler,
+                $this->mockSignUpCommandFactory,
+                $this->commandBus
+            );
         $this->processor = new RegisterUserProcessor(
             $this->commandBus,
             $this->mockSignUpCommandFactory,
@@ -95,7 +102,13 @@ final class RegisterUserProcessorTest extends UnitTestCase
             $this->signUpCommandFactory->create($email, $initials, $password);
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
 
-        $this->setExpectations($userRegisterDto, $signUpCommand, $user);
+        $this->commandExpectationHelper->expectRegistration(
+            $userRegisterDto->email,
+            $userRegisterDto->initials,
+            $userRegisterDto->password,
+            $signUpCommand,
+            $user
+        );
 
         $returnedUser =
             $this->processor->process($userRegisterDto, $this->mockOperation);
@@ -118,53 +131,11 @@ final class RegisterUserProcessorTest extends UnitTestCase
         );
 
         $this->expectException(UserNotFoundException::class);
-        $this->setMissingCreatedUserExpectations(
+        $this->commandExpectationHelper->expectMissingCreatedUser(
             $email,
             $signUpCommand
         );
 
         $this->processor->process($userRegisterDto, $this->mockOperation);
-    }
-
-    private function setMissingCreatedUserExpectations(
-        string $email,
-        RegisterUserCommand $signUpCommand,
-    ): void {
-        $this->findUserByEmailQueryHandler->expects($this->exactly(2))
-            ->method('find')
-            ->with($email)
-            ->willReturn(null);
-
-        $this->mockSignUpCommandFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($signUpCommand);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($signUpCommand);
-    }
-
-    private function setExpectations(
-        UserRegisterDto $userRegisterDto,
-        RegisterUserCommand $signUpCommand,
-        User $user,
-    ): void {
-        $this->findUserByEmailQueryHandler->expects($this->exactly(2))
-            ->method('find')
-            ->with($userRegisterDto->email)
-            ->willReturnOnConsecutiveCalls(null, $user);
-
-        $this->mockSignUpCommandFactory->expects($this->once())
-            ->method('create')
-            ->with(
-                $userRegisterDto->email,
-                $userRegisterDto->initials,
-                $userRegisterDto->password
-            )
-            ->willReturn($signUpCommand);
-
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($signUpCommand);
     }
 }

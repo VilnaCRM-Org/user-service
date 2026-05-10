@@ -25,8 +25,6 @@ Ready for implementation.
 - The issue text references
   `src/User/Application/GraphQL/Resolver/RegisterUserResolver.php`, but the
   current code path is `src/User/Application/Resolver/RegisterUserMutationResolver.php`.
-- `.github/copilot-instructions.md` is absent in the current branch, so there is
-  no file to update there.
 - A race between lookup and creation is pre-existing and outside the issue
   scope.
 

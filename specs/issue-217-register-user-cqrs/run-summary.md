@@ -55,8 +55,6 @@ BMALPH command names.
 
 ## Warnings and Open Questions
 
-- `.github/copilot-instructions.md` is absent, so no Copilot instructions update
-  is possible in this branch.
 - The issue mentions a GraphQL resolver path that differs from the repository's
   current `RegisterUserMutationResolver` location.
 - Lookup/create race behavior is outside the issue scope.
