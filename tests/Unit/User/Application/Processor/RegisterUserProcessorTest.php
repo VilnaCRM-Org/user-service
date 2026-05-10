@@ -5,31 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Unit\UnitTestCase;
-use App\Tests\Unit\User\Application\Support\RegisterUserCommandExpectationHelper;
+use App\Tests\Unit\User\Application\Support\RegisterUserCommandTestCase;
 use App\User\Application\DTO\UserRegisterDto;
-use App\User\Application\Factory\SignUpCommandFactory;
-use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Processor\RegisterUserProcessor;
-use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UserFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class RegisterUserProcessorTest extends UnitTestCase
+final class RegisterUserProcessorTest extends RegisterUserCommandTestCase
 {
     private Operation&MockObject $mockOperation;
-    private SignUpCommandFactoryInterface $signUpCommandFactory;
-    private UserFactoryInterface $userFactory;
-    private UuidTransformer $uuidTransformer;
-    private CommandBusInterface&MockObject $commandBus;
-    private SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
-    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
-    private RegisterUserCommandExpectationHelper $commandExpectationHelper;
     private RegisterUserProcessor $processor;
 
     #[\Override]
@@ -37,14 +21,8 @@ final class RegisterUserProcessorTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->createCollaborators();
-        $this->createMocks();
-        $this->commandExpectationHelper =
-            new RegisterUserCommandExpectationHelper(
-                $this->findUserByEmailQueryHandler,
-                $this->mockSignUpCommandFactory,
-                $this->commandBus
-            );
+        $this->setUpRegisterUserCommandContext();
+        $this->mockOperation = $this->createMock(Operation::class);
         $this->processor = $this->createProcessor();
     }
 
@@ -53,11 +31,9 @@ final class RegisterUserProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $uuid =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
         $userRegisterDto = new UserRegisterDto($email, $initials, $password);
         $existingUser =
-            $this->userFactory->create($email, $initials, $password, $uuid);
+            $this->createUser($email, $initials, $password);
 
         $this->findUserByEmailQueryHandler->expects($this->once())
             ->method('find')
@@ -79,14 +55,12 @@ final class RegisterUserProcessorTest extends UnitTestCase
         $email = $this->faker->email();
         $initials = $this->faker->name();
         $password = $this->faker->password();
-        $uuid =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
 
         $userRegisterDto = new UserRegisterDto($email, $initials, $password);
 
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
-        $user = $this->userFactory->create($email, $initials, $password, $uuid);
+        $user = $this->createUser($email, $initials, $password);
 
         $this->commandExpectationHelper->expectRegistration(
             $userRegisterDto->email,
@@ -123,26 +97,6 @@ final class RegisterUserProcessorTest extends UnitTestCase
         );
 
         $this->processor->process($userRegisterDto, $this->mockOperation);
-    }
-
-    private function createCollaborators(): void
-    {
-        $this->signUpCommandFactory = new SignUpCommandFactory();
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-    }
-
-    private function createMocks(): void
-    {
-        $this->mockOperation =
-            $this->createMock(Operation::class);
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->mockSignUpCommandFactory = $this->createMock(
-            SignUpCommandFactoryInterface::class
-        );
-        $this->findUserByEmailQueryHandler = $this->createMock(
-            FindUserByEmailQueryHandlerInterface::class
-        );
     }
 
     private function createProcessor(): RegisterUserProcessor

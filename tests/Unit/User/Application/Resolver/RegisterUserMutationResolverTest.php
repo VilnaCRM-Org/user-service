@@ -4,36 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Unit\UnitTestCase;
-use App\Tests\Unit\User\Application\Support\RegisterUserCommandExpectationHelper;
+use App\Tests\Unit\User\Application\Support\RegisterUserCommandTestCase;
 use App\User\Application\Command\RegisterUserCommand;
-use App\User\Application\Factory\SignUpCommandFactory;
-use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\CreateUserMutationInput;
-use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Resolver\RegisterUserMutationResolver;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\UserNotFoundException;
-use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UserFactoryInterface;
-use PHPUnit\Framework\MockObject\MockObject;
 
-final class RegisterUserMutationResolverTest extends UnitTestCase
+final class RegisterUserMutationResolverTest extends RegisterUserCommandTestCase
 {
-    private SignUpCommandFactoryInterface $signUpCommandFactory;
-    private UserFactoryInterface $userFactory;
-    private UuidTransformer $uuidTransformer;
-    private SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
-    private CommandBusInterface&MockObject $commandBus;
     private MutationInputValidator $validator;
     private CreateUserMutationInputTransformer $transformer;
-    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
-    private RegisterUserCommandExpectationHelper $commandExpectationHelper;
     private RegisterUserMutationResolver $resolver;
 
     #[\Override]
@@ -41,14 +24,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->createCollaborators();
-        $this->createMocks();
-        $this->commandExpectationHelper =
-            new RegisterUserCommandExpectationHelper(
-                $this->findUserByEmailQueryHandler,
-                $this->mockSignUpCommandFactory,
-                $this->commandBus
-            );
+        $this->setUpRegisterUserCommandContext();
+        $this->createResolverMocks();
         $this->resolver = $this->createResolver();
     }
 
@@ -111,24 +88,11 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->invokeResolver($input);
     }
 
-    private function createCollaborators(): void
+    private function createResolverMocks(): void
     {
-        $this->signUpCommandFactory = new SignUpCommandFactory();
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-    }
-
-    private function createMocks(): void
-    {
-        $this->mockSignUpCommandFactory =
-            $this->createMock(SignUpCommandFactoryInterface::class);
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->validator = $this->createMock(MutationInputValidator::class);
         $this->transformer =
             $this->createMock(CreateUserMutationInputTransformer::class);
-        $this->findUserByEmailQueryHandler = $this->createMock(
-            FindUserByEmailQueryHandlerInterface::class
-        );
     }
 
     private function createResolver(): RegisterUserMutationResolver
@@ -280,19 +244,6 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $input['email'],
             $input['initials'],
             $input['password']
-        );
-    }
-
-    private function createUser(
-        string $email,
-        string $initials,
-        string $password
-    ): User {
-        return $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
         );
     }
 }
