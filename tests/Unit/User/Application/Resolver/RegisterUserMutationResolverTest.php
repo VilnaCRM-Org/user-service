@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\Tests\Unit\User\Application\Support\RegisterUserCommandExpectationHelper;
+use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\CreateUserMutationInput;
@@ -29,8 +30,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
     private UuidTransformer $uuidTransformer;
     private SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
     private CommandBusInterface&MockObject $commandBus;
-    private MutationInputValidator&MockObject $validator;
-    private CreateUserMutationInputTransformer&MockObject $transformer;
+    private MutationInputValidator $validator;
+    private CreateUserMutationInputTransformer $transformer;
     private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private RegisterUserCommandExpectationHelper $commandExpectationHelper;
     private RegisterUserMutationResolver $resolver;
@@ -40,31 +41,15 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->signUpCommandFactory = new SignUpCommandFactory();
-        $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->mockSignUpCommandFactory =
-            $this->createMock(SignUpCommandFactoryInterface::class);
-        $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->validator = $this->createMock(MutationInputValidator::class);
-        $this->transformer =
-            $this->createMock(CreateUserMutationInputTransformer::class);
-        $this->findUserByEmailQueryHandler = $this->createMock(
-            FindUserByEmailQueryHandlerInterface::class
-        );
+        $this->createCollaborators();
+        $this->createMocks();
         $this->commandExpectationHelper =
             new RegisterUserCommandExpectationHelper(
                 $this->findUserByEmailQueryHandler,
                 $this->mockSignUpCommandFactory,
                 $this->commandBus
             );
-        $this->resolver = new RegisterUserMutationResolver(
-            $this->commandBus,
-            $this->validator,
-            $this->transformer,
-            $this->mockSignUpCommandFactory,
-            $this->findUserByEmailQueryHandler
-        );
+        $this->resolver = $this->createResolver();
     }
 
     public function testInvokeReturnsExistingUserWithoutDispatch(): void
@@ -74,21 +59,10 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $user = $this->createUserFromInput($input);
 
         $this->setValidationExpectations($input);
-        $this->findUserByEmailQueryHandler->expects($this->once())
-            ->method('find')
-            ->with($email)
-            ->willReturn($user);
-        $this->mockSignUpCommandFactory->expects($this->never())
-            ->method('create');
-        $this->commandBus->expects($this->never())
-            ->method('dispatch');
+        $this->expectExistingUserLookup($email, $user);
+        $this->expectNoRegistrationAttempt();
 
-        $result = $this->resolver->__invoke(
-            null,
-            ['args' => ['input' => $input]]
-        );
-
-        $this->assertSame($user, $result);
+        $this->assertSame($user, $this->invokeResolver($input));
     }
 
     public function testInvokeDispatchesRegistrationAndReturnsCreatedUser(): void
@@ -96,38 +70,18 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $email = $this->faker->email();
         $input = $this->createInput($email);
         $user = $this->createUserFromInput($input);
-        $command = $this->signUpCommandFactory->create(
-            $email,
-            $input['initials'],
-            $input['password']
-        );
 
         $this->setValidationExpectations($input);
-        $this->commandExpectationHelper->expectRegistration(
-            $email,
-            $input['initials'],
-            $input['password'],
-            $command,
-            $user
-        );
+        $this->expectCreatedUserLookup($email, $input, $user);
 
-        $result = $this->resolver->__invoke(
-            null,
-            ['args' => ['input' => $input]]
-        );
-
-        $this->assertSame($user, $result);
+        $this->assertSame($user, $this->invokeResolver($input));
     }
 
     public function testInvokeThrowsWhenCreatedUserCannotBeLoaded(): void
     {
         $email = $this->faker->email();
         $input = $this->createInput($email);
-        $command = $this->signUpCommandFactory->create(
-            $email,
-            $input['initials'],
-            $input['password']
-        );
+        $command = $this->createRegistrationCommand($email, $input);
 
         $this->expectException(UserNotFoundException::class);
         $this->setValidationExpectations($input);
@@ -136,22 +90,91 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $command
         );
 
-        $this->resolver->__invoke(null, ['args' => ['input' => $input]]);
+        $this->invokeResolver($input);
     }
 
     public function testInvokeValidatesBeforeReadingRequiredEmail(): void
     {
-        $input = [
-            'initials' => $this->faker->name(),
-            'password' => $this->faker->password(),
-        ];
-        $transformedInput = new CreateUserMutationInput(
-            null,
-            $input['initials'],
-            $input['password']
-        );
+        $input = $this->createInputWithoutEmail();
+        $transformedInput = $this->createTransformedInput($input);
         $validationFailure = new \RuntimeException('Invalid input.');
 
+        $this->expectValidationFailure(
+            $input,
+            $transformedInput,
+            $validationFailure
+        );
+        $this->expectNoRegistrationAttempt();
+
+        $this->expectExceptionObject($validationFailure);
+
+        $this->invokeResolver($input);
+    }
+
+    private function createCollaborators(): void
+    {
+        $this->signUpCommandFactory = new SignUpCommandFactory();
+        $this->userFactory = new UserFactory();
+        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
+    }
+
+    private function createMocks(): void
+    {
+        $this->mockSignUpCommandFactory =
+            $this->createMock(SignUpCommandFactoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
+        $this->validator = $this->createMock(MutationInputValidator::class);
+        $this->transformer =
+            $this->createMock(CreateUserMutationInputTransformer::class);
+        $this->findUserByEmailQueryHandler = $this->createMock(
+            FindUserByEmailQueryHandlerInterface::class
+        );
+    }
+
+    private function createResolver(): RegisterUserMutationResolver
+    {
+        return new RegisterUserMutationResolver(
+            $this->commandBus,
+            $this->validator,
+            $this->transformer,
+            $this->mockSignUpCommandFactory,
+            $this->findUserByEmailQueryHandler
+        );
+    }
+
+    /**
+     * @param array{email:string,initials:string,password:string} $input
+     */
+    private function expectCreatedUserLookup(
+        string $email,
+        array $input,
+        User $user,
+    ): void {
+        $this->commandExpectationHelper->expectRegistration(
+            $email,
+            $input['initials'],
+            $input['password'],
+            $this->createRegistrationCommand($email, $input),
+            $user
+        );
+    }
+
+    private function expectExistingUserLookup(string $email, User $user): void
+    {
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willReturn($user);
+    }
+
+    /**
+     * @param array<string,string> $input
+     */
+    private function expectValidationFailure(
+        array $input,
+        CreateUserMutationInput $transformedInput,
+        \RuntimeException $validationFailure,
+    ): void {
         $this->transformer->expects($this->once())
             ->method('transform')
             ->with($input)
@@ -160,16 +183,14 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             ->method('validate')
             ->with($transformedInput)
             ->willThrowException($validationFailure);
-        $this->findUserByEmailQueryHandler->expects($this->never())
-            ->method('find');
+    }
+
+    private function expectNoRegistrationAttempt(): void
+    {
         $this->mockSignUpCommandFactory->expects($this->never())
             ->method('create');
         $this->commandBus->expects($this->never())
             ->method('dispatch');
-
-        $this->expectExceptionObject($validationFailure);
-
-        $this->resolver->__invoke(null, ['args' => ['input' => $input]]);
     }
 
     /**
@@ -182,6 +203,29 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             'initials' => $this->faker->name(),
             'password' => $this->faker->password(),
         ];
+    }
+
+    /**
+     * @return array{initials:string,password:string}
+     */
+    private function createInputWithoutEmail(): array
+    {
+        return [
+            'initials' => $this->faker->name(),
+            'password' => $this->faker->password(),
+        ];
+    }
+
+    /**
+     * @param array{initials:string,password:string} $input
+     */
+    private function createTransformedInput(array $input): CreateUserMutationInput
+    {
+        return new CreateUserMutationInput(
+            null,
+            $input['initials'],
+            $input['password']
+        );
     }
 
     /**
@@ -203,6 +247,28 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->validator->expects($this->once())
             ->method('validate')
             ->with($transformedInput);
+    }
+
+    /**
+     * @param array{email?:string,initials:string,password:string} $input
+     */
+    private function invokeResolver(array $input): ?object
+    {
+        return $this->resolver->__invoke(null, ['args' => ['input' => $input]]);
+    }
+
+    /**
+     * @param array{email:string,initials:string,password:string} $input
+     */
+    private function createRegistrationCommand(
+        string $email,
+        array $input,
+    ): RegisterUserCommand {
+        return $this->signUpCommandFactory->create(
+            $email,
+            $input['initials'],
+            $input['password']
+        );
     }
 
     /**
