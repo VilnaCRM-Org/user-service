@@ -23,5 +23,10 @@
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-storybook": "^10.2.3",
     "globals": "^17.3.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
