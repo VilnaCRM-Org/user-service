@@ -6,7 +6,6 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
@@ -18,7 +17,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 
-final class CompleteTwoFactorProcessorTest extends UnitTestCase
+final class CompleteTwoFactorProcessorTest extends AuthProcessorTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
@@ -256,18 +255,15 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
         string $userAgent,
         CompleteTwoFactorCommandResponse $response
     ): void {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                function (CompleteTwoFactorCommand $cmd) use (
-                    $ipAddress,
-                    $userAgent,
-                ): bool {
-                    $this->assertSame($ipAddress, $cmd->ipAddress);
-                    $this->assertSame($userAgent, $cmd->userAgent);
-                    return true;
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            CompleteTwoFactorCommand::class,
+            $response,
+            function (CompleteTwoFactorCommand $cmd) use ($ipAddress, $userAgent): void {
+                $this->assertSame($ipAddress, $cmd->ipAddress);
+                $this->assertSame($userAgent, $cmd->userAgent);
+            }
+        );
     }
 
     private function processDto(

@@ -32,7 +32,7 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
             $commandFactory
         );
 
-        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $refreshToken, $commandResponse);
+        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $commandResponse);
         $result = $resolver->__invoke(null, $this->context($refreshToken));
 
         $this->assertPayload($result, $commandResponse);
@@ -43,16 +43,15 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
         CommandBusInterface $commandBus,
         RefreshTokenCommandFactoryInterface $commandFactory,
         RefreshTokenCommand $command,
-        string $refreshToken,
         RefreshTokenCommandResponse $response,
     ): void {
         $validator->expects($this->once())
             ->method('validate')
             ->with($this->callback(static fn (object $dto): bool => $dto instanceof RefreshTokenDto
-                && $dto->refreshTokenValue() === $refreshToken));
+                && $dto->refreshTokenValue() === $command->refreshToken));
         $commandFactory->expects($this->once())
             ->method('create')
-            ->with($refreshToken)
+            ->with($command->refreshToken)
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')

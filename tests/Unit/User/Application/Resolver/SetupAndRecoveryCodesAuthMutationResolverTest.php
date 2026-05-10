@@ -56,7 +56,7 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
             $commandFactory
         );
 
-        $this->expectRecoveryResolver($commandBus, $commandFactory, $command, $email, $sessionId, $commandResponse);
+        $this->expectRecoveryResolver($commandBus, $commandFactory, $command, $commandResponse);
         $result = $resolver->__invoke(null, []);
 
         $this->assertRecoveryCodesPayload($result, $commandResponse);
@@ -83,13 +83,11 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
         CommandBusInterface $commandBus,
         RegenerateRecoveryCodesCommandFactoryInterface $commandFactory,
         RegenerateRecoveryCodesCommand $command,
-        string $email,
-        string $sessionId,
         RegenerateRecoveryCodesCommandResponse $response,
     ): void {
         $commandFactory->expects($this->once())
             ->method('create')
-            ->with($email, $sessionId)
+            ->with($command->userEmail, $command->currentSessionId)
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')

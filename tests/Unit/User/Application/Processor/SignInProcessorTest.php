@@ -6,7 +6,6 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
@@ -19,7 +18,7 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
-final class SignInProcessorTest extends UnitTestCase
+final class SignInProcessorTest extends AuthProcessorTestCase
 {
     private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
@@ -289,15 +288,15 @@ final class SignInProcessorTest extends UnitTestCase
         string $expectedAgent,
         SignInCommandResponse $response
     ): void {
-        $this->commandBus->expects($this->once())->method('dispatch')
-            ->with($this->callback(
-                function (SignInCommand $cmd) use ($expectedIp, $expectedAgent): bool {
-                    $this->assertSame($expectedIp, $cmd->ipAddress);
-                    $this->assertSame($expectedAgent, $cmd->userAgent);
-                    return true;
-                }
-            ))
-            ->willReturn($response);
+        $this->expectDispatchMatchingCommand(
+            $this->commandBus,
+            SignInCommand::class,
+            $response,
+            function (SignInCommand $cmd) use ($expectedIp, $expectedAgent): void {
+                $this->assertSame($expectedIp, $cmd->ipAddress);
+                $this->assertSame($expectedAgent, $cmd->userAgent);
+            }
+        );
     }
 
     private function assertTokenResponseBody(
