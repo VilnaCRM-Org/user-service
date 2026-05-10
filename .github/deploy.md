@@ -43,23 +43,29 @@ Recommended role permissions include:
   "Statement": [
     {
       "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
       "Action": [
         "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
         "ecr:CompleteLayerUpload",
-        "ecr:GetAuthorizationToken",
+        "ecr:GetDownloadUrlForLayer",
         "ecr:InitiateLayerUpload",
         "ecr:PutImage",
+        "ecr:StartImageScan",
         "ecr:UploadLayerPart"
       ],
-      "Resource": "*"
+      "Resource": "arn:aws:ecr:us-east-1:123456789012:repository/user-service"
     }
   ]
 }
 ```
 
-`ecr:GetAuthorizationToken` requires `"Resource": "*"`. Scope the remaining ECR
-permissions to the target repository ARN when creating the final production
-policy.
+`ecr:GetAuthorizationToken` requires `"Resource": "*"`. Keep the remaining ECR
+permissions scoped to the target repository ARN.
 
 ## ECR Repository Setup
 

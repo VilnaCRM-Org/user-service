@@ -15,13 +15,16 @@ concurrency:
 
 jobs:
   build-and-push:
+    if: github.ref == 'refs/heads/main'
     name: Build and push Docker image
     runs-on: ubuntu-latest
     environment: production
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Configure AWS credentials
         env:
@@ -47,16 +50,21 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Log in to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         run: |
           aws ecr get-login-password --region "${AWS_REGION}" \
             | docker login \
               --username AWS \
-              --password-stdin "${{ secrets.ECR_REGISTRY }}"
+              --password-stdin "${ECR_REGISTRY}"
 
       - name: Prepare image metadata
         id: image
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
-          IMAGE_URI="${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}"
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}"
           IMAGE_TAG="${GITHUB_SHA::12}"
 
           {
@@ -67,24 +75,33 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image
+        env:
+          LATEST_IMAGE: ${{ steps.image.outputs.latest_image }}
+          VERSIONED_IMAGE: ${{ steps.image.outputs.versioned_image }}
         run: |
-          docker pull "${{ steps.image.outputs.latest_image }}" || true
+          docker pull "${LATEST_IMAGE}" || true
           docker build \
             --target app_php \
-            --cache-from "${{ steps.image.outputs.latest_image }}" \
-            --tag "${{ steps.image.outputs.versioned_image }}" \
-            --tag "${{ steps.image.outputs.latest_image }}" \
+            --cache-from "${LATEST_IMAGE}" \
+            --tag "${VERSIONED_IMAGE}" \
+            --tag "${LATEST_IMAGE}" \
             -f Dockerfile .
 
       - name: Push Docker image to ECR
+        env:
+          LATEST_IMAGE: ${{ steps.image.outputs.latest_image }}
+          VERSIONED_IMAGE: ${{ steps.image.outputs.versioned_image }}
         run: |
-          docker push "${{ steps.image.outputs.versioned_image }}"
-          docker push "${{ steps.image.outputs.latest_image }}"
+          docker push "${VERSIONED_IMAGE}"
+          docker push "${LATEST_IMAGE}"
 
       - name: Start ECR image scan
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image.outputs.image_tag }}
         run: |
           if ! aws ecr start-image-scan \
-            --repository-name "${{ secrets.ECR_REPOSITORY }}" \
-            --image-id imageTag="${{ steps.image.outputs.image_tag }}"; then
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-id imageTag="${IMAGE_TAG}"; then
             echo "ECR image scan was not started. The repository may use enhanced scanning or scan on push."
           fi
