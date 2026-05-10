@@ -2,6 +2,7 @@ framework:
   cache:
     prefix_seed: '_/srv/app.App_Shared_KernelDevDebugContainer'
     app: cache.adapter.redis
+    system: cache.adapter.array
     default_redis_provider: '%env(resolve:REDIS_URL)%'
 
     pools:
@@ -16,13 +17,13 @@ framework:
         tags: true
 
       cache.validator_expression_language:
-        adapter: cache.adapter.filesystem
+        adapter: cache.adapter.array
 
       cache.security_expression_language:
-        adapter: cache.adapter.filesystem
+        adapter: cache.adapter.array
 
       cache.security_is_granted_attribute_expression_language:
-        adapter: cache.adapter.filesystem
+        adapter: cache.adapter.array
 
       cache.security_is_csrf_token_valid_attribute_expression_language:
-        adapter: cache.adapter.filesystem
+        adapter: cache.adapter.array

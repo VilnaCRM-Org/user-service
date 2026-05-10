@@ -7,8 +7,10 @@ namespace App\User\Application\Resolver;
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
+use App\User\Domain\Exception\UserNotFoundException;
 
 final readonly class RegisterUserMutationResolver implements
     MutationResolverInterface
@@ -17,7 +19,8 @@ final readonly class RegisterUserMutationResolver implements
         private CommandBusInterface $commandBus,
         private MutationInputValidator $validator,
         private CreateUserMutationInputTransformer $transformer,
-        private SignUpCommandFactoryInterface $signUpCommandFactory
+        private SignUpCommandFactoryInterface $signUpCommandFactory,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler
     ) {
     }
 
@@ -30,16 +33,23 @@ final readonly class RegisterUserMutationResolver implements
     public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];
+        $email = $args['email'];
 
         $this->validator->validate($this->transformer->transform($args));
 
+        $existingUser = $this->findUserByEmailQueryHandler->find($email);
+        if ($existingUser !== null) {
+            return $existingUser;
+        }
+
         $command = $this->signUpCommandFactory->create(
-            $args['email'],
+            $email,
             $args['initials'],
             $args['password']
         );
         $this->commandBus->dispatch($command);
 
-        return $command->getResponse()->createdUser;
+        return $this->findUserByEmailQueryHandler->find($email)
+            ?? throw new UserNotFoundException();
     }
 }
