@@ -85,6 +85,15 @@ GITHUB_HOST ?= github.com
 FORMAT ?= markdown
 BMALPH_PLATFORM ?= codex
 BMALPH_DRY_RUN ?= false
+AGENT_LEARNING_DIR ?= .agent-learning
+AGENT_LEARNING_SKILL ?= .claude/skills/code-review/SKILL.md
+AGENT_LEARNING_PROMPT ?= Review the current diff and report actionable issues
+AGENT_LEARNING_TRACE_ID ?=
+AGENT_LEARNING_SIGNAL_TYPE ?= reprompt
+AGENT_LEARNING_SIGNAL_SUMMARY ?= Manual learning signal
+AGENT_LEARNING_EPISODES ?= $(AGENT_LEARNING_DIR)/episodes.jsonl
+AGENT_LEARNING_PATCH ?= $(AGENT_LEARNING_DIR)/skill-update.patch
+AGENT_LEARNING_CMD ?= bash -lc 'printf "agent-learning capture smoke\n"'
 
 define DOCKER_EXEC_WITH_ENV
 $(DOCKER_COMPOSE) exec -e $(1) php $(2)
@@ -132,6 +141,31 @@ ai-review-loop: ## Run local AI code review + fix loop (Codex default)
 
 bats: ## Run tests for bash commands
 	bats tests/CLI/bats/
+
+agent-learning-capture: ## Capture one agent-learning trace; override AGENT_LEARNING_CMD to run Codex
+	./scripts/agent-learning/capture-codex-run.sh \
+		--skill "$(AGENT_LEARNING_SKILL)" \
+		--prompt "$(AGENT_LEARNING_PROMPT)" \
+		$(if $(AGENT_LEARNING_TRACE_ID),--trace-id "$(AGENT_LEARNING_TRACE_ID)",) \
+		-- $(AGENT_LEARNING_CMD)
+
+agent-learning-intervention: ## Record one learning signal for AGENT_LEARNING_TRACE_ID
+	./scripts/agent-learning/record-intervention.sh \
+		--trace-id "$(AGENT_LEARNING_TRACE_ID)" \
+		--type "$(AGENT_LEARNING_SIGNAL_TYPE)" \
+		--summary "$(AGENT_LEARNING_SIGNAL_SUMMARY)"
+
+agent-learning-episodes: ## Build deterministic agent-learning episode JSONL
+	./scripts/agent-learning/build-episodes.sh --output "$(AGENT_LEARNING_EPISODES)"
+
+agent-learning-propose: ## Produce a skill prompt patch from agent-learning episodes
+	./scripts/agent-learning/propose-skill-update.sh \
+		--skill-file "$(AGENT_LEARNING_SKILL)" \
+		--episodes "$(AGENT_LEARNING_EPISODES)" \
+		--output "$(AGENT_LEARNING_PATCH)"
+
+agent-learning-evals: ## Run self-learning skill evals
+	bats tests/CLI/bats/make_agent_learning_tests.bats
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
 	$(RUN_PHP_CS_FIXER)

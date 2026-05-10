@@ -33,6 +33,13 @@ ORG="${1:-${WORKSPACE_GITHUB_ORG:-VilnaCRM-Org}}"
 : "${CODEX_SMOKE_MODEL:=}"
 : "${CODEX_TOOL_SMOKE_MODE:=skip}"
 
+if [ -n "${AGENT_LIGHTNING_BASE_URL:-}" ] && [ -z "${OPENAI_BASE_URL:-}" ]; then
+    export OPENAI_BASE_URL="${AGENT_LIGHTNING_BASE_URL}"
+fi
+if [ -n "${OPENAI_BASE_URL:-}" ]; then
+    echo "Codex OpenAI-compatible base URL override configured."
+fi
+
 cs_require_command gh
 cs_require_command jq
 cs_require_command codex

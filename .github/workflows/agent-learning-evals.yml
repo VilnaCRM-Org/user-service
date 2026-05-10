@@ -1,0 +1,35 @@
+name: Agent learning evals
+
+on:
+  pull_request:
+    paths:
+      - 'Makefile'
+      - '.github/workflows/agent-learning-evals.yml'
+      - '.github/workflows/bats-tests.yml'
+      - '.claude/skills/**'
+      - 'scripts/agent-learning/**'
+      - 'scripts/local-coder/verify-gh-codex.sh'
+      - 'tests/CLI/bats/make_agent_learning_tests.bats'
+      - 'docs/self-learning.md'
+
+permissions:
+  contents: read
+
+jobs:
+  agent_learning_evals:
+    runs-on: ubuntu-latest
+    name: Run agent learning evals
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Setup Bats and bats libs
+        uses: bats-core/bats-action@472edde1138d59aca53ff162fb8d996666d21e4a
+        with:
+          support-path: ${{ github.workspace }}/tests/CLI/bats/bats-support
+          assert-path: ${{ github.workspace }}/tests/CLI/bats/bats-assert
+
+      - name: Run agent learning evals
+        run: make agent-learning-evals
