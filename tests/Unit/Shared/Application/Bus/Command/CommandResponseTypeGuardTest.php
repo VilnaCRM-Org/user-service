@@ -17,7 +17,7 @@ final class CommandResponseTypeGuardTest extends UnitTestCase
 
         $this->assertSame(
             $response,
-            CommandResponseTypeGuard::expect(
+            (new CommandResponseTypeGuard())->expect(
                 $response,
                 RequestPasswordResetCommandResponse::class
             )
@@ -32,7 +32,7 @@ final class CommandResponseTypeGuardTest extends UnitTestCase
             RequestPasswordResetCommandResponse::class
         ));
 
-        CommandResponseTypeGuard::expect(
+        (new CommandResponseTypeGuard())->expect(
             null,
             RequestPasswordResetCommandResponse::class
         );
@@ -47,7 +47,7 @@ final class CommandResponseTypeGuardTest extends UnitTestCase
             ConfirmPasswordResetCommandResponse::class
         ));
 
-        CommandResponseTypeGuard::expect(
+        (new CommandResponseTypeGuard())->expect(
             new ConfirmPasswordResetCommandResponse(),
             RequestPasswordResetCommandResponse::class
         );

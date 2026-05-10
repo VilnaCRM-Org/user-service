@@ -19,6 +19,9 @@ use App\User\Infrastructure\Publisher\RefreshTokenPublisherInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 final readonly class RefreshTokenCommandHandler implements
     CommandHandlerInterface
 {

@@ -40,7 +40,7 @@ final readonly class ConfirmPasswordResetMutationResolver implements
             $args['token'],
             $args['newPassword']
         );
-        CommandResponseTypeGuard::expect(
+        (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             ConfirmPasswordResetCommandResponse::class
         );

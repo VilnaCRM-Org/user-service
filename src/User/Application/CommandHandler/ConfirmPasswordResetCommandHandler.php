@@ -19,6 +19,9 @@ use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface
 {

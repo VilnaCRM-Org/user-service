@@ -41,7 +41,7 @@ final readonly class RegisterUserProcessor implements ProcessorInterface
             $data->initials,
             $data->password
         );
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RegisterUserCommandResponse::class
         );

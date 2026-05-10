@@ -52,7 +52,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             CompleteTwoFactorCommandResponse::class
         );

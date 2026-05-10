@@ -40,7 +40,7 @@ final readonly class RegisterUserMutationResolver implements
             $args['initials'],
             $args['password']
         );
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RegisterUserCommandResponse::class
         );

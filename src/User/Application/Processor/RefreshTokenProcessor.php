@@ -40,7 +40,7 @@ final readonly class RefreshTokenProcessor implements ProcessorInterface
         array $context = []
     ): Response {
         $command = $this->refreshTokenCommandFactory->create($data->refreshTokenValue());
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RefreshTokenCommandResponse::class
         );

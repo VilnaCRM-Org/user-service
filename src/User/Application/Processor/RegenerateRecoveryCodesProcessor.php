@@ -50,7 +50,7 @@ final readonly class RegenerateRecoveryCodesProcessor implements
             $sessionId
         );
 
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RegenerateRecoveryCodesCommandResponse::class
         );

@@ -46,7 +46,7 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
         $command = $this->commandFactory->create(
             new UserCollection($data->users)
         );
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RegisterUserBatchCommandResponse::class
         );

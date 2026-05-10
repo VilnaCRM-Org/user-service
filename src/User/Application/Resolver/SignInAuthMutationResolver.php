@@ -48,7 +48,7 @@ final readonly class SignInAuthMutationResolver implements MutationResolverInter
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             SignInCommandResponse::class
         );

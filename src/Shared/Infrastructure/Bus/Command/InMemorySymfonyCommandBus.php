@@ -9,6 +9,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
 use App\Shared\Infrastructure\Bus\MessageBusFactory;
+use LogicException;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
@@ -50,7 +51,7 @@ readonly class InMemorySymfonyCommandBus implements CommandBusInterface
         }
 
         if (!$result instanceof CommandResponseInterface) {
-            throw new \LogicException(sprintf(
+            throw new LogicException(sprintf(
                 'Command handler for %s returned unsupported result %s.',
                 $command::class,
                 get_debug_type($result)

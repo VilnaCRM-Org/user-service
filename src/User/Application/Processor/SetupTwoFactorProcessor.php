@@ -53,7 +53,7 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->userIdentityResolver->resolveEmail()
         );
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             SetupTwoFactorCommandResponse::class
         );

@@ -36,7 +36,7 @@ final readonly class RefreshTokenAuthMutationResolver implements MutationResolve
         $command = $this->refreshTokenCommandFactory->create(
             $dto->refreshTokenValue()
         );
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RefreshTokenCommandResponse::class
         );

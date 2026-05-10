@@ -30,7 +30,7 @@ final readonly class SetupTwoFactorAuthMutationResolver implements MutationResol
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->currentUserIdentityResolver->resolveEmail()
         );
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             SetupTwoFactorCommandResponse::class
         );

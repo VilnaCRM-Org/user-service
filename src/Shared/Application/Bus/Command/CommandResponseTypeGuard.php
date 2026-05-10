@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\Bus\Command;
 
 use App\Shared\Domain\Bus\Command\CommandResponseInterface;
+use LogicException;
 
 final class CommandResponseTypeGuard
 {
@@ -15,14 +16,14 @@ final class CommandResponseTypeGuard
      *
      * @return TResponse
      */
-    public static function expect(
+    public function expect(
         ?CommandResponseInterface $response,
         string $expectedType,
     ): CommandResponseInterface {
         if (!$response instanceof $expectedType) {
             $actualType = $response === null ? 'null' : $response::class;
 
-            throw new \LogicException(sprintf(
+            throw new LogicException(sprintf(
                 'Expected command bus to return %s, got %s.',
                 $expectedType,
                 $actualType

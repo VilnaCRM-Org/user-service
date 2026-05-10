@@ -46,7 +46,7 @@ final readonly class CompleteTwoFactorAuthMutationResolver implements
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             CompleteTwoFactorCommandResponse::class
         );

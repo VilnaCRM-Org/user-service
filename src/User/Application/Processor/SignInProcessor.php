@@ -53,7 +53,7 @@ final readonly class SignInProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $commandResponse = CommandResponseTypeGuard::expect(
+        $commandResponse = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             SignInCommandResponse::class
         );

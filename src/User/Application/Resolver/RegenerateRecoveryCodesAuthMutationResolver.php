@@ -32,7 +32,7 @@ final readonly class RegenerateRecoveryCodesAuthMutationResolver implements
             $this->currentUserIdentityResolver->resolveEmail(),
             $this->currentUserIdentityResolver->resolveSessionId()
         );
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             RegenerateRecoveryCodesCommandResponse::class
         );

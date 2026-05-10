@@ -40,7 +40,7 @@ final readonly class ConfirmTwoFactorAuthMutationResolver implements
             $dto->twoFactorCodeValue(),
             $this->currentUserIdentityResolver->resolveSessionId()
         );
-        $response = CommandResponseTypeGuard::expect(
+        $response = (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             ConfirmTwoFactorCommandResponse::class
         );

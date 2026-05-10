@@ -28,7 +28,7 @@ final class ConfirmPasswordResetController extends AbstractController
             $confirmPasswordResetDto->token,
             $confirmPasswordResetDto->newPassword
         );
-        CommandResponseTypeGuard::expect(
+        (new CommandResponseTypeGuard())->expect(
             $this->commandBus->dispatch($command),
             ConfirmPasswordResetCommandResponse::class
         );
