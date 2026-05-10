@@ -29,7 +29,9 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
     }
 
     /**
-     * @return Traversable<int, MetricDimension>
+     * @return ArrayIterator
+     *
+     * @psalm-return ArrayIterator<int, MetricDimension>
      */
     #[\Override]
     public function getIterator(): Traversable
@@ -37,6 +39,9 @@ final readonly class MetricDimensions implements IteratorAggregate, Countable
         return new ArrayIterator($this->dimensions);
     }
 
+    /**
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {

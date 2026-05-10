@@ -18,6 +18,10 @@ You need to manually discover and read skill files, then follow their step-by-st
 
 ## Quick Start for OpenAI Agents
 
+### Step 0: New Feature Verification Gate (Mandatory)
+
+If you implement a **NEW feature**, you MUST execute **every** skill in `.claude/skills/` **after implementation**. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason. Provide evidence (commands run and outcomes). Use `make` or `docker compose exec php ...` only. Do not claim the feature is complete until this gate is finished.
+
 ### Step 1: Understand Your Task
 
 When the user requests a task, first determine which skill is most relevant.
@@ -37,17 +41,30 @@ Quick Decision Tree:
 │   └─ CI checks failing → ci-workflow
 │
 ├─ Create something new
+│   ├─ Full BMALPH specs from short prompt → bmad-autonomous-planning
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
-│   └─ New database entity → database-migrations
+│   ├─ New database entity → database-migrations
+│   ├─ Add caching / invalidation → cache-management
+│   ├─ Add business metrics → observability-instrumentation
+│   └─ Fix file placement / boundaries → code-organization
+│
+├─ Refactor existing code
+│   ├─ Move class / rename / restructure → code-organization
+│   ├─ Hardcoded config to .env → code-organization
+│   ├─ Reduce complexity → complexity-management
+│   ├─ Fix architecture boundaries → deptrac-fixer
+│   └─ Improve testability → testing-workflow
 │
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
-│   └─ Query performance → query-performance-analysis
+│   ├─ Query performance → query-performance-analysis
+│   └─ Quality thresholds → quality-standards
 │
 ├─ Update documentation
+│   ├─ New project needs docs → documentation-creation
 │   └─ Any code change → documentation-sync
 │
 └─ Architecture diagrams
@@ -108,7 +125,17 @@ Complex skills have multi-file structure:
 - Need detailed patterns → `reference/*.md`
 - Want complete examples → `examples/*.md`
 
-## Available Skills (14 Total)
+## Available Skills (19 Total)
+
+### 🤖 Autonomous Planning Skills
+
+| Skill                          | File                                | When to Use                                                                                                                         |
+| ------------------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Autonomous BMALPH Planning** | `bmad-autonomous-planning/SKILL.md` | Create BMALPH-wrapped research, brief, PRD, architecture, and epics/stories from a short task description without human interaction |
+
+Preferred Codex trigger for this skill:
+
+`Use the bmad-autonomous-planning skill to plan a new feature. Work fully autonomously, run analyst research, create-brief, create-prd, create-architecture, create-epics-stories, and implementation-readiness as separate subagents on gpt-5.4 with xhigh reasoning, and write the specs bundle under the configured planning artifacts directory.`
 
 ### 🔧 Workflow Skills
 
@@ -120,28 +147,33 @@ Complex skills have multi-file structure:
 
 ### 🏗️ Architecture & Quality Skills
 
-| Skill                        | File                                     | When to Use                                            |
-| ---------------------------- | ---------------------------------------- | ------------------------------------------------------ |
-| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS       |
-| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                  |
-| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds               |
-| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                   |
-| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, sanitizers, augmenters & validation |
-| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl       |
+| Skill                        | File                                     | When to Use                                                                |
+| ---------------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| **Implementing DDD**         | `implementing-ddd-architecture/SKILL.md` | Create entities, value objects, aggregates, CQRS                           |
+| **Deptrac Fixer**            | `deptrac-fixer/SKILL.md`                 | Fix architectural boundary violations                                      |
+| **Quality Standards**        | `quality-standards/SKILL.md`             | Overview of protected quality thresholds                                   |
+| **Complexity Management**    | `complexity-management/SKILL.md`         | Reduce cyclomatic complexity in code                                       |
+| **OpenAPI Development**      | `openapi-development/SKILL.md`           | OpenAPI factories, processors & validation                                 |
+| **Code Organization**        | `code-organization/SKILL.md`             | Placement, naming, boundaries, type safety, config extraction, refactoring |
+| **Query Performance**        | `query-performance-analysis/SKILL.md`    | N+1 detection, EXPLAIN analysis, indexing                                  |
+| **Structurizr Architecture** | `structurizr-architecture-sync/SKILL.md` | Update C4 architecture diagrams in workspace.dsl                           |
 
 ### 💾 Database & Documentation Skills
 
-| Skill                   | File                           | When to Use                                      |
-| ----------------------- | ------------------------------ | ------------------------------------------------ |
-| **Database Migrations** | `database-migrations/SKILL.md` | Create/modify entities with Doctrine ORM (MySQL) |
-| **Documentation Sync**  | `documentation-sync/SKILL.md`  | Keep docs synchronized with code changes         |
+| Skill                      | File                              | When to Use                                      |
+| -------------------------- | --------------------------------- | ------------------------------------------------ |
+| **Database Migrations**    | `database-migrations/SKILL.md`    | Create/modify entities with Doctrine ORM (MySQL) |
+| **Documentation Creation** | `documentation-creation/SKILL.md` | Create full docs suite for a new project         |
+| **Documentation Sync**     | `documentation-sync/SKILL.md`     | Keep docs synchronized with code changes         |
 
 ### 🚀 API & Performance Skills
 
-| Skill                 | File                         | When to Use                                  |
-| --------------------- | ---------------------------- | -------------------------------------------- |
-| **API Platform CRUD** | `api-platform-crud/SKILL.md` | Create complete REST API CRUD with DDD/CQRS  |
-| **Load Testing**      | `load-testing/SKILL.md`      | Create K6 performance tests for REST/GraphQL |
+| Skill                 | File                                     | When to Use                                  |
+| --------------------- | ---------------------------------------- | -------------------------------------------- |
+| **API Platform CRUD** | `api-platform-crud/SKILL.md`             | Create complete REST API CRUD with DDD/CQRS  |
+| **Load Testing**      | `load-testing/SKILL.md`                  | Create K6 performance tests for REST/GraphQL |
+| **Cache Management**  | `cache-management/SKILL.md`              | Cache keys, TTLs, invalidation, decorators   |
+| **Observability**     | `observability-instrumentation/SKILL.md` | Business metrics via EMF                     |
 
 ## Practical Examples
 
@@ -170,6 +202,18 @@ Complex skills have multi-file structure:
 
 3. **Use examples**: Check `.claude/skills/api-platform-crud/examples/complete-customer-crud.md` for full example
 
+4. **After implementation**: Run the **New Feature Verification Gate** (execute every skill in `.claude/skills/`).
+
+### Example 2b: User asks to "plan a feature autonomously through BMALPH"
+
+**Your workflow:**
+
+1. **Identify skill**: Read `SKILL-DECISION-GUIDE.md` → Points to `bmad-autonomous-planning`
+2. **Use the Codex wrapper**: Open `.agents/skills/bmad-autonomous-planning/SKILL.md`
+3. **Execute in the current session**: Follow the skill and run analyst research, create-brief, create-prd, create-architecture, create-epics-stories, and implementation-readiness as separate subagents using `gpt-5.4` with `xhigh` reasoning
+4. **Inspect outputs**: Review the generated bundle artifacts and unresolved questions
+5. **Validate**: Run `make ci` if you changed the skill docs, tests, or supporting guidance
+
 ### Example 3: User asks to "run tests"
 
 **Your workflow:**
@@ -178,6 +222,17 @@ Complex skills have multi-file structure:
 2. **Read**: `.claude/skills/testing-workflow/SKILL.md`
 3. **Execute**: Run appropriate test commands (`make unit-tests`, `make integration-tests`, etc.)
 4. **Debug failures**: Follow troubleshooting steps in the skill file
+
+### Example 4: User asks to "refactor code" or "extract hardcoded configs"
+
+**Your workflow:**
+
+1. **Identify skill**: `code-organization`
+2. **Read**: `.claude/skills/code-organization/SKILL.md`
+3. **For structural refactoring**: Follow directory type classification and refactoring checklist
+4. **For config extraction**: Follow the "Hardcoded Configuration Values → `.env` Extraction" section
+5. **Validate**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
+6. **If CI fails after refactoring**: Consult the "CI Integration: When CI Fails" section in code-organization
 
 ## Key Differences from Claude Code
 
@@ -203,6 +258,25 @@ Complex skills have multi-file structure:
 | Infection   | MSI          | High %   | `testing-workflow`      |
 
 **Always improve code quality to meet standards. Never lower thresholds.**
+**Never hide problems with suppression/ignore annotations (e.g. `@SuppressWarnings`, `@psalm-suppress`, `@infection-ignore-all`, `@codeCoverageIgnore`, `@phpstan-ignore`, `phpcs:ignore`, `@phpinsights-ignore*`).**
+
+## Locked Configuration Exception Policy (AI Agents)
+
+`make validate-configuration` protects locked files:
+`phpinsights.php`, `phpinsights-tests.php`, `psalm.xml`, `deptrac.yaml`, `infection.json5`, `phpmd-strict.xml`, `phpmd.tests.xml`, `.php-cs-fixer.dist.php`.
+
+If CI fails with `Modification of locked configuration file is not allowed`:
+
+1. If the task did **not** explicitly request config updates, treat it as accidental drift:
+   - Revert the locked-file changes.
+   - Re-run `make ci`.
+2. If config updates were explicitly requested (for example, changing `deptrac.yaml`):
+   - Keep changes isolated to a dedicated config-governance PR.
+   - Report CI failure as expected evidence; do not hide or bypass it.
+   - Escalate for human approval. Autonomous agents must not self-approve or self-merge failed CI.
+   - Add explicit rationale (why change is required, impact, rollback plan).
+
+Never normalize "merge with red CI" as a general workflow. It is a human exception path only.
 
 ## Common Workflows
 
@@ -225,11 +299,12 @@ Complex skills have multi-file structure:
 
 ### Fixing Quality Issues
 
-1. Identify issue type (Deptrac? Complexity? Tests?)
+1. Identify issue type (Deptrac? Complexity? Tests? Naming? Hardcoded config?)
 2. Read `SKILL-DECISION-GUIDE.md` to find the right skill
 3. Read the specific skill file
 4. Follow fix instructions
-5. Run `make ci` to verify
+5. If refactoring is needed, also consult `code-organization/SKILL.md`
+6. Run `make ci` to verify
 
 ## File Structure Reference
 
@@ -285,7 +360,7 @@ Complex skills have multi-file structure:
 ├── openapi-development/
 │   ├── SKILL.md                # OpenAPI factories & transformers
 │   ├── examples/               # Complete real-world examples
-│   └── reference/              # Sanitizers/augmenters/cleaners patterns
+│   └── reference/              # Processor patterns
 │
 ├── structurizr-architecture-sync/
 │   ├── SKILL.md                # Core architecture sync workflow
@@ -315,6 +390,7 @@ Complex skills have multi-file structure:
 - Skip reading the decision guide
 - Jump directly to execution without reading the full skill
 - Lower quality thresholds to make checks pass
+- Add suppression/ignore annotations to silence quality tools
 - Modify skill files without understanding the workflow
 - Ignore supporting documentation when errors occur
 

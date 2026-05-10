@@ -3,3 +3,5 @@ services:
   php:
     environment:
       APP_SECRET: ${APP_SECRET}
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}

@@ -16,6 +16,8 @@ services:
       retries: 3
       start_period: 30s
     environment:
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
       SERVER_NAME: ${SERVER_NAME:-localhost}
     volumes:
       - caddy_data:/data
@@ -48,6 +50,8 @@ services:
     environment:
       SERVER_NAME: ${SERVER_NAME:-:80}
       APP_ENV: prod
+      FRANKENPHP_CONFIG: import worker.Caddyfile
+      FRANKENPHP_LOOP_MAX: ${FRANKENPHP_LOOP_MAX:-500}
     ports:
       - '8082:80'
 
@@ -94,7 +98,7 @@ services:
   redis:
     image: redis:8.0.0-alpine
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT:-6379}:6379'
 
 volumes:
   caddy_data:

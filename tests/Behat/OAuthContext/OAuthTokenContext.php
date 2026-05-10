@@ -27,8 +27,6 @@ final class OAuthTokenContext implements Context
         $this->state->clientId = $id;
         $this->state->clientSecret = $secret;
         $this->state->obtainAccessTokenInput = new RefreshTokenGrantInput(
-            $id,
-            $secret,
             $this->state->refreshToken
         );
     }
@@ -44,8 +42,6 @@ final class OAuthTokenContext implements Context
         $this->state->clientId = $id;
         $this->state->clientSecret = $secret;
         $this->state->obtainAccessTokenInput = new RefreshTokenGrantInput(
-            $id,
-            $secret,
             $token
         );
     }

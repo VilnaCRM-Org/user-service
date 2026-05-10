@@ -1,6 +1,6 @@
-# Processor Patterns for OpenAPI Development
+# Transformer Patterns for OpenAPI Development
 
-Key patterns and techniques for maintaining low complexity in OpenAPI transformations (sanitizers/augmenters/cleaners/factories).
+Key patterns and techniques for maintaining low complexity in OpenAPI transformations (transformers/factories).
 
 ## 1. Constants for HTTP Operations
 
@@ -11,11 +11,11 @@ Key patterns and techniques for maintaining low complexity in OpenAPI transforma
 ```php
 private const OPERATIONS = ['Get', 'Post', 'Put', 'Patch', 'Delete'];
 
-private function processPathItem(PathItem $pathItem): PathItem
+private function transformPathItem(PathItem $pathItem): PathItem
 {
     foreach (self::OPERATIONS as $operation) {
         $pathItem = $pathItem->{'with' . $operation}(
-            $this->processOperation($pathItem->{'get' . $operation}())
+            $this->transformOperation($pathItem->{'get' . $operation}())
         );
     }
 
@@ -30,7 +30,7 @@ private function processPathItem(PathItem $pathItem): PathItem
 **Solution**: Use clear guard clauses + early returns.
 
 ```php
-private function sanitizeOperation(?Operation $operation): ?Operation
+private function transformOperation(?Operation $operation): ?Operation
 {
     if ($operation === null) {
         return null;
@@ -42,7 +42,7 @@ private function sanitizeOperation(?Operation $operation): ?Operation
 
     return $operation->withParameters(
         array_map(
-            fn (mixed $parameter) => $this->parameterCleaner->clean($parameter),
+            fn (mixed $parameter) => $this->parameterTransformer->transform($parameter),
             $operation->getParameters()
         )
     );

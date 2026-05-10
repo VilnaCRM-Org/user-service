@@ -16,6 +16,7 @@ final class OAuthRequestHelper
 {
     public function __construct(
         private readonly KernelInterface $kernel,
+        private readonly OAuthContextState $state,
     ) {
     }
 
@@ -38,7 +39,7 @@ final class OAuthRequestHelper
             '/api/oauth/authorize?' . $input->toUriParams(),
             'GET',
             [],
-            [],
+            $this->buildAuthorizationCookies(),
             [],
             ['HTTP_ACCEPT' => 'application/json',
                 'CONTENT_TYPE' => 'application/json',
@@ -96,7 +97,9 @@ final class OAuthRequestHelper
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
+     *
+     * @psalm-return array{HTTP_ACCEPT: 'application/json', CONTENT_TYPE: 'application/json', HTTP_AUTHORIZATION?: string}
      */
     private function buildRequestHeaders(?string $clientId, ?string $clientSecret): array
     {
@@ -112,5 +115,18 @@ final class OAuthRequestHelper
         }
 
         return $headers;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function buildAuthorizationCookies(): array
+    {
+        $token = $this->state->authCookieToken;
+        if (!is_string($token) || $token === '') {
+            return [];
+        }
+
+        return ['__Host-auth_token' => $token];
     }
 }

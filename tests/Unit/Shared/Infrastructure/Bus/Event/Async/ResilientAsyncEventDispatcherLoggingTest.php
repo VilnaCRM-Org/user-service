@@ -11,6 +11,8 @@ use App\Shared\Infrastructure\Observability\Factory\SqsDispatchFailureMetricFact
 use App\Tests\Unit\Shared\Infrastructure\Bus\Event\Async\Stub\TestDomainEvent;
 use App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -92,8 +94,8 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
         self::assertSame('Metric emission failed', $capturedContext['error']);
     }
 
-    private function createFailingMessageBus(): MessageBusInterface
-    {
+    private function createFailingMessageBus(
+    ): MockObject&MessageBusInterface {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
             ->willThrowException(new \RuntimeException('SQS unavailable'));
@@ -106,8 +108,8 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
     private function createLoggerWithContextCapture(
         array &$capturedContext,
         string $level
-    ): \Psr\Log\LoggerInterface {
-        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+    ): MockObject&LoggerInterface {
+        $logger = $this->createMock(LoggerInterface::class);
         $logger->method($level)
             ->willReturnCallback(
                 static function (string $message, array $context) use (&$capturedContext): void {
@@ -129,8 +131,8 @@ final class ResilientAsyncEventDispatcherLoggingTest extends UnitTestCase
         self::assertSame(\RuntimeException::class, $context['exception_class']);
     }
 
-    private function createSuccessfulMessageBus(): MessageBusInterface
-    {
+    private function createSuccessfulMessageBus(
+    ): MockObject&MessageBusInterface {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
             ->willReturnCallback(static fn ($message) => new Envelope($message));

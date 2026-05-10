@@ -48,7 +48,7 @@ final class PasswordResetEmailTest extends UnitTestCase
         $passwordResetEmail->send($eventID);
     }
 
-    private function createUser(): \App\User\Domain\Entity\UserInterface
+    private function createUser(): \App\User\Domain\Entity\User
     {
         $userFactory = new UserFactory();
 

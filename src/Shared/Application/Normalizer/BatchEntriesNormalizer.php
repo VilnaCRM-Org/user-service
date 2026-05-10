@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Normalizer;
 
+use App\Shared\Application\DTO\BatchEntriesResult;
 use Traversable;
 
 final class BatchEntriesNormalizer
@@ -15,17 +16,25 @@ final class BatchEntriesNormalizer
      */
     public function normalize(array|\ArrayIterator|string $value): BatchEntriesResult
     {
-        return match (true) {
-            !is_iterable($value) => $this->notIterableResult(),
-            ($entries = $this->toArray($value)) === [] => $this->emptyResult(),
-            default => new BatchEntriesResult(BatchEntriesResult::STATE_VALID, $entries),
-        };
+        if (!is_iterable($value)) {
+            return $this->notIterableResult();
+        }
+
+        $entries = $this->toArray($value);
+
+        if ($entries === []) {
+            return $this->emptyResult();
+        }
+
+        return new BatchEntriesResult(BatchEntriesResult::STATE_VALID, $entries);
     }
 
     /**
      * @param iterable<array-key, array|object|string|int|float|bool|null> $value
      *
-     * @return array<int, array|object|string|int|float|bool|null>
+     * @return array<array|object|scalar|null>
+     *
+     * @psalm-return list<array|object|scalar|null>
      */
     private function toArray(iterable $value): array
     {
@@ -39,7 +48,9 @@ final class BatchEntriesNormalizer
     /**
      * @param Traversable<array-key, array|object|string|int|float|bool|null> $value
      *
-     * @return array<int, array|object|string|int|float|bool|null>
+     * @return array<array|object|scalar|null>
+     *
+     * @psalm-return list<array|object|scalar|null>
      */
     private function normalizeTraversable(Traversable $value): array
     {

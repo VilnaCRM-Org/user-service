@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
-use App\Shared\Application\Validator\EmfNamespace;
+use App\Shared\Application\Validator\Constraint\EmfNamespace;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;

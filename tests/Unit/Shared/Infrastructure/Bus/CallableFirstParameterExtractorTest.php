@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\DomainEventSubscriberInterface;
-use App\Shared\Infrastructure\Bus\CallableFirstParameterExtractor;
+use App\Shared\Infrastructure\Bus\Extractor\CallableFirstParameterExtractor;
 use App\Shared\Infrastructure\Bus\InvokeParameterExtractor;
 use App\Tests\Unit\Shared\Infrastructure\Bus\Stub\TestOtherEvent;
 use App\Tests\Unit\UnitTestCase;
@@ -46,11 +46,13 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
         self::assertSame($subscriber, $result[TestOtherEvent::class][0]);
     }
 
-    private function createDomainEventSubscriber(): DomainEventSubscriberInterface
+    private function createDomainEventSubscriber(): object
     {
         return new class() implements DomainEventSubscriberInterface {
             /**
-             * @return array<class-string>
+             * @return array<string>
+             *
+             * @psalm-return list{\App\Shared\Domain\Bus\Event\DomainEvent::class}
              */
             #[\Override]
             public function subscribedTo(): array
@@ -65,11 +67,13 @@ final class CallableFirstParameterExtractorTest extends UnitTestCase
         };
     }
 
-    private function createMultiEventSubscriber(): DomainEventSubscriberInterface
+    private function createMultiEventSubscriber(): object
     {
         return new class() implements DomainEventSubscriberInterface {
             /**
-             * @return array<class-string>
+             * @return array<string>
+             *
+             * @psalm-return list{\App\Shared\Domain\Bus\Event\DomainEvent::class, Stub\TestOtherEvent::class}
              */
             #[\Override]
             public function subscribedTo(): array

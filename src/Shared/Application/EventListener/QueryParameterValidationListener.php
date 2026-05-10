@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
-use App\Shared\Application\Finder\QueryViolationFinder;
 use App\Shared\Application\QueryParameter\QueryParameterRule;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\Resolver\QueryViolationResolver;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
@@ -17,7 +17,7 @@ final class QueryParameterValidationListener
      */
     public function __construct(
         private readonly iterable $rules,
-        private readonly QueryViolationFinder $violationFinder
+        private readonly QueryViolationResolver $violationResolver
     ) {
     }
 
@@ -33,7 +33,7 @@ final class QueryParameterValidationListener
         $request = $event->getRequest();
         $path = $request->getPathInfo();
 
-        $violation = $this->violationFinder->find(
+        $violation = $this->violationResolver->resolve(
             $this->rules,
             $path,
             $request->query->all()

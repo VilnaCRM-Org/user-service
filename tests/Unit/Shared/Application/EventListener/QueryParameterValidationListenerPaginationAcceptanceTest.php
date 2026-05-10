@@ -6,11 +6,11 @@ namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\QueryParameterValidationListener;
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\Finder\QueryViolationFinder;
 use App\Shared\Application\QueryParameter as QP;
-use App\Shared\Application\QueryParameter\Evaluator;
 use App\Shared\Application\QueryParameter\Normalizer;
 use App\Shared\Application\QueryParameter\Pagination as QPP;
+use App\Shared\Application\QueryParameter\Validator;
+use App\Shared\Application\Resolver\QueryViolationResolver;
 use App\Shared\Application\Validator\Pagination as VP;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -93,16 +93,51 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
         $this->assertFalse($event->hasResponse());
     }
 
+    public function testPartialBooleanValuesAreAccepted(): void
+    {
+        foreach (['true', 'false', 'True', 'FALSE'] as $partialValue) {
+            $listener = $this->createListener();
+            $request = Request::create('/api/users', 'GET', ['partial' => $partialValue]);
+
+            $event = new RequestEvent(
+                $this->createMock(HttpKernelInterface::class),
+                $request,
+                HttpKernelInterface::MAIN_REQUEST
+            );
+
+            $listener($event);
+
+            $this->assertFalse($event->hasResponse());
+        }
+    }
+
+    public function testNullPartialValueIsIgnored(): void
+    {
+        $listener = $this->createListener();
+        $request = Request::create('/api/users', 'GET');
+        $request->query->set('partial', null);
+
+        $event = new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
     public function testIsExplicitlyProvidedTrimsWhitespace(): void
     {
-        $evaluator = new Evaluator\ExplicitValueEvaluator();
+        $evaluator = new Validator\ExplicitValueValidator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided('   '));
     }
 
     public function testIsExplicitlyProvidedDetectsEmptyArray(): void
     {
-        $evaluator = new Evaluator\ExplicitValueEvaluator();
+        $evaluator = new Validator\ExplicitValueValidator();
 
         $this->assertFalse($evaluator->isExplicitlyProvided([]));
     }
@@ -111,28 +146,30 @@ final class QueryParameterValidationListenerPaginationAcceptanceTest extends Uni
     {
         return new QueryParameterValidationListener(
             [$this->createAllowedParametersRule(), $this->createPaginationRule()],
-            new QueryViolationFinder()
+            new QueryViolationResolver()
         );
     }
 
     private function createAllowedParametersRule(): QP\AllowedParametersRule
     {
         $violationFactory = new QueryParameterViolationFactory();
-        $params = ['/api/users' => ['page', 'itemsPerPage']];
+        $params = ['/api/users' => ['page', 'itemsPerPage', 'partial']];
         return new QP\AllowedParametersRule($params, $violationFactory);
     }
 
     private function createPaginationRule(): QPP\PaginationRule
     {
-        $valueEvaluator = new Evaluator\ExplicitValueEvaluator();
-        $normalizer = new Normalizer\PositiveIntegerNormalizer();
+        $valueValidator = new Validator\ExplicitValueValidator();
+        $integerNormalizer = new Normalizer\PositiveIntegerNormalizer();
+        $booleanNormalizer = new Normalizer\BooleanNormalizer();
         $violationFactory = new QueryParameterViolationFactory();
 
         return new QPP\PaginationRule(
-            new VP\PageParameterValidator($valueEvaluator, $normalizer, $violationFactory),
+            new VP\PageParameterValidator($valueValidator, $integerNormalizer, $violationFactory),
             new VP\ItemsPerPageParameterValidator(
-                new QPP\ItemsPerPageRule($valueEvaluator, $normalizer, $violationFactory)
-            )
+                new QPP\ItemsPerPageRule($valueValidator, $integerNormalizer, $violationFactory)
+            ),
+            new VP\PartialParameterValidator($valueValidator, $booleanNormalizer, $violationFactory)
         );
     }
 }

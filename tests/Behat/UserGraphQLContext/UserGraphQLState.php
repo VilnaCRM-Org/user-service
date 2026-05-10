@@ -42,6 +42,7 @@ final class UserGraphQLState
     {
         $this->state = [
             'language' => 'en',
+            'applicationEnvironment' => 'test',
             'query' => '',
             'queryName' => '',
             'responseContent' => [],

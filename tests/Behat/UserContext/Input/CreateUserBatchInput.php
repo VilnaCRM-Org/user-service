@@ -21,4 +21,10 @@ final class CreateUserBatchInput extends RequestInput
     {
         $this->users[] = $user;
     }
+
+    #[\Override]
+    public function getJson(): string
+    {
+        return json_encode(['users' => $this->users], JSON_THROW_ON_ERROR);
+    }
 }

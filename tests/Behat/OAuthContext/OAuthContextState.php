@@ -36,6 +36,7 @@ final class OAuthContextState
             'refreshToken' => '',
             'username' => null,
             'codeVerifier' => null,
+            'authCookieToken' => '',
         ];
     }
 }

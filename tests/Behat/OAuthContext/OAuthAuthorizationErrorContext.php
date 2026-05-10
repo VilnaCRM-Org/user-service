@@ -49,14 +49,10 @@ final class OAuthAuthorizationErrorContext implements Context
             $this->state->response->getStatusCode()
         );
 
-        Assert::assertArrayHasKey('error', $data);
-        Assert::assertEquals('invalid_client', $data['error']);
-
-        Assert::assertArrayHasKey('error_description', $data);
-        Assert::assertEquals(
-            'User authentication is required to resolve the authorization request.',
-            $data['error_description']
-        );
+        Assert::assertArrayHasKey('title', $data);
+        Assert::assertSame('Unauthorized', $data['title']);
+        Assert::assertArrayHasKey('detail', $data);
+        Assert::assertSame('Authentication required.', $data['detail']);
     }
 
     /**

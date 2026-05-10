@@ -8,6 +8,10 @@ use App\Shared\Application\OpenApi\Enum\Requirement;
 
 final readonly class Parameter
 {
+    /**
+     * @param array<string|array<string, string|bool>>|string|int|bool|null $example
+     * @param list<string>|null $enum
+     */
     public function __construct(
         public string $name,
         public string $type,

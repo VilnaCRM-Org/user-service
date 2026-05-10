@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 
@@ -61,14 +62,12 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
         return $this->deleteAllCount;
     }
 
-    /**
-     * @param array<PasswordResetTokenInterface> $tokens
-     */
     #[\Override]
-    public function saveBatch(array $tokens): void
+    public function saveBatch(PasswordResetTokenCollection $tokens): void
     {
-        $this->savedBatchTokens = $tokens;
-        foreach ($tokens as $token) {
+        $tokenArray = iterator_to_array($tokens);
+        $this->savedBatchTokens = $tokenArray;
+        foreach ($tokenArray as $token) {
             $this->tokens[$token->getTokenValue()] = $token;
         }
     }

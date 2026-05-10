@@ -90,7 +90,9 @@ final class QueryParameterBuilderTest extends UnitTestCase
     }
 
     /**
-     * @return array{string, string, Requirement, string, string, int, AllowEmptyValue, array<string>}
+     * @return array<AllowEmptyValue::DISALLOWED|Requirement::REQUIRED|int|string|array<string>>
+     *
+     * @psalm-return list{string, string, Requirement::REQUIRED, string, string, 1, AllowEmptyValue::DISALLOWED, list{'value'}}
      */
     private function createValidBuildParams(): array
     {

@@ -6,6 +6,7 @@ doctrine_mongodb:
     oauth2_scope: 'App\OAuth\Infrastructure\DoctrineType\OAuth2ScopeType'
     oauth2_grant: 'App\OAuth\Infrastructure\DoctrineType\OAuth2GrantType'
     oauth2_redirect_uri: 'App\OAuth\Infrastructure\DoctrineType\OAuth2RedirectUriType'
+    oauth_provider: 'App\OAuth\Infrastructure\DoctrineType\OAuthProviderType'
   connections:
     default:
       server: '%env(MONGODB_URL)%'
@@ -23,6 +24,12 @@ doctrine_mongodb:
         OAuth:
           is_bundle: false
           type: xml
-          dir: '%kernel.project_dir%/config/doctrine/OAuth'
+          dir: '%kernel.project_dir%/config/doctrine/OAuth/League'
           prefix: 'League\Bundle\OAuth2ServerBundle\Model'
           alias: OAuth
+        OAuthDomain:
+          is_bundle: false
+          type: xml
+          dir: '%kernel.project_dir%/config/doctrine/OAuth/Domain'
+          prefix: 'App\OAuth\Domain\Entity'
+          alias: OAuthDomain

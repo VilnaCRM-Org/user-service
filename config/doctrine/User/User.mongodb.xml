@@ -13,6 +13,8 @@
         <field field-name="initials" type="string" />
         <field field-name="password" type="string" />
         <field field-name="confirmed" type="boolean" />
+        <field field-name="twoFactorEnabled" type="boolean" />
+        <field field-name="twoFactorSecret" type="string" nullable="true" />
 
         <indexes>
             <!-- Unique constraint on email -->

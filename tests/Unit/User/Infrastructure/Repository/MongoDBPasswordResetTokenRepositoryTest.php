@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Infrastructure\Repository\MongoDBPasswordResetTokenRepository;
@@ -70,7 +71,7 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
     public function testFindByUserID(): void
     {
         $userID = $this->faker->uuid();
-        $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
+        $expectedToken = $this->createMock(PasswordResetToken::class);
 
         $repositoryClass = MongoDBPasswordResetTokenRepository::class;
         $repository = $this->getMockBuilder($repositoryClass)
@@ -122,12 +123,38 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->repository->delete($token);
     }
 
+    public function testDeleteAll(): void
+    {
+        $queryBuilder = $this->createMock(\Doctrine\ODM\MongoDB\Query\Builder::class);
+        $query = $this->createMock(\Doctrine\ODM\MongoDB\Query\Query::class);
+
+        $queryBuilder->expects($this->once())
+            ->method('remove')
+            ->willReturnSelf();
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('execute');
+
+        $repository = $this->getMockBuilder(MongoDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['createQueryBuilder'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+
+        $repository->deleteAll();
+    }
+
     public function testSaveBatch(): void
     {
-        $tokens = [
+        $tokens = new PasswordResetTokenCollection(
             $this->createMock(PasswordResetTokenInterface::class),
             $this->createMock(PasswordResetTokenInterface::class),
-        ];
+        );
 
         $this->documentManager->expects($this->exactly(2))
             ->method('persist');

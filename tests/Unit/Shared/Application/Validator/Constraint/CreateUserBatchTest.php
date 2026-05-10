@@ -19,7 +19,7 @@ final class CreateUserBatchTest extends UnitTestCase
         $this->assertEquals($groups, $constraint->groups);
         $this->assertEquals($payload, $constraint->payload);
         $this->assertSame(
-            \App\Shared\Application\Validator\CreateUserBatchValidator::class,
+            \App\Shared\Application\Validator\CreateUserBatchConstraintValidator::class,
             $constraint->validatedBy()
         );
     }

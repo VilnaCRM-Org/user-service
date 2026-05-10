@@ -27,7 +27,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customers', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\Customer'
+            'App\Core\Customer\Domain\Entity\Customer'
         );
         $request->attributes->set(
             '_api_operation_name',
@@ -45,7 +45,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customer-types', 'POST');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\CustomerType'
+            'App\Core\Customer\Domain\Entity\CustomerType'
         );
         $request->attributes->set('_api_operation_name', '_api_/customer-types_post');
 
@@ -115,9 +115,9 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
     }
 
     /**
-     * @return iterable<string, array{0: string, 1: string}>
+     * @psalm-return \Generator<string, list{string, string}, void, void>
      */
-    public static function httpMethodsProvider(): iterable
+    public static function httpMethodsProvider(): \Generator
     {
         yield 'GET' => ['GET', 'get'];
         yield 'POST' => ['POST', 'post'];
@@ -131,7 +131,7 @@ final class ApiEndpointMetricDimensionsResolverTest extends UnitTestCase
         $request = Request::create('/api/customer-statuses', 'GET');
         $request->attributes->set(
             '_api_resource_class',
-            'App\\Core\\Customer\\Domain\\Entity\\CustomerStatus'
+            'App\Core\Customer\Domain\Entity\CustomerStatus'
         );
         $request->attributes->set(
             '_api_operation_name',

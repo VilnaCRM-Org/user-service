@@ -8,7 +8,7 @@ use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
-use App\User\Application\Command\RegisterUserCommandResponse;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 

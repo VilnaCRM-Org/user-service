@@ -19,7 +19,67 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 3. Follow the execution steps
 4. Check supporting files (`reference/`, `examples/`) as needed
 
+## ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
+
 ## Available Skills
+
+### Autonomous BMALPH Planning (`bmad-autonomous-planning/`)
+
+**Purpose**: Create BMALPH-wrapped planning artifacts fully autonomously from a short task description
+
+**When activated**:
+
+- User wants BMAD specs without step-by-step interaction
+- Need a product brief, PRD, architecture, and epics/stories bundle for later implementation
+- Need optional GitHub issue or specs-only PR output from a planning run
+
+**What it does**:
+
+- Creates a focused planning bundle with research, brief, PRD, architecture, and epics/stories
+- Uses the repository's `bmalph` wrapper surface in `_bmad/COMMANDS.md` instead of dropping straight into raw workflow files
+- Runs each BMALPH planning stage through a dedicated subagent when subagents are available
+- Uses repository-aware validation loops without blocking on BMAD approval menus
+
+**Key trigger prompt**: `Use the bmad-autonomous-planning skill to plan a new feature and follow the repository's autonomous BMALPH planning workflow in the current session.`
+
+**Codex trigger path**:
+
+- Use the Codex wrapper at `.agents/skills/bmad-autonomous-planning/SKILL.md`
+- Run the planning flow in the current session
+- Do not rely on repo-local launcher scripts or `make` targets for this skill
+
+---
 
 ### 1. CI Workflow (`ci-workflow/`)
 
@@ -350,7 +410,7 @@ Skills are automatically discovered and invoked when relevant. You don't need to
 
 ### 12. OpenAPI Development (`openapi-development/`)
 
-**Purpose**: Guide for contributing to the OpenAPI layer (factories/sanitizers/augmenters/cleaners)
+**Purpose**: Guide for contributing to the OpenAPI layer (factories/processors)
 
 **When activated**:
 

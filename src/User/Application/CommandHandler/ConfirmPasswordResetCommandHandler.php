@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
-use App\User\Application\Command\ConfirmPasswordResetCommandResponse;
+use App\User\Application\Command\SignOutAllCommand;
+use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
-use App\User\Domain\Contract\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisher;
+use App\User\Infrastructure\Publisher\PasswordResetConfirmationPublisherInterface;
 
 final readonly class ConfirmPasswordResetCommandHandler implements
     CommandHandlerInterface
@@ -24,7 +26,9 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         private UserRepositoryInterface $userRepository,
         private PasswordHasherInterface $passwordHasher,
         private PasswordResetTokenValidatorInterface $tokenValidator,
-        private PasswordResetConfirmationPublisher $publisher,
+        private AccountLockoutProviderInterface $accountLockoutGuard,
+        private CommandBusInterface $commandBus,
+        private PasswordResetConfirmationPublisherInterface $publisher,
     ) {
     }
 
@@ -35,18 +39,23 @@ final readonly class ConfirmPasswordResetCommandHandler implements
 
         $this->updateUserPassword($user, $command->newPassword);
         $this->markTokenAsUsed($passwordResetToken);
+        $this->accountLockoutGuard->clearFailures(
+            strtolower(trim($user->getEmail()))
+        );
+        $this->commandBus->dispatch(
+            new SignOutAllCommand($user->getId(), 'password_reset')
+        );
         $this->publishEvent($user);
 
-        $command->setResponse(
-            new ConfirmPasswordResetCommandResponse()
-        );
+        $command->markCompleted();
     }
 
     private function getValidatedToken(
         string $token
-    ): ?PasswordResetTokenInterface {
+    ): PasswordResetTokenInterface {
         $passwordResetToken = $this->tokenRepository->findByToken($token);
         $this->tokenValidator->validate($passwordResetToken);
+        assert($passwordResetToken instanceof PasswordResetTokenInterface);
 
         return $passwordResetToken;
     }

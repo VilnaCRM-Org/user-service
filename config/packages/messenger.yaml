@@ -60,3 +60,10 @@ when@test:
             consumer: '%env(MESSENGER_CONSUMER_NAME)%'
         domain-events: 'in-memory://'
         failed-domain-events: 'in-memory://'
+
+when@schemathesis:
+  framework:
+    messenger:
+      transports:
+        send-email: 'in-memory://'
+        failed-send-email: 'in-memory://'

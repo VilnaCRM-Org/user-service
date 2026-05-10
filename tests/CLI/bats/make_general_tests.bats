@@ -54,6 +54,12 @@ load 'bats-assert/load'
   assert_output --partial "true true true true"
 }
 
+@test "worker memory soak scenario list stays deterministic and valid" {
+  run ./tests/Load/get-worker-memory-soak-scenarios.sh
+  assert_success
+  assert_output $'oauth\napiEntrypoint\ngetUser\nrefreshToken\nsetupTwoFactor\ncreateUser\nresetPassword\noauthSocialInitiate\noauthSocialCallback\ngraphQLSignin\ngraphQLSetupTwoFactor\ngraphQLCreateUser\ngraphQLGetUsers'
+}
+
 @test "make doctrine-migrations-migrate displays MongoDB ODM migration note" {
   run bash -c "echo 'yes' | make doctrine-migrations-migrate"
   assert_success

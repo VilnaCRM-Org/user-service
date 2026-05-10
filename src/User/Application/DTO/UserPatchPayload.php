@@ -6,6 +6,7 @@ namespace App\User\Application\DTO;
 
 final readonly class UserPatchPayload
 {
+    /** @param array<string, scalar|null>|null $payload */
     public function __construct(private ?array $payload)
     {
     }

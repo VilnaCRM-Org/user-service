@@ -107,7 +107,9 @@ final class InitialsConstraintTest extends UnitTestCase
     /**
      * @param iterable<Constraint> $constraints
      *
-     * @return array<int, Regex>
+     * @return array<Regex>
+     *
+     * @psalm-return list<Regex>
      */
     private function findAllRegexConstraints(iterable $constraints): array
     {

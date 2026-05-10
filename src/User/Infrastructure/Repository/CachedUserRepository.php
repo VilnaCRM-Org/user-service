@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -21,6 +21,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Cache key management via CacheKeyBuilder
  * - Cache hit/miss logging for observability
  * - Graceful fallback to database on cache errors
+ * - Immediate tag invalidation after write operations
  * - Delegates ALL persistence operations to inner repository
  *
  * Decorator Pattern:
@@ -29,36 +30,36 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * - Transparent to consumers (implements same interface)
  *
  * Cache Invalidation:
- * - Handled by UserCacheInvalidationSubscriber via domain events
- * - This class only reads from cache, never invalidates
- *
- * @psalm-suppress UnusedClass
+ * - Synchronous tag invalidation inside repository write operations
+ * - Event-driven invalidation via UserCacheInvalidationSubscriber
  */
-final class CachedUserRepository implements UserRepositoryInterface
+final class CachedUserRepository extends UserRepositoryDecorator
 {
     private const TTL_BY_ID = 600;
     private const TTL_BY_EMAIL = 300;
+    private const CACHE_RELOAD_MESSAGES = [
+        'cache.reload.error' => [
+            'Failed to reload detached cached user -',
+            'falling back to database',
+        ],
+        'cache.reload.invalid' => [
+            'Cache reload returned an unexpected value -',
+            'falling back to database',
+        ],
+        'cache.reload.miss' => [
+            'Detached cached user was not found -',
+            'falling back to database',
+        ],
+    ];
 
     public function __construct(
-        private UserRepositoryInterface $inner,
+        UserRepositoryInterface $inner,
         private TagAwareCacheInterface $cache,
         private CacheKeyBuilder $cacheKeyBuilder,
         private LoggerInterface $logger,
         private DocumentManager $documentManager
     ) {
-    }
-
-    /**
-     * Proxy all other method calls to inner repository
-     *
-     * This ensures compatibility with API Platform's collection provider
-     * which may call Doctrine repository methods not in our interface.
-     *
-     * @param array<int, mixed> $arguments
-     */
-    public function __call(string $method, array $arguments): mixed
-    {
-        return $this->inner->{$method}(...$arguments);
+        parent::__construct($inner);
     }
 
     /**
@@ -67,21 +68,21 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Key Pattern: user.{id}
      * TTL: 600s (10 minutes)
      * Consistency: Stale-While-Revalidate (beta: 1.0)
-     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
      * Tags: [user, user.{id}]
      * Notes: Read-heavy operation, tolerates brief staleness
      * Note: This is a Doctrine method, not part of UserRepositoryInterface.
      * MongoDB ODM doesn't support lock modes, so we delegate to findById for caching.
      *
-     * @psalm-suppress UnusedParam
+     * @param numeric-string $id
      */
     public function find(
-        mixed $id,
-        ?int $lockMode = null,
-        ?int $lockVersion = null
-    ): ?object {
+        string $id,
+        ?int $_lockMode = null,
+        ?int $_lockVersion = null
+    ): ?UserInterface {
         // MongoDB ODM doesn't support lock modes, use findById instead
-        return $this->findById((string) $id);
+        return $this->findById($id);
     }
 
     /**
@@ -90,7 +91,7 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Key Pattern: user.{id}
      * TTL: 600s (10 minutes)
      * Consistency: Stale-While-Revalidate (beta: 1.0)
-     * Invalidation: Via UserCacheInvalidationSubscriber on update/delete
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
      * Tags: [user, user.{id}]
      * Notes: Read-heavy operation, tolerates brief staleness
      */
@@ -101,7 +102,18 @@ final class CachedUserRepository implements UserRepositoryInterface
 
         return $this->fetchUser(
             $cacheKey,
-            fn (ItemInterface $item) => $this->loadUserByIdFromDb($id, $cacheKey, $item),
+            function (ItemInterface $item) use ($id, $cacheKey): ?UserInterface {
+                $item->expiresAfter(self::TTL_BY_ID);
+                $item->tag(['user', "user.{$id}"]);
+
+                $this->logger->info('Cache miss - loading user by ID from database', [
+                    'cache_key' => $cacheKey,
+                    'user_id' => $id,
+                    'operation' => 'cache.miss',
+                ]);
+
+                return $this->inner->findById($id);
+            },
             fn () => $this->inner->findById($id),
             1.0
         );
@@ -113,68 +125,74 @@ final class CachedUserRepository implements UserRepositoryInterface
      * Key Pattern: user.email.{hash}
      * TTL: 300s (5 minutes)
      * Consistency: Eventual
-     * Invalidation: Via UserCacheInvalidationSubscriber on email change
-     * Tags: [user, user.email, user.email.{hash}]
+     * Invalidation: Immediate on repository writes and via domain-event subscribers
+     * Tags: [user, user.email.{hash}]
      * Notes: Common authentication/lookup operation
      */
     #[\Override]
     public function findByEmail(string $email): ?UserInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserEmailKey($email);
+        $fallback = fn () => $this->inner->findByEmail($email);
 
-        return $this->fetchUser(
+        $user = $this->fetchUser(
             $cacheKey,
-            fn (ItemInterface $item) => $this->loadUserByEmailFromDb($email, $cacheKey, $item),
-            fn () => $this->inner->findByEmail($email)
+            fn (ItemInterface $item): ?UserInterface => $this->loadUserByEmail(
+                $item,
+                $email,
+                $cacheKey
+            ),
+            $fallback
         );
+
+        return $this->ensureEmailCacheHitMatches($user, $email, $cacheKey, $fallback);
     }
 
     /**
-     * Delegate persistence to inner repository (no caching on writes)
+     * Bulk lookups intentionally delegate to the inner repository because the
+     * point-lookup cache is keyed per user and would not help this query shape.
      *
-     * @param User $user
+     * @param array<int, string> $emails
      */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        return $this->inner->findByEmails($emails);
+    }
+
     #[\Override]
     public function save(object $user): void
     {
+        $previousEmailTag = $user instanceof UserInterface ? $this->previousEmailTag($user) : null;
         $this->inner->save($user);
+
+        if ($user instanceof UserInterface) {
+            $this->invalidateUserCache($user, 'save', $previousEmailTag);
+        }
     }
 
-    /**
-     * Delegate deletion to inner repository (no invalidation here)
-     *
-     * Cache invalidation is handled via UserDeletedEvent subscribers.
-     *
-     * @param User $user
-     */
     #[\Override]
     public function delete(object $user): void
     {
         $this->inner->delete($user);
+
+        if ($user instanceof UserInterface) {
+            $this->invalidateUserCache($user, 'delete');
+        }
     }
 
-    /**
-     * Delegate batch save to inner repository (no caching on writes)
-     *
-     * @param array<User> $users
-     */
     #[\Override]
-    public function saveBatch(array $users): void
+    public function saveBatch(UserCollection $users): void
     {
         $this->inner->saveBatch($users);
+        $this->invalidateUserCollectionCache($users, 'save_batch');
     }
 
-    /**
-     * Delegate batch delete to inner repository (no invalidation here)
-     *
-     * Cache invalidation is handled via UserDeletedEvent subscribers.
-     *
-     * @param array<User> $users
-     */
     #[\Override]
-    public function deleteBatch(array $users): void
+    public function deleteBatch(UserCollection $users): void
     {
         $this->inner->deleteBatch($users);
+        $this->invalidateUserCollectionCache($users, 'delete_batch');
     }
 
     #[\Override]
@@ -192,50 +210,6 @@ final class CachedUserRepository implements UserRepositoryInterface
     }
 
     /**
-     * Load user by ID from database and configure cache item
-     */
-    private function loadUserByIdFromDb(
-        string $id,
-        string $cacheKey,
-        ItemInterface $item
-    ): ?UserInterface {
-        $item->expiresAfter(self::TTL_BY_ID);  // 10 minutes TTL
-        $item->tag(['user', "user.{$id}"]);
-
-        $this->logger->info('Cache miss - loading user by ID from database', [
-            'cache_key' => $cacheKey,
-            'user_id' => $id,
-            'operation' => 'cache.miss',
-        ]);
-
-        return $this->inner->findById($id);
-    }
-
-    /**
-     * Load user by email from database and configure cache item
-     */
-    private function loadUserByEmailFromDb(
-        string $email,
-        string $cacheKey,
-        ItemInterface $item
-    ): ?UserInterface {
-        $item->expiresAfter(self::TTL_BY_EMAIL);  // 5 minutes TTL
-        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-        $item->tag([
-            'user',
-            'user.email',
-            "user.email.{$emailHash}",
-        ]);
-
-        $this->logger->info('Cache miss - loading user by email', [
-            'cache_key' => $cacheKey,
-            'operation' => 'cache.miss',
-        ]);
-
-        return $this->inner->findByEmail($email);
-    }
-
-    /**
      * @param callable(ItemInterface): mixed $cacheLoader
      * @param callable(): mixed $fallback
      */
@@ -250,7 +224,11 @@ final class CachedUserRepository implements UserRepositoryInterface
 
             return $this->normalizeCachedUser($user, $cacheKey, $fallback);
         } catch (\Throwable $e) {
-            $this->logCacheError($cacheKey, $e);
+            $this->logger->error('Cache error - falling back to database', [
+                'cache_key' => $cacheKey,
+                'error' => $e->getMessage(),
+                'operation' => 'cache.error',
+            ]);
 
             return $fallback();
         }
@@ -265,39 +243,170 @@ final class CachedUserRepository implements UserRepositoryInterface
         callable $fallback
     ): ?UserInterface {
         if (!$user instanceof UserInterface) {
+            if ($user === null) {
+                return null;
+            }
+
             $this->cache->delete($cacheKey);
 
             return $fallback();
         }
 
-        return $this->getManagedDocumentIfExists($user) ?? $user;
-    }
-
-    /**
-     * Get managed MongoDB document if it exists in the DocumentManager's unit of work.
-     *
-     * MongoDB ODM doesn't have tryGetById like ORM, so we check if the document is managed.
-     */
-    private function getManagedDocumentIfExists(UserInterface $cached): ?UserInterface
-    {
-        // Check if document is already managed by DocumentManager
-        if ($this->documentManager->contains($cached)) {
-            return $cached;
+        if ($this->documentManager->contains($user)) {
+            return $user;
         }
 
-        // Refresh from database to get managed instance
-        return $this->inner->findById($cached->getId());
+        return $this->reattachCachedUser($user, $cacheKey, $fallback);
     }
 
     /**
-     * Log cache errors for observability
+     * @param callable(): mixed $fallback
      */
-    private function logCacheError(string $cacheKey, \Throwable $e): void
-    {
-        $this->logger->error('Cache error - falling back to database', [
+    private function reattachCachedUser(
+        UserInterface $cached,
+        string $cacheKey,
+        callable $fallback
+    ): ?UserInterface {
+        try {
+            $managedUser = $this->documentManager->find($cached::class, $cached->getId());
+        } catch (\Throwable $e) {
+            return $this->warnAndFallback($cached, $cacheKey, $fallback, 'cache.reload.error', $e);
+        }
+
+        if (!$managedUser instanceof UserInterface) {
+            $operation = $managedUser === null ? 'cache.reload.miss' : 'cache.reload.invalid';
+
+            return $this->warnAndFallback($cached, $cacheKey, $fallback, $operation);
+        }
+
+        return $managedUser;
+    }
+
+    /**
+     * @param 'cache.reload.error'|'cache.reload.miss'|'cache.reload.invalid' $operation
+     */
+    private function warnAndFallback(
+        UserInterface $cached,
+        string $cacheKey,
+        callable $fallback,
+        string $operation,
+        ?\Throwable $e = null
+    ): ?UserInterface {
+        $this->logger->warning(
+            implode(' ', self::CACHE_RELOAD_MESSAGES[$operation]),
+            array_filter([
+                'cache_key' => $cacheKey,
+                'user_id' => $cached->getId(),
+                'operation' => $operation,
+                'error' => $e?->getMessage(),
+            ])
+        );
+        $this->cache->delete($cacheKey);
+
+        return $fallback();
+    }
+
+    private function loadUserByEmail(
+        ItemInterface $item,
+        string $email,
+        string $cacheKey
+    ): ?UserInterface {
+        $item->expiresAfter(self::TTL_BY_EMAIL);
+        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
+        $item->tag(['user', "user.email.{$emailHash}"]);
+
+        $this->logger->info('Cache miss - loading user by email', [
             'cache_key' => $cacheKey,
-            'error' => $e->getMessage(),
-            'operation' => 'cache.error',
+            'operation' => 'cache.miss',
         ]);
+
+        return $this->inner->findByEmail($email);
+    }
+
+    /**
+     * @param callable(): mixed $fallback
+     */
+    private function ensureEmailCacheHitMatches(
+        ?UserInterface $user,
+        string $requestedEmail,
+        string $cacheKey,
+        callable $fallback
+    ): ?UserInterface {
+        if ($user === null) {
+            return null;
+        }
+
+        if (strtolower(trim($user->getEmail())) === strtolower(trim($requestedEmail))) {
+            return $user;
+        }
+
+        $this->cache->delete($cacheKey);
+        $freshUser = $fallback();
+
+        return $freshUser instanceof UserInterface ? $freshUser : null;
+    }
+
+    private function previousEmailTag(UserInterface $user): ?string
+    {
+        if (!$this->documentManager->contains($user)) {
+            return null;
+        }
+
+        $originalData = $this->documentManager->getUnitOfWork()->getOriginalDocumentData($user);
+        $previousEmail = $originalData['email'] ?? null;
+
+        if (!is_string($previousEmail) || $previousEmail === $user->getEmail()) {
+            return null;
+        }
+
+        return 'user.email.' . $this->cacheKeyBuilder->hashEmail($previousEmail);
+    }
+
+    private function invalidateUserCache(
+        UserInterface $user,
+        string $operation,
+        ?string $previousEmailTag = null
+    ): void {
+        $this->invalidateTags([
+            'user',
+            'user.collection',
+            'user.' . $user->getId(),
+            'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail()),
+            ...($previousEmailTag !== null ? [$previousEmailTag] : []),
+        ], $operation);
+    }
+
+    private function invalidateUserCollectionCache(
+        UserCollection $users,
+        string $operation
+    ): void {
+        $tags = ['user', 'user.collection'];
+
+        foreach ($users as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $tags[] = 'user.' . $user->getId();
+            $tags[] = 'user.email.' . $this->cacheKeyBuilder->hashEmail($user->getEmail());
+        }
+
+        $this->invalidateTags($tags, $operation);
+    }
+
+    /**
+     * @param list<string> $tags
+     */
+    private function invalidateTags(array $tags, string $operation): void
+    {
+        try {
+            $this->cache->invalidateTags(array_values(array_unique($tags)));
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to invalidate cache after user write', [
+                'error' => $e->getMessage(),
+                'operation' => 'cache.invalidation.error',
+                'write_operation' => $operation,
+            ]);
+        }
     }
 }

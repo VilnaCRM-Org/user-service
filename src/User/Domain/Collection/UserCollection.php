@@ -34,13 +34,18 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
             array_filter($this->users, static fn ($i) => $i !== $user);
     }
 
+    /**
+     * @psalm-return ArrayIterator<array-key, User>
+     */
     #[\Override]
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->users);
     }
 
-    /** @psalm-suppress PossiblyUnusedMethod Called via Countable interface */
+    /**
+     * @psalm-return int<0, max>
+     */
     #[\Override]
     public function count(): int
     {

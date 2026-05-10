@@ -8,24 +8,43 @@ use App\Tests\Behat\UserContext\Input\ConfirmUserInput;
 use App\Tests\Behat\UserContext\Input\CreateUserBatchInput;
 use App\Tests\Behat\UserContext\Input\CreateUserInput;
 use App\Tests\Behat\UserContext\Input\EmptyInput;
+use App\Tests\Behat\UserContext\Input\RawBodyInput;
 use App\Tests\Behat\UserContext\Input\UpdateUserInput;
 use Behat\Behat\Context\Context;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\KernelInterface;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+use Behat\Gherkin\Node\PyStringNode;
+use Behat\Mink\Driver\BrowserKitDriver;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
+use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
 
 final class UserRequestContext implements Context
 {
+    private const CONTENT_TYPES = [
+        'PATCH' => 'application/merge-patch+json',
+    ];
+
     private UrlResolver $urlResolver;
     private RequestBodySerializer $bodySerializer;
+    private RestContext $restContext;
 
     public function __construct(
         private UserOperationsState $state,
-        private readonly KernelInterface $kernel,
         SerializerInterface $serializer
     ) {
         $this->urlResolver = new UrlResolver();
         $this->bodySerializer = new RequestBodySerializer($serializer);
+    }
+
+    /**
+     * @BeforeScenario
+     */
+    public function gatherContexts(BeforeScenarioScope $scope): void
+    {
+        $environment = $scope->getEnvironment();
+        $this->restContext = $environment->getContext(RestContext::class);
+        $this->restContext->getMink()->getSession()->restart();
     }
 
     /**
@@ -42,6 +61,22 @@ final class UserRequestContext implements Context
             $initials,
             $oldPassword,
             $newPassword
+        );
+    }
+
+    /**
+     * @Given updating user with email :email, initials :initials, oldPassword :oldPassword
+     */
+    public function updatingUserWithoutNewPassword(
+        string $email,
+        string $initials,
+        string $oldPassword
+    ): void {
+        $this->state->requestBody = new UpdateUserInput(
+            $email,
+            $initials,
+            $oldPassword,
+            ''
         );
     }
 
@@ -66,7 +101,35 @@ final class UserRequestContext implements Context
         string $initials,
         string $password
     ): void {
-        $this->state->requestBody = new CreateUserInput($email, $initials, $password);
+        $this->state->requestBody = new CreateUserInput(
+            $email,
+            $initials,
+            $password
+        );
+    }
+
+    /**
+     * @Given I have completed 2FA setup
+     */
+    public function iHaveCompletedTwoFactorSetup(): void
+    {
+        $this->requestSendTo('POST', '/api/2fa/setup');
+
+        $response = $this->state->response;
+        if (!$response instanceof Response || $response->getStatusCode() !== Response::HTTP_OK) {
+            throw new \RuntimeException(sprintf(
+                '2FA setup failed with status %s.',
+                (string) ($response?->getStatusCode() ?? 'no response')
+            ));
+        }
+
+        $responseData = json_decode((string) $response->getContent(), true);
+        $secret = is_array($responseData) ? ($responseData['secret'] ?? '') : '';
+        if (!is_string($secret) || $secret === '') {
+            throw new \RuntimeException('2FA setup response did not include a secret.');
+        }
+
+        $this->state->twoFactorSecret = $secret;
     }
 
     /**
@@ -85,13 +148,20 @@ final class UserRequestContext implements Context
         string $initials,
         string $password
     ): void {
-        $this->state->requestBody->addUser(
-            [
-                'email' => $email,
-                'initials' => $initials,
-                'password' => $password,
-            ]
-        );
+        if (!$this->state->requestBody instanceof CreateUserBatchInput) {
+            throw new RuntimeException(
+                sprintf(
+                    'requestBody must be initialized with "%s" before calling addUser().',
+                    'Given sending a batch of users'
+                )
+            );
+        }
+
+        $this->state->requestBody->addUser([
+            'email' => $email,
+            'initials' => $initials,
+            'password' => $password,
+        ]);
     }
 
     /**
@@ -124,41 +194,198 @@ final class UserRequestContext implements Context
      */
     public function requestSendTo(string $method, string $path): void
     {
+        $method = strtoupper($method);
         $processedPath = $this->processRequestPath($path);
-        $headers = $this->buildRequestHeaders($method);
-        $requestBody = $this->bodySerializer->serialize($this->state->requestBody, $method);
+        $startedAt = microtime(true);
 
-        $this->state->response = $this->kernel->handle(Request::create(
-            $processedPath,
-            $method,
-            [],
-            [],
-            [],
-            $headers,
-            $requestBody
-        ));
+        if ($this->isRequestBodyMethod($method)) {
+            $requestBody = $this->bodySerializer->serialize(
+                $this->state->requestBody,
+                $method
+            );
+            $this->sendRequestWithBody($method, $processedPath, $requestBody);
+        } else {
+            $this->sendRequestWithoutBody($method, $processedPath);
+        }
+
+        $this->captureLastResponse($startedAt);
+    }
+
+    /**
+     * @When GET request is send to the current user endpoint
+     * @When GET request is sent to the current user endpoint
+     */
+    public function getRequestIsSendToTheCurrentUserEndpoint(): void
+    {
+        $currentUserEmail = $this->state->currentUserEmail;
+        if (!is_string($currentUserEmail) || $currentUserEmail === '') {
+            throw new \RuntimeException('Current user is not set for this scenario.');
+        }
+
+        $this->requestSendTo(
+            'GET',
+            sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
+        );
     }
 
     private function processRequestPath(string $path): string
     {
         $this->urlResolver->setCurrentUserEmail($this->state->currentUserEmail);
+
         return $this->urlResolver->resolve($path);
     }
 
     /**
      * @return array<string, string>
      */
-    private function buildRequestHeaders(string $method): array
+    private function buildHeaders(string $method): array
     {
-        return [
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => $this->getContentTypeForMethod($method),
-            'HTTP_ACCEPT_LANGUAGE' => $this->state->language,
+        $headers = [
+            'Accept' => 'application/json',
+            'Accept-Language' => $this->state->language,
         ];
+
+        if ($this->isRequestBodyMethod($method)) {
+            $headers['Content-Type'] = $this->getContentTypeForMethod($method);
+        }
+
+        $userAgent = $this->state->userAgentHeader;
+        if (is_string($userAgent) && $userAgent !== '') {
+            $headers['User-Agent'] = $userAgent;
+        }
+
+        $this->appendAuthorizationHeader($headers);
+        $this->appendAuthCookieHeader($headers);
+        $this->appendOriginHeader($headers);
+        $this->appendClientIpHeader($headers);
+
+        return $headers;
+    }
+
+    private function isRequestBodyMethod(string $method): bool
+    {
+        return in_array($method, ['POST', 'PUT', 'PATCH'], true);
     }
 
     private function getContentTypeForMethod(string $method): string
     {
-        return $method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+        $requestBody = $this->state->requestBody;
+        if (
+            $requestBody instanceof RawBodyInput
+            && is_string($requestBody->getContentType())
+            && $requestBody->getContentType() !== ''
+        ) {
+            return $requestBody->getContentType();
+        }
+
+        return self::CONTENT_TYPES[$method] ?? 'application/json';
+    }
+
+    private function sendRequestWithBody(
+        string $method,
+        string $path,
+        string $body
+    ): void {
+        $this->addHeaders($this->buildHeaders($method));
+
+        $pyStringBody = new PyStringNode([$body], 0);
+        $this->restContext->iSendARequestToWithBody($method, $path, $pyStringBody);
+    }
+
+    private function sendRequestWithoutBody(string $method, string $path): void
+    {
+        $this->resetBodyHeaders();
+        $this->addHeaders($this->buildHeaders($method));
+        $this->restContext->iSendARequestTo($method, $path);
+    }
+
+    private function resetBodyHeaders(): void
+    {
+        $this->restContext
+            ->getMink()
+            ->getSession()
+            ->setRequestHeader('Content-Type', '');
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function addHeaders(array $headers): void
+    {
+        foreach ($headers as $name => $value) {
+            $this->restContext->iAddHeaderEqualTo($name, $value);
+        }
+    }
+
+    private function captureLastResponse(float $startedAt): void
+    {
+        $session = $this->restContext->getMink()->getSession();
+        $statusCode = $session->getStatusCode();
+        $content = $session->getPage()->getContent();
+        $headers = [];
+
+        $driver = $session->getDriver();
+        if ($driver instanceof BrowserKitDriver) {
+            $browserKitResponse = $driver->getClient()->getResponse();
+            if ($browserKitResponse !== null) {
+                $statusCode = $browserKitResponse->getStatusCode();
+                $content = $browserKitResponse->getContent();
+                $headers = $browserKitResponse->getHeaders();
+            }
+        }
+
+        $this->state->response = new Response($content, $statusCode, $headers);
+        $this->state->lastResponseTimeMs = (microtime(true) - $startedAt) * 1000;
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendAuthorizationHeader(array &$headers): void
+    {
+        $accessToken = $this->state->accessToken;
+        if (is_string($accessToken) && $accessToken !== '') {
+            $headers['Authorization'] = sprintf('Bearer %s', $accessToken);
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendAuthCookieHeader(array &$headers): void
+    {
+        $authCookieToken = $this->state->authCookieToken;
+        if (
+            $this->state->useAuthCookie === true
+            && is_string($authCookieToken)
+            && $authCookieToken !== ''
+        ) {
+            $headers['Cookie'] = sprintf('__Host-auth_token=%s', $authCookieToken);
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendOriginHeader(array &$headers): void
+    {
+        $originHeader = $this->state->originHeader;
+        if (is_string($originHeader) && $originHeader !== '') {
+            $headers['Origin'] = $originHeader;
+            $this->state->originHeader = '';
+        }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     */
+    private function appendClientIpHeader(array &$headers): void
+    {
+        $clientIpAddress = $this->state->clientIpAddress
+            ?? $this->state->expectedIpAddress;
+        if (is_string($clientIpAddress) && $clientIpAddress !== '') {
+            $headers['REMOTE_ADDR'] = $clientIpAddress;
+            $headers['X-Forwarded-For'] = $clientIpAddress;
+        }
     }
 }

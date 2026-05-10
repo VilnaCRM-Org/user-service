@@ -12,6 +12,7 @@ use App\Shared\Infrastructure\Observability\Factory\SqsDispatchFailureMetricFact
 use App\Tests\Unit\Shared\Infrastructure\Bus\Event\Async\Stub\TestDomainEvent;
 use App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\NullLogger;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -200,16 +201,16 @@ final class ResilientAsyncEventDispatcherExecutionTest extends UnitTestCase
         self::assertFalse($result);
     }
 
-    private function createFailingMessageBus(): MessageBusInterface
-    {
+    private function createFailingMessageBus(
+    ): MockObject&MessageBusInterface {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
             ->willThrowException(new \RuntimeException('SQS unavailable'));
         return $messageBus;
     }
 
-    private function createMessageBusThatFailsOnSecondCall(): MessageBusInterface
-    {
+    private function createMessageBusThatFailsOnSecondCall(
+    ): MockObject&MessageBusInterface {
         $callCount = 0;
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
@@ -223,8 +224,8 @@ final class ResilientAsyncEventDispatcherExecutionTest extends UnitTestCase
         return $messageBus;
     }
 
-    private function createSuccessfulMessageBus(): MessageBusInterface
-    {
+    private function createSuccessfulMessageBus(
+    ): MockObject&MessageBusInterface {
         $messageBus = $this->createMock(MessageBusInterface::class);
         $messageBus->method('dispatch')
             ->willReturnCallback(static fn ($message) => new Envelope($message));

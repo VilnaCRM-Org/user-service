@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           path: tests/Load/
-          node-version: 21
+          node-version: 22.13.0
 
       - name: Cache pnpm dependencies
         id: cache-pnpm-dependencies

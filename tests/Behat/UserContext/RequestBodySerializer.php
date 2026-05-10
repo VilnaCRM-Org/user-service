@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Tests\Behat\UserContext\Input\RawBodyInput;
 use App\Tests\Behat\UserContext\Input\RequestInput;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -28,8 +29,15 @@ final class RequestBodySerializer
             return $defaultPayload;
         }
 
+        if ($requestBody instanceof RawBodyInput) {
+            return $requestBody->getRawBody();
+        }
+
         if (!$requestBody instanceof RequestInput) {
-            return $this->serializer->serialize($requestBody, 'json');
+            return $this->serializer->serialize(
+                $requestBody,
+                'json'
+            );
         }
 
         return $this->serializeRequestInput($requestBody);

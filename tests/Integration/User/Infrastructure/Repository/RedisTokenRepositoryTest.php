@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\User\Infrastructure\Repository;
 
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Repository\TokenRepositoryInterface;
 
-final class RedisTokenRepositoryTest extends IntegrationTestCase
+final class RedisTokenRepositoryTest extends UserIntegrationTestCase
 {
     private TokenRepositoryInterface $tokenRepository;
 

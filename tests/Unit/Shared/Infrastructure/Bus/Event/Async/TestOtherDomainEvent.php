@@ -13,6 +13,9 @@ final class TestOtherDomainEvent extends DomainEvent
         parent::__construct($eventId, $occurredOn);
     }
 
+    /**
+     * @psalm-return 'test.other.domain.event'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -20,7 +23,7 @@ final class TestOtherDomainEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @psalm-return array<never, never>
      */
     #[\Override]
     public function toPrimitives(): array
@@ -30,6 +33,8 @@ final class TestOtherDomainEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(

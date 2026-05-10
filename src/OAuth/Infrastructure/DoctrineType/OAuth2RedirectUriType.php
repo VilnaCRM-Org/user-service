@@ -16,35 +16,43 @@ final class OAuth2RedirectUriType extends Type
 
     public const NAME = 'oauth2_redirect_uri';
 
+    private const ERROR_MSG =
+        'OAuth2RedirectUriType expects an array of stringable values.';
+
     /**
-     * @return array<int, string>|null
+     * @return array<string>|null
+     *
+     * @param array<RedirectUri|\stdClass|object|string>|string|null $value
+     *
+     * @psalm-param list{0: RedirectUri|\stdClass|object|string, 1?: RedirectUri|string, 2?: RedirectUri|string}|string|null $value
+     *
+     * @psalm-return list<string>|null
      */
     #[\Override]
-    public function convertToDatabaseValue(mixed $value): ?array
+    public function convertToDatabaseValue($value): ?array
     {
         if ($value === null) {
             return null;
         }
 
         if (!is_array($value)) {
-            throw new InvalidArgumentException(
-                'OAuth2RedirectUriType expects an array of stringable values.'
-            );
+            throw new InvalidArgumentException(self::ERROR_MSG);
         }
 
-        $normalizer = new StringableArrayNormalizer();
-
-        return $normalizer->normalize(
-            $value,
-            'OAuth2RedirectUriType expects an array of stringable values.'
-        );
+        return $this->normalizer()->normalize($value, self::ERROR_MSG);
     }
 
     /**
-     * @return array<int, RedirectUri>
+     * @return array<RedirectUri>
+     *
+     * @param string|array<string>|null $value
+     *
+     * @psalm-param list{0: string, 1?: string, 2?: string}|string|null $value
+     *
+     * @psalm-return list{0?: RedirectUri, 1?: RedirectUri, 2?: RedirectUri}
      */
     #[\Override]
-    public function convertToPHPValue(mixed $value): array
+    public function convertToPHPValue($value): array
     {
         if ($value === null) {
             return [];
@@ -56,12 +64,14 @@ final class OAuth2RedirectUriType extends Type
             );
         }
 
-        return array_map(
-            static fn (string $item): RedirectUri => new RedirectUri($item),
-            $value
-        );
+        $factory = $this->redirectUriFactory();
+
+        return array_map($factory, $value);
     }
 
+    /**
+     * @psalm-return 'if ($value === null) { $return = null; } elseif (is_array($value)) { $return = []; foreach ($value as $item) { if (is_string($item) || (is_object($item) && method_exists($item, "__toString"))) { $return[] = (string) $item; } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); } } } else { throw new \InvalidArgumentException("OAuth2RedirectUriType expects an array of stringable values."); }'
+     */
     #[\Override]
     public function closureToMongo(): string
     {
@@ -81,5 +91,18 @@ final class OAuth2RedirectUriType extends Type
             . 'throw new \InvalidArgumentException('
             . '"OAuth2RedirectUriType expects an array of stringable values."); '
             . '}';
+    }
+
+    /**
+     * @return callable(string): RedirectUri
+     */
+    private function redirectUriFactory(): callable
+    {
+        return static fn (string $item): RedirectUri => new RedirectUri($item);
+    }
+
+    private function normalizer(): StringableArrayNormalizer
+    {
+        return new StringableArrayNormalizer();
     }
 }

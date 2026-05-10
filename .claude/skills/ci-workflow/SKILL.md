@@ -56,13 +56,17 @@ make ci
 
 Identify failing check from output and apply fix:
 
-| Check           | Command            | Fix                                 |
-| --------------- | ------------------ | ----------------------------------- |
-| Code style      | `make phpcsfixer`  | Apply auto-fixes                    |
-| Static analysis | `make psalm`       | Fix type errors                     |
-| Quality metrics | `make phpinsights` | Reduce complexity, fix architecture |
-| Tests           | `make unit-tests`  | Debug failing tests                 |
-| Mutations       | `make infection`   | Add missing test cases              |
+| Check           | Command            | Fix                                 | Companion Skill                                            |
+| --------------- | ------------------ | ----------------------------------- | ---------------------------------------------------------- |
+| Code style      | `make phpcsfixer`  | Apply auto-fixes                    | -                                                          |
+| Static analysis | `make psalm`       | Fix type errors                     | -                                                          |
+| Quality metrics | `make phpinsights` | Reduce complexity, fix architecture | [complexity-management](../complexity-management/SKILL.md) |
+| Architecture    | `make deptrac`     | Fix layer boundary violations       | [deptrac-fixer](../deptrac-fixer/SKILL.md)                 |
+| Organization    | `make psalm`       | Fix naming, directory placement     | [code-organization](../code-organization/SKILL.md)         |
+| Tests           | `make unit-tests`  | Debug failing tests                 | [testing-workflow](../testing-workflow/SKILL.md)           |
+| Mutations       | `make infection`   | Add missing test cases              | [testing-workflow](../testing-workflow/SKILL.md)           |
+
+**Refactoring during fixes**: If CI failures reveal structural issues (wrong directory, vague names, hardcoded config), consult the [code-organization](../code-organization/SKILL.md) skill before applying fixes.
 
 ### Step 4: Re-run
 
@@ -97,6 +101,7 @@ Repeat Steps 2-4 until success message appears.
 - Skip failing checks
 - Commit without "✅ CI checks successfully passed!" message
 - Run commands outside Docker container (use `make` or `docker compose exec php`)
+- Add suppression/ignore annotations to silence PHPMD/PHPInsights/Infection/Psalm/PHPStan/PHPCS failures
 
 ## Format (Output)
 
@@ -120,3 +125,11 @@ Repeat Steps 2-4 until success message appears.
 If parallel execution causes issues:
 
 1. Use `make ci-sequential` for the original sequential behavior
+
+## Related Skills
+
+- [code-organization](../code-organization/SKILL.md) - Consult when CI failures reveal structural/naming issues or hardcoded configs
+- [complexity-management](../complexity-management/SKILL.md) - Reduce cyclomatic complexity when PHPInsights fails
+- [deptrac-fixer](../deptrac-fixer/SKILL.md) - Fix architectural boundary violations
+- [testing-workflow](../testing-workflow/SKILL.md) - Debug specific test failures or mutation issues
+- [quality-standards](../quality-standards/SKILL.md) - Overview of all protected thresholds

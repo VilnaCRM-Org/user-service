@@ -178,6 +178,9 @@ final class RedisTokenRepositoryTest extends UnitTestCase
         $this->cache->expects($this->exactly(2))
             ->method('save')
             ->willReturnCallback(
+                /**
+                 * @return true
+                 */
                 function (CacheItem $item) use ($serializedToken): bool {
                     $this->assertSame($serializedToken, $item->get());
                     $this->assertNotNull($this->expiry($item));

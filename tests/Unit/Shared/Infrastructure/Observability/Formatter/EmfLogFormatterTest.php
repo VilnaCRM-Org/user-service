@@ -20,11 +20,15 @@ use App\Shared\Infrastructure\Observability\ValueObject\EmfPayload;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validation;
 
 final class EmfLogFormatterTest extends UnitTestCase
 {
     private LoggerInterface&MockObject $logger;
+    private SerializerInterface&MockObject $serializer;
     private EmfLogFormatter $formatter;
     private EmfDimensionValueValidatorInterface $dimensionValidator;
 
@@ -34,13 +38,18 @@ final class EmfLogFormatterTest extends UnitTestCase
         parent::setUp();
 
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->formatter = new EmfLogFormatter($this->logger);
+        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->formatter = new EmfLogFormatter($this->logger, $this->serializer);
         $this->dimensionValidator = new EmfDimensionValueValidator(Validation::createValidator());
     }
 
     public function testFormatsPayloadAsJson(): void
     {
         $payload = $this->createTestPayload();
+        $this->serializer->expects($this->once())
+            ->method('serialize')
+            ->with($payload, JsonEncoder::FORMAT)
+            ->willReturn(json_encode($this->getExpectedFormattedPayload(), JSON_THROW_ON_ERROR));
 
         $formatted = $this->formatter->format($payload);
 
@@ -54,6 +63,10 @@ final class EmfLogFormatterTest extends UnitTestCase
     public function testFormatsPayloadWithProperStructure(): void
     {
         $payload = $this->createTestPayload();
+        $this->serializer->expects($this->once())
+            ->method('serialize')
+            ->with($payload, JsonEncoder::FORMAT)
+            ->willReturn(json_encode($this->getExpectedFormattedPayload(), JSON_THROW_ON_ERROR));
 
         $formatted = $this->formatter->format($payload);
         $decoded = json_decode(rtrim($formatted, "\n"), true);
@@ -69,8 +82,10 @@ final class EmfLogFormatterTest extends UnitTestCase
     public function testLogsErrorAndReturnsEmptyStringOnJsonEncodingFailure(): void
     {
         $payload = $this->createMock(EmfPayload::class);
-        $payload->method('jsonSerialize')
-            ->willThrowException(new \JsonException('Encoding failed'));
+        $this->serializer->expects($this->once())
+            ->method('serialize')
+            ->with($payload, JsonEncoder::FORMAT)
+            ->willThrowException(new NotEncodableValueException('Encoding failed'));
 
         $this->logger->expects($this->once())
             ->method('error')

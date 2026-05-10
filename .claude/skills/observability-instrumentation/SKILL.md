@@ -570,7 +570,7 @@ After implementing business metrics:
 
 ### Event Subscribers
 
-- `src/Shared/Infrastructure/Observability/ApiEndpointBusinessMetricsSubscriber.php` - HTTP metrics
+- `src/Shared/Infrastructure/Observability/EventSubscriber/ApiEndpointBusinessMetricsSubscriber.php` - HTTP metrics
 - `src/User/Application/EventSubscriber/UserCreatedMetricsSubscriber.php`
 - `src/User/Application/EventSubscriber/UserUpdatedMetricsSubscriber.php`
 - `src/User/Application/EventSubscriber/UserDeletedMetricsSubscriber.php`

@@ -14,10 +14,10 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Resource\Factory\ResourceMetadataCollectionFactoryInterface;
 use ApiPlatform\Metadata\Resource\ResourceMetadataCollection;
 use App\Internal\HealthCheck\Domain\ValueObject\HealthCheck;
-use App\Shared\Application\Collector\AllowedMethodsCollector;
 use App\Shared\Application\Matcher\AllowedMethodsOperationMatcher;
 use App\Shared\Application\Normalizer\AllowedMethodsPathNormalizer;
 use App\Shared\Application\Provider\AllowedMethodsProvider;
+use App\Shared\Application\Resolver\AllowedMethodsResolver;
 use App\Shared\Domain\ValueObject\ResourceClassAllowlist;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
@@ -154,11 +154,11 @@ final class AllowedMethodsProviderTest extends UnitTestCase
 
         $pathNormalizer = new AllowedMethodsPathNormalizer();
         $matcher = new AllowedMethodsOperationMatcher($pathNormalizer);
-        $collector = new AllowedMethodsCollector($factory, $matcher);
+        $allowedMethodsResolver = new AllowedMethodsResolver($factory, $matcher);
         $resourceClassAllowlist = new ResourceClassAllowlist();
 
         return new AllowedMethodsProvider(
-            $collector,
+            $allowedMethodsResolver,
             $resourceClassAllowlist,
             $pathNormalizer
         );
@@ -189,11 +189,11 @@ final class AllowedMethodsProviderTest extends UnitTestCase
         $factory = $this->createMultiResourceFactory($userResource, $healthResource);
         $pathNormalizer = new AllowedMethodsPathNormalizer();
         $matcher = new AllowedMethodsOperationMatcher($pathNormalizer);
-        $collector = new AllowedMethodsCollector($factory, $matcher);
+        $allowedMethodsResolver = new AllowedMethodsResolver($factory, $matcher);
         $resourceClassAllowlist = new ResourceClassAllowlist();
 
         return new AllowedMethodsProvider(
-            $collector,
+            $allowedMethodsResolver,
             $resourceClassAllowlist,
             $pathNormalizer
         );
@@ -202,7 +202,7 @@ final class AllowedMethodsProviderTest extends UnitTestCase
     private function createMultiResourceFactory(
         ApiResource $userResource,
         ApiResource $healthResource
-    ): ResourceMetadataCollectionFactoryInterface {
+    ): \PHPUnit\Framework\MockObject\MockObject&ResourceMetadataCollectionFactoryInterface {
         $factory = $this->createMock(
             ResourceMetadataCollectionFactoryInterface::class
         );

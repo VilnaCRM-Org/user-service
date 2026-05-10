@@ -15,6 +15,55 @@ VilnaCRM User Service is a PHP 8.3+ microservice built with Symfony 7.3, API Pla
 3. **EXECUTE** → Open the specific skill file (e.g., `.claude/skills/deptrac-fixer/SKILL.md`)
 4. **FOLLOW** → Execute the step-by-step instructions exactly as written
 
+### ✅ Mandatory Local AI Review Loop (Before Push/Ready)
+
+After `make ci` and before committing/pushing or moving a PR from draft to ready:
+
+1. Run `make ai-review-loop`.
+2. Default agent is Codex. To include Claude, set `AI_REVIEW_AGENTS=codex,claude` or use `AI_REVIEW_AGENT=claude`.
+3. If the loop applies fixes, re-run `make ci` and `make ai-review-loop` until it reports `PASS`.
+4. Requires Codex CLI support for `--output-last-message` (update Codex CLI if missing).
+
+### ✅ Optional BMALPH Setup When Needed
+
+1. Run `make bmalph-codex` or `make bmalph-claude` to install and verify BMALPH locally.
+2. Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview repository initialization safely.
+3. Use `make bmalph-setup` only when you intentionally want the local `_bmad/` and `.ralph/` workflow files in your workspace; it also configures planning artifacts under `specs/`.
+4. If you run `bmalph upgrade --force` directly, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
+
+### ✅ Mandatory New Feature Verification Gate (ALL Skills)
+
+For any **NEW feature** (new behavior, endpoint, domain model, schema change, or user-facing change), you MUST execute **every** skill in `.claude/skills/` **after implementation**.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
+
 ### ❌ DO NOT
 
 - Fix issues directly from AGENTS.md without reading the skills
@@ -209,6 +258,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **ci-workflow**: Run comprehensive CI checks
 - **code-review**: Retrieve and address PR comments
 - **testing-workflow**: Manage tests (unit, integration, E2E, mutation)
+- **bmad-autonomous-planning**: Generate BMALPH planning artifacts autonomously from a short task description
 - **implementing-ddd-architecture**: Design DDD patterns (entities, value objects, aggregates, CQRS)
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
@@ -369,6 +419,12 @@ config/
 - Application: Command, CommandHandler, DTO, EventSubscriber, Processor/Resolver (can use Symfony/API Platform)
 - Infrastructure: Repository implementations, XML mappings, framework integrations
 
+## BMAD-METHOD Integration
+
+BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace. This repository keeps BMAD planning artifacts under `specs/`, and `make bmalph-setup` reapplies that layout after local init or upgrade.
+
+For non-interactive planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session and let the main agent orchestrate BMALPH subagents without relying on repo-local launcher scripts.
+
 ## Quality Gates
 
 - PHPInsights: Quality 100%, Complexity 94%, Architecture 100%, Style 100%
@@ -385,6 +441,7 @@ config/
 - Strengthen tests for escaped mutants or coverage drops
 - Respect DDD/CQRS boundaries; keep Domain pure
 - Use Faker for all test data (`tests/Unit/UnitTestCase.php`, `tests/Integration/IntegrationTestCase.php`)
+- Never hide problems with suppression/ignore annotations (PHPMD, PHPInsights, Infection, Psalm, PHPStan, PHPCS)
 
 ## Additional Development Guidelines
 
@@ -392,6 +449,12 @@ config/
 
 - **MANDATORY**: Remove inline comments; write self-explanatory code with clear naming.
 - Extract helper methods instead of using comments for explanation.
+
+### Suppressions and Ignore Directives
+
+- **MANDATORY**: Do not use suppression or ignore annotations/directives to make checks pass.
+- Forbidden examples: `@SuppressWarnings(PHPMD.*)`, `@infection-ignore*`, `@codeCoverageIgnore*`, `@psalm-suppress`, `@phpstan-ignore*`, `phpcs:ignore`, `@phpinsights-ignore*`.
+- Fix the root cause in code/tests/architecture instead of muting tools.
 
 ### Symfony & API Platform Built-ins First
 
