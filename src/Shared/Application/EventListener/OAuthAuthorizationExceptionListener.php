@@ -33,12 +33,15 @@ final class OAuthAuthorizationExceptionListener
 
     private function shouldHandle(ExceptionEvent $event): bool
     {
-        return match (true) {
-            !$event->isMainRequest() => false,
-            $event->getRequest()->attributes->get('_route')
-                !== 'oauth2_authorize' => false,
-            default => $this->isExpectedException($event->getThrowable()),
-        };
+        if (!$event->isMainRequest()) {
+            return false;
+        }
+
+        if ($event->getRequest()->attributes->get('_route') !== 'oauth2_authorize') {
+            return false;
+        }
+
+        return $this->isExpectedException($event->getThrowable());
     }
 
     private function isExpectedException(Throwable $throwable): bool

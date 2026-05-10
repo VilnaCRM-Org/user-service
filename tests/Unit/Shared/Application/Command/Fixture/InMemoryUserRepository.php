@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
@@ -44,6 +45,26 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->findUserBy($matcher);
     }
 
+    /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $requestedEmails = array_flip($emails);
+        $users = [];
+
+        foreach ($this->users as $user) {
+            if (!isset($requestedEmails[$user->getEmail()])) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
     #[\Override]
     public function findById(string $id): ?UserInterface
     {
@@ -51,27 +72,15 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     }
 
     #[\Override]
-    public function find(mixed $id, ?int $lockMode = null, ?int $lockVersion = null): ?object
+    public function saveBatch(UserCollection $users): void
     {
-        return $this->findById((string) $id);
+        array_map(fn (UserInterface $user) => $this->save($user), $users->users);
     }
 
-    /**
-     * @param array<UserInterface> $users
-     */
     #[\Override]
-    public function saveBatch(array $users): void
+    public function deleteBatch(UserCollection $users): void
     {
-        array_map(fn (UserInterface $user) => $this->save($user), $users);
-    }
-
-    /**
-     * @param array<UserInterface> $users
-     */
-    #[\Override]
-    public function deleteBatch(array $users): void
-    {
-        array_map(fn (UserInterface $user) => $this->delete($user), $users);
+        array_map(fn (UserInterface $user) => $this->delete($user), $users->users);
     }
 
     /**

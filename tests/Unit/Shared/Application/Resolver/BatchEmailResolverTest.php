@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Resolver;
 
 use App\Shared\Application\Resolver\BatchEmailResolver;
-use App\Shared\Application\Resolver\Source\BatchEmailSource;
+use App\Shared\Application\Resolver\Extractor\BatchEmailExtractor;
 use App\Tests\Unit\UnitTestCase;
 
 final class BatchEmailResolverTest extends UnitTestCase
 {
     public function testResolveCastsNullCandidateToEmptyString(): void
     {
-        $source = new class() implements BatchEmailSource {
+        $source = new class() implements BatchEmailExtractor {
+            /**
+             * @return null
+             */
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): ?string
             {
                 return null;
             }
@@ -27,9 +33,17 @@ final class BatchEmailResolverTest extends UnitTestCase
 
     public function testResolveNormalizesMultibyteEmail(): void
     {
-        $source = new class() implements BatchEmailSource {
+        $source = new class() implements BatchEmailExtractor {
+            /**
+             * @return string
+             *
+             * @psalm-return 'ÜSER@Example.com'
+             */
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): ?string
             {
                 return 'ÜSER@Example.com';
             }
@@ -42,9 +56,17 @@ final class BatchEmailResolverTest extends UnitTestCase
 
     public function testResolveTrimsWhitespaceAroundEmail(): void
     {
-        $source = new class() implements BatchEmailSource {
+        $source = new class() implements BatchEmailExtractor {
+            /**
+             * @return string
+             *
+             * @psalm-return '  spaced@example.com  '
+             */
             #[\Override]
-            public function extract(mixed $entry): ?string
+            /**
+             * @param mixed $entry
+             */
+            public function extract($entry): string
             {
                 return '  spaced@example.com  ';
             }

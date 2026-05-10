@@ -45,13 +45,13 @@ final class ParameterSchemaFactoryTest extends UnitTestCase
             'initials',
             'string',
             'Name Surname',
-            pattern: '^\\S+$'
+            pattern: '^\S+$'
         );
 
         $schema = $factory->create($parameter);
 
         $this->assertSame(
-            ['type' => 'string', 'pattern' => '^\\S+$'],
+            ['type' => 'string', 'pattern' => '^\S+$'],
             $schema
         );
     }

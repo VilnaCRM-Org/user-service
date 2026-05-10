@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
+use App\User\Domain\Collection\PasswordResetTokenCollection;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 
@@ -35,25 +36,6 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
         return $this->tokens[$token] ?? null;
     }
 
-    #[\Override]
-    public function findByUserID(string $userID): ?PasswordResetTokenInterface
-    {
-        foreach ($this->tokens as $token) {
-            if ($token->getUserID() === $userID) {
-                return $token;
-            }
-        }
-
-        return null;
-    }
-
-    #[\Override]
-    public function delete(PasswordResetTokenInterface $passwordResetToken): void
-    {
-        ++$this->deleteCount;
-        unset($this->tokens[$passwordResetToken->getTokenValue()]);
-    }
-
     public function deleteCount(): int
     {
         return $this->deleteCount;
@@ -80,14 +62,12 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
         return $this->deleteAllCount;
     }
 
-    /**
-     * @param array<PasswordResetTokenInterface> $tokens
-     */
     #[\Override]
-    public function saveBatch(array $tokens): void
+    public function saveBatch(PasswordResetTokenCollection $tokens): void
     {
-        $this->savedBatchTokens = $tokens;
-        foreach ($tokens as $token) {
+        $tokenArray = iterator_to_array($tokens);
+        $this->savedBatchTokens = $tokenArray;
+        foreach ($tokenArray as $token) {
             $this->tokens[$token->getTokenValue()] = $token;
         }
     }

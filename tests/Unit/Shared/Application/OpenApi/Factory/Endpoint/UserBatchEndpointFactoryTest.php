@@ -13,6 +13,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\UserBatchEndpointFactory;
 use App\Shared\Application\OpenApi\Factory\Request\CreateBatchRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UsersBatchCreatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use App\Tests\Unit\UnitTestCase;
@@ -20,12 +21,14 @@ use App\Tests\Unit\UnitTestCase;
 final class UserBatchEndpointFactoryTest extends UnitTestCase
 {
     private BadRequestResponseFactory $badRequestResponseFactory;
+    private UnauthorizedResponseFactory $unauthorizedResponseFactory;
     private ValidationErrorFactory $validationErrorResponseFactory;
     private UsersBatchCreatedResponseFactory $usersCreatedResponseFactory;
     private CreateBatchRequestFactory $batchRequestFactory;
     private OpenApi $openApi;
     private UserBatchEndpointFactory $factory;
     private Response $badRequestResponse;
+    private Response $unauthorizedResponse;
     private Response $validationErrorResponse;
     private Response $usersCreatedResponse;
     private RequestBody $batchRequest;
@@ -38,6 +41,8 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
     {
         $this->badRequestResponseFactory =
             $this->createMock(BadRequestResponseFactory::class);
+        $this->unauthorizedResponseFactory =
+            $this->createMock(UnauthorizedResponseFactory::class);
         $this->validationErrorResponseFactory =
             $this->createMock(ValidationErrorFactory::class);
         $this->usersCreatedResponseFactory =
@@ -46,6 +51,7 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
             $this->createMock(CreateBatchRequestFactory::class);
         $this->openApi = $this->createMock(OpenApi::class);
         $this->badRequestResponse = $this->createMock(Response::class);
+        $this->unauthorizedResponse = $this->createMock(Response::class);
         $this->validationErrorResponse = $this->createMock(Response::class);
         $this->usersCreatedResponse = $this->createMock(Response::class);
         $this->batchRequest = $this->createMock(RequestBody::class);
@@ -59,6 +65,7 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
         $this->factory = new UserBatchEndpointFactory(
             getenv('API_PREFIX'),
             $this->badRequestResponseFactory,
+            $this->unauthorizedResponseFactory,
             $this->validationErrorResponseFactory,
             $this->usersCreatedResponseFactory,
             $this->batchRequestFactory
@@ -66,6 +73,8 @@ final class UserBatchEndpointFactoryTest extends UnitTestCase
 
         $this->badRequestResponseFactory->method('getResponse')
             ->willReturn($this->badRequestResponse);
+        $this->unauthorizedResponseFactory->method('getResponse')
+            ->willReturn($this->unauthorizedResponse);
         $this->validationErrorResponseFactory->method('getResponse')
             ->willReturn($this->validationErrorResponse);
         $this->usersCreatedResponseFactory->method('getResponse')

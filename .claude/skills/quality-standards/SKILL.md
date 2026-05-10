@@ -42,13 +42,14 @@ Understand quality metrics and route to appropriate specialized skill for fixes.
 
 ### Other Tools
 
-| Tool      | Metric          | Required | Fix With                                         |
-| --------- | --------------- | -------- | ------------------------------------------------ |
-| Deptrac   | Violations      | 0        | [deptrac-fixer](../deptrac-fixer/SKILL.md)       |
-| Psalm     | Errors          | 0        | Fix reported issues                              |
-| Psalm     | Security Issues | 0        | Fix tainted flows                                |
-| Infection | MSI             | 100%     | [testing-workflow](../testing-workflow/SKILL.md) |
-| PHPUnit   | Coverage        | 100%     | [testing-workflow](../testing-workflow/SKILL.md) |
+| Tool      | Metric          | Required | Fix With                                                                                    |
+| --------- | --------------- | -------- | ------------------------------------------------------------------------------------------- |
+| Deptrac   | Violations      | 0        | [deptrac-fixer](../deptrac-fixer/SKILL.md)                                                  |
+| Psalm     | Errors          | 0        | Fix reported issues                                                                         |
+| Psalm     | ForbiddenCode   | 0        | Use Symfony Serializer and follow the architecture guards documented in `code-organization` |
+| Psalm     | Security Issues | 0        | Fix tainted flows                                                                           |
+| Infection | MSI             | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
+| PHPUnit   | Coverage        | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
 
 ## Quick Reference Commands
 
@@ -109,6 +110,13 @@ When quality checks fail, use the appropriate specialized skill:
   - PHPMD reports high CCN
   - Methods too complex
 
+- **Structural/naming issues** → [code-organization](../code-organization/SKILL.md)
+
+  - Class in wrong directory for its type
+  - Vague variable or class names
+  - Hardcoded config values that should be in `.env`
+  - Namespace doesn't match directory structure
+
 - **Code style issues** → Run `make phpcsfixer`
   - PSR-12 violations
   - Line length > 100 chars
@@ -159,6 +167,8 @@ Based on failure type, use appropriate skill:
 | "Complexity score too low" | complexity-management    |
 | "Deptrac violations"       | deptrac-fixer            |
 | "must not depend on"       | deptrac-fixer            |
+| "Class not found"          | code-organization        |
+| "Namespace mismatch"       | code-organization        |
 | "tests failed"             | testing-workflow         |
 | "Psalm found errors"       | Fix type errors directly |
 | "escaped mutants"          | testing-workflow         |
@@ -180,6 +190,7 @@ Repeat until: "✅ CI checks successfully passed!"
 - Commit code without all CI checks passing
 - Modify `deptrac.yaml` to allow violations (fix code, not config)
 - Disable security checks
+- Add suppression/ignore annotations to hide quality issues (`@SuppressWarnings`, `@infection-ignore*`, `@codeCoverageIgnore*`, `@psalm-suppress`, `@phpstan-ignore*`, `phpcs:ignore`, `@phpinsights-ignore*`)
 
 ### ALWAYS
 
@@ -233,6 +244,7 @@ After using this skill:
 
 - [ci-workflow](../ci-workflow/SKILL.md) - Run comprehensive CI validation
 - [complexity-management](../complexity-management/SKILL.md) - Reduce complexity, improve quality
+- [code-organization](../code-organization/SKILL.md) - Fix structural/naming issues, extract hardcoded configs
 - [deptrac-fixer](../deptrac-fixer/SKILL.md) - Fix architectural violations
 - [implementing-ddd-architecture](../implementing-ddd-architecture/SKILL.md) - Understand DDD patterns
 - [testing-workflow](../testing-workflow/SKILL.md) - Fix test failures, improve coverage

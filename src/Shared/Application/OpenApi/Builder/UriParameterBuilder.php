@@ -8,6 +8,9 @@ use ApiPlatform\OpenApi\Model\Parameter;
 
 final class UriParameterBuilder
 {
+    /**
+     * @param list<string>|null $enum
+     */
     public function build(
         string $name,
         string $description,

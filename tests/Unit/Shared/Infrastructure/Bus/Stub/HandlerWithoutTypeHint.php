@@ -14,11 +14,9 @@ namespace App\Tests\Unit\Shared\Infrastructure\Bus\Stub;
 final class HandlerWithoutTypeHint
 {
     /**
-     * @param object $event
-     *
-     * @psalm-suppress UnusedParam
+     * @param object $_event
      */
-    public function __invoke($event): void
+    public function __invoke($_event): void
     {
         // Intentionally untyped for testing purposes
     }

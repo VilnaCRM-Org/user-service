@@ -6,6 +6,7 @@ namespace App\Shared\Infrastructure\Fixture\Seeder;
 
 use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -60,19 +61,22 @@ final readonly class SchemathesisUserSeeder
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return array<UserInterface>
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     public function seedUsers(): array
     {
         $users = $this->prepareUsers();
-        /** @infection-ignore-all */
-        $this->userRepository->saveBatch(array_values($users));
+        $this->userRepository->saveBatch(new UserCollection(array_values($users)));
 
         return $users;
     }
 
     /**
-     * @return array<string,UserInterface>
+     * @return array<UserInterface>
+     *
+     * @psalm-return array{primary: UserInterface, update: UserInterface, delete: UserInterface, password_reset_request: UserInterface, password_reset_confirm: UserInterface}
      */
     private function prepareUsers(): array
     {

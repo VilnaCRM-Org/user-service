@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
 use App\User\Domain\Entity\ConfirmationToken;
-use App\User\Domain\Entity\ConfirmationTokenInterface;
 
 final class TokenMatcher
 {
@@ -17,14 +16,14 @@ final class TokenMatcher
     public function matchesByTokenValue(
         ?ConfirmationToken $stored,
         string $value
-    ): ?ConfirmationTokenInterface {
+    ): ?ConfirmationToken {
         return $stored?->getTokenValue() === $value ? $stored : null;
     }
 
     public function matchesByUserId(
         ?ConfirmationToken $stored,
         string $userId
-    ): ?ConfirmationTokenInterface {
+    ): ?ConfirmationToken {
         return $stored?->getUserID() === $userId ? $stored : null;
     }
 

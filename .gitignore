@@ -34,12 +34,8 @@ summary.log
 /.phpcs-cache
 /phpcs.xml
 ###< squizlabs/php_codesniffer ###
-
-###> league/oauth2-server-bundle ###
-/config/jwt/*.pem
-###< league/oauth2-server-bundle ###
-
 /config/keys
+/config/jwt
 supervisord.*
 
 ###> qossmic/deptrac-shim ###
@@ -60,3 +56,13 @@ coverage-html/
 ###< bats-core ###
 
 .phpunit.cache
+/.ralph/
+/.ralph/logs/
+.ralph/logs/
+/_bmad/
+/_bmad-output/
+_bmad-output/
+###> league/oauth2-server-bundle ###
+/config/jwt/*.pem
+/config/reference.php
+###< league/oauth2-server-bundle ###

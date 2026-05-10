@@ -337,4 +337,4 @@ These are infrastructure concerns handled by AWS AppRunner automatically.
 - Interface: `src/Shared/Application/Observability/Emitter/BusinessMetricsEmitterInterface.php`
 - Implementation: `src/Shared/Infrastructure/Observability/AwsEmfBusinessMetricsEmitter.php`
 - Test spy: `tests/Unit/Shared/Infrastructure/Observability/BusinessMetricsEmitterSpy.php`
-- Auto metrics: `src/Shared/Infrastructure/Observability/ApiEndpointBusinessMetricsSubscriber.php`
+- Auto metrics: `src/Shared/Infrastructure/Observability/EventSubscriber/ApiEndpointBusinessMetricsSubscriber.php`

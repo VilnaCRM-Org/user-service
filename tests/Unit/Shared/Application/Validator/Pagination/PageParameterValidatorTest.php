@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Validator\Pagination;
 
 use App\Shared\Application\Factory\QueryParameterViolationFactory;
-use App\Shared\Application\QueryParameter\Evaluator\ExplicitValueEvaluator;
 use App\Shared\Application\QueryParameter\Normalizer\PositiveIntegerNormalizer;
 use App\Shared\Application\QueryParameter\QueryParameterViolation;
+use App\Shared\Application\QueryParameter\Validator\ExplicitValueValidator;
 use App\Shared\Application\Validator\Pagination\PageParameterValidator;
 use App\Tests\Unit\UnitTestCase;
 
@@ -15,15 +15,15 @@ final class PageParameterValidatorTest extends UnitTestCase
 {
     public function testReturnsNullWhenPageNotPresent(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::never())->method('isExplicitlyProvided');
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::never())->method('isExplicitlyProvided');
 
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
         $normalizer->expects(self::never())->method('normalize');
 
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $this->withoutPhpWarnings(static fn () => $validator->validate([]));
 
@@ -32,13 +32,13 @@ final class PageParameterValidatorTest extends UnitTestCase
 
     public function testReturnsNullWhenPageNotPresentEvenWithOtherParams(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::never())->method('isExplicitlyProvided');
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::never())->method('isExplicitlyProvided');
 
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $this->withoutPhpWarnings(
             static fn () => $validator->validate(['itemsPerPage' => 10, 'order' => 'asc'])
@@ -47,16 +47,16 @@ final class PageParameterValidatorTest extends UnitTestCase
         self::assertNull($result);
     }
 
-    public function testMissingPageDoesNotEmitWarningsOrInvokeEvaluators(): void
+    public function testMissingPageDoesNotEmitWarningsOrInvokeValidators(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::never())->method('isExplicitlyProvided');
-        $valueEvaluator->expects(self::never())->method('wasParameterSent');
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::never())->method('isExplicitlyProvided');
+        $valueValidator->expects(self::never())->method('wasParameterSent');
 
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $this->withoutPhpWarnings(
             fn () => $validator->validate(['itemsPerPage' => $this->faker->numberBetween(2, 20)])
@@ -67,8 +67,8 @@ final class PageParameterValidatorTest extends UnitTestCase
 
     public function testReturnsNullForValidExplicitPage(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::once())
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::once())
             ->method('isExplicitlyProvided')
             ->with(1)
             ->willReturn(true);
@@ -81,7 +81,7 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $validator->validate(['page' => 1]);
 
@@ -92,8 +92,8 @@ final class PageParameterValidatorTest extends UnitTestCase
     {
         $violation = $this->createMock(QueryParameterViolation::class);
 
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::once())
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::once())
             ->method('isExplicitlyProvided')
             ->with('invalid')
             ->willReturn(true);
@@ -109,7 +109,7 @@ final class PageParameterValidatorTest extends UnitTestCase
             ->method('invalidPagination')
             ->willReturn($violation);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $validator->validate(['page' => 'invalid']);
 
@@ -120,13 +120,13 @@ final class PageParameterValidatorTest extends UnitTestCase
     {
         $violation = $this->createMock(QueryParameterViolation::class);
 
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
-        $valueEvaluator->expects(self::once())
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
+        $valueValidator->expects(self::once())
             ->method('isExplicitlyProvided')
             ->with(['nested' => 'value'])
             ->willReturn(false);
 
-        $valueEvaluator->expects(self::once())
+        $valueValidator->expects(self::once())
             ->method('wasParameterSent')
             ->with(['nested' => 'value'])
             ->willReturn(true);
@@ -137,7 +137,7 @@ final class PageParameterValidatorTest extends UnitTestCase
             ->method('invalidPagination')
             ->willReturn($violation);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $validator->validate(['page' => ['nested' => 'value']]);
 
@@ -146,14 +146,14 @@ final class PageParameterValidatorTest extends UnitTestCase
 
     public function testExplicitlyReturnsNullWhenPageKeyMissing(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
         // Should never be called when page key is missing
-        $valueEvaluator->expects(self::never())->method('isExplicitlyProvided');
+        $valueValidator->expects(self::never())->method('isExplicitlyProvided');
 
         $normalizer = $this->createMock(PositiveIntegerNormalizer::class);
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         $result = $this->withoutPhpWarnings(
             static fn () => $validator->validate(['someOtherKey' => 'value'])
@@ -165,10 +165,10 @@ final class PageParameterValidatorTest extends UnitTestCase
 
     public function testReturnsNullWhenPageKeyPresentMatchesFirstArm(): void
     {
-        $valueEvaluator = $this->createMock(ExplicitValueEvaluator::class);
+        $valueValidator = $this->createMock(ExplicitValueValidator::class);
         // The first match arm checks if key is NOT present
         // This test ensures when key IS present, we don't match the first arm
-        $valueEvaluator->expects(self::once())
+        $valueValidator->expects(self::once())
             ->method('isExplicitlyProvided')
             ->with(1)
             ->willReturn(true);
@@ -181,7 +181,7 @@ final class PageParameterValidatorTest extends UnitTestCase
 
         $violationFactory = $this->createMock(QueryParameterViolationFactory::class);
 
-        $validator = new PageParameterValidator($valueEvaluator, $normalizer, $violationFactory);
+        $validator = new PageParameterValidator($valueValidator, $normalizer, $violationFactory);
 
         // When page=1, should go through explicit value path, not the "missing key" path
         $result = $validator->validate(['page' => 1]);

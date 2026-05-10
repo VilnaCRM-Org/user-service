@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class PasswordResetEmailSentEvent extends DomainEvent
+final class PasswordResetEmailSentEvent extends PasswordDomainEvent
 {
     public function __construct(
         public readonly string $tokenValue,
@@ -20,6 +20,8 @@ final class PasswordResetEmailSentEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -36,6 +38,9 @@ final class PasswordResetEmailSentEvent extends DomainEvent
         );
     }
 
+    /**
+     * @psalm-return 'user.password_reset_email_sent'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -43,7 +48,9 @@ final class PasswordResetEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
+     *
+     * @psalm-return array{tokenValue: string, userId: string, email: string}
      */
     #[\Override]
     public function toPrimitives(): array

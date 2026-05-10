@@ -54,7 +54,6 @@ return [
             'exclude' => [
                 'phpinsights',
                 'tests/Behat/OAuthContext/OAuthContext.php',
-                'src/User/Infrastructure/Repository/MariaDBPasswordResetTokenRepository.php',
             ],
             'ignoreComments' => true,
             'lineLimit' => 100,
@@ -64,6 +63,7 @@ return [
                 'src/Shared/Infrastructure/Bus/Command/InMemorySymfonyCommandBus',
                 'src/Shared/Infrastructure/Bus/Event/InMemorySymfonyEventBus',
                 'src/User/Domain/Entity/User',
+                'src/User/Domain/Entity/PasswordResetToken',
             ],
         ],
         ForbiddenDefineFunctions::class => [
@@ -80,6 +80,10 @@ return [
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/OAuthRedirectResponseFactoryTest',
                 'tests/Unit/Shared/Application/OpenApi/Factory/Response/UnsupportedGrantTypeResponseFactoryTest',
                 'tests/Behat/OAuthContext/OAuthContext',
+                'src/Shared/Infrastructure/DoctrineType/DomainUuidType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2ScopeType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2GrantType.php',
+                'src/OAuth/Infrastructure/DoctrineType/OAuth2RedirectUriType.php',
             ],
         ],
     ],

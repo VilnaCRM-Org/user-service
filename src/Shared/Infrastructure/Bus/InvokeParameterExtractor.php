@@ -32,18 +32,30 @@ final class InvokeParameterExtractor
     {
         $firstParameterType = $method->getParameters()[0]->getType();
 
-        if ($firstParameterType === null) {
-            throw new LogicException(
-                'Missing type hint for the first parameter of __invoke'
-            );
-        }
+        $this->ensureTypeHintExists($firstParameterType);
 
-        // Union types (e.g., TypeA|TypeB) don't have getName() - return null
         if (!$firstParameterType instanceof ReflectionNamedType) {
             return null;
         }
 
         return $firstParameterType->getName();
+    }
+
+    private function ensureTypeHintExists(
+        ?\ReflectionType $type
+    ): void {
+        if ($this->isMissingOrMixed($type)) {
+            throw new LogicException(
+                'Missing type hint for the first parameter of __invoke'
+            );
+        }
+    }
+
+    private function isMissingOrMixed(?\ReflectionType $type): bool
+    {
+        return $type === null
+            || ($type instanceof ReflectionNamedType
+                && $type->getName() === 'mixed');
     }
 
     private function hasOnlyOneParameter(ReflectionMethod $method): bool

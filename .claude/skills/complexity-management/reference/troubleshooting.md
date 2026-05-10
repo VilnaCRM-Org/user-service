@@ -933,20 +933,13 @@ vendor/bin/phpinsights --config-path=phpinsights.php -v
 
 ---
 
-## Emergency Bypass (NOT RECOMMENDED)
+## Bypass Policy
 
-**DO NOT USE UNLESS ABSOLUTELY NECESSARY**
+Inline suppressions are forbidden. Do not use `@phpinsights-ignore*`, `@SuppressWarnings`, or other ignore directives.
 
-If you must temporarily disable a specific check:
+When a check needs tuning, use scoped configuration updates in `phpinsights.php` with clear technical justification and keep global requirements unchanged.
 
-### Option 1: Inline Suppression
-
-```php
-// @phpinsights-ignore-next-line
-public function complexMethod() { }
-```
-
-### Option 2: Update phpinsights.php
+### Allowed: Update phpinsights.php (Scoped, Justified)
 
 ```php
 'config' => [

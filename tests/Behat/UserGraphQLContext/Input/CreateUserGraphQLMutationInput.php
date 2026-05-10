@@ -5,15 +5,26 @@ declare(strict_types=1);
 namespace App\Tests\Behat\UserGraphQLContext\Input;
 
 /**
- * @psalm-suppress UnusedClass
- * @psalm-suppress PossiblyUnusedProperty
  */
 final readonly class CreateUserGraphQLMutationInput extends GraphQLMutationInput
 {
     public function __construct(
-        public string $email,
-        public string $initials,
-        public string $password
+        private string $email,
+        private string $initials,
+        private string $password
     ) {
+    }
+
+    /**
+     * @return array{email: string, initials: string, password: string}
+     */
+    #[\Override]
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'initials' => $this->initials,
+            'password' => $this->password,
+        ];
     }
 }

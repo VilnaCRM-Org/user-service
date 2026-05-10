@@ -3,13 +3,9 @@ services:
     alias: 'security.token_storage'
     public: true
 
-  App\Tests\Behat\OAuthContext\OAuthContext:
-    arguments:
-      $tokenStorage: '@security.token_storage'
-
-  App\Tests\Behat\UserContext\UserContext:
-    arguments:
-      $cachePool: '@cache.user'
+  Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface:
+    alias: 'services_resetter'
+    public: true
 
   # Use synchronous event bus for integration tests
   # This ensures events are processed immediately during tests
@@ -25,5 +21,65 @@ services:
   App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy:
     public: true
 
+  App\Tests\Shared\Auth\Factory\TestAccessTokenFactory:
+    public: true
+
+  App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher:
+    decorates: App\OAuth\Infrastructure\Publisher\OAuthPublisher
+    arguments:
+      $inner: '@App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher.inner'
+    public: true
+
+  App\OAuth\Infrastructure\Publisher\OAuthPublisherInterface: '@App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher'
+
+  App\Tests\Behat\Support\RecordingLogger:
+    decorates: monolog.logger
+    arguments:
+      $innerLogger: '@App\Tests\Behat\Support\RecordingLogger.inner'
+    public: true
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
+    exclude: '../tests/Behat/Support/*'
+
+  App\Tests\Behat\UserContext\UserContext:
+    arguments:
+      $cachePool: '@cache.user'
+      $rateLimiterCachePool: '@cache.app'
+      $accountLockoutCachePool: '@cache.account_lockout'
+
+  App\Tests\Behat\UserContext\SignInSecurityContext:
+    arguments:
+      $cachePool: '@cache.account_lockout'
+
+  App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.github.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\GoogleOAuthProvider:
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.google.provider_name'
+      $emailAlwaysVerified: true
+      $requiresExtraProfileCall: false
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\FacebookOAuthProvider:
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.facebook.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']
+
+  App\OAuth\Infrastructure\Provider\TwitterOAuthProvider:
+    class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
+    arguments:
+      $provider: '@oauth.twitter.provider_name'
+      $emailAlwaysVerified: false
+      $requiresExtraProfileCall: true
+    tags: ['app.oauth_provider']

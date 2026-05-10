@@ -35,8 +35,7 @@ final class ResponseValidator
         array $userData,
         GraphQLMutationInput $graphQLInput
     ): void {
-        // Only public properties are accessible from here.
-        $inputProps = get_object_vars($graphQLInput);
+        $inputProps = $graphQLInput->toArray();
         if (array_key_exists($fieldName, $inputProps)) {
             Assert::assertSame(
                 $inputProps[$fieldName],

@@ -23,6 +23,10 @@ use App\Tests\Unit\Shared\Application\Observability\Metric\TestOrdersPlacedMetri
 use App\Tests\Unit\Shared\Application\Observability\Metric\TestOrderValueMetric;
 use App\Tests\Unit\UnitTestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validation;
 
 final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
@@ -126,7 +130,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $formatterLogger = $this->createMock(LoggerInterface::class);
         $emitter = new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
 
@@ -149,7 +153,7 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $formatterLogger = $this->createMock(LoggerInterface::class);
         $emitter = new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
 
@@ -180,14 +184,18 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
         $logger
             ->expects($this->once())
             ->method('info')
-            ->with($this->callback(function (string $message): bool {
-                /** @var array<string, string|int|float|array<array-key, string|int|float|array>> $decoded */
-                $decoded = json_decode(rtrim($message, "\n"), true);
-                self::assertIsArray($decoded);
-                $this->capturedContext = $decoded;
+            ->with($this->callback(/**
+             * @return true
+             */
+                function (string $message): bool {
+                    /** @var array<string, string|int|float|array<array-key, string|int|float|array>> $decoded */
+                    $decoded = json_decode(rtrim($message, "\n"), true);
+                    self::assertIsArray($decoded);
+                    $this->capturedContext = $decoded;
 
-                return true;
-            }));
+                    return true;
+                }
+            ));
 
         return $this->createEmitterWithLoggerAndNamespace($logger, $namespace);
     }
@@ -206,9 +214,14 @@ final class AwsEmfBusinessMetricsEmitterTest extends UnitTestCase
 
         return new AwsEmfBusinessMetricsEmitter(
             $logger,
-            new EmfLogFormatter($formatterLogger),
+            new EmfLogFormatter($formatterLogger, $this->createEmfSerializer()),
             $payloadFactory
         );
+    }
+
+    private function createEmfSerializer(): SerializerInterface
+    {
+        return new Serializer([new JsonSerializableNormalizer()], [new JsonEncoder()]);
     }
 
     private function createPayloadFactory(string $namespace): EmfPayloadFactory

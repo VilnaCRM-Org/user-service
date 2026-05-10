@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\RegisterUserCommandResponse;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Resolver\RegisterUserMutationResolver;

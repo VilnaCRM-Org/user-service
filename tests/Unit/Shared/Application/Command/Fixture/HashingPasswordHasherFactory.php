@@ -11,6 +11,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 final class HashingPasswordHasherFactory implements PasswordHasherFactoryInterface
 {
+    /**
+     * @return object
+     */
     #[\Override]
     public function getPasswordHasher(
         string|PasswordAuthenticatedUserInterface|PasswordHasherAwareInterface $user

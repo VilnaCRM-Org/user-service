@@ -6,7 +6,7 @@ namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 
-final class ConfirmationEmailSentEvent extends DomainEvent
+final class ConfirmationEmailSentEvent extends AccountDomainEvent
 {
     public function __construct(
         public readonly string $tokenValue,
@@ -19,6 +19,8 @@ final class ConfirmationEmailSentEvent extends DomainEvent
 
     /**
      * @param array<string, string> $body
+     *
+     * @return self
      */
     #[\Override]
     public static function fromPrimitives(
@@ -34,6 +36,9 @@ final class ConfirmationEmailSentEvent extends DomainEvent
         );
     }
 
+    /**
+     * @psalm-return 'confirmation_email.send'
+     */
     #[\Override]
     public static function eventName(): string
     {
@@ -41,7 +46,9 @@ final class ConfirmationEmailSentEvent extends DomainEvent
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string>
+     *
+     * @psalm-return array{emailAddress: string, tokenValue: string}
      */
     #[\Override]
     public function toPrimitives(): array

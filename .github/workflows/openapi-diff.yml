@@ -4,48 +4,50 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   openapi-diff:
     runs-on: ubuntu-latest
     steps:
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Copy .env.test.local
-        run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v3
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-      - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          persist-credentials: false
+      - name: Start application
+        run: make start
       - name: Generate openapi spec
-        run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+        run: make generate-openapi-spec
       - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '.github/openapi-spec/spec.yaml'
-          message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/openapi-spec/spec.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(#${PR_NUMBER}): generate openapi spec"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" \
+            push origin "HEAD:${HEAD_REF}"
       - name: Check out head branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: head
+          persist-credentials: false
       - name: Check out master branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
           path: base
+          persist-credentials: false
       - name: Run OpenAPI Diff (from HEAD revision)
         uses: docker://openapitools/openapi-diff:latest
         with:
-          args: '/github/workspace/head/.github/openapi-spec/spec.yaml /github/workspace/base/.github/openapi-spec/spec.yaml'
+          args: '/github/workspace/base/.github/openapi-spec/spec.yaml /github/workspace/head/.github/openapi-spec/spec.yaml'
       - uses: actions/upload-artifact@v4
         with:
           name: diff-reports

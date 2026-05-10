@@ -97,7 +97,9 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
     }
 
     /**
-     * @return array<string, \PHPUnit\Framework\MockObject\MockObject>
+     * @return (\PHPUnit\Framework\MockObject\MockObject&PasswordResetEmailInterface|\PHPUnit\Framework\MockObject\MockObject&PasswordResetTokenInterface|\PHPUnit\Framework\MockObject\MockObject&SendPasswordResetEmailCommand|\PHPUnit\Framework\MockObject\MockObject&UserInterface)[]
+     *
+     * @psalm-return array{user: \PHPUnit\Framework\MockObject\MockObject&UserInterface, token: \PHPUnit\Framework\MockObject\MockObject&PasswordResetTokenInterface, passwordResetEmail: \PHPUnit\Framework\MockObject\MockObject&PasswordResetEmailInterface, command: \PHPUnit\Framework\MockObject\MockObject&SendPasswordResetEmailCommand}
      */
     private function createMocks(): array
     {

@@ -1,6 +1,40 @@
 # Skill Decision Guide
 
 **Choose the right skill for your task based on what you're trying to accomplish.**
+**Non-negotiable rule**: Fix root causes. Do not use suppression/ignore annotations to silence PHPMD, PHPInsights, Infection, Psalm, PHPStan, or PHPCS issues.
+
+## 🚨 Mandatory New Feature Verification Gate (ALL Skills)
+
+If you created or modified a **NEW feature**, you MUST execute **every** skill in `.claude/skills/` **after implementation**. The decision tree below is for choosing the primary skill during the work. It does **not** replace this gate.
+
+**Execution rules:**
+
+1. Open each `SKILL.md` file listed below.
+2. Follow its steps exactly. If a skill is not applicable, explicitly record **"Not applicable"** with a concrete reason.
+3. Run required commands using `make` or `docker compose exec php ...` only.
+4. Provide evidence in your response: commands run and outcomes. If you cannot run a command, stop and explain why.
+5. Do not claim the feature is complete until this gate is finished.
+
+**Skills to execute for every new feature:**
+
+- `api-platform-crud`
+- `cache-management`
+- `ci-workflow`
+- `code-organization`
+- `code-review`
+- `complexity-management`
+- `database-migrations`
+- `deptrac-fixer`
+- `documentation-creation`
+- `documentation-sync`
+- `implementing-ddd-architecture`
+- `load-testing`
+- `observability-instrumentation`
+- `openapi-development`
+- `quality-standards`
+- `query-performance-analysis`
+- `structurizr-architecture-sync`
+- `testing-workflow`
 
 ## Quick Decision Tree
 
@@ -17,13 +51,22 @@ What are you trying to do?
 │   └─ CI checks failing → ci-workflow
 
 ├─ Create something new
+│   ├─ Full BMALPH specs from short prompt → bmad-autonomous-planning
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
 │   ├─ New database entity → database-migrations
 │   ├─ Add caching / invalidation → cache-management
 │   ├─ New test cases → testing-workflow
-│   └─ Add business metrics → observability-instrumentation
+│   ├─ Add business metrics → observability-instrumentation
+│   └─ Fix file placement / boundaries → code-organization
+│
+├─ Refactor existing code
+│   ├─ Move class / rename / restructure → code-organization
+│   ├─ Hardcoded config to .env → code-organization
+│   ├─ Reduce complexity → complexity-management
+│   ├─ Fix architecture boundaries → deptrac-fixer
+│   └─ Improve testability → testing-workflow
 
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
@@ -104,6 +147,27 @@ This skill covers PHPUnit, Behat, and Infection debugging.
 
 ---
 
+### "I need to refactor code structure / move classes"
+
+**Use**: [code-organization](code-organization/SKILL.md)
+
+This skill enforces "Directory X contains ONLY class type X", proper DDD naming, and provides a refactoring checklist.
+
+**ALSO**: Check [deptrac-fixer](deptrac-fixer/SKILL.md) if refactoring involves layer boundaries.
+**ALSO**: Check [complexity-management](complexity-management/SKILL.md) if refactoring to reduce complexity.
+
+---
+
+### "I have hardcoded config values (TTLs, timeouts, limits) in source code"
+
+**Use**: [code-organization](code-organization/SKILL.md)
+
+This skill includes guidance on extracting hardcoded constants to `.env` parameters and Symfony `%env()%` bindings.
+
+**NOT**: ci-workflow (that runs checks but doesn't guide extraction)
+
+---
+
 ### "I need to understand what quality metrics are protected"
 
 **Use**: [quality-standards](quality-standards/SKILL.md)
@@ -145,6 +209,21 @@ This skill runs comprehensive CI checks.
 
 ---
 
+### "I need BMALPH specs created autonomously from a short task description"
+
+**Use**: [bmad-autonomous-planning](bmad-autonomous-planning/SKILL.md)
+
+This skill orchestrates research, brief, PRD, architecture, and epics/stories
+through the repository's BMALPH wrapper surface without stopping for interactive
+BMAD menus. In Codex, start with `.agents/skills/bmad-autonomous-planning/SKILL.md`
+and run the flow in the current session with one focused subagent per BMALPH
+stage, using `gpt-5.4` with `xhigh` reasoning for those subagents.
+
+**NOT**: the BMALPH `create-prd` flow (assumes interactive workflow progression)
+**NOT**: the BMALPH `sprint-planning` flow (only derives sprint status from existing epics)
+
+---
+
 ### "I added a new feature and need to update docs"
 
 **Use**: [documentation-sync](documentation-sync/SKILL.md)
@@ -177,7 +256,7 @@ This skill guides entity modification with Doctrine ODM.
 
 **Use**: [openapi-development](openapi-development/SKILL.md)
 
-This skill covers OpenAPI factories/sanitizers/augmenters/cleaners and the repo's validation commands.
+This skill covers OpenAPI factories, processors, and the repo's validation commands.
 
 ---
 
@@ -213,26 +292,34 @@ This skill guides updating workspace.dsl when adding components or changing arch
                     ▼            ▼            ▼
            complexity-    deptrac-fixer   testing-workflow
            management           │               │
-                                ▼               ▼
-                      implementing-ddd-   load-testing
-                        architecture      (performance)
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-       database-                      structurizr-
-        migrations                    architecture-sync
+                 │              ▼               ▼
+                 │    implementing-ddd-   load-testing
+                 │      architecture      (performance)
+                 │            │
+                 │  ┌─────────┴───────────────┐
+                 ▼  ▼                         ▼
+          code-organization            structurizr-
+          (refactoring &               architecture-sync
+           config extraction)
+                 │
+     ┌───────────┴───────────┐
+     ▼                       ▼
+database-              ci-workflow
+ migrations            (validation)
 ```
 
 ## Common Confusions
 
-| Confusion                                      | Clarification                                                                                                 |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                 |
-| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing |
-| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management    |
-| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                      |
-| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing |
-| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync      |
+| Confusion                                      | Clarification                                                                                                                    |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                    |
+| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                    |
+| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                       |
+| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                         |
+| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                    |
+| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                         |
+| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer               |
+| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management |
 
 ## Multiple Skills for One Task
 
@@ -262,3 +349,11 @@ Some tasks benefit from multiple skills:
 2. **load-testing** - Create performance tests
 3. **complexity-management** - Reduce code complexity
 4. **ci-workflow** - Ensure quality maintained
+
+### Refactoring existing code:
+
+1. **code-organization** - Verify/fix directory placement, naming, extract hardcoded configs
+2. **complexity-management** - Reduce complexity if needed
+3. **deptrac-fixer** - Verify architecture boundaries after moves
+4. **testing-workflow** - Ensure tests still pass and cover refactored code
+5. **ci-workflow** - Validate everything

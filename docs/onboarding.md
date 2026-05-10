@@ -44,6 +44,14 @@ Also, please install the [Coderabbit AI Plugin](https://www.coderabbit.ai/blog/w
    make start
    ```
 
+### AI Planning Tooling
+
+- For local BMALPH setup, run `make bmalph-codex` or `make bmalph-claude` from the repository root.
+- Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview BMALPH initialization without changing tracked files.
+- Run `make bmalph-setup` after previewing to write the BMALPH assets locally and configure planning artifacts under `specs/`.
+- If you run `bmalph upgrade --force` directly later, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
+- When you want a specs-first planning bundle from a short feature prompt, use the `bmad-autonomous-planning` skill after BMALPH assets are initialized locally.
+
 ### Version Control Configuration
 
 - We use **Git** with a standard **branching strategy** (e.g., feature branches, main/master as the production branch).
@@ -150,11 +158,13 @@ We use **GitHub Actions** with a variety of checks (17 CI checks, specifically),
 
 Additionally, we use:
 
-- **CodeRabbit** for code reviews and AI suggestions.
+- **Local AI review loop** (`make ai-review-loop`) for fast feedback after `make ci`.
+- **CodeRabbit** for code reviews and AI suggestions (final external check).
 - **Snyk** for security scanning.
 
 ### Code Reviews & Approvals
 
+- Before marking a PR ready, run `make ci` and then `make ai-review-loop`.
 - All PRs require approval from **@kravalg** and **coderabbit ai** before merging.
 
 ---

@@ -8,7 +8,6 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactory;
-use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 
 final class PasswordResetTokenFactoryTest extends UnitTestCase
 {
@@ -100,16 +99,16 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
     }
 
     /**
-     * @return iterable<string, array{int, int}>
+     * @psalm-return \Generator<'full day'|'one hour'|'two hours', list{16|32, 1|2|24}, void, void>
      */
-    public static function expirationProvider(): iterable
+    public static function expirationProvider(): \Generator
     {
         yield 'one hour' => [16, 1];
         yield 'two hours' => [16, 2];
         yield 'full day' => [32, 24];
     }
 
-    private function createFactory(int $length, int $hours): PasswordResetTokenFactoryInterface
+    private function createFactory(int $length, int $hours): PasswordResetTokenFactory
     {
         return new PasswordResetTokenFactory($length, $hours);
     }

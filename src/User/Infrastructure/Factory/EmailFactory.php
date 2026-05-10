@@ -12,6 +12,8 @@ final class EmailFactory implements EmailFactoryInterface
 {
     /**
      * @param array<string, string|int|float|bool|null> $additionalContext
+     *
+     * @return TemplatedEmail
      */
     #[\Override]
     public function create(

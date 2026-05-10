@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Domain\Repository;
 
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 
@@ -16,6 +17,11 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserInterface;
 
+    /**
+     * @param array<int, string> $emails
+     */
+    public function findByEmails(array $emails): UserCollection;
+
     public function findById(string $id): ?UserInterface;
 
     /**
@@ -23,26 +29,9 @@ interface UserRepositoryInterface
      */
     public function delete(object $user): void;
 
-    /**
-     * @param array<User> $users
-     */
-    public function saveBatch(array $users): void;
+    public function saveBatch(UserCollection $users): void;
 
-    /**
-     * @param array<User> $users
-     */
-    public function deleteBatch(array $users): void;
-
-    /**
-     * @param string $id
-     *
-     * @return User
-     */
-    public function find(
-        mixed $id,
-        ?int $lockMode = null,
-        ?int $lockVersion = null
-    ): ?object;
+    public function deleteBatch(UserCollection $users): void;
 
     public function deleteAll(): void;
 }

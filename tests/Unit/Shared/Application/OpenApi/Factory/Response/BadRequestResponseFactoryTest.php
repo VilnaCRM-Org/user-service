@@ -34,6 +34,8 @@ final class BadRequestResponseFactoryTest extends UnitTestCase
 
     /**
      * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter, Parameter, Parameter, Parameter}
      */
     private function getParams(): array
     {

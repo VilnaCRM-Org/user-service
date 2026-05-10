@@ -23,9 +23,10 @@ use App\User\Domain\Entity\ConfirmationToken;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Scope;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -84,26 +85,20 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     clientManager: RecordingClientManager,
-     *     connection: Connection,
-     *     tokenRepository: InMemoryConfirmationTokenRepository,
-     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
-     *     userSeeder: SchemathesisUserSeeder,
-     *     userRepository: InMemoryUserRepository,
-     *     authorizationCodeManager: RecordingAuthorizationCodeManager
-     * }
+     * @return (DocumentManager&\PHPUnit\Framework\MockObject\MockObject|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder)[]
+     *
+     * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager&\PHPUnit\Framework\MockObject\MockObject, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
      */
     private function createMissingClientTestDependencies(): array
     {
         $uuidTransformer = new UuidTransformer(new UuidFactory());
         $clientManager = new RecordingClientManager(null);
-        $connection = $this->createConnectionMockForOAuth();
+        $documentManager = $this->createDocumentManagerMockForOAuth();
         $userRepository = new InMemoryUserRepository();
 
         return [
             'clientManager' => $clientManager,
-            'connection' => $connection,
+            'documentManager' => $documentManager,
             'tokenRepository' => new InMemoryConfirmationTokenRepository(),
             'passwordResetTokenRepository' => new InMemoryPasswordResetTokenRepository(),
             'userSeeder' => $this->buildUserSeeder(
@@ -117,18 +112,20 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createConnectionMockForOAuth(): Connection
-    {
-        $connection = $this->createMock(Connection::class);
-        $connection->expects($this->once())->method('delete')->willReturn(1);
+    private function createDocumentManagerMockForOAuth(
+    ): MockObject&DocumentManager {
+        $documentManager = $this->createMock(DocumentManager::class);
+        // The seeder calls find(), and if nothing exists, doesn't call remove()
+        $documentManager->expects($this->never())->method('remove');
+        $documentManager->expects($this->never())->method('flush');
 
-        return $connection;
+        return $documentManager;
     }
 
     /**
      * @param array{
      *     clientManager: RecordingClientManager,
-     *     connection: Connection,
+     *     documentManager: DocumentManager,
      *     tokenRepository: InMemoryConfirmationTokenRepository,
      *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
      *     userSeeder: SchemathesisUserSeeder,
@@ -140,7 +137,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     {
         $oauthSeeder = new SchemathesisOAuthSeeder(
             $deps['clientManager'],
-            $deps['connection'],
+            $deps['documentManager'],
             $deps['authorizationCodeManager']
         );
         $passwordSeeder = new PasswordResetTokenSeeder(
@@ -175,13 +172,13 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     {
         $repos = $this->createRepositories();
         $managers = $this->createManagers();
-        $connection = $this->createConnectionMockForSeeding();
+        $documentManager = $this->createDocumentManagerMockForSeeding();
         $command = $this->createSeedCommand(
             $repos['userRepository'],
             $repos['userFactory'],
             $repos['hasherFactory'],
             $repos['uuidTransformer'],
-            $connection,
+            $documentManager,
             $repos['passwordResetTokenRepository'],
             $managers['clientManager'],
             $managers['authorizationCodeManager'],
@@ -230,15 +227,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     userRepository: InMemoryUserRepository,
-     *     userFactory: UserFactory,
-     *     hasherFactory: HashingPasswordHasherFactory,
-     *     uuidTransformer: UuidTransformer,
-     *     tokenRepository: InMemoryConfirmationTokenRepository,
-     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
-     *     existingUpdateUser: UserInterface
-     * }
+     * @return array<HashingPasswordHasherFactory|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|UserFactory|UuidTransformer|\App\User\Domain\Entity\User>
+     *
+     * @psalm-return array{userRepository: InMemoryUserRepository, userFactory: UserFactory, hasherFactory: HashingPasswordHasherFactory, uuidTransformer: UuidTransformer, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, existingUpdateUser: \App\User\Domain\Entity\User}
      */
     private function createRepositories(): array
     {
@@ -282,16 +273,14 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         ];
     }
 
-    private function createConnectionMockForSeeding(): Connection
-    {
-        $connection = $this->createMock(Connection::class);
-        $authCode = SchemathesisFixtures::AUTHORIZATION_CODE;
-        $connection->expects($this->once())
-            ->method('delete')
-            ->with('oauth2_authorization_code', ['identifier' => $authCode])
-            ->willReturn(1);
+    private function createDocumentManagerMockForSeeding(
+    ): MockObject&DocumentManager {
+        $documentManager = $this->createMock(DocumentManager::class);
+        // The seeder calls find() and if nothing exists, doesn't call remove()
+        $documentManager->expects($this->never())->method('remove');
+        $documentManager->expects($this->never())->method('flush');
 
-        return $connection;
+        return $documentManager;
     }
 
     private function createSeedCommand(
@@ -299,7 +288,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         UserFactory $userFactory,
         HashingPasswordHasherFactory $hasherFactory,
         UuidTransformer $uuidTransformer,
-        Connection $connection,
+        DocumentManager $documentManager,
         InMemoryPasswordResetTokenRepository $passwordResetTokenRepository,
         RecordingClientManager $clientManager,
         RecordingAuthorizationCodeManager $authorizationCodeManager,
@@ -308,7 +297,11 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         return new SeedSchemathesisDataCommand(
             $this->buildUserSeeder($userRepository, $userFactory, $hasherFactory, $uuidTransformer),
             new PasswordResetTokenSeeder($passwordResetTokenRepository),
-            new SchemathesisOAuthSeeder($clientManager, $connection, $authorizationCodeManager),
+            new SchemathesisOAuthSeeder(
+                $clientManager,
+                $documentManager,
+                $authorizationCodeManager
+            ),
             new SchemathesisConfirmationTokenSeeder($tokenRepository),
             $passwordResetTokenRepository,
             $userRepository
@@ -396,7 +389,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
             - $token->getAllowedToSendAfter()->getTimestamp();
         $this->assertGreaterThanOrEqual(55, $deltaInSeconds);
         $this->assertLessThanOrEqual(65, $deltaInSeconds);
-        $this->assertSame(0, $token->getTimesSent());
+        $this->assertSame(5, $token->getTimesSent());
     }
 
     private function assertPasswordResetTokens(
@@ -461,15 +454,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     }
 
     /**
-     * @return array{
-     *     clientManager: RecordingClientManager,
-     *     connection: Connection,
-     *     tokenRepository: InMemoryConfirmationTokenRepository,
-     *     passwordResetTokenRepository: InMemoryPasswordResetTokenRepository,
-     *     userSeeder: SchemathesisUserSeeder,
-     *     userRepository: InMemoryUserRepository,
-     *     authorizationCodeManager: RecordingAuthorizationCodeManager
-     * }
+     * @return (DocumentManager&\PHPUnit\Framework\MockObject\MockObject|InMemoryConfirmationTokenRepository|InMemoryPasswordResetTokenRepository|InMemoryUserRepository|RecordingAuthorizationCodeManager|RecordingClientManager|SchemathesisUserSeeder)[]
+     *
+     * @psalm-return array{clientManager: RecordingClientManager, documentManager: DocumentManager&\PHPUnit\Framework\MockObject\MockObject, tokenRepository: InMemoryConfirmationTokenRepository, passwordResetTokenRepository: InMemoryPasswordResetTokenRepository, userSeeder: SchemathesisUserSeeder, userRepository: InMemoryUserRepository, authorizationCodeManager: RecordingAuthorizationCodeManager}
      */
     private function createExistingPasswordResetTokenDependencies(): array
     {
@@ -482,7 +469,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
 
         return [
             'clientManager' => new RecordingClientManager(null),
-            'connection' => $this->createConnectionMockForOAuth(),
+            'documentManager' => $this->createDocumentManagerMockForOAuth(),
             'tokenRepository' => new InMemoryConfirmationTokenRepository(),
             'passwordResetTokenRepository' => $repo,
             'userSeeder' => $this->buildUserSeeder(
