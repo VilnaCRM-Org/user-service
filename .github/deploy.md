@@ -1,28 +1,98 @@
-# Setup GitHub Action - Deploy
+# Set up GitHub Action - Deploy
 
-This GitHub Action triggers on pushes to the `main` branch, checks out the repository, logs in to Amazon ECR using stored AWS credentials, then builds the Docker image (using the `app_php` stage) and pushes it to the specified ECR repository with the `latest` tag.
+This GitHub Action builds the production Docker image from the `app_php`
+Dockerfile stage, pushes both an immutable commit tag and the `latest` tag to
+Amazon ECR, and requests an ECR image scan for the pushed commit tag.
 
-**To setup this action please add the following secrets** to your repository under **Settings** → **Secrets and variables** → **Actions**:
+## Workflow Triggers
 
-**AWS_ACCESS_KEY_ID**  
-A unique identifier associated with your AWS user account. It’s used, along with the secret access key, to authenticate against AWS services.
+The workflow runs when:
 
----
+- A push is made to the `main` branch.
+- A maintainer starts it manually with `workflow_dispatch`.
 
-**AWS_SECRET_ACCESS_KEY**  
-A confidential key paired with the access key ID. It must be kept secret and is used to sign programmatic requests to AWS services.
+## Required GitHub Configuration
 
----
+To set up this action, please add the following secrets to your repository under
+**Settings** > **Secrets and variables** > **Actions**:
 
-**AWS_REGION**  
-The AWS region where your resources (ECR repository) reside (for example, `us-east-1`).
+- `AWS_ROLE_TO_ASSUME`: The ARN of the AWS IAM role that GitHub Actions
+  assumes through OpenID Connect (OIDC). Prefer OIDC over long-lived AWS access
+  keys.
+- `AWS_REGION`: The AWS region where the ECR repository exists, for example `us-east-1`.
+- `ECR_REGISTRY`: The full Amazon ECR registry URL, for example
+  `123456789012.dkr.ecr.us-east-1.amazonaws.com`.
+- `ECR_REPOSITORY`: The ECR repository name where the user-service Docker image
+  is pushed, for example `user-service`.
 
----
+Configure the repository `production` environment with any required reviewers
+before enabling automatic production pushes from `main`.
 
-**ECR_REGISTRY**  
-The full URL to your Amazon ECR registry (for example, `123456789012.dkr.ecr.us-east-1.amazonaws.com`).
+## AWS OIDC Setup
 
----
+Create an IAM role that trusts GitHub's OIDC provider and restricts access to
+this repository and branch. The role should follow least privilege and only allow
+the ECR operations needed to authenticate, upload layers, and push images for the
+configured repository.
 
-**ECR_REPOSITORY**  
-The specific name of the repository in ECR where your Docker images should be pushed (for example, `my-php-app`).
+Recommended role permissions include:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:GetAuthorizationToken",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+`ecr:GetAuthorizationToken` requires `"Resource": "*"`. Scope the remaining ECR
+permissions to the target repository ARN when creating the final production
+policy.
+
+## ECR Repository Setup
+
+Create the repository before the first deployment if it does not already exist:
+
+```bash
+aws ecr create-repository \
+  --repository-name user-service \
+  --image-scanning-configuration scanOnPush=true \
+  --encryption-configuration encryptionType=AES256
+```
+
+Configure a lifecycle policy so old commit-tagged images are cleaned up:
+
+```bash
+aws ecr put-lifecycle-policy \
+  --repository-name user-service \
+  --lifecycle-policy-text file://lifecycle-policy.json
+```
+
+## Image Tags
+
+Each successful run pushes two tags:
+
+- `${GITHUB_SHA::12}` for an immutable image tied to the deployed commit.
+- `latest` for consumers that intentionally follow the newest production image.
+
+Use the immutable commit tag for production rollbacks and audits.
+
+## Troubleshooting
+
+Authentication failures usually mean the OIDC trust policy,
+`AWS_ROLE_TO_ASSUME`, or `AWS_REGION` is incorrect. Build failures usually mean
+the Dockerfile `app_php` stage changed or the build context is incomplete. Push
+failures usually mean the target ECR repository does not exist or the IAM role is
+missing ECR permissions.
