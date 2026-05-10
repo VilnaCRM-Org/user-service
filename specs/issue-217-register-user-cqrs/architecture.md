@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [init, architecture]
 bmalphCommand: create-architecture
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # Architecture - Register User CQRS Refactor

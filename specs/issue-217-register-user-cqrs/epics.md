@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [init, epics-stories]
 bmalphCommand: create-epics-stories
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # Epics and Stories - Register User CQRS Refactor

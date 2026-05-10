@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [document-discovery, validation]
 bmalphCommand: implementation-readiness
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # Implementation Readiness - Register User CQRS Refactor

@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [init, brief]
 bmalphCommand: create-brief
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # Product Brief - Register User CQRS Refactor

@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [init, requirements]
 bmalphCommand: create-prd
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # PRD - Register User CQRS Refactor

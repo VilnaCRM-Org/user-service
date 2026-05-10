@@ -1,8 +1,8 @@
 ---
 stepsCompleted: [research]
 bmalphCommand: analyst
-project_name: "VilnaCRM User Service"
-date: "2026-05-10"
+project_name: 'VilnaCRM User Service'
+date: '2026-05-10'
 ---
 
 # Research - Issue 217 Register User CQRS Refactor
