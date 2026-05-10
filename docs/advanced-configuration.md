@@ -171,14 +171,12 @@ Each endpoint testing config has some common settings. Here is their breakdown:
 - `teardownTimeoutInMinutes`: Specifies the time (in minutes) finishing the load test script after execution.
 
 - `smoke`: Configuration for smoke testing.
-
   - `threshold`: Specifies the threshold for response time (in milliseconds).
   - `rps`: Specifies the requests per second (RPS) for the smoke test.
   - `vus`: Specifies the virtual users (VUs) for the smoke test.
   - `duration`: Specifies the duration of the smoke test (in seconds).
 
 - `average`: Configuration for average load testing.
-
   - `threshold`: Specifies the threshold for response time (in milliseconds).
   - `rps`: Specifies the requests per second (RPS) for average load testing.
   - `vus`: Specifies the virtual users (VUs) for average load testing.
@@ -188,7 +186,6 @@ Each endpoint testing config has some common settings. Here is their breakdown:
     - `fall`: The duration of the ramp-down phase (in seconds).
 
 - `stress`: Configuration for stress testing.
-
   - `threshold`: Specifies the threshold for response time (in milliseconds).
   - `rps`: Specifies the requests per second (RPS) for stress testing.
   - `vus`: Specifies the virtual users (VUs) for stress testing.

@@ -92,7 +92,6 @@ When quality checks fail, use the appropriate specialized skill:
 ### Architecture Issues
 
 - **Deptrac violations** → [deptrac-fixer](../deptrac-fixer/SKILL.md)
-
   - Domain depends on Infrastructure
   - Layer boundary violations
   - "must not depend on" errors
@@ -105,13 +104,11 @@ When quality checks fail, use the appropriate specialized skill:
 ### Code Quality Issues
 
 - **High cyclomatic complexity** → [complexity-management](../complexity-management/SKILL.md)
-
   - PHPInsights complexity < 94%
   - PHPMD reports high CCN
   - Methods too complex
 
 - **Structural/naming issues** → [code-organization](../code-organization/SKILL.md)
-
   - Class in wrong directory for its type
   - Vague variable or class names
   - Hardcoded config values that should be in `.env`
@@ -132,7 +129,6 @@ When quality checks fail, use the appropriate specialized skill:
 ### Workflow Integration
 
 - **Before committing** → [ci-workflow](../ci-workflow/SKILL.md)
-
   - Run all checks systematically
   - Fix failures in priority order
   - Ensure all checks pass

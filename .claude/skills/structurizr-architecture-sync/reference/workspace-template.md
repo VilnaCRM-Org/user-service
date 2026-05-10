@@ -273,7 +273,6 @@ views {
    ```
 
 2. **Add your components** in appropriate groups:
-
    - List all processors
    - List all command handlers
    - List all event subscribers
@@ -281,7 +280,6 @@ views {
    - List your repositories
 
 3. **Define relationships**:
-
    - Start with processor → handler flows
    - Add handler → entity → repository chains
    - Add event flows if using events

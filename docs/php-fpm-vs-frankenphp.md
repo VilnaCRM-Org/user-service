@@ -10,13 +10,11 @@ Below, you will find a summary and analysis of the key metrics, such as **Reques
 ## 1. Executive Summary
 
 - **Overall Throughput (RPS):**
-
   - In many **Create/Update** endpoints (both REST and GraphQL), **FrankenPHP** pushed **more real RPS** than PHP-FPM (e.g., Create User, Replace User, Update User).
   - In some tests (e.g., Get User, Delete User), **PHP-FPM** had a slightly higher real RPS but also higher latency than FrankenPHP.
   - Several tests (e.g., OAuth, Health, some GraphQL queries) showed **identical or very close real RPS** across both setups.
 
 - **Latency (99th Percentile):**
-
   - **FrankenPHP** generally demonstrated **consistently lower P99** latencies across most tests.
   - The difference was especially striking in certain endpoints like **OAuth** (87ms vs. 8ms) and **GraphQL Create/Update** user tests (3s vs. tens of ms).
   - In short, FrankenPHP often served requests not only faster on average but also with a more predictable (lower) worst-case latency.

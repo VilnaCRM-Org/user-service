@@ -114,17 +114,14 @@ public function findById(string $id): ?Customer
 **Consider these factors when choosing TTL**:
 
 1. **Data change frequency**
-
    - Frequently updated → Shorter TTL
    - Rarely updated → Longer TTL
 
 2. **Business impact of stale data**
-
    - High impact (prices, inventory) → Shorter TTL or invalidation
    - Low impact (descriptions, images) → Longer TTL
 
 3. **Query cost**
-
    - Expensive queries → Longer TTL with invalidation
    - Cheap queries → Shorter TTL or no cache
 

@@ -412,17 +412,14 @@ group "Infrastructure" {
 **Ask yourself**:
 
 1. **Would removing this from the diagram make the architecture less clear?**
-
    - Yes → Include it
    - No → Omit it
 
 2. **Would a new team member ask about this component during onboarding?**
-
    - Yes → Include it
    - No → Omit it
 
 3. **Does this represent an architectural pattern (CQRS, DDD, Hexagonal)?**
-
    - Yes → Include it
    - No → Omit it
 

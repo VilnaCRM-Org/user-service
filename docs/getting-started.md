@@ -62,7 +62,6 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    [GraphQL docs](https://localhost/api/graphql/graphql_playground) (available when running locally)
 
    You can also view the API specifications directly on GitHub:
-
    - [OpenAPI Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/openapi-spec/spec.yaml)
    - [GraphQL Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/graphql-spec/spec)
 

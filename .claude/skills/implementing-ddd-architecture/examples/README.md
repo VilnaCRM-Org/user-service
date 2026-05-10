@@ -104,7 +104,6 @@ When working on a task:
 
 1. **Creating an Entity?**
    → Reference `01-entity-example.php`
-
    - Extend `AggregateRoot`
    - Use named constructors
    - Business logic in methods, not setters
@@ -112,7 +111,6 @@ When working on a task:
 
 2. **Need Validation?**
    → Reference `02-value-object-examples.php`
-
    - **Default**: Use YAML validation (config/validator/)
    - **Primitives**: string $email, string $phone (NOT Value Objects)
    - **Value Objects**: Only when you need behavior (Money::add(), ULID)
@@ -120,7 +118,6 @@ When working on a task:
 
 3. **Implementing a Use Case?**
    → Reference `03-cqrs-pattern-example.php`
-
    - Create Command (intent)
    - Create Handler (orchestration)
    - Call domain methods

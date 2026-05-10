@@ -1212,24 +1212,20 @@ final readonly class OrderFactory implements OrderFactoryInterface
 #### ✅ CREATE Value Objects When:
 
 1. **Complex Validation Rules**
-
    - Example: `Email` with format validation
    - Example: `Money` with currency and amount validation
    - Example: `PhoneNumber` with international format handling
 
 2. **Domain-Specific Behavior**
-
    - Example: `Money::add()`, `Money::multiply()`
    - Example: `Address::isSameCountry()`
    - Example: `DateRange::overlaps()`
 
 3. **Shared Across Multiple Entities**
-
    - Example: `Money` used in Order, Invoice, Payment
    - Example: `Address` used in Customer, Warehouse, Supplier
 
 4. **Immutability is Critical**
-
    - Example: `OrderId`, `CustomerId` (identity values)
    - Example: `EmailAddress` (shouldn't change after validation)
 
@@ -1241,19 +1237,16 @@ final readonly class OrderFactory implements OrderFactoryInterface
 #### ❌ DON'T Create Value Objects When:
 
 1. **Simple String Fields Without Validation**
-
    - Example: `string $leadSource` (just a label)
    - Example: `string $notes` (free text)
    - Example: `string $reference` (no validation needed)
 
 2. **Boolean Flags**
-
    - Example: `bool $confirmed`
    - Example: `bool $isActive`
    - **Exception**: Use Value Object if you need more than 2 states (use enum/Value Object pattern)
 
 3. **Simple Numeric Fields**
-
    - Example: `int $quantity` (if no special rules)
    - Example: `float $discount` (if just a percentage)
    - **Exception**: Use Value Object if there's validation or behavior
