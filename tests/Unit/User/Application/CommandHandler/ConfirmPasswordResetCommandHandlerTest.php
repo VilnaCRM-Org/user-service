@@ -9,6 +9,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
@@ -66,11 +67,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $this->setupConfirmPasswordResetExpectations($testData, $mocks);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
         $this->assertInstanceOf(
-            \App\User\Application\DTO\ConfirmPasswordResetCommandResponse::class,
-            $command->getResponse()
+            ConfirmPasswordResetCommandResponse::class,
+            $response
         );
     }
 
