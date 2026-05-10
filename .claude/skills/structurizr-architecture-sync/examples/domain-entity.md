@@ -220,13 +220,11 @@ orderConfirmedSubscriber -> messageBroker "sends confirmation via"
 The generated diagram will show:
 
 1. **Domain Layer**:
-
    - Order (aggregate) with value objects (OrderId, OrderStatus, Money)
    - Events (OrderCreatedEvent, OrderConfirmedEvent)
    - Repository interface (port)
 
 2. **Infrastructure Layer**:
-
    - OrderRepository implementing the interface
    - OrderConfirmedSubscriber
 

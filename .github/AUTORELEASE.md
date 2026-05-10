@@ -27,17 +27,14 @@ The auto-release process uses [Conventional Commits](https://www.conventionalcom
 ### Version Update Rules
 
 1. **PATCH**: Incremented for bug fixes.
-
    - Example: `fix(#3): resolve null pointer exception`
    - Result: `1.0.0` → `1.0.1`
 
 2. **MINOR**: Incremented for new features without breaking existing functionality.
-
    - Example: `feat(#3): add user profile page`
    - Result: `1.0.1` → `1.1.0`
 
 3. **MAJOR**: Incremented for breaking changes or significant alterations to APIs.
-
    - Example:
 
      ```

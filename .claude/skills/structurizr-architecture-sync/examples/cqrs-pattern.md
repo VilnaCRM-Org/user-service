@@ -262,23 +262,19 @@ workspace {
 The generated diagram will show:
 
 1. **Application Layer** (top):
-
    - RegisterUserCommandHandler
 
 2. **Domain Layer** (middle):
-
    - User aggregate with value objects
    - UserRegisteredEvent
    - UserRepositoryInterface (port)
 
 3. **Infrastructure Layer** (bottom):
-
    - UserRepository implementing the interface
    - SendConfirmationEmailSubscriber
    - InMemorySymfonyEventBus
 
 4. **External Systems**:
-
    - Database (MariaDB)
    - Message Broker (AWS SQS)
 

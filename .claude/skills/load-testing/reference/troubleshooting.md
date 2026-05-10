@@ -235,7 +235,6 @@ console.log('Request payload:', payload);
 **Common Causes**:
 
 1. **Database Connection Pool Exhausted**:
-
    - Solution: Increase connection pool size or reduce VUs
 
 2. **Rate Limiting**:
@@ -251,7 +250,6 @@ console.log('Request payload:', payload);
    ```
 
 3. **Resource Contention**:
-
    - Solution: Use unique test data per iteration
 
    ```javascript

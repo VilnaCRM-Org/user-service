@@ -1301,12 +1301,10 @@ This class was in the wrong namespace. The fix:
 ### Common Deptrac Fixes
 
 1. **"Uncovered" error**: Class doesn't match any layer pattern
-
    - Solution: Use correct namespace (Validator, Transformer, Factory, etc.)
    - Don't use generic "Service" namespace
 
 2. **"Violation" error**: Layer dependency rules broken
-
    - Solution: Move logic to correct layer
    - Domain should NEVER depend on Application or Infrastructure
 
@@ -1570,18 +1568,15 @@ $newInitials = $input['initials'] ?? $customer->getInitials();
 Ask yourself these questions:
 
 1. **Is the current code maintainable?**
-
    - ✅ Yes → Consider if 0.1% is worth potential readability loss
    - ❌ No → Refactor for both quality AND complexity
 
 2. **What's the average CCN?**
-
    - < 1.2 → Excellent! The gap may be acceptable
    - 1.2-1.5 → Good, minor optimizations may help
    - \> 1.5 → Significant room for improvement
 
 3. **Are there classes with CCN > 6?**
-
    - Yes → Focus on these first (bigger impact)
    - No → You're dealing with micro-optimizations
 
