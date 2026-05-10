@@ -299,7 +299,11 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): RefreshTokenCommandHandler {
         return new RefreshTokenCommandHandler(
             $this->refreshTokenRepository,
-            $this->createContextResolver(),
+            new RefreshTokenContextResolver(
+                $this->refreshTokenRepository,
+                $this->authSessionRepository,
+                $this->userRepository,
+            ),
             $this->createTokenIssuer(),
             $this->createTheftDetector(),
             $refreshTokenGraceWindowSeconds,
@@ -383,15 +387,6 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             $this->refreshTokenRepository,
             $this->authSessionRepository,
             $this->publisher,
-        );
-    }
-
-    private function createContextResolver(): RefreshTokenContextResolver
-    {
-        return new RefreshTokenContextResolver(
-            $this->refreshTokenRepository,
-            $this->authSessionRepository,
-            $this->userRepository,
         );
     }
 }
