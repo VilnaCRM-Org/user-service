@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
@@ -39,8 +40,10 @@ final readonly class ConfirmPasswordResetMutationResolver implements
             $args['token'],
             $args['newPassword']
         );
-        $commandResponse = $this->commandBus->dispatch($command);
-        assert($commandResponse instanceof ConfirmPasswordResetCommandResponse);
+        CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            ConfirmPasswordResetCommandResponse::class
+        );
 
         return null;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Controller;
 
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
@@ -27,8 +28,10 @@ final class ConfirmPasswordResetController extends AbstractController
             $confirmPasswordResetDto->token,
             $confirmPasswordResetDto->newPassword
         );
-        $commandResponse = $this->commandBus->dispatch($command);
-        assert($commandResponse instanceof ConfirmPasswordResetCommandResponse);
+        CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            ConfirmPasswordResetCommandResponse::class
+        );
 
         return new JsonResponse(null, 204);
     }

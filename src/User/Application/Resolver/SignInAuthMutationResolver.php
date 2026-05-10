@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
@@ -47,8 +48,10 @@ final readonly class SignInAuthMutationResolver implements MutationResolverInter
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $response = $this->commandBus->dispatch($command);
-        assert($response instanceof SignInCommandResponse);
+        $response = CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            SignInCommandResponse::class
+        );
 
         return $this->authPayloadFactory->createFromSignInResponse(
             $response

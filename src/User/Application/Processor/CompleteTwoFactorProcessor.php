@@ -6,6 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
@@ -51,8 +52,10 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $commandResponse = $this->commandBus->dispatch($command);
-        assert($commandResponse instanceof CompleteTwoFactorCommandResponse);
+        $commandResponse = CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            CompleteTwoFactorCommandResponse::class
+        );
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
         $accessToken = $commandResponse->getAccessToken();

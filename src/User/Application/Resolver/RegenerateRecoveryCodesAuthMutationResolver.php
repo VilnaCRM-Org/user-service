@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\Factory as UserFactory;
@@ -31,8 +32,10 @@ final readonly class RegenerateRecoveryCodesAuthMutationResolver implements
             $this->currentUserIdentityResolver->resolveEmail(),
             $this->currentUserIdentityResolver->resolveSessionId()
         );
-        $response = $this->commandBus->dispatch($command);
-        assert($response instanceof RegenerateRecoveryCodesCommandResponse);
+        $response = CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            RegenerateRecoveryCodesCommandResponse::class
+        );
 
         return $this->authPayloadFactory
             ->createFromRegenerateRecoveryCodesResponse(

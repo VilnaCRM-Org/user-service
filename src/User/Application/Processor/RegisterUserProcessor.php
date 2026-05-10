@@ -6,6 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
@@ -40,8 +41,10 @@ final readonly class RegisterUserProcessor implements ProcessorInterface
             $data->initials,
             $data->password
         );
-        $commandResponse = $this->commandBus->dispatch($command);
-        assert($commandResponse instanceof RegisterUserCommandResponse);
+        $commandResponse = CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            RegisterUserCommandResponse::class
+        );
 
         return $commandResponse->createdUser;
     }

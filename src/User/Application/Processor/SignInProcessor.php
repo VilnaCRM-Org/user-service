@@ -6,6 +6,7 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
@@ -52,8 +53,10 @@ final readonly class SignInProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $commandResponse = $this->commandBus->dispatch($command);
-        assert($commandResponse instanceof SignInCommandResponse);
+        $commandResponse = CommandResponseTypeGuard::expect(
+            $this->commandBus->dispatch($command),
+            SignInCommandResponse::class
+        );
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
 
