@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Bus\Command;
 
 use App\Shared\Application\Bus\Command\CommandResponseTypeGuard;
-use App\Shared\Domain\Bus\Command\CommandResponseInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 
 final class CommandResponseTypeGuardTest extends UnitTestCase
 {
     public function testExpectReturnsResponseWhenTypeMatches(): void
     {
-        $response = new MatchingCommandResponse();
+        $response = new RequestPasswordResetCommandResponse();
 
         $this->assertSame(
             $response,
             CommandResponseTypeGuard::expect(
                 $response,
-                MatchingCommandResponse::class
+                RequestPasswordResetCommandResponse::class
             )
         );
     }
@@ -26,31 +27,29 @@ final class CommandResponseTypeGuardTest extends UnitTestCase
     public function testExpectThrowsWhenResponseIsMissing(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage(
-            'Expected command bus to return App\Tests\Unit\Shared\Application\Bus\Command\MatchingCommandResponse, got null.'
-        );
+        $this->expectExceptionMessage(sprintf(
+            'Expected command bus to return %s, got null.',
+            RequestPasswordResetCommandResponse::class
+        ));
 
-        CommandResponseTypeGuard::expect(null, MatchingCommandResponse::class);
+        CommandResponseTypeGuard::expect(
+            null,
+            RequestPasswordResetCommandResponse::class
+        );
     }
 
     public function testExpectThrowsWhenTypeDoesNotMatch(): void
     {
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage(
-            'Expected command bus to return App\Tests\Unit\Shared\Application\Bus\Command\MatchingCommandResponse, got App\Tests\Unit\Shared\Application\Bus\Command\OtherCommandResponse.'
-        );
+        $this->expectExceptionMessage(sprintf(
+            'Expected command bus to return %s, got %s.',
+            RequestPasswordResetCommandResponse::class,
+            ConfirmPasswordResetCommandResponse::class
+        ));
 
         CommandResponseTypeGuard::expect(
-            new OtherCommandResponse(),
-            MatchingCommandResponse::class
+            new ConfirmPasswordResetCommandResponse(),
+            RequestPasswordResetCommandResponse::class
         );
     }
-}
-
-final class MatchingCommandResponse implements CommandResponseInterface
-{
-}
-
-final class OtherCommandResponse implements CommandResponseInterface
-{
 }
