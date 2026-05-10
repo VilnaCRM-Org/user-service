@@ -4,26 +4,30 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Generate token with necessary permissions
         id: generate_token
-        uses: tibdex/github-app-token@v2
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
         with:
           app_id: ${{ secrets.VILNACRM_APP_ID }}
           private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           token: ${{ steps.generate_token.outputs.token }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Import GPG key
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -58,7 +62,8 @@ jobs:
           gpg-connect-agent reloadagent /bye || true
           cat > ~/.gnupg/gpg-wrapper.sh << 'EOF'
           #!/bin/bash
-          export GPG_TTY=$(tty)
+          GPG_TTY="$(tty)"
+          export GPG_TTY
           case "$*" in
             *--detach-sign*|*--sign*)
               echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "$@"
@@ -93,6 +98,15 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 
+      - name: Configure push credentials
+        if: >
+          github.event_name == 'pull_request' && github.ref_name !=
+          github.event.repository.default_branch
+        env:
+          GH_APP_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          git remote set-url origin "https://x-access-token:${GH_APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
       - name: Commit and push linting fixes
         if: >
           github.event_name == 'pull_request' && github.ref_name !=
@@ -100,7 +114,7 @@ jobs:
         env:
           GPG_TTY: ${{ env.GPG_TTY }}
           GPG_PASSPHRASE: ${{ env.GPG_PASSPHRASE }}
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403
         with:
           branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
           commit_message: 'chore(#${{ github.event.number }}): fix linting issues'
@@ -108,3 +122,8 @@ jobs:
           commit_user_name: ${{ steps.import-gpg.outputs.name }}
           commit_user_email: ${{ steps.import-gpg.outputs.email }}
           commit_options: '--signoff --gpg-sign'
+
+      - name: Clear push credentials
+        if: always()
+        run: |
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
