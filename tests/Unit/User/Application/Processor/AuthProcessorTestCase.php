@@ -100,8 +100,11 @@ abstract class AuthProcessorTestCase extends UnitTestCase
 
     private function readStringProperty(object $object, string $property): string
     {
-        $reflectionProperty = new \ReflectionProperty($object, $property);
-        $value = $reflectionProperty->getValue($object);
+        if (!property_exists($object, $property)) {
+            self::fail(sprintf('Expected %s to expose property "%s".', $object::class, $property));
+        }
+
+        $value = $object->{$property};
 
         self::assertIsString($value);
 
