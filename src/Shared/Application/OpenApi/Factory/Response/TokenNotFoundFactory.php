@@ -13,12 +13,14 @@ final class TokenNotFoundFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
             'Token not found or expired',
             [],
-            []
+            [],
+            'application/problem+json'
         );
     }
 }

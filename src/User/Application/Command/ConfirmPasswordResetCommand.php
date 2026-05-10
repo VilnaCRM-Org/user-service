@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\User\Application\Command;
+
+use App\Shared\Domain\Bus\Command\CommandInterface;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
+
+final class ConfirmPasswordResetCommand implements CommandInterface
+{
+    private ConfirmPasswordResetCommandResponse $response;
+
+    public function __construct(
+        #[\SensitiveParameter]
+        public readonly string $token,
+        #[\SensitiveParameter]
+        public readonly string $newPassword,
+    ) {
+    }
+
+    public function getResponse(): ConfirmPasswordResetCommandResponse
+    {
+        return $this->response;
+    }
+
+    public function setResponse(
+        ConfirmPasswordResetCommandResponse $response
+    ): void {
+        $this->response = $response;
+    }
+
+    public function markCompleted(): void
+    {
+        $this->response = new ConfirmPasswordResetCommandResponse();
+    }
+}

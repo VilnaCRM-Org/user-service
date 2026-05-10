@@ -9,42 +9,43 @@ use ApiPlatform\OpenApi\Model\Response;
 use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Request\CreateUserRequestFactory;
 use App\Shared\Application\OpenApi\Factory\Response\BadRequestResponseFactory;
+use App\Shared\Application\OpenApi\Factory\Response\UnauthorizedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UserCreatedResponseFactory;
 use App\Shared\Application\OpenApi\Factory\Response\UsersReturnedFactory;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
-final class UserEndpointFactory implements AbstractEndpointFactory
+final class UserEndpointFactory implements EndpointFactoryInterface
 {
     private string $endpointUri = '/users';
 
     private Response $validationErrorResponse;
     private Response $badRequestResponse;
+    private Response $unauthorizedResponse;
     private Response $userCreatedResponse;
     private RequestBody $createUserRequest;
     private Response $usersReturnedResponse;
 
     public function __construct(
         string $apiPrefix,
-        private ValidationErrorFactory $validationErrorResponseFactory,
-        private BadRequestResponseFactory $badRequestResponseFactory,
-        private UserCreatedResponseFactory $userCreatedResponseFactory,
-        private CreateUserRequestFactory $createUserRequestFactory,
-        private UsersReturnedFactory $usersReturnedResponseFactory
+        ValidationErrorFactory $validationErrorResponseFactory,
+        BadRequestResponseFactory $badRequestResponseFactory,
+        UnauthorizedResponseFactory $unauthorizedResponseFactory,
+        UserCreatedResponseFactory $userCreatedResponseFactory,
+        CreateUserRequestFactory $createUserRequestFactory,
+        UsersReturnedFactory $usersReturnedResponseFactory
     ) {
         $this->endpointUri = $apiPrefix . $this->endpointUri;
         $this->validationErrorResponse =
-            $this->validationErrorResponseFactory->getResponse();
-        $this->badRequestResponse =
-            $this->badRequestResponseFactory->getResponse();
-        $this->userCreatedResponse =
-            $this->userCreatedResponseFactory->getResponse();
-        $this->createUserRequest =
-            $this->createUserRequestFactory->getRequest();
-        $this->usersReturnedResponse =
-            $this->usersReturnedResponseFactory->getResponse();
+            $validationErrorResponseFactory->getResponse();
+        $this->badRequestResponse = $badRequestResponseFactory->getResponse();
+        $this->unauthorizedResponse = $unauthorizedResponseFactory->getResponse();
+        $this->userCreatedResponse = $userCreatedResponseFactory->getResponse();
+        $this->createUserRequest = $createUserRequestFactory->getRequest();
+        $this->usersReturnedResponse = $usersReturnedResponseFactory->getResponse();
     }
 
+    #[\Override]
     public function createEndpoint(OpenApi $openApi): void
     {
         $pathItem = $openApi->getPaths()->getPath($this->endpointUri);
@@ -63,7 +64,9 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     }
 
     /**
-     * @return array<int,Response>
+     * @return array<Response>
+     *
+     * @psalm-return array{201: Response, 400: Response, 422: Response}
      */
     private function getPostResponses(): array
     {
@@ -76,13 +79,16 @@ final class UserEndpointFactory implements AbstractEndpointFactory
     }
 
     /**
-     * @return array<int,Response>
+     * @return array<Response>
+     *
+     * @psalm-return array{200: Response, 400: Response, 401: Response}
      */
     private function getGetResponses(): array
     {
         return [
-            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
             HttpResponse::HTTP_OK => $this->usersReturnedResponse,
+            HttpResponse::HTTP_BAD_REQUEST => $this->badRequestResponse,
+            HttpResponse::HTTP_UNAUTHORIZED => $this->unauthorizedResponse,
         ];
     }
 }

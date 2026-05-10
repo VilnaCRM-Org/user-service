@@ -4,168 +4,546 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
+use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\Shared\Infrastructure\Factory\UuidFactory as UuidFactoryInterface;
+use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\UpdateUserCommand;
 use App\User\Application\CommandHandler\UpdateUserCommandHandler;
-use App\User\Application\Factory\UpdateUserCommandFactory;
-use App\User\Application\Factory\UpdateUserCommandFactoryInterface;
+use App\User\Application\Factory\EventIdFactoryInterface;
+use App\User\Domain\Collection\AuthSessionCollection;
+use App\User\Domain\Contract\PasswordHasherInterface;
+use App\User\Domain\Entity\AuthRefreshToken;
+use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Event\AllSessionsRevokedEvent;
+use App\User\Domain\Event\EmailChangedEvent;
+use App\User\Domain\Event\PasswordChangedEvent;
+use App\User\Domain\Event\UserUpdatedEvent;
 use App\User\Domain\Exception\InvalidPasswordException;
-use App\User\Domain\Factory\Event\EmailChangedEventFactoryInterface;
-use App\User\Domain\Factory\Event\PasswordChangedEventFactoryInterface;
+use App\User\Domain\Factory\Event\SessionRevocationEventFactoryInterface;
+use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
+use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
-use Symfony\Component\Uid\Factory\UuidFactory;
+use DateTimeImmutable;
+use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Uuid as SymfonyUuid;
 
 final class UpdateUserCommandHandlerTest extends UnitTestCase
 {
-    private EventBusInterface $eventBus;
-    private PasswordHasherFactoryInterface $hasherFactory;
-    private UserRepositoryInterface $userRepository;
-    private UuidFactory $uuidFactory;
-    private EmailChangedEventFactoryInterface $emailChangedEventFactory;
-    private PasswordChangedEventFactoryInterface $passwordChangedFactory;
+    private EventBusInterface&MockObject $eventBus;
+    private PasswordHasherInterface&MockObject $passwordHasher;
+    private UserRepositoryInterface&MockObject $userRepository;
+    private SessionRevocationEventFactoryInterface&MockObject $sessionRevocationEventFactory;
+    private UserUpdateEventFactoryInterface&MockObject $userUpdateEventFactory;
+    private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
+    private AuthRefreshTokenRepositoryInterface&MockObject $authRefreshTokenRepository;
+    private EventIdFactoryInterface&MockObject $eventIdFactory;
     private UserFactoryInterface $userFactory;
     private UuidTransformer $uuidTransformer;
-    private UpdateUserCommandFactoryInterface $updateUserCommandFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->hasherFactory =
-            $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
-        $this->uuidFactory = $this->createMock(UuidFactory::class);
-        $this->emailChangedEventFactory = $this->createMock(
-            EmailChangedEventFactoryInterface::class
+        $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->sessionRevocationEventFactory = $this->createMock(
+            SessionRevocationEventFactoryInterface::class
         );
-        $this->passwordChangedFactory = $this->createMock(
-            PasswordChangedEventFactoryInterface::class
+        $this->userUpdateEventFactory = $this->createMock(
+            UserUpdateEventFactoryInterface::class
         );
+        $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
+        $this->authRefreshTokenRepository = $this->createMock(
+            AuthRefreshTokenRepositoryInterface::class
+        );
+        $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
         $this->userFactory = new UserFactory();
-        $this->uuidTransformer = new UuidTransformer(
-            new UuidFactoryInterface()
-        );
-        $this->updateUserCommandFactory = new UpdateUserCommandFactory();
-    }
-
-    public function testInvoke(): void
-    {
-        $email = $this->faker->email();
-        $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
-        $password = $this->faker->password();
-        $userId =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
-
-        $user =
-            $this->userFactory->create($email, $initials, $password, $userId);
-
-        $oldPassword = $this->faker->password();
-        $newPassword = $this->faker->password();
-        $updateData = new UserUpdate(
-            $this->faker->email(),
-            $this->faker->firstName(),
-            $newPassword,
-            $oldPassword,
-        );
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData);
-
-        $this->testInvokeSetExpectations($user);
-
-        $this->getHandler()->__invoke($command);
+        $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
     }
 
     public function testInvokeInvalidPassword(): void
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->firstName() . ' ' . $this->faker->lastName();
+        $user = $this->createUser();
+        $updateData = $this->createUpdateData(
+            $this->faker->password(),
+            $this->faker->password()
+        );
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $this->passwordHasher->expects($this->once())
+            ->method('verify')
+            ->willReturn(false);
+
+        $this->userRepository->expects($this->never())->method('save');
+        $this->eventBus->expects($this->never())->method('publish');
+
+        $this->expectException(InvalidPasswordException::class);
+
+        $this->createHandler()->__invoke($command);
+    }
+
+    public function testInvokeRevokesOtherSessionsAndPublishesAuditEventAfterPasswordChange(): void
+    {
+        $user = $this->createUser();
+        [$command, , $eventId] = $this->arrangePasswordChange($user);
+        $otherSession = $this->createOtherSession('other-session-id', $user->getId());
+        $this->authSessionRepository->method('findByUserId')
+            ->willReturn(new AuthSessionCollection($otherSession));
+        $this->authSessionRepository->method('save');
+        $this->authRefreshTokenRepository->method('findBySessionId')->willReturn([]);
+        $this->expectAllSessionsRevokedEventFactory(
+            $user->getId(),
+            'password_change',
+            1,
+            $eventId
+        );
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+        $this->assertSessionRevokedEvent($publishedEvents, $user->getId(), 'password_change', 1);
+    }
+
+    public function testInvokeSkipsCurrentAndRevokedSessionsAndRevokesActiveTokens(): void
+    {
+        $user = $this->createUser();
+        [$command, $currentSessionId, $eventId] = $this->arrangePasswordChange($user);
+        $activeRefreshToken = $this->expectRevocationContext($user, $currentSessionId);
+        $this->expectAllSessionsRevokedEventFactory(
+            $user->getId(),
+            'password_change',
+            1,
+            $eventId
+        );
+        $this->expectActiveRefreshTokenSaved($activeRefreshToken);
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+        $this->assertSessionRevokedEvent($publishedEvents, $user->getId(), 'password_change', 1);
+    }
+
+    public function testInvokePassesPreviousEmailToUserUpdatedEventFactoryWhenEmailChanges(): void
+    {
+        $user = $this->createUser();
+        $previousEmail = $user->getEmail();
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $this->preparePasswordChangeScenario($user);
+        $this->setupUpdateMocksForEmailChange($user, $previousEmail);
+
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+
+        $userUpdatedEvent = $this->findEventOfType($publishedEvents, UserUpdatedEvent::class);
+        $this->assertNotNull($userUpdatedEvent);
+        $this->assertSame($previousEmail, $userUpdatedEvent->previousEmail);
+    }
+
+    public function testInvokePublishesAllEventsIncludingUserUpdatedEvent(): void
+    {
+        $user = $this->createUser();
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $this->preparePasswordChangeScenario($user);
+        $this->setupUpdateMocks($user);
+
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+
+        $this->assertNotNull(
+            $this->findEventOfType($publishedEvents, UserUpdatedEvent::class)
+        );
+        $this->assertGreaterThanOrEqual(2, count($publishedEvents));
+    }
+
+    public function testInvokePublishesUserUpdatedEventWhenPasswordUnchanged(): void
+    {
+        $user = $this->createUser();
+        $unchangedPassword = $this->faker->password();
+        $updateData = $this->createUnchangedPasswordUpdate($user, $unchangedPassword);
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $this->expectEventIdFactory();
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocks($user);
+        $this->sessionRevocationEventFactory->expects($this->never())
+            ->method('createAllSessionsRevoked');
+        $this->authSessionRepository->expects($this->never())->method('findByUserId');
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+
+        $this->assertNotNull(
+            $this->findEventOfType($publishedEvents, UserUpdatedEvent::class)
+        );
+    }
+
+    public function testInvokeDoesNotRevokeSessionsWhenPasswordIsNotChanged(): void
+    {
+        $user = $this->createUser();
+        $unchangedPassword = $this->faker->password();
+        $updateData = $this->createUnchangedPasswordUpdate($user, $unchangedPassword);
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
+
+        $this->expectEventIdFactory();
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocks($user);
+        $this->sessionRevocationEventFactory->expects($this->never())
+            ->method('createAllSessionsRevoked');
+
+        $this->authSessionRepository->expects($this->never())->method('findByUserId');
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+
+        $publishedEvents = [];
+        $this->expectEventPublish($publishedEvents);
+
+        $this->createHandler()->__invoke($command);
+
+        $this->assertNull($this->findEventOfType($publishedEvents, AllSessionsRevokedEvent::class));
+    }
+
+    public function testInvokePublishesUserUpdatedEventWhenEmailChangesWithoutPasswordChange(): void
+    {
+        $user = $this->createUser();
+        $previousEmail = $user->getEmail();
         $password = $this->faker->password();
-        $userId =
-            $this->uuidTransformer->transformFromString($this->faker->uuid());
+        $updateData = $this->createUnchangedPasswordUpdate($user, $password, $this->faker->email());
+        $command = new UpdateUserCommand($user, $updateData, $this->faker->uuid());
 
-        $user =
-            $this->userFactory->create($email, $initials, $password, $userId);
+        $publishedEvents = [];
+        $this->expectEventIdFactory();
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocksForEmailChange($user, $previousEmail);
+        $this->sessionRevocationEventFactory->expects($this->never())
+            ->method('createAllSessionsRevoked');
+        $this->authSessionRepository->expects($this->never())->method('findByUserId');
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+        $this->expectEventPublish($publishedEvents);
+        $this->createHandler()->__invoke($command);
+        $userUpdatedEvent = $this->findEventOfType($publishedEvents, UserUpdatedEvent::class);
+        $this->assertNotNull($userUpdatedEvent);
+        $this->assertSame($previousEmail, $userUpdatedEvent->previousEmail);
+        $this->assertNull($this->findEventOfType($publishedEvents, AllSessionsRevokedEvent::class));
+    }
 
-        $oldPassword = $this->faker->password();
-        $newPassword = $this->faker->password();
-        $updateData = new UserUpdate(
+    private function expectRevocationContext(
+        UserInterface $user,
+        string $currentSessionId
+    ): AuthRefreshToken {
+        $currentSession = $this->createOtherSession($currentSessionId, $user->getId());
+        $revokedSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+        $revokedSession->revoke();
+        $activeSession = $this->createOtherSession($this->faker->uuid(), $user->getId());
+        $activeRefreshToken = $this->createRefreshToken($activeSession->getId());
+        $revokedRefreshToken = $this->createRefreshToken($activeSession->getId());
+        $revokedRefreshToken->revoke();
+        $sessions = new AuthSessionCollection(
+            $currentSession,
+            $revokedSession,
+            $activeSession
+        );
+        $this->authSessionRepository->expects($this->once())
+            ->method('findByUserId')->with($user->getId())
+            ->willReturn($sessions);
+        $this->expectActiveSessionSavedAsRevoked($activeSession);
+        $this->authRefreshTokenRepository->expects($this->once())->method('findBySessionId')
+            ->with($activeSession->getId())
+            ->willReturn([$revokedRefreshToken, $activeRefreshToken]);
+
+        return $activeRefreshToken;
+    }
+
+    private function expectActiveSessionSavedAsRevoked(AuthSession $activeSession): void
+    {
+        $this->authSessionRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static function (AuthSession $session) use ($activeSession): bool {
+                    return $session->getId() === $activeSession->getId()
+                        && $session->isRevoked();
+                }
+            ));
+    }
+
+    private function expectActiveRefreshTokenSaved(AuthRefreshToken $activeRefreshToken): void
+    {
+        $this->authRefreshTokenRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(
+                static function (AuthRefreshToken $refreshToken) use ($activeRefreshToken): bool {
+                    return $refreshToken->getId() === $activeRefreshToken->getId()
+                        && $refreshToken->isRevoked();
+                }
+            ));
+    }
+
+    private function createUser(): UserInterface
+    {
+        return $this->userFactory->create(
+            $this->faker->email(),
+            $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+    }
+
+    private function createRefreshToken(string $sessionId): AuthRefreshToken
+    {
+        return new AuthRefreshToken(
+            $this->faker->uuid(),
+            $sessionId,
+            $this->faker->sha256(),
+            new DateTimeImmutable('+1 month')
+        );
+    }
+
+    private function createUpdateData(
+        string $oldPassword,
+        string $newPassword
+    ): UserUpdate {
+        return new UserUpdate(
             $this->faker->email(),
             $this->faker->firstName(),
             $newPassword,
             $oldPassword,
         );
-
-        $command = $this->updateUserCommandFactory->create($user, $updateData);
-
-        $this->testInvokeInvalidPasswordSetExpectations();
-
-        $this->expectException(InvalidPasswordException::class);
-
-        $this->getHandler()->__invoke($command);
     }
 
-    private function testInvokeInvalidPasswordSetExpectations(): void
+    private function expectEventIdFactory(?string $eventId = null): void
     {
-        $hasher =
-            $this->createMock(PasswordHasherInterface::class);
-        $hasher->expects($this->once())
-            ->method('verify')
-            ->willReturn(false);
-        $this->hasherFactory->expects($this->once())
-            ->method('getPasswordHasher')
-            ->willReturn($hasher);
+        $eventId ??= $this->faker->uuid();
+        $this->eventIdFactory
+            ->expects($this->once())
+            ->method('generate')
+            ->willReturn($eventId);
     }
 
-    private function testInvokeSetExpectations(
-        UserInterface $user
-    ): void {
-        $this->uuidFactory->expects($this->once())
-            ->method('create')
-            ->willReturn(new SymfonyUuid($this->faker->uuid()));
-
-        $hasher =
-            $this->createMock(PasswordHasherInterface::class);
-        $hasher->expects($this->once())
+    private function expectPasswordHasher(bool $isValid): void
+    {
+        $this->passwordHasher->expects($this->once())
             ->method('verify')
-            ->willReturn(true);
-        $this->hasherFactory->expects($this->once())
-            ->method('getPasswordHasher')
-            ->willReturn($hasher);
+            ->willReturn($isValid);
 
-        $this->userRepository->expects($this->once())
-            ->method('save')
-            ->with($this->equalTo($user));
-
-        $this->emailChangedEventFactory->expects($this->once())
-            ->method('create');
-
-        $this->passwordChangedFactory->expects($this->once())
-            ->method('create');
-
-        $this->eventBus->expects($this->once())
-            ->method('publish');
+        if ($isValid) {
+            $this->passwordHasher->expects($this->once())
+                ->method('hash')
+                ->willReturn($this->faker->sha256());
+        } else {
+            $this->passwordHasher->expects($this->never())->method('hash');
+        }
     }
 
-    private function getHandler(): UpdateUserCommandHandler
+    private function setupUpdateMocks(UserInterface $user): void
+    {
+        $eventId = $this->faker->uuid();
+
+        $this->userUpdateEventFactory->method('createEmailChanged')
+            ->willReturn(new EmailChangedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                $user->getEmail(),
+                $eventId
+            ));
+
+        $this->userUpdateEventFactory->method('createPasswordChanged')
+            ->willReturn(new PasswordChangedEvent(
+                $user->getEmail(),
+                $eventId
+            ));
+
+        $this->userUpdateEventFactory->method('createUserUpdated')
+            ->willReturn(new UserUpdatedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                null,
+                $eventId
+            ));
+    }
+
+    private function createHandler(): UpdateUserCommandHandler
     {
         return new UpdateUserCommandHandler(
             $this->eventBus,
-            $this->hasherFactory,
+            $this->passwordHasher,
+            $this->authSessionRepository,
+            $this->authRefreshTokenRepository,
+            $this->eventIdFactory,
             $this->userRepository,
-            $this->uuidFactory,
-            $this->emailChangedEventFactory,
-            $this->passwordChangedFactory
+            $this->sessionRevocationEventFactory,
+            $this->userUpdateEventFactory,
+        );
+    }
+
+    private function createOtherSession(string $sessionId, string $userId): AuthSession
+    {
+        $createdAt = new DateTimeImmutable('-5 minutes');
+        return new AuthSession(
+            $sessionId,
+            $userId,
+            '127.0.0.1',
+            'Test Agent',
+            $createdAt,
+            $createdAt->modify('+15 minutes'),
+            false
+        );
+    }
+
+    /**
+     * @param array<int, DomainEvent> $publishedEvents
+     */
+    private function expectEventPublish(array &$publishedEvents): void
+    {
+        $this->eventBus
+            ->expects($this->once())
+            ->method('publish')
+            ->willReturnCallback(
+                static function (DomainEvent ...$events) use (&$publishedEvents): void {
+                    $publishedEvents = $events;
+                }
+            );
+    }
+
+    /**
+     * @param array<int, DomainEvent> $events
+     */
+    private function assertSessionRevokedEvent(
+        array $events,
+        string $userId,
+        string $reason,
+        int $revokedCount
+    ): void {
+        $event = $this->findEventOfType($events, AllSessionsRevokedEvent::class);
+        $this->assertInstanceOf(AllSessionsRevokedEvent::class, $event);
+        $this->assertSame($userId, $event->userId);
+        $this->assertSame($reason, $event->reason);
+        $this->assertSame($revokedCount, $event->revokedCount);
+    }
+
+    private function preparePasswordChangeScenario(UserInterface $user): void
+    {
+        $eventId = $this->faker->uuid();
+        $this->expectEventIdFactory($eventId);
+        $this->expectPasswordHasher(true);
+
+        $otherSession = $this->createOtherSession('other-session-id', $user->getId());
+        $this->authSessionRepository->method('findByUserId')
+            ->willReturn(new AuthSessionCollection($otherSession));
+        $this->authSessionRepository->method('save');
+        $this->authRefreshTokenRepository->method('findBySessionId')->willReturn([]);
+        $this->expectAllSessionsRevokedEventFactory(
+            $user->getId(),
+            'password_change',
+            1,
+            $eventId
+        );
+        $this->userRepository->expects($this->once())->method('save');
+    }
+
+    /**
+     * @return array{0: UpdateUserCommand, 1: string, 2: string}
+     */
+    private function arrangePasswordChange(UserInterface $user): array
+    {
+        $currentSessionId = (string) new SymfonyUuid($this->faker->uuid());
+        $updateData = $this->createUpdateData($this->faker->password(), $this->faker->password());
+        $eventId = $this->faker->uuid();
+        $this->expectEventIdFactory($eventId);
+        $this->expectPasswordHasher(true);
+        $this->setupUpdateMocks($user);
+
+        return [
+            new UpdateUserCommand($user, $updateData, $currentSessionId),
+            $currentSessionId,
+            $eventId,
+        ];
+    }
+
+    private function setupUpdateMocksForEmailChange(
+        UserInterface $user,
+        string $previousEmail
+    ): void {
+        $eventId = $this->faker->uuid();
+
+        $this->userUpdateEventFactory->method('createEmailChanged')
+            ->willReturn(new EmailChangedEvent(
+                $user->getId(),
+                $user->getEmail(),
+                $previousEmail,
+                $eventId
+            ));
+        $this->userUpdateEventFactory->method('createPasswordChanged')
+            ->willReturn(new PasswordChangedEvent($user->getEmail(), $eventId));
+        $event = new UserUpdatedEvent($user->getId(), $user->getEmail(), $previousEmail, $eventId);
+        $this->userUpdateEventFactory->expects($this->once())
+            ->method('createUserUpdated')
+            ->with($user, $previousEmail, $this->anything())
+            ->willReturn($event);
+    }
+
+    private function expectAllSessionsRevokedEventFactory(
+        string $userId,
+        string $reason,
+        int $revokedCount,
+        string $eventId
+    ): void {
+        $this->sessionRevocationEventFactory->expects($this->once())
+            ->method('createAllSessionsRevoked')
+            ->with($userId, $reason, $revokedCount, $eventId)
+            ->willReturn(
+                new AllSessionsRevokedEvent(
+                    $userId,
+                    $reason,
+                    $revokedCount,
+                    $eventId
+                )
+            );
+    }
+
+    /**
+     * @template T of DomainEvent
+     *
+     * @param array<int, DomainEvent> $events
+     * @param class-string<T> $type
+     *
+     * @return T|null
+     */
+    private function findEventOfType(array $events, string $type): ?DomainEvent
+    {
+        foreach ($events as $event) {
+            if ($event instanceof $type) {
+                return $event;
+            }
+        }
+
+        return null;
+    }
+
+    private function createUnchangedPasswordUpdate(
+        UserInterface $user,
+        string $password,
+        ?string $email = null
+    ): UserUpdate {
+        return new UserUpdate(
+            $email ?? $user->getEmail(),
+            $this->faker->firstName(),
+            $password,
+            $password,
         );
     }
 }

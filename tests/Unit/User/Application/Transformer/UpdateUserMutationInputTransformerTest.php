@@ -11,6 +11,7 @@ use Faker\Factory;
 
 final class UpdateUserMutationInputTransformerTest extends UnitTestCase
 {
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

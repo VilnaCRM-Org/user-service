@@ -11,6 +11,10 @@ final class TokenNotFoundException extends DomainException
         parent::__construct('Token not found');
     }
 
+    /**
+     * @psalm-return 'error.token-not-found'
+     */
+    #[\Override]
     public function getTranslationTemplate(): string
     {
         return 'error.token-not-found';

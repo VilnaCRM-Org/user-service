@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
 use App\Shared\Application\OpenApi\Factory\Request\ConfirmUserRequestFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use App\Shared\Infrastructure\Fixture\SchemathesisFixtures;
 use App\Tests\Unit\UnitTestCase;
 
 final class ConfirmUserRequestFactoryTest extends UnitTestCase
@@ -32,6 +33,8 @@ final class ConfirmUserRequestFactoryTest extends UnitTestCase
 
     /**
      * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter}
      */
     private function getParams(): array
     {
@@ -45,7 +48,8 @@ final class ConfirmUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'token',
             'string',
-            'token'
+            SchemathesisFixtures::CONFIRMATION_TOKEN,
+            enum: [SchemathesisFixtures::CONFIRMATION_TOKEN]
         );
     }
 }

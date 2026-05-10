@@ -10,7 +10,7 @@ final class CreateUserBatchInput extends RequestInput
      * @param array<array<string>> $users
      */
     public function __construct(
-        public ?array $users = []
+        private ?array $users = []
     ) {
     }
 
@@ -20,5 +20,11 @@ final class CreateUserBatchInput extends RequestInput
     public function addUser(array $user): void
     {
         $this->users[] = $user;
+    }
+
+    #[\Override]
+    public function getJson(): string
+    {
+        return json_encode(['users' => $this->users], JSON_THROW_ON_ERROR);
     }
 }

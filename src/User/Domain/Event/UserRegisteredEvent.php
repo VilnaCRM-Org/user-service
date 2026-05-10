@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\User\Domain\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\User\Domain\Entity\User;
-use App\User\Domain\Entity\UserInterface;
 
-final class UserRegisteredEvent extends DomainEvent
+final class UserRegisteredEvent extends AccountDomainEvent
 {
     public function __construct(
-        public readonly UserInterface $user,
+        public readonly string $userId,
+        public readonly string $email,
         string $eventId,
         ?string $occurredOn = null
     ) {
@@ -19,28 +18,39 @@ final class UserRegisteredEvent extends DomainEvent
     }
 
     /**
-     * @param array<string, User> $body
+     * @param array<string, string> $body
+     *
+     * @return self
      */
+    #[\Override]
     public static function fromPrimitives(
         array $body,
         string $eventId,
         string $occurredOn
     ): DomainEvent {
-        return new self($body['user'], $eventId, $occurredOn);
+        return new self($body['userId'], $body['email'], $eventId, $occurredOn);
     }
 
+    /**
+     * @psalm-return 'user.registered'
+     */
+    #[\Override]
     public static function eventName(): string
     {
         return 'user.registered';
     }
 
     /**
-     * @return array<string, User>
+     * @return array<string>
+     *
+     * @psalm-return array{userId: string, email: string}
      */
+    #[\Override]
     public function toPrimitives(): array
     {
         return [
-            'user' => $this->user,
+            'userId' => $this->userId,
+            'email' => $this->email,
         ];
     }
 }

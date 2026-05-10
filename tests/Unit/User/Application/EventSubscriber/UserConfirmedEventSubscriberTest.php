@@ -20,6 +20,7 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
     private TokenRepositoryInterface $tokenRepository;
     private UserConfirmedEventSubscriber $subscriber;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,6 +42,11 @@ final class UserConfirmedEventSubscriberTest extends UnitTestCase
             $token,
             $this->faker->uuid()
         );
+
+        $this->tokenRepository->expects($this->once())
+            ->method('find')
+            ->with($token->getTokenValue())
+            ->willReturn($token);
 
         $this->tokenRepository->expects($this->once())
             ->method('delete')

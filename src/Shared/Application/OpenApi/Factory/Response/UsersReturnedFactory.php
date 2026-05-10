@@ -6,7 +6,7 @@ namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
-use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 
 final class UsersReturnedFactory implements AbstractResponseFactory
 {
@@ -14,6 +14,7 @@ final class UsersReturnedFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(

@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Command;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Command\RegisterUserCommandResponse;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
@@ -16,6 +16,7 @@ final class SignUpCommandResponseTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

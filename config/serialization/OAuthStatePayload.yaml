@@ -1,0 +1,12 @@
+App\OAuth\Domain\ValueObject\OAuthStatePayload:
+  attributes:
+    provider:
+      serialized_name: 'provider'
+    codeVerifier:
+      serialized_name: 'code_verifier'
+    flowBindingHash:
+      serialized_name: 'flow_binding_hash'
+    redirectUri:
+      serialized_name: 'redirect_uri'
+    createdAt:
+      serialized_name: 'created_at'

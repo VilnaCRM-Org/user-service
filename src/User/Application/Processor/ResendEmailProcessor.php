@@ -6,14 +6,15 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Application\Validator\Http\JsonRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\RetryDto;
 use App\User\Application\Factory\SendConfirmationEmailCommandFactoryInterface;
-use App\User\Application\Query\GetUserQueryHandler;
+use App\User\Application\Query\GetUserQueryHandlerInterface;
+use App\User\Application\Validator\OwnershipValidatorInterface;
 use App\User\Domain\Factory\ConfirmationEmailFactoryInterface;
 use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
 use App\User\Domain\Repository\TokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -21,14 +22,18 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ResendEmailProcessor implements ProcessorInterface
 {
+    private const ERROR_INVALID_JSON = 'Invalid JSON body.';
+    private const ERROR_EXPECTED_OBJECT = 'Request body must be a JSON object.';
+
     public function __construct(
+        private GetUserQueryHandlerInterface $getUserQueryHandler,
+        private JsonRequestValidator $jsonRequestValidator,
         private CommandBusInterface $commandBus,
-        private GetUserQueryHandler $getUserQueryHandler,
-        private UserRepositoryInterface $userRepository,
         private TokenRepositoryInterface $tokenRepository,
         private ConfirmationTokenFactoryInterface $tokenFactory,
         private ConfirmationEmailFactoryInterface $confirmationEmailFactory,
-        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory
+        private SendConfirmationEmailCommandFactoryInterface $emailCmdFactory,
+        private OwnershipValidatorInterface $ownershipGuard,
     ) {
     }
 
@@ -37,17 +42,24 @@ final readonly class ResendEmailProcessor implements ProcessorInterface
      * @param array<string,string> $context
      * @param array<string,string> $uriVariables
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
         array $uriVariables = [],
         array $context = []
     ): Response {
+        $this->jsonRequestValidator->assertJsonObjectRequest(
+            self::ERROR_INVALID_JSON,
+            self::ERROR_EXPECTED_OBJECT
+        );
+
         $user = $this->getUserQueryHandler->handle($uriVariables['id']);
 
-        $token = $this->tokenRepository->findByUserId(
-            $user->getId()
-        ) ?? $this->tokenFactory->create($user->getId());
+        $this->ownershipGuard->assertOwnership($user->getId());
+
+        $token = $this->tokenRepository->findByUserId($user->getId())
+            ?? $this->tokenFactory->create($user->getId());
 
         $this->commandBus->dispatch(
             $this->emailCmdFactory->create(

@@ -12,6 +12,7 @@ final class HealthEventFactoryTest extends UnitTestCase
 {
     private HealthEventFactory $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

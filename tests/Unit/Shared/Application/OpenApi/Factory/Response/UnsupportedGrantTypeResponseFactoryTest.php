@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\UnsupportedTypeFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
@@ -26,7 +26,6 @@ final class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
                     $this->getErrorParam(),
                     $this->getErrorDescriptionParam(),
                     $this->getHintParam(),
-                    $this->getMessageParam(),
                 ],
                 []
             )
@@ -60,16 +59,6 @@ final class UnsupportedGrantTypeResponseFactoryTest extends UnitTestCase
             'hint',
             'string',
             'Check that all required parameters have been provided'
-        );
-    }
-
-    private function getMessageParam(): Parameter
-    {
-        return new Parameter(
-            'message',
-            'string',
-            'The authorization grant type is '.
-            'not supported by the authorization server.'
         );
     }
 }

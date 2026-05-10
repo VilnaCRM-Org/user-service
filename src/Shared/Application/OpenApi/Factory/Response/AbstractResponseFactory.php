@@ -8,5 +8,8 @@ use ApiPlatform\OpenApi\Model\Response;
 
 interface AbstractResponseFactory
 {
+    /**
+     * @psalm-api
+     */
     public function getResponse(): Response;
 }

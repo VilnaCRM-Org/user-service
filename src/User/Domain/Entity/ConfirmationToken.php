@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace App\User\Domain\Entity;
 
 use App\User\Domain\Exception\UserTimedOutException;
+use DateTimeImmutable;
 
 final class ConfirmationToken implements ConfirmationTokenInterface
 {
+    private const SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES = [
+        0 => 1,
+        1 => 1,
+        2 => 3,
+        3 => 4,
+        4 => 1440,
+    ];
+
     private int $timesSent;
-    private \DateTimeImmutable $allowedToSendAfter;
+    private DateTimeImmutable $allowedToSendAfter;
 
     /**
      * @var array<int, int>
@@ -21,13 +30,8 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         private string $userID
     ) {
         $this->timesSent = 0;
-        $this->allowedToSendAfter = new \DateTimeImmutable();
-        $this->sendEmailAttemptsTimeInMinutes = [
-            1 => 1,
-            2 => 3,
-            3 => 4,
-            4 => 1440,
-        ];
+        $this->allowedToSendAfter = new DateTimeImmutable();
+        $this->sendEmailAttemptsTimeInMinutes = self::SEND_EMAIL_ATTEMPTS_TIME_IN_MINUTES;
     }
 
     public function getTimesSent(): int
@@ -40,13 +44,13 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         $this->timesSent = $timesSent;
     }
 
-    public function getAllowedToSendAfter(): \DateTimeImmutable
+    public function getAllowedToSendAfter(): DateTimeImmutable
     {
         return $this->allowedToSendAfter;
     }
 
     public function setAllowedToSendAfter(
-        \DateTimeImmutable $allowedToSendAfter
+        DateTimeImmutable $allowedToSendAfter
     ): void {
         $this->allowedToSendAfter = $allowedToSendAfter;
     }
@@ -71,9 +75,10 @@ final class ConfirmationToken implements ConfirmationTokenInterface
         $this->userID = $userID;
     }
 
-    public function send(?\DateTimeImmutable $sendAt = null): void
+    #[\Override]
+    public function send(?DateTimeImmutable $sendAt = null): void
     {
-        $datetime = $sendAt ?? new \DateTimeImmutable();
+        $datetime = $sendAt ?? new DateTimeImmutable();
 
         if ($this->allowedToSendAfter >= $datetime) {
             throw new UserTimedOutException($this->allowedToSendAfter);

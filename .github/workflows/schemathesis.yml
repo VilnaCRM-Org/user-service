@@ -1,0 +1,20 @@
+name: Schemathesis API Validation
+
+on:
+  pull_request:
+    branches: ['main']
+
+jobs:
+  schemathesis:
+    name: Schemathesis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Start Application
+        run: make start
+
+      - name: Run Schemathesis Validation
+        run: make schemathesis-validate

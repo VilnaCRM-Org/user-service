@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Request;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\Enum\Requirement;
 use App\Shared\Application\OpenApi\Factory\Request\ReplaceUserRequestFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ReplaceUserRequestFactoryTest extends UnitTestCase
@@ -32,6 +33,8 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
 
     /**
      * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter, Parameter, Parameter, Parameter}
      */
     private function getParams(): array
     {
@@ -48,7 +51,7 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'email',
             'string',
-            'user@example.com',
+            'update-user@example.com',
             255,
             'email'
         );
@@ -59,8 +62,11 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'initials',
             'string',
-            'Name Surname',
-            255
+            'Update User',
+            255,
+            null,
+            Requirement::REQUIRED,
+            '^(?!\d).*\S.*$'
         );
     }
 
@@ -69,8 +75,11 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'oldPassword',
             'string',
-            'passWORD1',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 
@@ -79,8 +88,11 @@ final class ReplaceUserRequestFactoryTest extends UnitTestCase
         return new Parameter(
             'newPassword',
             'string',
-            'PASSword2',
-            255
+            'Password1!',
+            64,
+            null,
+            Requirement::REQUIRED,
+            '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$'
         );
     }
 }

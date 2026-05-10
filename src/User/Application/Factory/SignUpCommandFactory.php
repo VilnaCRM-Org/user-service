@@ -8,6 +8,7 @@ use App\User\Application\Command\RegisterUserCommand;
 
 final class SignUpCommandFactory implements SignUpCommandFactoryInterface
 {
+    #[\Override]
     public function create(
         string $email,
         string $initials,

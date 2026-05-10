@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Shared\Infrastructure\Bus\Event\Async\Stub;
+
+use App\Shared\Domain\Bus\Event\DomainEvent;
+
+final class TestDomainEvent extends DomainEvent
+{
+    public function __construct(
+        private readonly string $aggregateId,
+        string $eventId,
+        ?string $occurredOn = null
+    ) {
+        parent::__construct($eventId, $occurredOn);
+    }
+
+    /**
+     * @param array<string, string|object> $body
+     */
+    #[\Override]
+    public static function fromPrimitives(
+        array $body,
+        string $eventId,
+        string $occurredOn
+    ): self {
+        return new self(
+            aggregateId: (string) $body['aggregateId'],
+            eventId: $eventId,
+            occurredOn: $occurredOn
+        );
+    }
+
+    /**
+     * @psalm-return 'test.domain_event'
+     */
+    #[\Override]
+    public static function eventName(): string
+    {
+        return 'test.domain_event';
+    }
+
+    /**
+     * @return array<string>
+     *
+     * @psalm-return array{aggregateId: string}
+     */
+    #[\Override]
+    public function toPrimitives(): array
+    {
+        return ['aggregateId' => $this->aggregateId];
+    }
+
+    public function aggregateId(): string
+    {
+        return $this->aggregateId;
+    }
+}

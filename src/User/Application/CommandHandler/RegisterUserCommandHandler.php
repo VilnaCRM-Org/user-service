@@ -7,7 +7,7 @@ namespace App\User\Application\CommandHandler;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RegisterUserCommand;
-use App\User\Application\Command\RegisterUserCommandResponse;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
@@ -30,6 +30,16 @@ final readonly class RegisterUserCommandHandler implements
 
     public function __invoke(RegisterUserCommand $command): void
     {
+        $existingUser = $this->userRepository->findByEmail($command->email);
+
+        if ($existingUser !== null) {
+            $command->setResponse(
+                new RegisterUserCommandResponse($existingUser)
+            );
+
+            return;
+        }
+
         $user = $this->transformer->transformToUser($command);
 
         $hasher = $this->hasherFactory->getPasswordHasher(User::class);

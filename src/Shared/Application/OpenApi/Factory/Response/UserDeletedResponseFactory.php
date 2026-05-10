@@ -13,6 +13,10 @@ final class UserDeletedResponseFactory implements AbstractResponseFactory
     {
     }
 
+    /**
+     * @psalm-api
+     */
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(

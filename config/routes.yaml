@@ -2,3 +2,13 @@ oauth2_server:
   prefix: '/api/oauth/'
   resource: '@LeagueOAuth2ServerBundle/config/routes.php'
   type: php
+
+oauth_social_initiate:
+  path: /api/auth/social/{provider}
+  controller: App\OAuth\Application\Controller\OAuthInitiateController
+  methods: [GET]
+
+oauth_social_callback:
+  path: /api/auth/social/{provider}/callback
+  controller: App\OAuth\Application\Controller\OAuthCallbackController
+  methods: [GET]

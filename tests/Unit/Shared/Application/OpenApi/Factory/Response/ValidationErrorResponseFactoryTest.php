@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
 use App\Shared\Application\OpenApi\Factory\Response\ValidationErrorFactory;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
@@ -30,7 +30,8 @@ final class ValidationErrorResponseFactoryTest extends UnitTestCase
                     $this->getViolationsParam(),
                     $this->getStatusParam(),
                 ],
-                []
+                [],
+                'application/problem+json'
             )
             ->willReturn($this->createStub(Response::class));
 
@@ -39,11 +40,17 @@ final class ValidationErrorResponseFactoryTest extends UnitTestCase
 
     private function getViolationsParam(): Parameter
     {
-        return new Parameter('violations', 'array', [
-            'propertyPath' => 'some_property',
-            'message' => 'This value should not be blank.',
-            'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
-        ]);
+        return new Parameter(
+            'violations',
+            'array',
+            [
+                [
+                    'propertyPath' => 'some_property',
+                    'message' => 'This value should not be blank.',
+                    'code' => 'c1051bb4-d103-4f74-8988-acbcafc7fdc3',
+                ],
+            ]
+        );
     }
 
     private function getTypeParam(): Parameter

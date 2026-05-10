@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Tests\Integration\User\Application\EventSubscriber;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
 use App\Tests\Integration\TestEmailSendingUtils;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\EventSubscriber\UserRegisteredEventSubscriber;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 
-final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
+final class UserRegisteredEventSubscriberTest extends UserIntegrationTestCase
 {
     private UserRegisteredEventSubscriber $subscriber;
-    private TestEmailSendingUtils $utils;
+    private TestEmailSendingUtils $emailUtils;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,7 +25,7 @@ final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
         $this->subscriber = $this->container->get(
             UserRegisteredEventSubscriber::class
         );
-        $this->utils = new TestEmailSendingUtils();
+        $this->emailUtils = new TestEmailSendingUtils($this->container);
     }
 
     public function testConfirmationEmailSent(): void
@@ -38,12 +40,11 @@ final class UserRegisteredEventSubscriberTest extends IntegrationTestCase
                 UuidTransformer::class
             )->transformFromString($userId)
         );
-        $event = new UserRegisteredEvent(
-            $user,
-            $this->faker->uuid()
-        );
+        $this->container->get(UserRepositoryInterface::class)->save($user);
+
+        $event = new UserRegisteredEvent($userId, $emailAddress, $this->faker->uuid());
 
         $this->subscriber->__invoke($event);
-        $this->utils->assertEmailWasSent($this->container, $emailAddress);
+        $this->emailUtils->assertEmailWasSent($this->getMailerEvent(), $emailAddress);
     }
 }

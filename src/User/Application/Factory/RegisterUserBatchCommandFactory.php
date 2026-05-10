@@ -10,6 +10,7 @@ use App\User\Domain\Collection\UserCollection;
 final readonly class RegisterUserBatchCommandFactory implements
     RegisterUserBatchCommandFactoryInterface
 {
+    #[\Override]
     public function create(
         UserCollection $users
     ): RegisterUserBatchCommand {

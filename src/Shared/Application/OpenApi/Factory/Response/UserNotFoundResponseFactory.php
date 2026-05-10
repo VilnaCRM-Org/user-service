@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Application\OpenApi\Factory\Response;
 
 use ApiPlatform\OpenApi\Model\Response;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\ResponseBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 final class UserNotFoundResponseFactory implements AbstractResponseFactory
@@ -15,6 +15,7 @@ final class UserNotFoundResponseFactory implements AbstractResponseFactory
     {
     }
 
+    #[\Override]
     public function getResponse(): Response
     {
         return $this->responseBuilder->build(
@@ -25,7 +26,8 @@ final class UserNotFoundResponseFactory implements AbstractResponseFactory
                 $this->getDetailParam(),
                 $this->getStatusParam(),
             ],
-            []
+            [],
+            'application/problem+json'
         );
     }
 

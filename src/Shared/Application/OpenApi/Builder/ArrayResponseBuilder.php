@@ -6,6 +6,9 @@ namespace App\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\OpenApi\Model\Response;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
+use ArrayObject;
 
 final class ArrayResponseBuilder
 {
@@ -23,19 +26,17 @@ final class ArrayResponseBuilder
         array $headers
     ): Response {
         $content = $this->contextBuilder->build($params);
-        $headersArray = new \ArrayObject();
+        $headersArray = new ArrayObject();
 
-        if (count($headers) > 0) {
-            foreach ($headers as $header) {
-                $headersArray[$header->name] = new Model\Header(
-                    description: $header->description,
-                    schema: [
-                        'type' => $header->type,
-                        'format' => $header->format,
-                        'example' => $header->example,
-                    ]
-                );
-            }
+        foreach ($headers as $header) {
+            $headersArray[$header->name] = new Model\Header(
+                description: $header->description,
+                schema: [
+                    'type' => $header->type,
+                    'format' => $header->format,
+                    'example' => $header->example,
+                ]
+            );
         }
 
         return new Response(

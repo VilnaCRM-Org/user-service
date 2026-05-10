@@ -7,9 +7,9 @@ namespace App\User\Application\DTO;
 final readonly class UserRegisterDto
 {
     public function __construct(
-        public ?string $email = null,
-        public ?string $initials = null,
-        public ?string $password = null,
+        public string $email = '',
+        public string $initials = '',
+        public string $password = '',
     ) {
     }
 }

@@ -8,19 +8,31 @@ use ApiPlatform\OpenApi\Model\Parameter;
 
 final class UriParameterBuilder
 {
+    /**
+     * @param list<string>|null $enum
+     */
     public function build(
         string $name,
         string $description,
         bool $required,
         string $example,
-        string $type
+        string $type,
+        ?string $format = null,
+        ?array $enum = null
     ): Parameter {
         return new Parameter(
             name: $name,
             in: 'path',
             description: $description,
             required: $required,
-            schema: ['type' => $type],
+            schema: array_filter(
+                [
+                    'type' => $type,
+                    'format' => $format,
+                    'enum' => $enum,
+                ],
+                static fn ($value) => $value !== null
+            ),
             example: $example
         );
     }

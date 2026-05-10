@@ -11,13 +11,14 @@ use App\User\Domain\Event\ConfirmationEmailSentEvent;
 final class ConfirmationEmailSendEventFactory implements
     ConfirmationEmailSendEventFactoryInterface
 {
+    #[\Override]
     public function create(
         ConfirmationTokenInterface $token,
         UserInterface $user,
         string $eventID,
     ): ConfirmationEmailSentEvent {
         return new ConfirmationEmailSentEvent(
-            $token,
+            $token->getTokenValue(),
             $user->getEmail(),
             $eventID,
         );

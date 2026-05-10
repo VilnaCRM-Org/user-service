@@ -1,0 +1,5 @@
+services:
+  App\Shared\Application\EventListener\ApiRateLimitListener:
+    class: App\Shared\Application\EventListener\UnlimitedApiRateLimitListener
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 120 }

@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Shared\Application\Validator\Constraint;
+
+use App\Shared\Application\Validator\UniqueEmailConstraintValidator;
+use Symfony\Component\Validator\Constraint;
+
+#[\Attribute]
+final class UniqueEmail extends Constraint
+{
+    /**
+     * @param array<string>|null $groups
+     */
+    public function __construct(
+        ?array $groups = null,
+        mixed $payload = null,
+    ) {
+        parent::__construct([], $groups, $payload);
+    }
+
+    /**
+     * @psalm-return UniqueEmailConstraintValidator::class
+     */
+    #[\Override]
+    public function validatedBy(): string
+    {
+        return UniqueEmailConstraintValidator::class;
+    }
+}

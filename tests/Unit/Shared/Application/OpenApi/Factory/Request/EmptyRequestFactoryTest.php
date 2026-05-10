@@ -14,6 +14,7 @@ final class EmptyRequestFactoryTest extends UnitTestCase
     private EmptyRequestFactory $factory;
     private RequestBuilder $builderMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->builderMock = $this->createMock(RequestBuilder::class);

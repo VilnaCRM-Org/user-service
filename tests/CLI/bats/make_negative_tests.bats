@@ -24,14 +24,25 @@ load 'bats-assert/load'
 @test "make infection should fail due to partly covered class" {
   mv tests/CLI/bats/php/PartlyCoveredEventBus.php src/Shared/Infrastructure/Bus/Event/
 
-  composer dump-autoload
+  run docker compose exec -T php composer dump-autoload
+  setup_status=$status
+  setup_output=$output
 
-  run make unit-tests
   run make infection
+  infection_status=$status
+  infection_output=$output
 
   mv src/Shared/Infrastructure/Bus/Event/PartlyCoveredEventBus.php tests/CLI/bats/php/
+  run docker compose exec -T php composer dump-autoload
+  restore_status=$status
+  restore_output=$output
 
-  assert_output --partial "8 mutants were not covered by tests"
+  [ "$setup_status" -eq 0 ]
+  [[ "$setup_output" == *"autoload files"* ]]
+  [ "$infection_status" -ne 0 ]
+  [[ "$infection_output" == *"6 mutants were not covered by tests"* ]]
+  [ "$restore_status" -eq 0 ]
+  [[ "$restore_output" == *"autoload files"* ]]
 }
 
 @test "make behat should fail when scenarios fail" {
@@ -60,7 +71,7 @@ load 'bats-assert/load'
 
   mv src/Internal/HealthCheck/Domain/Entity/SomeEntity.php tests/CLI/bats/php/
   rmdir src/Internal/HealthCheck/Domain/Entity/
-  assert_output --partial "error file=/home/runner/work/user-service/user-service/src/Internal/HealthCheck/Domain/Entity/SomeEntity.php"
+  assert_output --partial "SomeEntity.php"
   assert_failure
 }
 
@@ -72,14 +83,14 @@ load 'bats-assert/load'
 }
 
 @test "make phpinsights should fail when code quality is low" {
-  mv tests/CLI/bats/php/temp_bad_code.php temp_bad_code.php
+  mv tests/CLI/bats/php/temp_bad_code.php src/Shared/Application/TempBadCode.php
 
   run make phpinsights
 
-  mv temp_bad_code.php tests/CLI/bats/php/
+  mv src/Shared/Application/TempBadCode.php tests/CLI/bats/php/temp_bad_code.php
 
   assert_failure
-  assert_output --partial "The style score is too low"
+  assert_output --partial "Cyclomatic Complexity"
 }
 
 @test "make unit-tests should fail if tests fail" {

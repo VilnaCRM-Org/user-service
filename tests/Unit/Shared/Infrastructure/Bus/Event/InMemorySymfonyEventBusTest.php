@@ -22,6 +22,7 @@ final class InMemorySymfonyEventBusTest extends UnitTestCase
      */
     private array $eventSubscribers;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

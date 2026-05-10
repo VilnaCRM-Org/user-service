@@ -8,8 +8,8 @@ use ApiPlatform\OpenApi\Model\Header as ApiPlatformHeader;
 use ApiPlatform\OpenApi\Model\Response;
 use App\Shared\Application\OpenApi\Builder\ArrayContextBuilder;
 use App\Shared\Application\OpenApi\Builder\ArrayResponseBuilder;
-use App\Shared\Application\OpenApi\Builder\Header;
-use App\Shared\Application\OpenApi\Builder\Parameter;
+use App\Shared\Application\OpenApi\ValueObject\Header;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 
 final class ArrayResponseBuilderTest extends UnitTestCase
@@ -26,6 +26,7 @@ final class ArrayResponseBuilderTest extends UnitTestCase
     private string $headerFormat;
     private string $headerExample;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -80,6 +81,9 @@ final class ArrayResponseBuilderTest extends UnitTestCase
         $this->assertEquals($expectedHeaders, $response->getHeaders());
     }
 
+    /**
+     * @psalm-return \ArrayObject<'application/json', array{schema: array{type: 'object', properties: array<string, array{type: string}>}, example: array<string, string>}>
+     */
     private function getExpectedContent(): \ArrayObject
     {
         return new \ArrayObject([
@@ -99,6 +103,8 @@ final class ArrayResponseBuilderTest extends UnitTestCase
 
     /**
      * @return array<Parameter>
+     *
+     * @psalm-return list{Parameter}
      */
     private function getParams(): array
     {
@@ -113,6 +119,8 @@ final class ArrayResponseBuilderTest extends UnitTestCase
 
     /**
      * @return array<Header>
+     *
+     * @psalm-return list{Header}
      */
     private function getHeaders(): array
     {
@@ -127,6 +135,9 @@ final class ArrayResponseBuilderTest extends UnitTestCase
         ];
     }
 
+    /**
+     * @psalm-return \ArrayObject<string, ApiPlatformHeader>
+     */
     private function getExpectedHeaders(): \ArrayObject
     {
         return new \ArrayObject([

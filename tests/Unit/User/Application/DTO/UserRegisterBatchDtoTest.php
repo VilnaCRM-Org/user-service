@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
+use TypeError;
 
 final class UserRegisterBatchDtoTest extends UnitTestCase
 {
@@ -17,6 +18,7 @@ final class UserRegisterBatchDtoTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -53,7 +55,8 @@ final class UserRegisterBatchDtoTest extends UnitTestCase
 
     public function testNull(): void
     {
-        $dto = new UserRegisterBatchDto(null);
-        $this->assertNull($dto->users);
+        $this->expectException(TypeError::class);
+
+        new UserRegisterBatchDto(null);
     }
 }

@@ -34,35 +34,48 @@ final class UserCollection implements IteratorAggregate, Countable, ArrayAccess
             array_filter($this->users, static fn ($i) => $i !== $user);
     }
 
+    /**
+     * @psalm-return ArrayIterator<array-key, User>
+     */
+    #[\Override]
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->users);
     }
 
+    /**
+     * @psalm-return int<0, max>
+     */
+    #[\Override]
     public function count(): int
     {
         return count($this->users);
     }
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->users[$offset]);
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): ?User
     {
         return $this->users[$offset] ?? null;
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (is_null($offset)) {
+        if ($offset === null) {
             $this->users[] = $value;
-        } else {
-            $this->users[$offset] = $value;
+            return;
         }
+
+        $this->users[$offset] = $value;
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->users[$offset]);

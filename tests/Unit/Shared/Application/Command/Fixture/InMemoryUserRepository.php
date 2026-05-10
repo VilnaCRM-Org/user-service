@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Shared\Application\Command\Fixture;
+
+use App\User\Domain\Collection\UserCollection;
+use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
+
+final class InMemoryUserRepository implements UserRepositoryInterface
+{
+    /**
+     * @var array<string, UserInterface>
+     */
+    private array $users = [];
+
+    private int $deleteAllCount = 0;
+
+    public function __construct(UserInterface ...$users)
+    {
+        array_map(fn (UserInterface $user) => $this->save($user), $users);
+    }
+
+    #[\Override]
+    public function save(object $user): void
+    {
+        if ($user instanceof UserInterface) {
+            $this->users[$user->getId()] = $user;
+        }
+    }
+
+    #[\Override]
+    public function delete(object $user): void
+    {
+        if ($user instanceof UserInterface) {
+            unset($this->users[$user->getId()]);
+        }
+    }
+
+    #[\Override]
+    public function findByEmail(string $email): ?UserInterface
+    {
+        $matcher = static fn (UserInterface $user): bool => $user->getEmail() === $email;
+        return $this->findUserBy($matcher);
+    }
+
+    /**
+     * @param array<int, string> $emails
+     */
+    #[\Override]
+    public function findByEmails(array $emails): UserCollection
+    {
+        $requestedEmails = array_flip($emails);
+        $users = [];
+
+        foreach ($this->users as $user) {
+            if (!isset($requestedEmails[$user->getEmail()])) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    #[\Override]
+    public function findById(string $id): ?UserInterface
+    {
+        return $this->users[$id] ?? null;
+    }
+
+    #[\Override]
+    public function saveBatch(UserCollection $users): void
+    {
+        array_map(fn (UserInterface $user) => $this->save($user), $users->users);
+    }
+
+    #[\Override]
+    public function deleteBatch(UserCollection $users): void
+    {
+        array_map(fn (UserInterface $user) => $this->delete($user), $users->users);
+    }
+
+    /**
+     * @return array<string, UserInterface>
+     */
+    public function all(): array
+    {
+        return $this->users;
+    }
+
+    #[\Override]
+    public function deleteAll(): void
+    {
+        ++$this->deleteAllCount;
+        $this->users = [];
+    }
+
+    public function deleteAllCount(): int
+    {
+        return $this->deleteAllCount;
+    }
+
+    private function findUserBy(callable $predicate): ?UserInterface
+    {
+        foreach ($this->users as $user) {
+            if ($predicate($user)) {
+                return $user;
+            }
+        }
+        return null;
+    }
+}

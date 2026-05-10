@@ -13,16 +13,19 @@ use App\User\Domain\Entity\ConfirmationTokenInterface;
 interface TokenRepositoryInterface extends RepositoryInterface
 {
     /**
-     * @param ConfirmationToken $token
+     * @param ConfirmationToken $entity
      */
-    public function save(object $token): void;
+    #[\Override]
+    public function save(object $entity): void;
 
-    public function find(string $tokenValue): ?ConfirmationTokenInterface;
+    #[\Override]
+    public function find(string $id): ?ConfirmationTokenInterface;
 
     public function findByUserId(string $userID): ?ConfirmationTokenInterface;
 
     /**
-     * @param ConfirmationToken $token
+     * @param ConfirmationToken $entity
      */
-    public function delete(object $token): void;
+    #[\Override]
+    public function delete(object $entity): void;
 }

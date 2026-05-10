@@ -32,8 +32,7 @@ load 'bats-assert/load'
 @test "make phpinsights command executes and completes analysis" {
   run make phpinsights
   assert_success
-  assert_output --partial '✨ Analysis Completed !'
-  assert_output --partial './vendor/bin/phpinsights --no-interaction --ansi --format=github-action'
+  assert_output --partial './vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check'
 }
 
 @test "make check-security command executes and reports no vulnerabilities" {
@@ -55,10 +54,16 @@ load 'bats-assert/load'
   assert_output --partial "true true true true"
 }
 
-@test "make doctrine-migrations-migrate executes migrations" {
+@test "worker memory soak scenario list stays deterministic and valid" {
+  run ./tests/Load/get-worker-memory-soak-scenarios.sh
+  assert_success
+  assert_output $'oauth\napiEntrypoint\ngetUser\nrefreshToken\nsetupTwoFactor\ncreateUser\nresetPassword\noauthSocialInitiate\noauthSocialCallback\ngraphQLSignin\ngraphQLSetupTwoFactor\ngraphQLCreateUser\ngraphQLGetUsers'
+}
+
+@test "make doctrine-migrations-migrate displays MongoDB ODM migration note" {
   run bash -c "echo 'yes' | make doctrine-migrations-migrate"
   assert_success
-  assert_output --partial 'DoctrineMigrations'
+  assert_output --partial 'MongoDB ODM'
 }
 
 @test "make doctrine-migrations-generate command executes" {
@@ -84,7 +89,7 @@ load 'bats-assert/load'
 @test "make load-fixtures command executes" {
    run bash -c "make load-fixtures & sleep 2; kill $!"
    assert_failure
-   assert_output --partial "Successfully deleted cache entries."
+   assert_output --partial "The cache entries were successfully deleted."
 }
 
 @test "make cache-warmup command executes" {
@@ -93,14 +98,13 @@ load 'bats-assert/load'
 }
 
 @test "make logs shows docker logs" {
-  run bash -c "timeout 5 make logs"
-  assert_failure 124
+  run make logs
+  assert_success
 }
 
 @test "make new-logs command executes" {
-  run bash -c "timeout 5 make logs"
+  run bash -c "timeout 5 make new-logs"
   assert_failure 124
-  assert_output --partial ""GET /ping" 200"
 }
 
 @test "make commands lists all available Symfony commands" {

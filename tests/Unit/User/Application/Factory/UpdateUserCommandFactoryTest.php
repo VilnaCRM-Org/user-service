@@ -18,6 +18,7 @@ final class UpdateUserCommandFactoryTest extends UnitTestCase
     private UserFactoryInterface $userFactory;
     private UuidTransformer $transformer;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,6 +30,7 @@ final class UpdateUserCommandFactoryTest extends UnitTestCase
     public function testCreate(): void
     {
         $factory = new UpdateUserCommandFactory();
+        $currentSessionId = $this->faker->uuid();
         $user = $this->userFactory->create(
             $this->faker->email(),
             $this->faker->name(),
@@ -42,8 +44,9 @@ final class UpdateUserCommandFactoryTest extends UnitTestCase
             $this->faker->password()
         );
 
-        $command = $factory->create($user, $updateData);
+        $command = $factory->create($user, $updateData, $currentSessionId);
 
         $this->assertInstanceOf(UpdateUserCommand::class, $command);
+        $this->assertSame($currentSessionId, $command->currentSessionId);
     }
 }

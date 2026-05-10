@@ -9,6 +9,11 @@ jobs:
     name: K6
     runs-on: ubuntu-latest
 
+    env:
+      COMPOSE_PROJECT_NAME: user-service-load-tests
+      COMPOSE_FILE: docker-compose.yml:docker-compose.override.yml:docker-compose.load-tests.yml
+      LOAD_TEST_COMPOSE_PROJECT: user-service-load-tests
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -17,7 +22,7 @@ jobs:
         run: make start
 
       - name: Setup test db
-        run: make setup-test-db
+        run: make setup-load-test-db
 
       - name: Run load tests
         run: make smoke-load-tests

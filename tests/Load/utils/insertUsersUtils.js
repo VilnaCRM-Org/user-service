@@ -1,5 +1,5 @@
+import { SharedArray } from 'k6/data';
 import http from 'k6/http';
-import exec from 'k6/x/exec';
 
 export default class InsertUsersUtils {
   constructor(utils, scenarioName) {
@@ -11,25 +11,36 @@ export default class InsertUsersUtils {
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
     this.spikeConfig = this.config.endpoints[scenarioName].spike;
-  }
-
-  execInsertUsersCommand() {
-    const runSmoke = this.utils.getCLIVariable('run_smoke') || 'true';
-    const runAverage = this.utils.getCLIVariable('run_average') || 'true';
-    const runStress = this.utils.getCLIVariable('run_stress') || 'true';
-    const runSpike = this.utils.getCLIVariable('run_spike') || 'true';
-    exec.command('make', [
-      `SCENARIO_NAME=${this.scenarioName}`,
-      `RUN_SMOKE=${runSmoke}`,
-      `RUN_AVERAGE=${runAverage}`,
-      `RUN_STRESS=${runStress}`,
-      `RUN_SPIKE=${runSpike}`,
-      `load-tests-prepare-users`,
-    ]);
+    this.profileDefinitions = [
+      {
+        name: 'smoke',
+        key: 'run_smoke',
+        countRequests: () => this.countSmokeRequest(),
+      },
+      {
+        name: 'average',
+        key: 'run_average',
+        countRequests: () => this.countAverageRequest(),
+      },
+      {
+        name: 'stress',
+        key: 'run_stress',
+        countRequests: () => this.countStressRequest(),
+      },
+      {
+        name: 'spike',
+        key: 'run_spike',
+        countRequests: () => this.countSpikeRequest(),
+      },
+    ];
   }
 
   loadInsertedUsers() {
-    return JSON.parse(open(`../${this.utils.getConfig()['usersFileName']}`));
+    const usersFileName = this.utils.getConfig().usersFileName;
+
+    return new SharedArray(`${this.scenarioName}-inserted-users`, () =>
+      JSON.parse(open(`/loadTests/${usersFileName}`))
+    );
   }
 
   *usersGenerator(numberOfUsers) {
@@ -54,7 +65,7 @@ export default class InsertUsersUtils {
     return [batch, userPasswords];
   }
 
-  *requestGenerator(numberOfRequest, batchSize) {
+  *requestGenerator(numberOfRequest, batchSize, serviceToken) {
     for (let i = 0; i < numberOfRequest; i++) {
       const [batch, userPasswords] = this.prepareUserBatch(batchSize);
 
@@ -66,50 +77,62 @@ export default class InsertUsersUtils {
         method: 'POST',
         url: `${this.utils.getBaseHttpUrl()}/batch`,
         body: payload,
-        params: this.utils.getJsonHeader(),
+        params: this.utils.getJsonHeaderWithAuth(serviceToken),
       };
 
       yield [request, userPasswords];
     }
   }
 
-  prepareRequestBatch(numberOfUsers, batchSize) {
+  prepareRequestBatch(numberOfUsers, batchSize, serviceToken) {
     const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
-    const generator = this.requestGenerator(numberOfRequests, batchSize);
+    const generator = this.requestGenerator(numberOfRequests, batchSize, serviceToken);
     const requestBatch = [];
-    const userPasswords = {};
 
     for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
       const { value, done } = generator.next();
       if (done) break;
       const [request, passwords] = value;
-      requestBatch.push(request);
-      Object.assign(userPasswords, passwords);
+      requestBatch.push({
+        request,
+        passwords,
+      });
     }
 
-    return [requestBatch, userPasswords];
+    return requestBatch;
   }
 
   insertUsers(numberOfUsers) {
-    const batchSize = Math.min(this.config.batchSize, numberOfUsers);
-
-    const users = [];
-
-    const [requestBatch, userPasswords] = this.prepareRequestBatch(numberOfUsers, batchSize);
-
-    try {
-      const responses = http.batch(requestBatch);
-      responses.forEach(response => {
-        JSON.parse(response.body).forEach(user => {
-          user.password = userPasswords[user.email];
-          users.push(user);
-        });
-      });
-    } catch (error) {
-      throw new Error(
-        'Error occurred during user insertion, try to lower batchSize in a config file'
-      );
+    const serviceToken = this.utils.getCLIVariable('serviceToken');
+    if (serviceToken === 'undefined' || serviceToken === '') {
+      throw new Error('Missing serviceToken environment variable for batch user creation');
     }
+
+    const configuredBatchSize = this.config.endpoints.createUserBatch?.batchSize ?? 10;
+    const safeBatchSize = configuredBatchSize > 0 ? configuredBatchSize : 10;
+    const batchSize = Math.min(safeBatchSize, numberOfUsers);
+    const users = [];
+    const pendingRequests = this.prepareRequestBatch(numberOfUsers, batchSize, serviceToken);
+    const responses = http.batch(pendingRequests.map(({ request }) => request));
+
+    responses.forEach((response, index) => {
+      const batchRequest = pendingRequests[index];
+
+      if (response.status === 200 || response.status === 201) {
+        try {
+          JSON.parse(response.body).forEach(user => {
+            user.password = batchRequest.passwords[user.email];
+            users.push(user);
+          });
+        } catch (parseError) {
+          throw new Error(`Failed to parse batch response: ${response.body}`);
+        }
+
+        return;
+      }
+
+      throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
+    });
 
     return users;
   }
@@ -125,22 +148,64 @@ export default class InsertUsersUtils {
   }
 
   countTotalRequest() {
-    const requestsMap = {
-      run_smoke: this.countSmokeRequest.bind(this),
-      run_average: this.countAverageRequest.bind(this),
-      run_stress: this.countStressRequest.bind(this),
-      run_spike: this.countSpikeRequest.bind(this),
-    };
+    const totalRequests = this.getProfileDefinitions()
+      .filter(profile => this.utils.getCLIVariable(profile.key) !== 'false')
+      .reduce((requests, profile) => requests + profile.countRequests(), 0);
 
-    let totalRequests = 0;
+    return Math.round(totalRequests * this.additionalUsersRatio);
+  }
 
-    for (const key in requestsMap) {
-      if (this.utils.getCLIVariable(key) !== 'false') {
-        totalRequests += requestsMap[key]();
+  countPreparedUsersBeforeProfile(profileName) {
+    const totalRequests = this.countRequestsBeforeProfile(profileName);
+
+    return Math.round(totalRequests * this.additionalUsersRatio);
+  }
+
+  countRequestsBeforeProfile(profileName) {
+    let requests = 0;
+
+    for (const profile of this.getProfileDefinitions()) {
+      if (profile.name === profileName) {
+        return requests;
+      }
+
+      if (this.utils.getCLIVariable(profile.key) !== 'false') {
+        requests += profile.countRequests();
       }
     }
 
-    return Math.round(totalRequests * this.additionalUsersRatio);
+    throw new Error(`Unknown load test profile "${profileName}"`);
+  }
+
+  getMessageNumberForProfile(profileName, iterationInTest) {
+    return this.countPreparedUsersBeforeProfile(profileName) + iterationInTest + 1;
+  }
+
+  pickUser(users, userIndex) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    const user = users[userIndex % users.length];
+    this.utils.checkUserIsDefined(user);
+
+    return user;
+  }
+
+  pickUserForProfile(users, profileName, iterationInTest) {
+    return this.pickUser(users, this.getMessageNumberForProfile(profileName, iterationInTest) - 1);
+  }
+
+  wrapMessageNumberForUsers(users, messageNumber) {
+    if (users.length === 0) {
+      throw new Error(`No inserted users are available for "${this.scenarioName}"`);
+    }
+
+    return ((messageNumber - 1) % users.length) + 1;
+  }
+
+  getProfileDefinitions() {
+    return this.profileDefinitions;
   }
 
   countSmokeRequest() {

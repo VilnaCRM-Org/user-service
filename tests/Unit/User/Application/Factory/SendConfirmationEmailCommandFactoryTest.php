@@ -14,6 +14,7 @@ final class SendConfirmationEmailCommandFactoryTest extends UnitTestCase
 {
     private SendConfirmationEmailCommandFactoryInterface $factory;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();

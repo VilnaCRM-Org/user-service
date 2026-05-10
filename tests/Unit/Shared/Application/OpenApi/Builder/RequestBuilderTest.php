@@ -6,8 +6,8 @@ namespace App\Tests\Unit\Shared\Application\OpenApi\Builder;
 
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Shared\Application\OpenApi\Builder\ContextBuilder;
-use App\Shared\Application\OpenApi\Builder\Parameter;
 use App\Shared\Application\OpenApi\Builder\RequestBuilder;
+use App\Shared\Application\OpenApi\ValueObject\Parameter;
 use App\Tests\Unit\UnitTestCase;
 use ArrayObject;
 
@@ -16,6 +16,7 @@ final class RequestBuilderTest extends UnitTestCase
     private RequestBuilder $builder;
     private ContextBuilder $contextBuilderMock;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,6 +62,9 @@ final class RequestBuilderTest extends UnitTestCase
         $this->assertEquals($expectedContent, $requestBody->getContent());
     }
 
+    /**
+     * @psalm-return ArrayObject<'application/json', array{schema: array{type: 'object', properties: array{name: array{type: 'string'}, age: array{type: 'integer'}}}, example: array{name: string, age: int}}>
+     */
     private function getExpectedContent(
         string $name,
         int $age

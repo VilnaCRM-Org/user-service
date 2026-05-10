@@ -17,14 +17,21 @@ final class UserTimedOutException extends DomainException
         );
     }
 
+    /**
+     * @psalm-return 'error.user-timed-out'
+     */
+    #[\Override]
     public function getTranslationTemplate(): string
     {
         return 'error.user-timed-out';
     }
 
     /**
-     * @return array<string, DateTimeInterface>
+     * @return array<string>
+     *
+     * @psalm-return array{datetime: string}
      */
+    #[\Override]
     public function getTranslationArgs(): array
     {
         return ['datetime' => $this->timeOutTill->format(

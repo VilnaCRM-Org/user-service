@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\User\Domain\Factory;
+
+use App\User\Domain\Entity\PasswordResetToken;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
+use DateTimeImmutable;
+
+final readonly class PasswordResetTokenFactory implements
+    PasswordResetTokenFactoryInterface
+{
+    public function __construct(
+        private int $tokenLength,
+        private int $expirationTimeInHours
+    ) {
+    }
+
+    #[\Override]
+    public function create(string $userID): PasswordResetTokenInterface
+    {
+        $createdAt = new DateTimeImmutable();
+        $hourUnit = $this->getHourUnit();
+        $expiresAt = $createdAt->modify(
+            "+{$this->expirationTimeInHours} {$hourUnit}"
+        );
+
+        return new PasswordResetToken(
+            bin2hex(random_bytes($this->tokenLength)),
+            $userID,
+            $expiresAt,
+            $createdAt
+        );
+    }
+
+    private function getHourUnit(): string
+    {
+        return $this->expirationTimeInHours === 1 ? 'hour' : 'hours';
+    }
+}
