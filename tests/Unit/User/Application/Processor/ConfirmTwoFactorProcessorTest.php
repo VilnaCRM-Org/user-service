@@ -161,14 +161,11 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
                     $email,
                     $code,
                     $recoveryCodes
-                ): void {
+                ): ConfirmTwoFactorCommandResponse {
                     $this->assertSame($email, $cmd->userEmail);
                     $this->assertSame($code, $cmd->twoFactorCode);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse(
-                            $recoveryCodes
-                        )
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse($recoveryCodes);
                 }
             );
     }
@@ -208,14 +205,13 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
             ->willReturnCallback(
                 function (ConfirmTwoFactorCommand $cmd) use (
                     $sessionId
-                ): void {
+                ): ConfirmTwoFactorCommandResponse {
                     $this->assertSame(
                         $sessionId,
                         $cmd->currentSessionId
                     );
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse([]);
                 }
             );
     }
@@ -226,11 +222,10 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
             ->expects($this->once())
             ->method('dispatch')
             ->willReturnCallback(
-                function (ConfirmTwoFactorCommand $cmd): void {
+                function (ConfirmTwoFactorCommand $cmd): ConfirmTwoFactorCommandResponse {
                     $this->assertSame('', $cmd->currentSessionId);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse([]);
                 }
             );
     }

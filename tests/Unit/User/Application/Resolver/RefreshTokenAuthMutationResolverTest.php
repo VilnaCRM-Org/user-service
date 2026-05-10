@@ -19,7 +19,7 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
     {
         $refreshToken = $this->faker->sha256();
         $command = new RefreshTokenCommand($refreshToken);
-        $command->setResponse($this->response());
+        $commandResponse = $this->response();
         $validator = $this->createMock(MutationInputValidator::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
         $commandFactory = $this->createMock(
@@ -32,10 +32,10 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
             $commandFactory
         );
 
-        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $refreshToken);
+        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $refreshToken, $commandResponse);
         $result = $resolver->__invoke(null, $this->context($refreshToken));
 
-        $this->assertPayload($result, $command->getResponse());
+        $this->assertPayload($result, $commandResponse);
     }
 
     private function expectResolver(
@@ -44,6 +44,7 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
         RefreshTokenCommandFactoryInterface $commandFactory,
         RefreshTokenCommand $command,
         string $refreshToken,
+        RefreshTokenCommandResponse $response,
     ): void {
         $validator->expects($this->once())
             ->method('validate')
@@ -55,7 +56,8 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn($response);
     }
 
     /**

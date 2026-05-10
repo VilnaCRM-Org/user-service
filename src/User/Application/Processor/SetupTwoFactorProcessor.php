@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\DTO\SetupTwoFactorDto;
 use App\User\Application\Factory\SetupTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
@@ -51,8 +52,8 @@ final readonly class SetupTwoFactorProcessor implements ProcessorInterface
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->userIdentityResolver->resolveEmail()
         );
-        $this->commandBus->dispatch($command);
-        $response = $command->getResponse();
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof SetupTwoFactorCommandResponse);
 
         return new JsonResponse(
             [

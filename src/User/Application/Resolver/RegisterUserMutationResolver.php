@@ -6,6 +6,7 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
@@ -38,8 +39,9 @@ final readonly class RegisterUserMutationResolver implements
             $args['initials'],
             $args['password']
         );
-        $this->commandBus->dispatch($command);
+        $commandResponse = $this->commandBus->dispatch($command);
+        assert($commandResponse instanceof RegisterUserCommandResponse);
 
-        return $command->getResponse()->createdUser;
+        return $commandResponse->createdUser;
     }
 }

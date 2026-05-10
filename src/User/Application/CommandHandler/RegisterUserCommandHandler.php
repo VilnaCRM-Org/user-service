@@ -28,16 +28,13 @@ final readonly class RegisterUserCommandHandler implements
     ) {
     }
 
-    public function __invoke(RegisterUserCommand $command): void
-    {
+    public function __invoke(
+        RegisterUserCommand $command
+    ): RegisterUserCommandResponse {
         $existingUser = $this->userRepository->findByEmail($command->email);
 
         if ($existingUser !== null) {
-            $command->setResponse(
-                new RegisterUserCommandResponse($existingUser)
-            );
-
-            return;
+            return new RegisterUserCommandResponse($existingUser);
         }
 
         $user = $this->transformer->transformToUser($command);
@@ -47,7 +44,6 @@ final readonly class RegisterUserCommandHandler implements
         $user->setPassword($hashedPassword);
 
         $this->userRepository->save($user);
-        $command->setResponse(new RegisterUserCommandResponse($user));
 
         $this->eventBus->publish(
             $this->registeredEventFactory->create(
@@ -55,5 +51,7 @@ final readonly class RegisterUserCommandHandler implements
                 (string) $this->uuidFactory->create()
             )
         );
+
+        return new RegisterUserCommandResponse($user);
     }
 }

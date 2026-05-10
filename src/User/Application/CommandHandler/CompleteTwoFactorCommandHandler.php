@@ -34,8 +34,9 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     ) {
     }
 
-    public function __invoke(CompleteTwoFactorCommand $command): void
-    {
+    public function __invoke(
+        CompleteTwoFactorCommand $command
+    ): CompleteTwoFactorCommandResponse {
         $pendingSession = $this->resolvePendingSession($command->pendingSessionId);
         $user = $this->resolveUser($pendingSession->getUserId());
         $method = $this->twoFactorCodeVerifier->verifyAndResolveMethod(
@@ -51,7 +52,8 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         $rememberMe = $pendingSession->isRememberMe();
         $this->consumePendingSessionOrFail($pendingSession->getId());
         $this->consumeRecoveryCodeIfNeeded($user, $command, $method);
-        $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
+
+        return $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
     }
 
     private function issueTokensAndComplete(
@@ -59,7 +61,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         CompleteTwoFactorCommand $command,
         bool $rememberMe,
         string $method
-    ): void {
+    ): CompleteTwoFactorCommandResponse {
         $issued = $this->issueSession(
             $user,
             $command->ipAddress,
@@ -68,9 +70,9 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         );
         $remaining = $this->resolveRemainingCodes($user, $method);
 
-        $command->setResponse($this->buildResponse($issued, $rememberMe, $remaining));
-
         $this->publishEvents($user, $issued, $command, $method, $remaining);
+
+        return $this->buildResponse($issued, $rememberMe, $remaining);
     }
 
     private function issueSession(

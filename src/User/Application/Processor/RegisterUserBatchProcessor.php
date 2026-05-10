@@ -7,6 +7,7 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Application\Factory\RegisterUserBatchCommandFactoryInterface;
 use App\User\Domain\Collection\UserCollection;
@@ -44,11 +45,12 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
         $command = $this->commandFactory->create(
             new UserCollection($data->users)
         );
-        $this->commandBus->dispatch($command);
+        $commandResponse = $this->commandBus->dispatch($command);
+        assert($commandResponse instanceof RegisterUserBatchCommandResponse);
 
         return new Response(
             content: $this->serializer->serialize(
-                $command->getResponse()->users,
+                $commandResponse->users,
                 JsonEncoder::FORMAT,
                 ['groups' => $normalizationGroups]
             ),

@@ -6,6 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RefreshTokenCommand;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
@@ -34,18 +35,26 @@ final readonly class RefreshTokenCommandHandler implements
     ) {
     }
 
-    public function __invoke(RefreshTokenCommand $command): void
-    {
+    public function __invoke(
+        RefreshTokenCommand $command
+    ): RefreshTokenCommandResponse {
         $oldToken = $this->resolveRefreshToken($command->refreshToken);
         $session = $this->resolveSession($oldToken->getSessionId());
         $user = $this->resolveUser($session->getUserId());
         $currentTime = new DateTimeImmutable();
 
-        if ($this->handleIfAlreadyRotated($oldToken, $session, $user, $command, $currentTime)) {
-            return;
+        $alreadyRotatedResponse = $this->handleIfAlreadyRotated(
+            $oldToken,
+            $session,
+            $user,
+            $command,
+            $currentTime
+        );
+        if ($alreadyRotatedResponse instanceof RefreshTokenCommandResponse) {
+            return $alreadyRotatedResponse;
         }
 
-        $this->rotateActiveToken($oldToken, $user, $session, $command, $currentTime);
+        return $this->rotateActiveToken($oldToken, $user, $session, $currentTime);
     }
 
     private function resolveRefreshToken(
@@ -71,16 +80,21 @@ final readonly class RefreshTokenCommandHandler implements
         User $user,
         RefreshTokenCommand $command,
         DateTimeImmutable $currentTime
-    ): bool {
-        if ($this->tryHandleRotatedToken($oldToken, $session, $user, $command, $currentTime)) {
-            return true;
+    ): ?RefreshTokenCommandResponse {
+        $rotatedResponse = $this->tryHandleRotatedToken(
+            $oldToken,
+            $session,
+            $user,
+            $currentTime
+        );
+        if ($rotatedResponse instanceof RefreshTokenCommandResponse) {
+            return $rotatedResponse;
         }
 
         return $this->tryHandleConcurrentRotation(
             $oldToken->getTokenHash(),
             $session,
             $user,
-            $command,
             $currentTime,
             $command->refreshToken
         );
@@ -90,9 +104,8 @@ final readonly class RefreshTokenCommandHandler implements
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command,
         DateTimeImmutable $currentTime
-    ): void {
+    ): RefreshTokenCommandResponse {
         if (!$oldToken->isWithinGracePeriod(
             $currentTime,
             $this->refreshTokenGraceWindowSeconds
@@ -101,11 +114,10 @@ final readonly class RefreshTokenCommandHandler implements
         }
 
         $tokens = $this->refreshTokenRepository->findBySessionId($session->getId());
-        $this->handleGraceWindowReuse(
+        return $this->handleGraceWindowReuse(
             $oldToken,
             $session,
             $user,
-            $command,
             $currentTime,
             $tokens
         );
@@ -160,10 +172,9 @@ final readonly class RefreshTokenCommandHandler implements
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command,
         DateTimeImmutable $currentTime,
         array $tokens
-    ): void {
+    ): RefreshTokenCommandResponse {
         if ($this->hasLaterRotation($oldToken, $tokens)) {
             $this->handleTheftDetection(
                 $oldToken,
@@ -176,8 +187,10 @@ final readonly class RefreshTokenCommandHandler implements
 
         $this->assertGraceWindowIsEligible($oldToken, $session, $user, $currentTime, $tokens);
         $oldToken->markGraceUsed();
-        $this->setResponseWithNewTokens($command, $user, $session);
+        $response = $this->issueNewTokens($user, $session);
         $this->publishRotatedEvent($session, $user);
+
+        return $response;
     }
 
     /**
@@ -278,32 +291,28 @@ final readonly class RefreshTokenCommandHandler implements
         AuthRefreshToken $oldToken,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command,
         DateTimeImmutable $currentTime
-    ): bool {
+    ): ?RefreshTokenCommandResponse {
         if (!$oldToken->isRotated()) {
-            return false;
+            return null;
         }
 
-        $this->handleRotatedToken($oldToken, $session, $user, $command, $currentTime);
-
-        return true;
+        return $this->handleRotatedToken($oldToken, $session, $user, $currentTime);
     }
 
     private function tryHandleConcurrentRotation(
         string $tokenHash,
         AuthSession $session,
         User $user,
-        RefreshTokenCommand $command,
         DateTimeImmutable $currentTime,
         string $plainToken
-    ): bool {
+    ): ?RefreshTokenCommandResponse {
         $markedSuccessfully = $this->refreshTokenRepository->markAsRotatedIfActive(
             $tokenHash,
             $currentTime
         );
         if ($markedSuccessfully) {
-            return false;
+            return null;
         }
 
         $latestToken = $this->resolveRefreshToken($plainToken);
@@ -311,34 +320,31 @@ final readonly class RefreshTokenCommandHandler implements
             $this->throwUnauthorized();
         }
 
-        $this->handleRotatedToken(
+        return $this->handleRotatedToken(
             $latestToken,
             $session,
             $user,
-            $command,
             $currentTime
         );
-
-        return true;
     }
 
     private function rotateActiveToken(
         AuthRefreshToken $oldToken,
         User $user,
         AuthSession $session,
-        RefreshTokenCommand $command,
         DateTimeImmutable $currentTime
-    ): void {
+    ): RefreshTokenCommandResponse {
         $oldToken->markAsRotated($currentTime);
-        $this->setResponseWithNewTokens($command, $user, $session);
+        $response = $this->issueNewTokens($user, $session);
         $this->publishRotatedEvent($session, $user);
+
+        return $response;
     }
 
-    private function setResponseWithNewTokens(
-        RefreshTokenCommand $command,
+    private function issueNewTokens(
         User $user,
         AuthSession $session
-    ): void {
+    ): RefreshTokenCommandResponse {
         $issuedAt = new DateTimeImmutable();
 
         $newRefreshPlain = $this->authTokenFactory->generateOpaqueToken();
@@ -354,7 +360,7 @@ final readonly class RefreshTokenCommandHandler implements
             $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
         );
 
-        $command->setTokens($accessToken, $newRefreshPlain);
+        return new RefreshTokenCommandResponse($accessToken, $newRefreshPlain);
     }
 
     /**

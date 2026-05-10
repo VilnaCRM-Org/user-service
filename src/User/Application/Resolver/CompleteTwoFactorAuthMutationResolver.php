@@ -6,6 +6,7 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
@@ -44,10 +45,11 @@ final readonly class CompleteTwoFactorAuthMutationResolver implements
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof CompleteTwoFactorCommandResponse);
 
         return $this->authPayloadFactory->createFromCompleteTwoFactorResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

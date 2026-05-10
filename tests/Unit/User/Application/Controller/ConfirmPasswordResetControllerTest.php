@@ -74,21 +74,19 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
                 fn (ConfirmPasswordResetCommand $cmd) => $this->validateCommand(
                     $cmd,
                     $testData['token'],
-                    $testData['newPassword'],
-                    $commandResponse
+                    $testData['newPassword']
                 )
-            ));
+            ))
+            ->willReturn($commandResponse);
     }
 
     private function validateCommand(
         ConfirmPasswordResetCommand $command,
         string $token,
-        string $newPassword,
-        ConfirmPasswordResetCommandResponse $commandResponse
+        string $newPassword
     ): bool {
         $this->assertEquals($token, $command->token);
         $this->assertEquals($newPassword, $command->newPassword);
-        $command->setResponse($commandResponse);
 
         return true;
     }

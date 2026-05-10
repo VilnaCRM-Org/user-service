@@ -23,8 +23,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectUserLookup($user);
         $capturedPayload = [];
         $this->expectSuccessfulRotation($session, $user, 'new-access-token', $capturedPayload);
-        $command = $this->invokeHandler($plainToken);
-        $response = $command->getResponse();
+        $response = $this->invokeHandler($plainToken);
         $this->assertSame('new-access-token', $response->getAccessToken());
         $expectedRefresh = 'test-opaque-token-1234567890-abcdefghijklmn';
         $this->assertSame($expectedRefresh, $response->getRefreshToken());
@@ -97,9 +96,9 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
         $this->expectSuccessfulGraceReuse($session, $user, 'grace-access-token');
-        $command = $this->invokeHandler($plainToken);
-        $this->assertSame('grace-access-token', $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $response = $this->invokeHandler($plainToken);
+        $this->assertSame('grace-access-token', $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($token->isGraceUsed());
     }
 
@@ -116,9 +115,9 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
         $this->expectSuccessfulGraceReuse($session, $user, 'concurrent-access-token');
-        $command = $this->invokeHandler($plainToken);
-        $this->assertSame('concurrent-access-token', $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $response = $this->invokeHandler($plainToken);
+        $this->assertSame('concurrent-access-token', $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($latestToken->isGraceUsed());
     }
 
@@ -296,10 +295,10 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
             ->willReturn($candidateTokens);
         $this->expectSuccessfulGraceReuse($session, $user, $expectedAccessToken);
 
-        $command = $this->invokeHandler($plainToken);
+        $response = $this->invokeHandler($plainToken);
 
-        $this->assertSame($expectedAccessToken, $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $this->assertSame($expectedAccessToken, $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isGraceUsed());
     }
 

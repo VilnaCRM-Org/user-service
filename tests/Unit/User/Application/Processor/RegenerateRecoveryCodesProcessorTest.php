@@ -126,15 +126,15 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(
                 function (RegenerateRecoveryCodesCommand $cmd) use (
                     $email,
-                    $sessionId,
-                    $codes
+                    $sessionId
                 ): bool {
                     $this->assertSame($email, $cmd->userEmail);
                     $this->assertSame($sessionId, $cmd->currentSessionId);
-                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
+
                     return true;
                 }
-            ));
+            ))
+            ->willReturn(new RegenerateRecoveryCodesCommandResponse($codes));
     }
 
     private function expectDispatchWithEmptySessionResponse(): void
@@ -143,10 +143,11 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(
                 function (RegenerateRecoveryCodesCommand $cmd): bool {
                     $this->assertSame('', $cmd->currentSessionId);
-                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse([]));
+
                     return true;
                 }
-            ));
+            ))
+            ->willReturn(new RegenerateRecoveryCodesCommandResponse([]));
     }
 
     private function processRecoveryCodes(): mixed

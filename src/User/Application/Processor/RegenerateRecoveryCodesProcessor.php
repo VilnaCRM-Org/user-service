@@ -7,6 +7,7 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesDto;
 use App\User\Application\Factory\RegenerateRecoveryCodesCommandFactoryInterface;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
@@ -48,13 +49,12 @@ final readonly class RegenerateRecoveryCodesProcessor implements
             $sessionId
         );
 
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof RegenerateRecoveryCodesCommandResponse);
 
         return new JsonResponse(
             [
-                'recovery_codes' => $command
-                    ->getResponse()
-                    ->getRecoveryCodes(),
+                'recovery_codes' => $response->getRecoveryCodes(),
             ],
             Response::HTTP_OK
         );

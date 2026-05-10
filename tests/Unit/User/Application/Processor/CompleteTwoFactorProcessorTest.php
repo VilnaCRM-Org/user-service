@@ -228,16 +228,15 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                     $totpCode,
                     $ipAddress,
                     $userAgent,
-                    $response
                 ): bool {
                     $this->assertSame($pendingSessionId, $cmd->pendingSessionId);
                     $this->assertSame($totpCode, $cmd->twoFactorCode);
                     $this->assertSame($ipAddress, $cmd->ipAddress);
                     $this->assertSame($userAgent, $cmd->userAgent);
-                    $cmd->setResponse($response);
                     return true;
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function expectDispatchSetsResponse(
@@ -245,11 +244,11 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
     ): void {
         $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
-                static function (CompleteTwoFactorCommand $cmd) use ($response): bool {
-                    $cmd->setResponse($response);
-                    return true;
+                static function (CompleteTwoFactorCommand $cmd): bool {
+                    return $cmd->pendingSessionId !== '';
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function expectDispatchAssertingRequestMetadata(
@@ -262,14 +261,13 @@ final class CompleteTwoFactorProcessorTest extends UnitTestCase
                 function (CompleteTwoFactorCommand $cmd) use (
                     $ipAddress,
                     $userAgent,
-                    $response
                 ): bool {
                     $this->assertSame($ipAddress, $cmd->ipAddress);
                     $this->assertSame($userAgent, $cmd->userAgent);
-                    $cmd->setResponse($response);
                     return true;
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function processDto(

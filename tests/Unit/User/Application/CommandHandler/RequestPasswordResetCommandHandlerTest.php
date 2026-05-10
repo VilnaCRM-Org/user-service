@@ -65,9 +65,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->setupPasswordResetExpectations($testData, $mocks);
 
         $command = new RequestPasswordResetCommand($testData['email']);
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertPasswordResetResponse($command);
+        $this->assertPasswordResetResponse($response);
     }
 
     public function testRequestPasswordResetForNonExistingUser(): void
@@ -78,12 +78,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->setupNeverCalledExpectations();
 
         $command = new RequestPasswordResetCommand($email);
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertInstanceOf(
-            RequestPasswordResetCommandResponse::class,
-            $command->getResponse()
-        );
+        $this->assertPasswordResetResponse($response);
     }
 
     private function setupUserNotFoundExpectations(string $email): void
@@ -208,11 +205,12 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->with($mocks['event']);
     }
 
-    private function assertPasswordResetResponse(RequestPasswordResetCommand $command): void
-    {
+    private function assertPasswordResetResponse(
+        RequestPasswordResetCommandResponse $response
+    ): void {
         $this->assertInstanceOf(
             RequestPasswordResetCommandResponse::class,
-            $command->getResponse()
+            $response
         );
     }
 }

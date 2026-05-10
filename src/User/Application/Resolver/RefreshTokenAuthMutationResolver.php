@@ -6,6 +6,7 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Factory\RefreshTokenCommandFactoryInterface;
@@ -34,10 +35,11 @@ final readonly class RefreshTokenAuthMutationResolver implements MutationResolve
         $command = $this->refreshTokenCommandFactory->create(
             $dto->refreshTokenValue()
         );
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof RefreshTokenCommandResponse);
 
         return $this->authPayloadFactory->createFromRefreshTokenResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

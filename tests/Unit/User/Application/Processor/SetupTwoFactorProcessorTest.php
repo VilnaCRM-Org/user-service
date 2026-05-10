@@ -221,14 +221,11 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static function (SetupTwoFactorCommand $cmd) use ($email, $uri, $secret): bool {
-                    $cmd->setResponse(
-                        new SetupTwoFactorCommandResponse($uri, $secret)
-                    );
-
+                static function (SetupTwoFactorCommand $cmd) use ($email): bool {
                     return $cmd->userEmail === $email;
                 }
-            ));
+            ))
+            ->willReturn(new SetupTwoFactorCommandResponse($uri, $secret));
     }
 
     private function assertSetupResponse(

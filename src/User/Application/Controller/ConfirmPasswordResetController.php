@@ -6,6 +6,7 @@ namespace App\User\Application\Controller;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\DTO\ConfirmPasswordResetDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,7 +27,8 @@ final class ConfirmPasswordResetController extends AbstractController
             $confirmPasswordResetDto->token,
             $confirmPasswordResetDto->newPassword
         );
-        $this->commandBus->dispatch($command);
+        $commandResponse = $this->commandBus->dispatch($command);
+        assert($commandResponse instanceof ConfirmPasswordResetCommandResponse);
 
         return new JsonResponse(null, 204);
     }

@@ -25,13 +25,13 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         $this->signInPublisher->expects($this->never())->method('publishSignedIn');
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
-        $this->createHandler()->__invoke($command);
+        $response = $this->createHandler()->__invoke($command);
 
         $this->assertPendingTwoFactor($pendingSid, $user->getId(), 300, false);
-        $this->assertTrue($command->getResponse()->isTwoFactorEnabled());
-        $this->assertSame($pendingSid, $command->getResponse()->getPendingSessionId());
-        $this->assertNull($command->getResponse()->getAccessToken());
-        $this->assertNull($command->getResponse()->getRefreshToken());
+        $this->assertTrue($response->isTwoFactorEnabled());
+        $this->assertSame($pendingSid, $response->getPendingSessionId());
+        $this->assertNull($response->getAccessToken());
+        $this->assertNull($response->getRefreshToken());
     }
 
     public function testInvokeStoresRememberMeInPendingTwoFactorWhenTwoFactorIsEnabled(): void
@@ -47,12 +47,12 @@ final class SignInCommandHandlerTwoFactorTest extends SignInCommandHandlerTestCa
         $this->idFactory->method('create')->willReturn($pendingSid);
 
         $command = new SignInCommand($email, $pw, true, $ip, $ua);
-        $this->createHandler()->__invoke($command);
+        $response = $this->createHandler()->__invoke($command);
 
         $saved = $this->pendingTwoFactorRepository->saved();
         $this->assertNotNull($saved);
         $this->assertTrue($saved->isRememberMe());
-        $this->assertTrue($command->getResponse()->isTwoFactorEnabled());
+        $this->assertTrue($response->isTwoFactorEnabled());
     }
 
     public function testDefaultTtlIsThreeHundredSeconds(): void

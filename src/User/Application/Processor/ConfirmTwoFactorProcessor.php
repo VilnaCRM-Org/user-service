@@ -7,6 +7,7 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
@@ -48,13 +49,12 @@ final readonly class ConfirmTwoFactorProcessor implements ProcessorInterface
             $sessionId
         );
 
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof ConfirmTwoFactorCommandResponse);
 
         return new JsonResponse(
             [
-                'recovery_codes' => $command
-                    ->getResponse()
-                    ->getRecoveryCodes(),
+                'recovery_codes' => $response->getRecoveryCodes(),
             ],
             Response::HTTP_OK
         );

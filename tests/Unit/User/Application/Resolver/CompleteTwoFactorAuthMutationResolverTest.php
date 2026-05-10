@@ -23,6 +23,7 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
     private HttpRequestContextResolverInterface $requestContextResolver;
     private CompleteTwoFactorAuthMutationResolver $resolver;
     private CompleteTwoFactorCommand $command;
+    private CompleteTwoFactorCommandResponse $commandResponse;
     private Request $request;
     private string $pendingSessionId;
     private string $twoFactorCode;
@@ -80,7 +81,7 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
             $this->ipAddress,
             $this->userAgent
         );
-        $this->command->setResponse($this->response());
+        $this->commandResponse = $this->response();
     }
 
     private function expectValidation(): void
@@ -121,7 +122,8 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
             ->willReturn($this->command);
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->command);
+            ->with($this->command)
+            ->willReturn($this->commandResponse);
     }
 
     /**
@@ -152,11 +154,10 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
 
     private function assertPayload(AuthPayload $payload): void
     {
-        $response = $this->command->getResponse();
         $this->assertSame('auth-complete-two-factor', $payload->getId());
         $this->assertTrue($payload->isTwoFactorEnabled());
-        $this->assertSame($response->getAccessToken(), $payload->getAccessToken());
-        $this->assertSame($response->getRefreshToken(), $payload->getRefreshToken());
+        $this->assertSame($this->commandResponse->getAccessToken(), $payload->getAccessToken());
+        $this->assertSame($this->commandResponse->getRefreshToken(), $payload->getRefreshToken());
         $this->assertSame(2, $payload->getRecoveryCodesRemaining());
         $this->assertSame('Use recovery codes soon.', $payload->getWarning());
     }

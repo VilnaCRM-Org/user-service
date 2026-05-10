@@ -51,8 +51,8 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $this->commandBus->dispatch($command);
-        $commandResponse = $command->getResponse();
+        $commandResponse = $this->commandBus->dispatch($command);
+        assert($commandResponse instanceof CompleteTwoFactorCommandResponse);
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
         $accessToken = $commandResponse->getAccessToken();

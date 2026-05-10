@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
@@ -32,8 +33,9 @@ final readonly class ConfirmPasswordResetCommandHandler implements
     ) {
     }
 
-    public function __invoke(ConfirmPasswordResetCommand $command): void
-    {
+    public function __invoke(
+        ConfirmPasswordResetCommand $command
+    ): ConfirmPasswordResetCommandResponse {
         $passwordResetToken = $this->getValidatedToken($command->token);
         $user = $this->getUserFromToken($passwordResetToken);
 
@@ -47,7 +49,7 @@ final readonly class ConfirmPasswordResetCommandHandler implements
         );
         $this->publishEvent($user);
 
-        $command->markCompleted();
+        return new ConfirmPasswordResetCommandResponse();
     }
 
     private function getValidatedToken(

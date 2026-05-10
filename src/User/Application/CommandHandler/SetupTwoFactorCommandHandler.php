@@ -23,8 +23,9 @@ final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInter
     ) {
     }
 
-    public function __invoke(SetupTwoFactorCommand $command): void
-    {
+    public function __invoke(
+        SetupTwoFactorCommand $command
+    ): SetupTwoFactorCommandResponse {
         $user = $this->resolveUser($command->userEmail);
 
         if ($user->isTwoFactorEnabled()) {
@@ -39,11 +40,9 @@ final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInter
         );
         $this->userRepository->save($user);
 
-        $command->setResponse(
-            new SetupTwoFactorCommandResponse(
-                $totpData['otpauth_uri'],
-                $secret
-            )
+        return new SetupTwoFactorCommandResponse(
+            $totpData['otpauth_uri'],
+            $secret
         );
     }
 

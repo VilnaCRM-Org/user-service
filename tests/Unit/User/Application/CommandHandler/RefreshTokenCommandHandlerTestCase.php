@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
 use App\User\Domain\Entity\AuthRefreshToken;
@@ -243,11 +244,11 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
 
     protected function invokeHandler(
         string $plainToken
-    ): RefreshTokenCommand {
+    ): RefreshTokenCommandResponse {
         $handler = $this->createHandler();
         $command = new RefreshTokenCommand($plainToken);
-        $handler->__invoke($command);
-        return $command;
+
+        return $handler->__invoke($command);
     }
 
     /**

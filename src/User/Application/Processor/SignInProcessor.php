@@ -52,8 +52,8 @@ final readonly class SignInProcessor implements ProcessorInterface
             $this->httpRequestContextResolver->resolveUserAgent($request)
         );
 
-        $this->commandBus->dispatch($command);
-        $commandResponse = $command->getResponse();
+        $commandResponse = $this->commandBus->dispatch($command);
+        assert($commandResponse instanceof SignInCommandResponse);
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
 

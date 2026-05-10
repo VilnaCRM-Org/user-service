@@ -6,6 +6,7 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactoryInterface;
@@ -38,10 +39,11 @@ final readonly class ConfirmTwoFactorAuthMutationResolver implements
             $dto->twoFactorCodeValue(),
             $this->currentUserIdentityResolver->resolveSessionId()
         );
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof ConfirmTwoFactorCommandResponse);
 
         return $this->authPayloadFactory->createFromConfirmTwoFactorResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

@@ -62,15 +62,13 @@ final class RefreshTokenProcessorTest extends UnitTestCase
              */
                 function (RefreshTokenCommand $command): bool {
                     $this->assertSame('old-refresh-token', $command->refreshToken);
-                    $command->setResponse(
-                        new RefreshTokenCommandResponse(
-                            'new-access-token',
-                            'new-refresh-token'
-                        )
-                    );
 
                     return true;
                 }
+            ))
+            ->willReturn(new RefreshTokenCommandResponse(
+                'new-access-token',
+                'new-refresh-token'
             ));
     }
 
@@ -83,15 +81,12 @@ final class RefreshTokenProcessorTest extends UnitTestCase
              * @return true
              */
                 static function (RefreshTokenCommand $command): bool {
-                    $command->setResponse(
-                        new RefreshTokenCommandResponse(
-                            '',
-                            'new-refresh-token'
-                        )
-                    );
-
-                    return true;
+                    return $command->refreshToken === 'old-refresh-token';
                 }
+            ))
+            ->willReturn(new RefreshTokenCommandResponse(
+                '',
+                'new-refresh-token'
             ));
     }
 

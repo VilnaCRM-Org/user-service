@@ -23,6 +23,7 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
     private HttpRequestContextResolverInterface $requestContextResolver;
     private SignInAuthMutationResolver $resolver;
     private SignInCommand $command;
+    private SignInCommandResponse $commandResponse;
     private Request $request;
     private string $email;
     private string $password;
@@ -79,7 +80,7 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
             $this->ipAddress,
             $this->userAgent
         );
-        $this->command->setResponse($this->response());
+        $this->commandResponse = $this->response();
     }
 
     private function expectValidation(): void
@@ -122,7 +123,8 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
             ->willReturn($this->command);
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->command);
+            ->with($this->command)
+            ->willReturn($this->commandResponse);
     }
 
     /**
@@ -154,13 +156,12 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
 
     private function assertPayload(AuthPayload $payload): void
     {
-        $response = $this->command->getResponse();
         $this->assertSame('auth-sign-in', $payload->getId());
         $this->assertFalse($payload->isTwoFactorEnabled());
-        $this->assertSame($response->getAccessToken(), $payload->getAccessToken());
-        $this->assertSame($response->getRefreshToken(), $payload->getRefreshToken());
+        $this->assertSame($this->commandResponse->getAccessToken(), $payload->getAccessToken());
+        $this->assertSame($this->commandResponse->getRefreshToken(), $payload->getRefreshToken());
         $this->assertSame(
-            $response->getPendingSessionId(),
+            $this->commandResponse->getPendingSessionId(),
             $payload->getPendingSessionId()
         );
     }

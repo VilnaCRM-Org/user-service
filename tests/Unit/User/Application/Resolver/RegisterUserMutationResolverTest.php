@@ -85,7 +85,6 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         );
         $command =
             $this->signUpCommandFactory->create($email, $initials, $password);
-        $command->setResponse(new RegisterUserCommandResponse($user));
 
         $this->transformer->expects($this->once())
             ->method('transform');
@@ -100,6 +99,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn(new RegisterUserCommandResponse($user));
     }
 }

@@ -6,6 +6,7 @@ namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Factory\SetupTwoFactorCommandFactoryInterface;
 
@@ -28,10 +29,11 @@ final readonly class SetupTwoFactorAuthMutationResolver implements MutationResol
         $command = $this->setupTwoFactorCommandFactory->create(
             $this->currentUserIdentityResolver->resolveEmail()
         );
-        $this->commandBus->dispatch($command);
+        $response = $this->commandBus->dispatch($command);
+        assert($response instanceof SetupTwoFactorCommandResponse);
 
         return $this->authPayloadFactory->createFromSetupTwoFactorResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

@@ -249,40 +249,39 @@ final class SignInProcessorTest extends UnitTestCase
                     $password,
                     $ipAddress,
                     $userAgent,
-                    $response
                 ): bool {
                     $this->assertSame($email, $cmd->email);
                     $this->assertSame($password, $cmd->password);
                     $this->assertFalse($cmd->rememberMe);
                     $this->assertSame($ipAddress, $cmd->ipAddress);
                     $this->assertSame($userAgent, $cmd->userAgent);
-                    $cmd->setResponse($response);
                     return true;
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function expectDispatchWithResponse(SignInCommandResponse $response): void
     {
         $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
-                static function (SignInCommand $cmd) use ($response): bool {
-                    $cmd->setResponse($response);
-                    return true;
+                static function (SignInCommand $cmd): bool {
+                    return $cmd->email !== '';
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function expectDispatchWithRememberMe(SignInCommandResponse $response): void
     {
         $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
-                function (SignInCommand $cmd) use ($response): bool {
+                function (SignInCommand $cmd): bool {
                     $this->assertTrue($cmd->rememberMe);
-                    $cmd->setResponse($response);
                     return true;
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function expectDispatchValidatingRequestMetadata(
@@ -292,13 +291,13 @@ final class SignInProcessorTest extends UnitTestCase
     ): void {
         $this->commandBus->expects($this->once())->method('dispatch')
             ->with($this->callback(
-                function (SignInCommand $cmd) use ($expectedIp, $expectedAgent, $response): bool {
+                function (SignInCommand $cmd) use ($expectedIp, $expectedAgent): bool {
                     $this->assertSame($expectedIp, $cmd->ipAddress);
                     $this->assertSame($expectedAgent, $cmd->userAgent);
-                    $cmd->setResponse($response);
                     return true;
                 }
-            ));
+            ))
+            ->willReturn($response);
     }
 
     private function assertTokenResponseBody(
