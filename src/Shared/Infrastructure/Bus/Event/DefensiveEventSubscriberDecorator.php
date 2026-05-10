@@ -80,8 +80,8 @@ final readonly class DefensiveEventSubscriberDecorator implements
             'event_id' => $event->eventId(),
             'event_type' => $event::class,
             'event_name' => $event::eventName(),
-            'error' => $exception->getMessage(),
             'exception_class' => $exception::class,
+            'exception_code' => (string) $exception->getCode(),
         ];
     }
 }

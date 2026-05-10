@@ -64,8 +64,8 @@ final class DefensiveEventSubscriberDecoratorTest extends UnitTestCase
             $capturedContext,
             $subscriber::class,
             $eventId,
-            'Subscriber failed',
             TestSubscriberFailureException::class,
+            '0',
         );
         self::assertSame(1, $this->metricsEmitter->count());
     }
@@ -86,8 +86,8 @@ final class DefensiveEventSubscriberDecoratorTest extends UnitTestCase
             $capturedContext,
             $subscriber::class,
             $event->eventId(),
-            'Metric emission failed',
-            \RuntimeException::class
+            \RuntimeException::class,
+            '0',
         );
     }
 
@@ -119,15 +119,16 @@ final class DefensiveEventSubscriberDecoratorTest extends UnitTestCase
         array $capturedContext,
         string $subscriberClass,
         string $eventId,
-        string $error,
-        string $exceptionClass
+        string $exceptionClass,
+        string $exceptionCode
     ): void {
         self::assertSame($subscriberClass, $capturedContext['subscriber']);
         self::assertSame($eventId, $capturedContext['event_id']);
         self::assertSame(TestDomainEvent::class, $capturedContext['event_type']);
         self::assertSame(TestDomainEvent::eventName(), $capturedContext['event_name']);
-        self::assertSame($error, $capturedContext['error']);
+        self::assertArrayNotHasKey('error', $capturedContext);
         self::assertSame($exceptionClass, $capturedContext['exception_class']);
+        self::assertSame($exceptionCode, $capturedContext['exception_code']);
     }
 
     /**
