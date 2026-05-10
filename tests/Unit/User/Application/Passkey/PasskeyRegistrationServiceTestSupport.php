@@ -33,10 +33,12 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateTimeImmutable;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Uid\Factory\UuidFactory as SymfonyUuidFactory;
 
+/**
+ * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+ */
 final readonly class PasskeyRegistrationServiceTestSupport
 {
     public function __construct(
@@ -48,7 +50,8 @@ final readonly class PasskeyRegistrationServiceTestSupport
         private PasswordHasherInterface $passwordHasher,
         private IdFactoryInterface $idFactory,
         private EventBusInterface $eventBus,
-        private EventIdFactoryInterface $eventIdFactory
+        private EventIdFactoryInterface $eventIdFactory,
+        private PasskeyServiceTestObjects $objects
     ) {
     }
 
@@ -68,19 +71,12 @@ final readonly class PasskeyRegistrationServiceTestSupport
 
     public function createPasskeyCredential(User $user): PasskeyCredential
     {
-        return new PasskeyCredential(
-            'passkey-id',
-            $user->getId(),
-            (new PasskeyEncoding())->encode('raw-credential-id'),
-            '{}',
-            'Laptop',
-            new DateTimeImmutable()
-        );
+        return $this->objects->createCredential($user->getId());
     }
 
     public function assertRegistrationOptionsStarted(PasskeyOptionsResult $result): void
     {
-        Assert::assertSame('challenge-id', $result->getChallenge()->getId());
+        Assert::assertSame($this->objects->challengeId(), $result->getChallenge()->getId());
         Assert::assertSame(
             'public-key',
             $result->getPublicKeyOptions()['excludeCredentials'][0]['type']
@@ -93,12 +89,12 @@ final readonly class PasskeyRegistrationServiceTestSupport
     public function completeSignup(array $credentialPayload): PasskeyAuthenticationResult
     {
         return $this->createService()->completeSignup(
-            'challenge-id',
+            $this->objects->challengeId(),
             $credentialPayload,
-            'Work laptop',
+            $this->objects->signupLabel(),
             true,
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
         );
     }
 
@@ -106,8 +102,8 @@ final readonly class PasskeyRegistrationServiceTestSupport
         PasskeyAuthenticationResult $result,
         PasskeyChallenge $challenge
     ): void {
-        Assert::assertSame('access-token', $result->getAccessToken());
-        Assert::assertSame('refresh-token', $result->getRefreshToken());
+        Assert::assertSame($this->objects->accessToken(), $result->getAccessToken());
+        Assert::assertSame($this->objects->refreshToken(), $result->getRefreshToken());
         Assert::assertTrue($result->isRememberMe());
         Assert::assertTrue($challenge->isConsumed());
     }
@@ -129,9 +125,9 @@ final readonly class PasskeyRegistrationServiceTestSupport
     private function createConfiguration(): PasskeyConfiguration
     {
         return new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM User Service',
-            'https://localhost',
+            $this->objects->rpId(),
+            $this->objects->rpName(),
+            $this->objects->origin(),
             300,
             300
         );

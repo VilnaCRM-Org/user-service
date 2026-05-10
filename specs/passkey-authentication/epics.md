@@ -10,8 +10,8 @@
 
 Acceptance Criteria:
 
-- BMALPH doctor passes.
-- BMALPH implementation transition succeeds.
+- BMAD doctor passes.
+- BMAD implementation transition succeeds.
 - Planning artifacts are committed under `specs/passkey-authentication`.
 
 ## Epic 2: Persistence Model

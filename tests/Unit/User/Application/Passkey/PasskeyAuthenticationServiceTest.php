@@ -49,48 +49,47 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->credentialVerifier = $this->createMock(PasskeyCredentialVerifierInterface::class);
         $this->sessionFactory = $this->createMock(IssuedSessionFactoryInterface::class);
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
-        $this->objects = new PasskeyServiceTestObjects();
-        $this->support = new PasskeyAuthenticationServiceTestSupport(
-            $this->userRepository,
-            $this->credentialRepository,
-            $this->challengeRepository,
-            $this->idFactory,
-            $this->credentialVerifier,
-            $this->sessionFactory,
-            $this->signInPublisher
-        );
+        $this->objects = new PasskeyServiceTestObjects($this->faker);
+        $this->support = $this->createSupport();
     }
 
     public function testStartUsesExistingUserCredentialsWhenUserExists(): void
     {
         $user = $this->objects->createUser(
             '018f33bb-1111-7222-8333-111111111111',
-            'person@example.com'
+            $this->objects->authenticationEmail()
         );
         $credential = $this->objects->createCredential($user->getId());
 
-        $this->idFactory->expects($this->once())->method('create')->willReturn('challenge-id');
+        $this->idFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($this->objects->challengeId());
         $this->expectExistingUserCredentials($user, $credential);
         $this->expectAuthenticationOptionsChallenge($user);
 
-        $result = $this->support->createService()->start('person@example.com', true);
+        $result = $this->support->createService()->start(
+            $this->objects->authenticationEmail(),
+            true
+        );
 
         $this->assertAuthenticationOptionsStarted($result);
     }
 
     public function testStartCreatesOptionsWithoutCredentialDescriptorsForUnknownEmail(): void
     {
-        $this->idFactory->expects($this->once())->method('create')->willReturn('challenge-id');
+        $this->idFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($this->objects->challengeId());
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
-            ->with('missing@example.com')
+            ->with($this->objects->unknownEmail())
             ->willReturn(null);
         $this->credentialRepository->expects($this->never())->method('findByUserId');
         $this->challengeRepository->expects($this->once())->method('save');
 
-        $result = $this->support->createService()->start('missing@example.com', false);
+        $result = $this->support->createService()->start($this->objects->unknownEmail(), false);
 
-        self::assertSame('challenge-id', $result->getChallenge()->getId());
+        self::assertSame($this->objects->challengeId(), $result->getChallenge()->getId());
         self::assertNull($result->getChallenge()->getUserId());
         self::assertSame([], $result->getPublicKeyOptions()['allowCredentials']);
     }
@@ -99,7 +98,7 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
     {
         $user = $this->objects->createUser(
             '018f33bb-1111-7222-8333-111111111111',
-            'person@example.com'
+            $this->objects->authenticationEmail()
         );
         $challenge = $this->objects->createAuthenticationChallenge($user->getId());
         $storedCredential = $this->objects->createCredential($user->getId());
@@ -125,7 +124,7 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
             ->with(
-                'challenge-id',
+                $this->objects->challengeId(),
                 PasskeyChallenge::PURPOSE_AUTHENTICATION,
                 self::isInstanceOf(DateTimeImmutable::class)
             )
@@ -136,10 +135,10 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->expectExceptionMessage('Invalid or expired passkey challenge.');
 
         $this->support->createService()->complete(
-            'challenge-id',
+            $this->objects->challengeId(),
             ['id' => 'credential'],
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
         );
     }
 
@@ -153,10 +152,10 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->expectExceptionMessage('Invalid or expired passkey challenge.');
 
         $this->support->createService()->complete(
-            'challenge-id',
+            $this->objects->challengeId(),
             ['id' => 'credential'],
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
         );
     }
 
@@ -175,10 +174,10 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->expectExceptionMessage('Invalid passkey credential.');
 
         $this->support->createService()->complete(
-            'challenge-id',
+            $this->objects->challengeId(),
             ['id' => 'credential'],
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
         );
     }
 
@@ -195,10 +194,24 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->expectExceptionMessage('Invalid passkey credential.');
 
         $this->support->createService()->complete(
-            'challenge-id',
+            $this->objects->challengeId(),
             ['id' => 'credential'],
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
+        );
+    }
+
+    private function createSupport(): PasskeyAuthenticationServiceTestSupport
+    {
+        return new PasskeyAuthenticationServiceTestSupport(
+            $this->userRepository,
+            $this->credentialRepository,
+            $this->challengeRepository,
+            $this->idFactory,
+            $this->credentialVerifier,
+            $this->sessionFactory,
+            $this->signInPublisher,
+            $this->objects
         );
     }
 
@@ -207,7 +220,7 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
             ->with(
-                'challenge-id',
+                $this->objects->challengeId(),
                 PasskeyChallenge::PURPOSE_AUTHENTICATION,
                 self::isInstanceOf(DateTimeImmutable::class)
             )
@@ -249,7 +262,7 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
     ): void {
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
-            ->with('person@example.com')
+            ->with($this->objects->authenticationEmail())
             ->willReturn($user);
         $this->credentialRepository->expects($this->once())
             ->method('findByUserId')
@@ -259,10 +272,14 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
 
     private function expectAuthenticationOptionsChallenge(User $user): void
     {
+        $challengeId = $this->objects->challengeId();
+
         $this->challengeRepository->expects($this->once())
             ->method('save')
-            ->with(self::callback(static function (PasskeyChallenge $challenge) use ($user): bool {
-                self::assertSame('challenge-id', $challenge->getId());
+            ->with(self::callback(static function (
+                PasskeyChallenge $challenge
+            ) use ($challengeId, $user): bool {
+                self::assertSame($challengeId, $challenge->getId());
                 self::assertSame(
                     PasskeyChallenge::PURPOSE_AUTHENTICATION,
                     $challenge->getPurpose()
@@ -276,8 +293,8 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
 
     private function assertAuthenticationOptionsStarted(PasskeyOptionsResult $result): void
     {
-        self::assertSame('challenge-id', $result->getChallenge()->getId());
-        self::assertSame('localhost', $result->getPublicKeyOptions()['rpId']);
+        self::assertSame($this->objects->challengeId(), $result->getChallenge()->getId());
+        self::assertSame($this->objects->rpId(), $result->getPublicKeyOptions()['rpId']);
     }
 
     private function assertAuthenticationCompleted(
@@ -285,10 +302,13 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         PasskeyCredential $storedCredential,
         PasskeyChallenge $challenge
     ): void {
-        self::assertSame('access-token', $result->getAccessToken());
-        self::assertSame('refresh-token', $result->getRefreshToken());
+        self::assertSame($this->objects->accessToken(), $result->getAccessToken());
+        self::assertSame($this->objects->refreshToken(), $result->getRefreshToken());
         self::assertTrue($result->isRememberMe());
-        self::assertSame('{"record":true}', $storedCredential->getCredentialRecord());
+        self::assertSame(
+            $this->objects->credentialRecord(),
+            $storedCredential->getCredentialRecord()
+        );
         self::assertNotNull($storedCredential->getLastUsedAt());
         self::assertTrue($challenge->isConsumed());
     }
@@ -304,7 +324,7 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
             ->with(
-                'challenge-id',
+                $this->objects->challengeId(),
                 PasskeyChallenge::PURPOSE_AUTHENTICATION,
                 self::isInstanceOf(DateTimeImmutable::class)
             )
@@ -357,7 +377,10 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
         $this->credentialVerifier->expects($this->once())
             ->method('verifyAssertion')
             ->with($challenge, $credentialPayload, $storedCredential)
-            ->willReturn(new VerifiedPasskeyCredential($credentialId, '{"record":true}'));
+            ->willReturn(new VerifiedPasskeyCredential(
+                $credentialId,
+                $this->objects->credentialRecord()
+            ));
     }
 
     private function expectCredentialSaved(PasskeyCredential $storedCredential): void
@@ -373,12 +396,16 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
             ->method('create')
             ->with(
                 $user,
-                '203.0.113.10',
-                'Test Browser',
+                $this->objects->ipAddress(),
+                $this->objects->userAgent(),
                 true,
                 self::isInstanceOf(DateTimeImmutable::class)
             )
-            ->willReturn(new IssuedSession('session-id', 'access-token', 'refresh-token'));
+            ->willReturn(new IssuedSession(
+                $this->objects->sessionId(),
+                $this->objects->accessToken(),
+                $this->objects->refreshToken()
+            ));
         $this->expectSignInPublished($user);
     }
 
@@ -389,9 +416,9 @@ final class PasskeyAuthenticationServiceTest extends UnitTestCase
             ->with(
                 $user->getId(),
                 $user->getEmail(),
-                'session-id',
-                '203.0.113.10',
-                'Test Browser',
+                $this->objects->sessionId(),
+                $this->objects->ipAddress(),
+                $this->objects->userAgent(),
                 false
             );
     }

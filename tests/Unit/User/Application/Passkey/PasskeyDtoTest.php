@@ -8,7 +8,6 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\DTO\PasskeyOptionsResult;
 use App\User\Application\DTO\PasskeyRegistrationCompleteDto;
-use App\User\Application\DTO\PasskeyRegistrationOptionsDto;
 use App\User\Application\DTO\PasskeySignInCompleteDto;
 use App\User\Application\DTO\PasskeySignInOptionsDto;
 use App\User\Application\DTO\PasskeySignUpCompleteDto;
@@ -110,10 +109,6 @@ final class PasskeyDtoTest extends UnitTestCase
         PasskeyChallenge $challenge,
         array $options
     ): void {
-        self::assertInstanceOf(
-            PasskeyRegistrationOptionsDto::class,
-            new PasskeyRegistrationOptionsDto()
-        );
         self::assertSame($challenge, $optionsResult->getChallenge());
         self::assertSame($options, $optionsResult->getPublicKeyOptions());
     }

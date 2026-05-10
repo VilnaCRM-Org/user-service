@@ -33,7 +33,8 @@ final readonly class PasskeyAuthenticationServiceTestSupport
         private IdFactoryInterface $idFactory,
         private PasskeyCredentialVerifierInterface $credentialVerifier,
         private IssuedSessionFactoryInterface $sessionFactory,
-        private SignInPublisherInterface $signInPublisher
+        private SignInPublisherInterface $signInPublisher,
+        private PasskeyServiceTestObjects $objects
     ) {
     }
 
@@ -55,19 +56,19 @@ final readonly class PasskeyAuthenticationServiceTestSupport
     public function complete(array $credentialPayload): PasskeyAuthenticationResult
     {
         return $this->createService()->complete(
-            'challenge-id',
+            $this->objects->challengeId(),
             $credentialPayload,
-            '203.0.113.10',
-            'Test Browser'
+            $this->objects->ipAddress(),
+            $this->objects->userAgent()
         );
     }
 
     private function createOptionsFactory(): PasskeyOptionsFactory
     {
         $configuration = new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM User Service',
-            'https://localhost',
+            $this->objects->rpId(),
+            $this->objects->rpName(),
+            $this->objects->origin(),
             300,
             300
         );

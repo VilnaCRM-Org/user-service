@@ -22,6 +22,14 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
     private DocumentManager&MockObject $documentManager;
     private ManagerRegistry&MockObject $registry;
     private MongoDBWriteResultCounter $writeResultCounter;
+    private string $challenge;
+    private string $challengeId;
+    private string $credentialId;
+    private string $credentialLabel;
+    private string $credentialRecord;
+    private string $email;
+    private string $passkeyId;
+    private string $userId;
 
     #[\Override]
     protected function setUp(): void
@@ -31,6 +39,14 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $this->documentManager = $this->createMock(DocumentManager::class);
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->writeResultCounter = new MongoDBWriteResultCounter();
+        $this->challenge = $this->faker->sha256();
+        $this->challengeId = $this->faker->uuid();
+        $this->credentialId = $this->faker->uuid();
+        $this->credentialLabel = $this->faker->words(2, true);
+        $this->credentialRecord = json_encode(['record' => true], JSON_THROW_ON_ERROR);
+        $this->email = $this->faker->safeEmail();
+        $this->passkeyId = $this->faker->uuid();
+        $this->userId = $this->faker->uuid();
     }
 
     public function testChallengeRepositorySavesFindsAndDeletesChallenges(): void
@@ -47,12 +63,12 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $this->documentManager->expects($this->exactly(2))->method('flush');
         $repository->expects($this->once())
             ->method('find')
-            ->with('challenge-id')
+            ->with($this->challengeId)
             ->willReturn($challenge);
         $this->documentManager->expects($this->once())->method('remove')->with($challenge);
 
         $repository->save($challenge);
-        self::assertSame($challenge, $repository->findById('challenge-id'));
+        self::assertSame($challenge, $repository->findById($this->challengeId));
         $repository->delete($challenge);
     }
 
@@ -70,7 +86,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         self::assertSame(
             $challenge,
             $repository->claimActive(
-                'challenge-id',
+                $this->challengeId,
                 PasskeyChallenge::PURPOSE_AUTHENTICATION,
                 $claimedAt
             )
@@ -85,7 +101,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $this->documentManager->expects($this->never())->method('clear');
 
         self::assertNull($repository->claimActive(
-            'challenge-id',
+            $this->challengeId,
             PasskeyChallenge::PURPOSE_AUTHENTICATION,
             new DateTimeImmutable()
         ));
@@ -110,9 +126,9 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $this->expectCredentialExistsQuery($queryBuilder, $query);
 
         $repository->save($credential);
-        self::assertSame($credential, $repository->findByCredentialId('credential-id'));
-        self::assertSame([$credential], $repository->findByUserId('user-id'));
-        self::assertTrue($repository->existsByCredentialId('credential-id'));
+        self::assertSame($credential, $repository->findByCredentialId($this->credentialId));
+        self::assertSame([$credential], $repository->findByUserId($this->userId));
+        self::assertTrue($repository->existsByCredentialId($this->credentialId));
     }
 
     private function expectRegistryFor(string $className): void
@@ -146,7 +162,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         if ($challenge instanceof PasskeyChallenge) {
             $repository->expects($this->once())
                 ->method('find')
-                ->with('challenge-id')
+                ->with($this->challengeId)
                 ->willReturn($challenge);
         } else {
             $repository->expects($this->never())->method('find');
@@ -177,7 +193,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
     ): void {
         $repository->expects($this->once())
             ->method('findOneBy')
-            ->with(['credentialId' => 'credential-id'])
+            ->with(['credentialId' => $this->credentialId])
             ->willReturn($credential);
     }
 
@@ -187,7 +203,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
     ): void {
         $repository->expects($this->once())
             ->method('findBy')
-            ->with(['userId' => 'user-id'])
+            ->with(['userId' => $this->userId])
             ->willReturn([1 => $credential]);
     }
 
@@ -199,7 +215,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
             ->willReturnSelf();
         $queryBuilder->expects($this->once())
             ->method('equals')
-            ->with('credential-id')
+            ->with($this->credentialId)
             ->willReturnSelf();
         $queryBuilder->expects($this->once())
             ->method('count')
@@ -215,25 +231,30 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $createdAt = new DateTimeImmutable();
 
         return new PasskeyChallenge(
-            'challenge-id',
+            $this->challengeId,
             PasskeyChallenge::PURPOSE_AUTHENTICATION,
-            'challenge',
-            '{}',
+            $this->challenge,
+            $this->optionsJson(),
             $createdAt,
             $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext('person@example.com', userId: 'user-id')
+            new PasskeyChallengeContext($this->email, userId: $this->userId)
         );
     }
 
     private function createCredential(): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            'credential-id',
-            '{"record":true}',
-            'Laptop',
+            $this->passkeyId,
+            $this->userId,
+            $this->credentialId,
+            $this->credentialRecord,
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
+    }
+
+    private function optionsJson(): string
+    {
+        return json_encode(['challenge' => $this->challenge], JSON_THROW_ON_ERROR);
     }
 }

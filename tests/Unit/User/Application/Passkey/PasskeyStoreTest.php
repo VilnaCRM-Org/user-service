@@ -22,9 +22,22 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class PasskeyStoreTest extends UnitTestCase
 {
+    private const string DEFAULT_VALUE = '__default_passkey_value__';
+
     private PasskeyCredentialRepositoryInterface&MockObject $credentialRepository;
     private PasskeyChallengeRepositoryInterface&MockObject $challengeRepository;
     private IdFactoryInterface&MockObject $idFactory;
+    private string $challenge;
+    private string $challengeId;
+    private string $credentialId;
+    private string $credentialLabel;
+    private string $credentialRecord;
+    private string $displayName;
+    private string $email;
+    private string $initials;
+    private string $otherUserId;
+    private string $passkeyId;
+    private string $userId;
 
     #[\Override]
     protected function setUp(): void
@@ -38,15 +51,26 @@ final class PasskeyStoreTest extends UnitTestCase
             PasskeyChallengeRepositoryInterface::class
         );
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
+        $this->challenge = $this->faker->sha256();
+        $this->challengeId = $this->faker->uuid();
+        $this->credentialId = $this->faker->uuid();
+        $this->credentialLabel = $this->faker->words(2, true);
+        $this->credentialRecord = json_encode(['record' => true], JSON_THROW_ON_ERROR);
+        $this->displayName = $this->faker->name();
+        $this->email = $this->faker->safeEmail();
+        $this->initials = strtoupper($this->faker->lexify('??'));
+        $this->otherUserId = $this->faker->uuid();
+        $this->passkeyId = $this->faker->uuid();
+        $this->userId = $this->faker->uuid();
     }
 
     public function testRegisterMapsConcurrentDuplicateSaveToConflict(): void
     {
         $this->credentialRepository->expects($this->once())
             ->method('existsByCredentialId')
-            ->with('credential-id')
+            ->with($this->credentialId)
             ->willReturn(true);
-        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->idFactory->expects($this->once())->method('create')->willReturn($this->passkeyId);
         $this->credentialRepository->expects($this->once())
             ->method('save')
             ->willThrowException(new RuntimeException('duplicate key'));
@@ -55,9 +79,9 @@ final class PasskeyStoreTest extends UnitTestCase
         $this->expectExceptionMessage('Passkey credential is already registered.');
 
         $this->createStore()->register(
-            'user-id',
-            new VerifiedPasskeyCredential('credential-id', '{"record":true}'),
-            'Laptop',
+            $this->userId,
+            new VerifiedPasskeyCredential($this->credentialId, $this->credentialRecord),
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
     }
@@ -67,9 +91,9 @@ final class PasskeyStoreTest extends UnitTestCase
         $saveFailure = new RuntimeException('storage unavailable');
         $this->credentialRepository->expects($this->once())
             ->method('existsByCredentialId')
-            ->with('credential-id')
+            ->with($this->credentialId)
             ->willReturn(false);
-        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->idFactory->expects($this->once())->method('create')->willReturn($this->passkeyId);
         $this->credentialRepository->expects($this->once())
             ->method('save')
             ->willThrowException($saveFailure);
@@ -77,9 +101,9 @@ final class PasskeyStoreTest extends UnitTestCase
         $this->expectExceptionObject($saveFailure);
 
         $this->createStore()->register(
-            'user-id',
-            new VerifiedPasskeyCredential('credential-id', '{"record":true}'),
-            'Laptop',
+            $this->userId,
+            new VerifiedPasskeyCredential($this->credentialId, $this->credentialRecord),
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
     }
@@ -87,19 +111,19 @@ final class PasskeyStoreTest extends UnitTestCase
     public function testFindByUserIdDelegatesToRepository(): void
     {
         $credential = new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            'credential-id',
-            '{"record":true}',
-            'Laptop',
+            $this->passkeyId,
+            $this->userId,
+            $this->credentialId,
+            $this->credentialRecord,
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
         $this->credentialRepository->expects($this->once())
             ->method('findByUserId')
-            ->with('user-id')
+            ->with($this->userId)
             ->willReturn([$credential]);
 
-        self::assertSame([$credential], $this->createStore()->findByUserId('user-id'));
+        self::assertSame([$credential], $this->createStore()->findByUserId($this->userId));
     }
 
     public function testSignupChallengeRequiresEmail(): void
@@ -131,15 +155,15 @@ final class PasskeyStoreTest extends UnitTestCase
 
     public function testResolveForUserReturnsCredentialOwnedByUser(): void
     {
-        $credential = $this->createCredential('user-id');
+        $credential = $this->createCredential($this->userId);
         $this->credentialRepository->expects($this->once())
             ->method('findByCredentialId')
-            ->with('credential-id')
+            ->with($this->credentialId)
             ->willReturn($credential);
 
         self::assertSame(
             $credential,
-            $this->createStore()->resolveForUser('credential-id', 'user-id')
+            $this->createStore()->resolveForUser($this->credentialId, $this->userId)
         );
     }
 
@@ -147,42 +171,45 @@ final class PasskeyStoreTest extends UnitTestCase
     {
         $this->credentialRepository->expects($this->once())
             ->method('findByCredentialId')
-            ->with('credential-id')
+            ->with($this->credentialId)
             ->willReturn(null);
 
         $this->expectCredentialUnauthorized();
 
-        $this->createStore()->resolveForUser('credential-id', 'user-id');
+        $this->createStore()->resolveForUser($this->credentialId, $this->userId);
     }
 
     public function testResolveForUserRejectsCredentialOwnedByAnotherUser(): void
     {
         $this->credentialRepository->expects($this->once())
             ->method('findByCredentialId')
-            ->with('credential-id')
-            ->willReturn($this->createCredential('another-user-id'));
+            ->with($this->credentialId)
+            ->willReturn($this->createCredential($this->otherUserId));
 
         $this->expectCredentialUnauthorized();
 
-        $this->createStore()->resolveForUser('credential-id', 'user-id');
+        $this->createStore()->resolveForUser($this->credentialId, $this->userId);
     }
 
     public function testRegisterTrimsLabel(): void
     {
         $this->credentialRepository->expects($this->never())->method('existsByCredentialId');
-        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->idFactory->expects($this->once())->method('create')->willReturn($this->passkeyId);
+        $label = $this->credentialLabel;
         $this->credentialRepository->expects($this->once())
             ->method('save')
-            ->with(self::callback(static function (PasskeyCredential $credential): bool {
-                self::assertSame('Laptop', $credential->getLabel());
+            ->with(self::callback(static function (
+                PasskeyCredential $credential
+            ) use ($label): bool {
+                self::assertSame($label, $credential->getLabel());
 
                 return true;
             }));
 
         $this->createStore()->register(
-            'user-id',
-            new VerifiedPasskeyCredential('credential-id', '{"record":true}'),
-            ' Laptop ',
+            $this->userId,
+            new VerifiedPasskeyCredential($this->credentialId, $this->credentialRecord),
+            sprintf(' %s ', $label),
             new DateTimeImmutable()
         );
     }
@@ -190,7 +217,7 @@ final class PasskeyStoreTest extends UnitTestCase
     public function testRegisterUsesDefaultLabelForBlankLabel(): void
     {
         $this->credentialRepository->expects($this->never())->method('existsByCredentialId');
-        $this->idFactory->expects($this->once())->method('create')->willReturn('passkey-id');
+        $this->idFactory->expects($this->once())->method('create')->willReturn($this->passkeyId);
         $this->credentialRepository->expects($this->once())
             ->method('save')
             ->with(self::callback(static function (PasskeyCredential $credential): bool {
@@ -200,8 +227,8 @@ final class PasskeyStoreTest extends UnitTestCase
             }));
 
         $this->createStore()->register(
-            'user-id',
-            new VerifiedPasskeyCredential('credential-id', '{"record":true}'),
+            $this->userId,
+            new VerifiedPasskeyCredential($this->credentialId, $this->credentialRecord),
             '   ',
             new DateTimeImmutable()
         );
@@ -218,33 +245,43 @@ final class PasskeyStoreTest extends UnitTestCase
     }
 
     private function createSignupChallenge(
-        ?string $email = 'person@example.com',
-        ?string $initials = 'PE',
-        ?string $userId = 'user-id'
+        ?string $email = self::DEFAULT_VALUE,
+        ?string $initials = self::DEFAULT_VALUE,
+        ?string $userId = self::DEFAULT_VALUE
     ): PasskeyChallenge {
         $createdAt = new DateTimeImmutable();
 
         return new PasskeyChallenge(
-            'challenge-id',
+            $this->challengeId,
             PasskeyChallenge::PURPOSE_SIGNUP,
-            'challenge',
-            '{}',
+            $this->challenge,
+            $this->optionsJson(),
             $createdAt,
             $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext($email, $initials, 'Person Example', $userId)
+            new PasskeyChallengeContext(
+                $email === self::DEFAULT_VALUE ? $this->email : $email,
+                $initials === self::DEFAULT_VALUE ? $this->initials : $initials,
+                $this->displayName,
+                $userId === self::DEFAULT_VALUE ? $this->userId : $userId
+            )
         );
     }
 
     private function createCredential(string $userId): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
+            $this->passkeyId,
             $userId,
-            'credential-id',
-            '{"record":true}',
-            'Laptop',
+            $this->credentialId,
+            $this->credentialRecord,
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
+    }
+
+    private function optionsJson(): string
+    {
+        return json_encode(['challenge' => $this->challenge], JSON_THROW_ON_ERROR);
     }
 
     private function expectInvalidChallenge(): void

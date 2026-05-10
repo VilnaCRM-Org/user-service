@@ -20,19 +20,43 @@ use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
-use function ctype_xdigit;
 use DateTimeImmutable;
-use function strlen;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class PasskeyUserCreatorTest extends UnitTestCase
 {
+    private string $challenge;
+    private string $challengeId;
+    private string $displayName;
+    private string $email;
+    private string $eventId;
+    private string $hashedPassword;
+    private string $initials;
+    private string $optionsJson;
+    private string $userId;
+
+    #[\Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->challenge = $this->faker->sha256();
+        $this->challengeId = $this->faker->uuid();
+        $this->displayName = $this->faker->name();
+        $this->email = $this->faker->safeEmail();
+        $this->eventId = $this->faker->uuid();
+        $this->hashedPassword = $this->faker->password();
+        $this->initials = strtoupper($this->faker->lexify('??'));
+        $this->optionsJson = \json_encode(['challenge' => $this->challenge], \JSON_THROW_ON_ERROR);
+        $this->userId = $this->faker->uuid();
+    }
+
     public function testCreateFromSignupChallengeUsesSecureRandomPasswordAndPublishesEvent(): void
     {
         $challenge = $this->createSignupChallenge();
         $uuidTransformer = new UuidTransformer(new UuidFactory());
         $user = $this->createExpectedUser($uuidTransformer);
-        $event = new UserRegisteredEvent($user->getId(), $user->getEmail(), 'event-id');
+        $event = new UserRegisteredEvent($user->getId(), $user->getEmail(), $this->eventId);
 
         self::assertSame(
             $user,
@@ -73,10 +97,10 @@ final class PasskeyUserCreatorTest extends UnitTestCase
     private function createExpectedUser(UuidTransformer $uuidTransformer): User
     {
         return new User(
-            'new@example.com',
-            'NE',
-            'hashed-password',
-            $uuidTransformer->transformFromString('018f33bb-1111-7222-8333-111111111111')
+            $this->email,
+            $this->initials,
+            $this->hashedPassword,
+            $uuidTransformer->transformFromString($this->userId)
         );
     }
 
@@ -85,9 +109,9 @@ final class PasskeyUserCreatorTest extends UnitTestCase
         $hasher = $this->createMock(PasswordHasherInterface::class);
         $hasher->expects($this->once())
             ->method('hash')
-            ->with(self::callback(static fn (string $password): bool => strlen($password) === 64
-                && ctype_xdigit($password)))
-            ->willReturn('hashed-password');
+            ->with(self::callback(static fn (string $password): bool => \strlen($password) === 64
+                && \ctype_xdigit($password)))
+            ->willReturn($this->hashedPassword);
         return $hasher;
     }
 
@@ -97,11 +121,10 @@ final class PasskeyUserCreatorTest extends UnitTestCase
         $userFactory->expects($this->once())
             ->method('create')
             ->with(
-                'new@example.com',
-                'NE',
-                'hashed-password',
-                self::callback(static fn (UuidInterface $uuid): bool => (string) $uuid
-                    === '018f33bb-1111-7222-8333-111111111111')
+                $this->email,
+                $this->initials,
+                $this->hashedPassword,
+                self::callback(fn (UuidInterface $uuid): bool => (string) $uuid === $this->userId)
             )
             ->willReturn($user);
 
@@ -119,7 +142,7 @@ final class PasskeyUserCreatorTest extends UnitTestCase
     private function createEventIdFactory(): EventIdFactoryInterface
     {
         $factory = $this->createMock(EventIdFactoryInterface::class);
-        $factory->expects($this->once())->method('generate')->willReturn('event-id');
+        $factory->expects($this->once())->method('generate')->willReturn($this->eventId);
 
         return $factory;
     }
@@ -133,7 +156,7 @@ final class PasskeyUserCreatorTest extends UnitTestCase
         );
         $registeredEventFactory->expects($this->once())
             ->method('create')
-            ->with($user, 'event-id')
+            ->with($user, $this->eventId)
             ->willReturn($event);
 
         return $registeredEventFactory;
@@ -150,7 +173,7 @@ final class PasskeyUserCreatorTest extends UnitTestCase
     private function createUserCreator(UserFactoryInterface $userFactory): PasskeyUserCreator
     {
         $passwordHasher = $this->createMock(PasswordHasherInterface::class);
-        $passwordHasher->method('hash')->willReturn('hashed-password');
+        $passwordHasher->method('hash')->willReturn($this->hashedPassword);
 
         return new PasskeyUserCreator(
             $this->createMock(UserRepositoryInterface::class),
@@ -168,17 +191,17 @@ final class PasskeyUserCreatorTest extends UnitTestCase
         $createdAt = new DateTimeImmutable();
 
         return new PasskeyChallenge(
-            'challenge-id',
+            $this->challengeId,
             PasskeyChallenge::PURPOSE_SIGNUP,
-            'challenge',
-            '{}',
+            $this->challenge,
+            $this->optionsJson,
             $createdAt,
             $createdAt->modify('+5 minutes'),
             new PasskeyChallengeContext(
-                'new@example.com',
-                'NE',
-                'New Example',
-                '018f33bb-1111-7222-8333-111111111111'
+                $this->email,
+                $this->initials,
+                $this->displayName,
+                $this->userId
             )
         );
     }
