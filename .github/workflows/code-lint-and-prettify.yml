@@ -40,7 +40,7 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
-          GPG_TTY="$(tty)"
+          GPG_TTY="$(tty 2>/dev/null || true)"
           export GPG_TTY
           {
             echo "GPG_TTY=${GPG_TTY}"
@@ -62,7 +62,7 @@ jobs:
           gpg-connect-agent reloadagent /bye || true
           cat > ~/.gnupg/gpg-wrapper.sh << 'EOF'
           #!/bin/bash
-          GPG_TTY="$(tty)"
+          GPG_TTY="$(tty 2>/dev/null || true)"
           export GPG_TTY
           case "$*" in
             *--detach-sign*|*--sign*)
