@@ -60,13 +60,16 @@ registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
    dispatching a command.
 2. Create `RegisterUserCommand` from the API input when no user exists.
 3. Dispatch the command.
-4. On dispatch failure, re-run the email query and return the concurrent winner
-   when another request created the user; otherwise rethrow the original error.
+4. On duplicate-email dispatch failure, re-run the email query and return the
+   concurrent winner when another request created the user; otherwise rethrow
+   the original error.
 5. After successful dispatch, run the email query again and return the persisted
    user.
 
 The post-failure lookup keeps concurrent duplicate registrations idempotent while
 preserving the command handler as the write side of the flow.
+Registration API validation must not enforce `UniqueEmail` before the
+orchestrator, because duplicate registration is an idempotent read-side path.
 
 ## Dependency Boundaries
 

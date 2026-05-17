@@ -8,8 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use RuntimeException;
-use Throwable;
 
 final readonly class RegisterUserOrchestrator
 {
@@ -38,7 +38,7 @@ final readonly class RegisterUserOrchestrator
 
         try {
             $this->commandBus->dispatch($command);
-        } catch (Throwable $error) {
+        } catch (DuplicateEmailException $error) {
             return $this->findConcurrentUserOrRethrow($email, $error);
         }
 
@@ -52,7 +52,7 @@ final readonly class RegisterUserOrchestrator
 
     private function findConcurrentUserOrRethrow(
         string $email,
-        Throwable $error,
+        DuplicateEmailException $error,
     ): UserInterface {
         $concurrentUser = $this->findUserByEmailQueryHandler->find($email);
         if ($concurrentUser !== null) {

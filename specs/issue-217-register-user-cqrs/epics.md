@@ -32,6 +32,7 @@ Acceptance criteria:
 
 Acceptance criteria:
 
+- Registration validation does not reject an existing email before orchestration.
 - Existing user is returned without dispatching the command.
 - New user dispatches once and returns the post-dispatch lookup result.
 
@@ -40,6 +41,7 @@ Acceptance criteria:
 Acceptance criteria:
 
 - Resolver validation behavior is preserved.
+- Registration validation does not reject an existing email before orchestration.
 - Existing user is returned without dispatch.
 - New user dispatches once and returns the post-dispatch lookup result.
 

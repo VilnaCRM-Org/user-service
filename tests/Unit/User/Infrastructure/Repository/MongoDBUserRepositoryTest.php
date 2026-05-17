@@ -10,6 +10,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
@@ -20,6 +21,8 @@ use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
+
+use function sprintf;
 
 final class MongoDBUserRepositoryTest extends UnitTestCase
 {
@@ -224,25 +227,39 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->save($user);
     }
 
-    public function testSaveDetachesUserWhenFlushFails(): void
+    public function testSaveClearsDocumentManagerWhenFlushFails(): void
     {
         $user = $this->createMock(UserInterface::class);
         $error = new RuntimeException('Flush failed.');
 
-        $this->documentManager
-            ->expects($this->once())
-            ->method('persist')
-            ->with($user);
-        $this->documentManager
-            ->expects($this->once())
-            ->method('flush')
-            ->willThrowException($error);
-        $this->documentManager
-            ->expects($this->once())
-            ->method('detach')
-            ->with($user);
+        $this->documentManager->expects($this->once())
+            ->method('persist')->with($user);
+        $this->documentManager->expects($this->once())
+            ->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('clear');
 
         $this->expectExceptionObject($error);
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveConvertsDuplicateKeyFailureToDuplicateEmailException(): void
+    {
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException('E11000 duplicate key error', 11000);
+
+        $user->method('getEmail')->willReturn($email);
+        $this->documentManager->expects($this->once())
+            ->method('persist')->with($user);
+        $this->documentManager->expects($this->once())
+            ->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('clear');
+
+        $this->expectException(DuplicateEmailException::class);
+        $this->expectExceptionMessage(
+            sprintf('Email "%s" is already registered', $email)
+        );
 
         $this->userRepository->save($user);
     }

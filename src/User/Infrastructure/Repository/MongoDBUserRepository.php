@@ -7,6 +7,7 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 use function array_map;
@@ -19,7 +20,7 @@ use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 use function mb_strtolower;
-
+use function str_contains;
 use Throwable;
 use function trim;
 
@@ -29,6 +30,8 @@ use function trim;
 final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
+    private const DUPLICATE_KEY_ERROR_CODE = 11000;
+
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
@@ -47,7 +50,14 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             $this->documentManager->persist($user);
             $this->documentManager->flush();
         } catch (Throwable $error) {
-            $this->documentManager->detach($user);
+            $this->documentManager->clear();
+
+            if (
+                $user instanceof UserInterface
+                && $this->isDuplicateKeyError($error)
+            ) {
+                throw new DuplicateEmailException($user->getEmail(), $error);
+            }
 
             throw $error;
         }
@@ -151,6 +161,12 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
                 $trimmedEmails
             )
         )));
+    }
+
+    private function isDuplicateKeyError(Throwable $error): bool
+    {
+        return $error->getCode() === self::DUPLICATE_KEY_ERROR_CODE
+            || str_contains($error->getMessage(), 'E11000');
     }
 
     private function persistUsersInBatch(UserCollection $users): void

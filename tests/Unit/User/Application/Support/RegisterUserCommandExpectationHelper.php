@@ -8,7 +8,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
+
+use function PHPUnit\Framework\once;
 
 final readonly class RegisterUserCommandExpectationHelper
 {
@@ -24,12 +25,12 @@ final readonly class RegisterUserCommandExpectationHelper
         string $password,
         RegisterUserCommand $command,
     ): void {
-        $this->signUpCommandFactory->expects(TestCase::once())
+        $this->signUpCommandFactory->expects(once())
             ->method('create')
             ->with($email, $initials, $password)
             ->willReturn($command);
 
-        $this->commandBus->expects(TestCase::once())
+        $this->commandBus->expects(once())
             ->method('dispatch')
             ->with($command)
             ->willReturn(null);
