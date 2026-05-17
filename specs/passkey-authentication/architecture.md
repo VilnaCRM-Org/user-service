@@ -22,12 +22,16 @@ Domain:
 Application:
 
 - DTOs for option and completion endpoints.
-- Processors for each REST operation.
-- Services:
+- Processors for each REST operation. They adapt API Platform payloads and
+  dispatch commands through the command bus.
+- Commands and command handlers:
+  - Start handlers create WebAuthn creation/request options and persist
+    challenge state.
+  - Complete handlers verify attestation/assertion responses, persist user or
+    credential changes, and issue sessions where needed.
+- Factories, resolvers, validators, and transformers:
   - `PasskeyOptionsFactory` creates WebAuthn creation/request options.
-  - `PasskeyCredentialVerifier` deserializes and verifies browser responses.
-  - `PasskeyRegistrationService` orchestrates sign-up and authenticated enrollment.
-  - `PasskeyAuthenticationService` orchestrates passkey sign-in.
+  - `PasskeyCredentialValidator` deserializes and verifies browser responses.
   - `PasskeyResponseFactory` builds stable JSON response bodies.
 
 Infrastructure:
@@ -38,7 +42,7 @@ Infrastructure:
 
 ## Configuration
 
-Add environment-backed service arguments:
+Add environment-backed arguments:
 
 - `PASSKEY_RP_ID`
 - `PASSKEY_RP_NAME`
@@ -61,6 +65,7 @@ Default local values should be compatible with the existing local API URL.
 ## Layer Boundaries
 
 - Domain objects contain no WebAuthn, Symfony, or Doctrine imports.
-- WebAuthn library use stays in Application/Infrastructure services.
-- Processors only adapt HTTP/API Platform input to application services.
+- WebAuthn library use stays in Application/Infrastructure factories,
+  validators, and transformers.
+- Processors only adapt HTTP/API Platform input to command dispatch.
 - Repositories are interfaces in Domain and MongoDB implementations in Infrastructure.

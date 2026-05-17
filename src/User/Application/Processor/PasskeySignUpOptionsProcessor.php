@@ -6,9 +6,10 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\Command\StartPasskeySignUpCommand;
 use App\User\Application\DTO\PasskeySignUpOptionsDto;
-use App\User\Application\Passkey\PasskeyRegistrationServiceInterface;
-use App\User\Application\Passkey\PasskeyResponseFactory;
+use App\User\Application\Factory\PasskeyResponseFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class PasskeySignUpOptionsProcessor implements ProcessorInterface
 {
     public function __construct(
-        private PasskeyRegistrationServiceInterface $registrationService,
+        private CommandBusInterface $commandBus,
         private PasskeyResponseFactory $responseFactory
     ) {
     }
@@ -37,12 +38,15 @@ final readonly class PasskeySignUpOptionsProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
+        $command = new StartPasskeySignUpCommand(
+            $data->email,
+            $data->initials,
+            $data->displayName
+        );
+        $this->commandBus->dispatch($command);
+
         return new JsonResponse($this->responseFactory->createOptionsResponse(
-            $this->registrationService->startSignup(
-                $data->email,
-                $data->initials,
-                $data->displayName
-            )
+            $command->getResponse()
         ));
     }
 }

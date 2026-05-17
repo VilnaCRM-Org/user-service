@@ -20,4 +20,6 @@ interface PasskeyChallengeRepositoryInterface
     ): ?PasskeyChallenge;
 
     public function delete(PasskeyChallenge $challenge): void;
+
+    public function release(PasskeyChallenge $challenge): void;
 }

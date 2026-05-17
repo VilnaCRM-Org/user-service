@@ -7,9 +7,10 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\Command\StartPasskeyRegistrationCommand;
 use App\User\Application\DTO\PasskeyRegistrationOptionsDto;
-use App\User\Application\Passkey\PasskeyRegistrationServiceInterface;
-use App\User\Application\Passkey\PasskeyResponseFactory;
+use App\User\Application\Factory\PasskeyResponseFactory;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class PasskeyRegistrationOptionsProcessor implements ProcessorInterface
 {
     public function __construct(
-        private PasskeyRegistrationServiceInterface $registrationService,
+        private CommandBusInterface $commandBus,
         private PasskeyResponseFactory $responseFactory,
         private CurrentUserIdentityResolver $userIdentityResolver,
         private HttpRequestContextResolverInterface $httpRequestContextResolver,
@@ -48,11 +49,14 @@ final readonly class PasskeyRegistrationOptionsProcessor implements ProcessorInt
             'This operation does not accept request body content.'
         );
 
+        $command = new StartPasskeyRegistrationCommand(
+            $this->userIdentityResolver->resolveUserId(),
+            $this->userIdentityResolver->resolveEmail()
+        );
+        $this->commandBus->dispatch($command);
+
         return new JsonResponse($this->responseFactory->createOptionsResponse(
-            $this->registrationService->startRegistration(
-                $this->userIdentityResolver->resolveUserId(),
-                $this->userIdentityResolver->resolveEmail()
-            )
+            $command->getResponse()
         ));
     }
 }

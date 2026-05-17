@@ -2,7 +2,7 @@
 
 ## Problem
 
-The user-service only supports password-based local sign-in, social OAuth, and TOTP-based 2FA. Users cannot create or use passkeys, which means the service lacks a modern phishing-resistant authentication option.
+The user-service only supports password-based local sign-in, social OAuth, and TOTP-based 2FA. Users cannot create or use passkeys, which means the backend lacks a modern phishing-resistant authentication option.
 
 ## Users
 

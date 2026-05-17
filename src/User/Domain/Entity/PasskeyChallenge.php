@@ -114,4 +114,9 @@ final class PasskeyChallenge
     {
         $this->consumedAt = $consumedAt;
     }
+
+    public function release(): void
+    {
+        $this->consumedAt = null;
+    }
 }

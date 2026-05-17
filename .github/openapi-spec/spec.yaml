@@ -2981,24 +2981,54 @@ components:
       type: object
       required:
         - challengeId
+        - credential
       properties:
         challengeId:
           minLength: 1
           maxLength: 255
           type: string
         credential:
-          minItems: 1
           type: object
-          additionalProperties:
-            anyOf:
-              - type: array
-                items:
-                  type: [string, 'null']
-              - type: boolean
-              - type: number
-              - type: integer
-              - type: string
-              - type: 'null'
+          additionalProperties: true
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+            rawId:
+              type: string
+              minLength: 1
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: true
+              required:
+                - attestationObject
+                - clientDataJSON
+              properties:
+                attestationObject:
+                  type: string
+                  minLength: 1
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                transports:
+                  type: array
+                  items: { type: string }
         label:
           maxLength: 100
           type: string
@@ -3008,29 +3038,63 @@ components:
       type: object
       required:
         - challengeId
+        - credential
       properties:
         challengeId:
           minLength: 1
           maxLength: 255
           type: string
         credential:
-          minItems: 1
           type: object
-          additionalProperties:
-            anyOf:
-              - type: array
-                items:
+          additionalProperties: true
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+            rawId:
+              type: string
+              minLength: 1
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: true
+              required:
+                - authenticatorData
+                - clientDataJSON
+                - signature
+              properties:
+                authenticatorData:
+                  type: string
+                  minLength: 1
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                signature:
+                  type: string
+                  minLength: 1
+                userHandle:
                   type: [string, 'null']
-              - type: boolean
-              - type: number
-              - type: integer
-              - type: string
-              - type: 'null'
     EmptyResponse.PasskeySignInOptionsDto:
       type: object
-      required:
-        - email
       properties:
+        rememberMe:
+          default: false
+          type: boolean
         email:
           format: email
           minLength: 1
@@ -3038,35 +3102,66 @@ components:
           externalDocs:
             url: 'https://schema.org/email'
           type: string
-        rememberMe:
-          type: boolean
+      required:
+        - email
     EmptyResponse.PasskeySignUpCompleteDto:
       type: object
-      required:
-        - challengeId
       properties:
+        rememberMe:
+          default: false
+          type: boolean
         challengeId:
           minLength: 1
           maxLength: 255
           type: string
         credential:
-          minItems: 1
           type: object
-          additionalProperties:
-            anyOf:
-              - type: array
-                items:
-                  type: [string, 'null']
-              - type: boolean
-              - type: number
-              - type: integer
-              - type: string
-              - type: 'null'
+          additionalProperties: true
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+            rawId:
+              type: string
+              minLength: 1
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: true
+              required:
+                - attestationObject
+                - clientDataJSON
+              properties:
+                attestationObject:
+                  type: string
+                  minLength: 1
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                transports:
+                  type: array
+                  items: { type: string }
         label:
           maxLength: 100
           type: string
-        rememberMe:
-          type: boolean
+      required:
+        - challengeId
+        - credential
     EmptyResponse.PasskeySignUpOptionsDto:
       type: object
       required:

@@ -6,15 +6,25 @@ namespace App\User\Application\DTO;
 
 /**
  * @psalm-api
- *
- * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
  */
 final class PasskeySignInOptionsDto
 {
+    private bool $rememberMe = false;
+
     /**
      * @psalm-api
      */
-    public function __construct(public string $email = '', public bool $rememberMe = false)
+    public function __construct(public string $email = '')
     {
+    }
+
+    public function isRememberMe(): bool
+    {
+        return $this->rememberMe;
+    }
+
+    public function setRememberMe(bool $rememberMe): void
+    {
+        $this->rememberMe = $rememberMe;
     }
 }

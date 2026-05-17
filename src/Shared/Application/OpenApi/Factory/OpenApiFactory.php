@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\OpenApi;
 use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
 use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PasskeyCredentialRequestSchemaTransformer;
 use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
 use ArrayObject;
@@ -33,7 +34,8 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         private PathParametersTransformer $pathParametersTransformer,
         private ServerErrorResponseTransformer $serverErrorResponseTransformer,
         private PaginationQueryParametersTransformer $paginationTransformer,
-        private NoContentResponseTransformer $noContentResponseTransformer
+        private NoContentResponseTransformer $noContentResponseTransformer,
+        private PasskeyCredentialRequestSchemaTransformer $passkeyCredentialRequestSchemaTransformer
     ) {
     }
 
@@ -56,6 +58,7 @@ final class OpenApiFactory implements OpenApiFactoryInterface
         $openApi = $this->pathParametersTransformer->transform($openApi);
         $openApi = $this->paginationTransformer->transform($openApi);
         $openApi = $this->noContentResponseTransformer->transform($openApi);
+        $openApi = $this->passkeyCredentialRequestSchemaTransformer->transform($openApi);
 
         return $openApi->withServers([
             new Model\Server($this->serverUrl),

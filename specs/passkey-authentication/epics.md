@@ -6,7 +6,7 @@
 
 - Add BMAD planning artifacts.
 - Add WebAuthn dependency.
-- Add environment parameters and service wiring.
+- Add environment parameters and container wiring.
 
 Acceptance Criteria:
 
@@ -60,7 +60,8 @@ Acceptance Criteria:
 
 ### Story 5.1: Verify And Document Passkeys
 
-- Add unit coverage for services, processors, entities, and repositories.
+- Add unit coverage for command handlers, processors, entities, and
+  repositories.
 - Add documentation for frontend integration and migration.
 - Run CI and review gates before opening the PR.
 

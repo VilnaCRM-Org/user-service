@@ -1,6 +1,6 @@
 # Passkey Authentication
 
-The service supports username-first WebAuthn passkey flows for account sign-up,
+The API supports username-first WebAuthn passkey flows for account sign-up,
 authenticated passkey enrollment, and passkey sign-in.
 
 ## Configuration
@@ -30,11 +30,13 @@ a TTL index on `expires_at`.
    options to `navigator.credentials.create()`.
 3. Client calls `POST /api/passkeys/signup/complete` with `challengeId`,
    optional `label`, optional `rememberMe`, and the WebAuthn credential JSON.
-4. Service verifies attestation, creates the user, stores the passkey credential,
-   issues access and refresh tokens, and sets the auth cookie.
+4. The completion handler verifies attestation, creates the user, stores the
+   passkey credential, issues access and refresh tokens, and sets the auth
+   cookie.
 
-If the email is already registered, the options endpoint returns a conflict and
-the client should switch to sign-in or password recovery.
+The options endpoint does not reveal whether an email is registered. The
+completion endpoint re-checks the email and returns a conflict if it was
+registered after options were issued.
 
 ## Authenticated Enrollment
 
@@ -44,7 +46,8 @@ the client should switch to sign-in or password recovery.
    `navigator.credentials.create()`.
 3. Client calls `POST /api/passkeys/register/complete` with `challengeId`,
    optional `label`, and the WebAuthn credential JSON.
-4. Service verifies attestation and stores the passkey for the current user.
+4. The completion handler verifies attestation and stores the passkey for the
+   current user.
 
 Existing passkey credential IDs are excluded from the registration options so
 authenticators can reject duplicate enrollment when supported.
@@ -57,8 +60,9 @@ authenticators can reject duplicate enrollment when supported.
    `navigator.credentials.get()`.
 3. Client calls `POST /api/passkeys/signin/complete` with `challengeId` and the
    WebAuthn credential JSON.
-4. Service verifies assertion, updates the stored credential record and counter,
-   issues access and refresh tokens, and sets the auth cookie.
+4. The completion handler verifies assertion, updates the stored credential
+   record and counter, issues access and refresh tokens, and sets the auth
+   cookie.
 
 Users without a passkey should keep using the existing password sign-in and
 password reset flows. A failed passkey challenge does not remove password-based

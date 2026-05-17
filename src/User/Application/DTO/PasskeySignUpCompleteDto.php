@@ -6,11 +6,11 @@ namespace App\User\Application\DTO;
 
 /**
  * @psalm-api
- *
- * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
  */
 final class PasskeySignUpCompleteDto
 {
+    private bool $rememberMe = false;
+
     /**
      * @param array<string, scalar|array|null> $credential
      *
@@ -19,8 +19,17 @@ final class PasskeySignUpCompleteDto
     public function __construct(
         public string $challengeId = '',
         public array $credential = [],
-        public string $label = '',
-        public bool $rememberMe = false
+        public string $label = ''
     ) {
+    }
+
+    public function isRememberMe(): bool
+    {
+        return $this->rememberMe;
+    }
+
+    public function setRememberMe(bool $rememberMe): void
+    {
+        $this->rememberMe = $rememberMe;
     }
 }

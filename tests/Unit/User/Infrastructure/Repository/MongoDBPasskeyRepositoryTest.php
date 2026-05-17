@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\PasskeyCredentialCollection;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
@@ -107,6 +108,25 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         ));
     }
 
+    public function testChallengeRepositoryReleasesClaimedChallenge(): void
+    {
+        $challenge = $this->createChallenge();
+        $challenge->consume(new DateTimeImmutable());
+        $this->expectRegistryFor(PasskeyChallenge::class);
+        $repository = $this->createRepositoryMock(
+            MongoDBPasskeyChallengeRepository::class,
+            [$this->documentManager, $this->registry, $this->writeResultCounter],
+            []
+        );
+
+        $this->documentManager->expects($this->once())->method('persist')->with($challenge);
+        $this->documentManager->expects($this->once())->method('flush');
+
+        $repository->release($challenge);
+
+        self::assertFalse($challenge->isConsumed());
+    }
+
     public function testCredentialRepositorySavesFindsListsAndChecksCredential(): void
     {
         $credential = $this->createCredential();
@@ -125,10 +145,23 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $this->expectUserCredentialList($repository, $credential);
         $this->expectCredentialExistsQuery($queryBuilder, $query);
 
-        $repository->save($credential);
-        self::assertSame($credential, $repository->findByCredentialId($this->credentialId));
-        self::assertSame([$credential], $repository->findByUserId($this->userId));
-        self::assertTrue($repository->existsByCredentialId($this->credentialId));
+        $this->assertCredentialRepositoryResults($repository, $credential);
+    }
+
+    public function testCredentialRepositoryDeletesCredential(): void
+    {
+        $credential = $this->createCredential();
+        $this->expectRegistryFor(PasskeyCredential::class);
+        $repository = $this->createRepositoryMock(
+            MongoDBPasskeyCredentialRepository::class,
+            [$this->documentManager, $this->registry],
+            []
+        );
+
+        $this->documentManager->expects($this->once())->method('remove')->with($credential);
+        $this->documentManager->expects($this->once())->method('flush');
+
+        $repository->delete($credential);
     }
 
     private function expectRegistryFor(string $className): void
@@ -137,6 +170,19 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
             ->method('getManagerForClass')
             ->with($className)
             ->willReturn($this->documentManager);
+    }
+
+    private function assertCredentialRepositoryResults(
+        MongoDBPasskeyCredentialRepository $repository,
+        PasskeyCredential $credential
+    ): void {
+        $repository->save($credential);
+        self::assertSame($credential, $repository->findByCredentialId($this->credentialId));
+        self::assertEquals(
+            new PasskeyCredentialCollection($credential),
+            $repository->findByUserId($this->userId)
+        );
+        self::assertTrue($repository->existsByCredentialId($this->credentialId));
     }
 
     private function expectCredentialSaved(PasskeyCredential $credential): void

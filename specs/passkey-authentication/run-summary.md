@@ -31,7 +31,8 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
   - `POST /api/passkeys/signin/options`
   - `POST /api/passkeys/signin/complete`
 - Added WebAuthn integration through `web-auth/webauthn-lib`.
-- Added passkey DTOs, processors, domain entities, repositories, services, validation, and service wiring.
+- Added passkey DTOs, processors, CQRS commands and command handlers, domain
+  entities, repositories, validation, and container wiring.
 - Added MongoDB mappings for passkey credentials and passkey challenges.
 - Added passkey environment configuration to `.env`, `.env.test`, and `.env.load_test`.
 - Updated OpenAPI output and documentation.
@@ -60,8 +61,8 @@ Subagents were not used because the active Codex developer policy only allows sp
 ## Review Feedback Addressed
 
 - Split passkey credential verification into focused collaborators to keep PHPMD coupling/complexity below project limits.
-- Introduced `PasskeyJsonCodecInterface` so processors and tests depend on an application contract instead of a concrete codec.
-- Split large passkey service tests into support objects to reduce test fixture coupling.
+- Introduced `PasskeyJsonTransformerInterface` so processors and tests depend on an application contract instead of a concrete transformer.
+- Split large passkey command handler tests into support objects to reduce test fixture coupling.
 - Added a test-only Behat request-context decorator so `X-Test-Client-Ip` drives IP-sensitive session and rate-limit scenarios under the no-port local runner.
 - Regenerated `.github/openapi-spec/spec.yaml` with the new passkey endpoints.
 - Local AI review found and fixed three issues: passkey ceremonies now require WebAuthn user verification, frontend docs now explain WebAuthn JSON parsing or base64url-to-ArrayBuffer conversion before browser API calls, and passkey challenge consumption is now an atomic repository claim to prevent replay races.

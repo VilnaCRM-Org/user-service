@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\User\Domain\Collection\PasskeyCredentialCollection;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
@@ -33,18 +34,24 @@ final class MongoDBPasskeyCredentialRepository extends ServiceDocumentRepository
     }
 
     #[\Override]
+    public function delete(PasskeyCredential $credential): void
+    {
+        $this->documentManager->remove($credential);
+        $this->documentManager->flush();
+    }
+
+    #[\Override]
     public function findByCredentialId(string $credentialId): ?PasskeyCredential
     {
         return $this->findOneBy(['credentialId' => $credentialId]);
     }
 
-    /**
-     * @return list<PasskeyCredential>
-     */
     #[\Override]
-    public function findByUserId(string $userId): array
+    public function findByUserId(string $userId): PasskeyCredentialCollection
     {
-        return array_values($this->findBy(['userId' => $userId]));
+        return new PasskeyCredentialCollection(
+            ...array_values($this->findBy(['userId' => $userId]))
+        );
     }
 
     #[\Override]

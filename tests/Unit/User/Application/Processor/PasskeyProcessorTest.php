@@ -6,9 +6,17 @@ namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\Shared\Domain\Bus\Command\CommandInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\CompletePasskeyRegistrationCommand;
+use App\User\Application\Command\CompletePasskeySignInCommand;
+use App\User\Application\Command\CompletePasskeySignUpCommand;
+use App\User\Application\Command\StartPasskeyRegistrationCommand;
+use App\User\Application\Command\StartPasskeySignInCommand;
+use App\User\Application\Command\StartPasskeySignUpCommand;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\DTO\PasskeyOptionsResult;
@@ -19,9 +27,7 @@ use App\User\Application\DTO\PasskeySignInOptionsDto;
 use App\User\Application\DTO\PasskeySignUpCompleteDto;
 use App\User\Application\DTO\PasskeySignUpOptionsDto;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
-use App\User\Application\Passkey\PasskeyAuthenticationServiceInterface;
-use App\User\Application\Passkey\PasskeyRegistrationServiceInterface;
-use App\User\Application\Passkey\PasskeyResponseFactory;
+use App\User\Application\Factory\PasskeyResponseFactory;
 use App\User\Application\Processor\PasskeyRegistrationCompleteProcessor;
 use App\User\Application\Processor\PasskeyRegistrationOptionsProcessor;
 use App\User\Application\Processor\PasskeySignInCompleteProcessor;
@@ -45,8 +51,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 final class PasskeyProcessorTest extends UnitTestCase
 {
     private Operation $operation;
-    private PasskeyRegistrationServiceInterface&MockObject $registrationService;
-    private PasskeyAuthenticationServiceInterface&MockObject $authenticationService;
+    private CommandBusInterface&MockObject $commandBus;
     private HttpRequestContextResolverInterface&MockObject $requestContextResolver;
     private AuthCookieFactoryInterface&MockObject $authCookieFactory;
     /**
@@ -74,10 +79,7 @@ final class PasskeyProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->operation = $this->createMock(Operation::class);
-        $this->registrationService = $this->createMock(PasskeyRegistrationServiceInterface::class);
-        $this->authenticationService = $this->createMock(
-            PasskeyAuthenticationServiceInterface::class
-        );
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->requestContextResolver = $this->createMock(
             HttpRequestContextResolverInterface::class
         );
@@ -87,19 +89,13 @@ final class PasskeyProcessorTest extends UnitTestCase
 
     public function testSignUpOptionsProcessorReturnsChallengeOptions(): void
     {
-        $this->registrationService->expects($this->once())
-            ->method('startSignup')
-            ->with(
-                $this->fixture['email'],
-                $this->fixture['initials'],
-                $this->fixture['displayName']
-            )
-            ->willReturn($this->createOptionsResult());
-
-        $processor = new PasskeySignUpOptionsProcessor(
-            $this->registrationService,
-            new PasskeyResponseFactory()
+        $this->expectCommandDispatch(
+            StartPasskeySignUpCommand::class,
+            $this->createOptionsResult()
         );
+
+        $responseFactory = new PasskeyResponseFactory();
+        $processor = new PasskeySignUpOptionsProcessor($this->commandBus, $responseFactory);
 
         $this->assertOptionsResponse($processor->process(
             new PasskeySignUpOptionsDto(
@@ -117,9 +113,9 @@ final class PasskeyProcessorTest extends UnitTestCase
         $dto = new PasskeySignUpCompleteDto(
             $this->fixture['challengeId'],
             $this->fixture['credentialPayload'],
-            $this->fixture['label'],
-            true
+            $this->fixture['label']
         );
+        $dto->setRememberMe(true);
         $this->expectSignUpCompletion($request);
 
         $this->assertTokenResponse($this->createSignUpCompleteProcessor()->process(
@@ -150,7 +146,7 @@ final class PasskeyProcessorTest extends UnitTestCase
             ->method('resolveRequest')
             ->with($request)
             ->willReturn($request);
-        $this->registrationService->expects($this->never())->method('startRegistration');
+        $this->commandBus->expects($this->never())->method('dispatch');
 
         $this->expectException(BadRequestHttpException::class);
         $this->expectExceptionMessage('This operation does not accept request body content.');
@@ -180,14 +176,19 @@ final class PasskeyProcessorTest extends UnitTestCase
 
     public function testSignInOptionsProcessorReturnsAuthenticationOptions(): void
     {
-        $dto = new PasskeySignInOptionsDto($this->fixture['email'], true);
-        $this->authenticationService->expects($this->once())
-            ->method('start')
-            ->with($this->fixture['email'], true)
-            ->willReturn($this->createOptionsResult());
+        $dto = new PasskeySignInOptionsDto($this->fixture['email']);
+        $dto->setRememberMe(true);
+        $this->expectCommandDispatch(
+            StartPasskeySignInCommand::class,
+            $this->createOptionsResult(),
+            function (StartPasskeySignInCommand $command): void {
+                self::assertSame($this->fixture['email'], $command->email);
+                self::assertTrue($command->rememberMe);
+            }
+        );
 
         $processor = new PasskeySignInOptionsProcessor(
-            $this->authenticationService,
+            $this->commandBus,
             new PasskeyResponseFactory()
         );
 
@@ -267,21 +268,22 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function expectSignUpCompletion(Request $request): void
     {
         $this->expectRequestContext($request);
-        $this->registrationService->expects($this->once())
-            ->method('completeSignup')
-            ->with(
-                $this->fixture['challengeId'],
-                $this->fixture['credentialPayload'],
-                $this->fixture['label'],
-                true,
-                $this->fixture['ipAddress'],
-                $this->fixture['userAgent']
-            )
-            ->willReturn(new PasskeyAuthenticationResult(
+        $this->expectCommandDispatch(
+            CompletePasskeySignUpCommand::class,
+            new PasskeyAuthenticationResult(
                 $this->fixture['accessToken'],
                 $this->fixture['refreshToken'],
                 true
-            ));
+            ),
+            function (CompletePasskeySignUpCommand $command): void {
+                self::assertSame($this->fixture['challengeId'], $command->challengeId);
+                self::assertSame($this->fixture['credentialPayload'], $command->credential);
+                self::assertSame($this->fixture['label'], $command->label);
+                self::assertTrue($command->rememberMe);
+                self::assertSame($this->fixture['ipAddress'], $command->ipAddress);
+                self::assertSame($this->fixture['userAgent'], $command->userAgent);
+            }
+        );
         $this->expectAccessTokenCookie(true);
     }
 
@@ -291,42 +293,131 @@ final class PasskeyProcessorTest extends UnitTestCase
             ->method('resolveRequest')
             ->with($request)
             ->willReturn($request);
-        $this->registrationService->expects($this->once())
-            ->method('startRegistration')
-            ->with($this->fixture['userId'], $this->fixture['email'])
-            ->willReturn($this->createOptionsResult());
+        $this->expectCommandDispatch(
+            StartPasskeyRegistrationCommand::class,
+            $this->createOptionsResult(),
+            function (StartPasskeyRegistrationCommand $command): void {
+                self::assertSame($this->fixture['userId'], $command->userId);
+                self::assertSame($this->fixture['email'], $command->email);
+            }
+        );
     }
 
     private function expectRegistrationComplete(): void
     {
-        $this->registrationService->expects($this->once())
-            ->method('completeRegistration')
-            ->with(
-                $this->fixture['challengeId'],
-                $this->fixture['credentialPayload'],
-                $this->fixture['label'],
-                $this->fixture['userId']
-            )
-            ->willReturn($this->createCredential());
+        $this->expectCommandDispatch(
+            CompletePasskeyRegistrationCommand::class,
+            $this->createCredential(),
+            function (CompletePasskeyRegistrationCommand $command): void {
+                self::assertSame($this->fixture['challengeId'], $command->challengeId);
+                self::assertSame($this->fixture['credentialPayload'], $command->credential);
+                self::assertSame($this->fixture['label'], $command->label);
+                self::assertSame($this->fixture['userId'], $command->currentUserId);
+            }
+        );
     }
 
     private function expectSignInCompletion(Request $request): void
     {
         $this->expectRequestContext($request);
-        $this->authenticationService->expects($this->once())
-            ->method('complete')
-            ->with(
-                $this->fixture['challengeId'],
-                $this->fixture['credentialPayload'],
-                $this->fixture['ipAddress'],
-                $this->fixture['userAgent']
-            )
-            ->willReturn(new PasskeyAuthenticationResult(
+        $this->expectCommandDispatch(
+            CompletePasskeySignInCommand::class,
+            new PasskeyAuthenticationResult(
                 $this->fixture['accessToken'],
                 $this->fixture['refreshToken'],
                 false
-            ));
+            ),
+            function (CompletePasskeySignInCommand $command): void {
+                self::assertSame($this->fixture['challengeId'], $command->challengeId);
+                self::assertSame($this->fixture['credentialPayload'], $command->credential);
+                self::assertSame($this->fixture['ipAddress'], $command->ipAddress);
+                self::assertSame($this->fixture['userAgent'], $command->userAgent);
+            }
+        );
         $this->expectAccessTokenCookie(false);
+    }
+
+    /**
+     * @param class-string<CommandInterface> $commandClass
+     */
+    private function expectCommandDispatch(
+        string $commandClass,
+        object $response,
+        ?callable $assertCommand = null
+    ): void {
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with(self::callback(static function (
+                CommandInterface $command
+            ) use ($commandClass, $response, $assertCommand): bool {
+                self::assertInstanceOf($commandClass, $command);
+
+                if ($assertCommand !== null) {
+                    $assertCommand($command);
+                }
+
+                self::setPasskeyCommandResponse($command, $response);
+
+                return true;
+            }));
+    }
+
+    private static function setPasskeyCommandResponse(
+        CommandInterface $command,
+        object $response
+    ): void {
+        if (self::setOptionsCommandResponse($command, $response)) {
+            return;
+        }
+
+        if (self::setAuthenticationCommandResponse($command, $response)) {
+            return;
+        }
+
+        if (!$command instanceof CompletePasskeyRegistrationCommand) {
+            self::fail('Unexpected passkey command.');
+        }
+        if (!$response instanceof PasskeyCredential) {
+            self::fail('Expected passkey credential response.');
+        }
+        $command->setResponse($response);
+    }
+
+    private static function setOptionsCommandResponse(
+        CommandInterface $command,
+        object $response
+    ): bool {
+        if (!$command instanceof StartPasskeySignUpCommand
+            && !$command instanceof StartPasskeyRegistrationCommand
+            && !$command instanceof StartPasskeySignInCommand
+        ) {
+            return false;
+        }
+
+        if (!$response instanceof PasskeyOptionsResult) {
+            self::fail('Expected passkey options response.');
+        }
+        $command->setResponse($response);
+
+        return true;
+    }
+
+    private static function setAuthenticationCommandResponse(
+        CommandInterface $command,
+        object $response
+    ): bool {
+        if (!$command instanceof CompletePasskeySignUpCommand
+            && !$command instanceof CompletePasskeySignInCommand
+        ) {
+            return false;
+        }
+
+        if (!$response instanceof PasskeyAuthenticationResult) {
+            self::fail('Expected passkey authentication response.');
+        }
+        $command->setResponse($response);
+
+        return true;
     }
 
     private function expectAccessTokenCookie(bool $rememberMe): void
@@ -367,7 +458,7 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function createSignUpCompleteProcessor(): PasskeySignUpCompleteProcessor
     {
         return new PasskeySignUpCompleteProcessor(
-            $this->registrationService,
+            $this->commandBus,
             new PasskeyResponseFactory(),
             $this->requestContextResolver,
             $this->authCookieFactory
@@ -377,7 +468,7 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function createRegistrationOptionsProcessor(): PasskeyRegistrationOptionsProcessor
     {
         return new PasskeyRegistrationOptionsProcessor(
-            $this->registrationService,
+            $this->commandBus,
             new PasskeyResponseFactory(),
             $this->createIdentityResolver(),
             $this->requestContextResolver,
@@ -388,7 +479,7 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function createRegistrationCompleteProcessor(): PasskeyRegistrationCompleteProcessor
     {
         return new PasskeyRegistrationCompleteProcessor(
-            $this->registrationService,
+            $this->commandBus,
             $this->createIdentityResolver()
         );
     }
@@ -396,7 +487,7 @@ final class PasskeyProcessorTest extends UnitTestCase
     private function createSignInCompleteProcessor(): PasskeySignInCompleteProcessor
     {
         return new PasskeySignInCompleteProcessor(
-            $this->authenticationService,
+            $this->commandBus,
             new PasskeyResponseFactory(),
             $this->requestContextResolver,
             $this->authCookieFactory

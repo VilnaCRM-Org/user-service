@@ -334,13 +334,11 @@ services:
   App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
   App\User\Application\Validator\UserCredentialValidatorInterface: '@App\User\Application\Validator\UserCredentialValidator'
   App\User\Application\Validator\OwnershipValidatorInterface: '@App\User\Application\Validator\TokenOwnershipValidator'
-  App\User\Application\Passkey\PasskeyCredentialVerifierInterface: '@App\User\Application\Passkey\PasskeyCredentialVerifier'
-  App\User\Application\Passkey\PasskeyWebauthnFactoryInterface: '@App\User\Application\Passkey\PasskeyWebauthnFactory'
-  App\User\Application\Passkey\PasskeyJsonCodecInterface: '@App\User\Application\Passkey\PasskeyJsonCodec'
-  App\User\Application\Passkey\PasskeyAuthenticationServiceInterface: '@App\User\Application\Passkey\PasskeyAuthenticationService'
-  App\User\Application\Passkey\PasskeyRegistrationServiceInterface: '@App\User\Application\Passkey\PasskeyRegistrationService'
+  App\User\Application\Validator\PasskeyCredentialValidatorInterface: '@App\User\Application\Validator\PasskeyCredentialValidator'
+  App\User\Application\Factory\PasskeyWebauthnFactoryInterface: '@App\User\Application\Factory\PasskeyWebauthnFactory'
+  App\User\Application\Transformer\PasskeyJsonTransformerInterface: '@App\User\Application\Transformer\PasskeyJsonTransformer'
 
-  App\User\Application\Passkey\PasskeyConfiguration:
+  App\User\Application\DTO\PasskeyConfiguration:
     arguments:
       $rpId: '%env(string:PASSKEY_RP_ID)%'
       $rpName: '%env(string:PASSKEY_RP_NAME)%'

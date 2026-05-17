@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\User\Application\Factory;
 
 use App\User\Application\DTO\VerifiedPasskeyCredential;
-use App\User\Application\Passkey\PasskeyEncoding;
-use App\User\Application\Passkey\PasskeyJsonCodecInterface;
-use Webauthn\CredentialRecord;
+use App\User\Application\Transformer\PasskeyEncodingTransformer;
+use App\User\Application\Transformer\PasskeyJsonTransformerInterface;
 
 /**
  * @psalm-api
@@ -15,16 +14,16 @@ use Webauthn\CredentialRecord;
 final readonly class PasskeyVerifiedCredentialFactory
 {
     public function __construct(
-        private PasskeyEncoding $encoding,
-        private PasskeyJsonCodecInterface $jsonCodec
+        private PasskeyEncodingTransformer $encoding,
+        private PasskeyJsonTransformerInterface $jsonTransformer
     ) {
     }
 
-    public function create(CredentialRecord $credentialRecord): VerifiedPasskeyCredential
+    public function create(object $credentialRecord): VerifiedPasskeyCredential
     {
         return new VerifiedPasskeyCredential(
             $this->encoding->encode($credentialRecord->publicKeyCredentialId),
-            $this->jsonCodec->encodeCredentialRecord($credentialRecord)
+            $this->jsonTransformer->encodeCredentialRecord($credentialRecord)
         );
     }
 }

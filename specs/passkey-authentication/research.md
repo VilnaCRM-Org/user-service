@@ -6,7 +6,7 @@ Implement issue #221: backend support for passkey registration and authenticatio
 
 ## Current State
 
-- The service exposes REST and GraphQL auth flows through API Platform YAML resources.
+- The API exposes REST and GraphQL auth flows through API Platform YAML resources.
 - Password sign-in uses `SignInProcessor`, `SignInCommandHandler`, `IssuedSessionFactory`, and `SignInPublisher`.
 - User registration creates a `User`, hashes its password, saves it through `UserRepositoryInterface`, and publishes `UserRegisteredEvent`.
 - Persistence is Doctrine MongoDB ODM with XML mappings under `config/doctrine/User`.
@@ -19,7 +19,7 @@ Implement issue #221: backend support for passkey registration and authenticatio
 - WebAuthn authentication starts when the relying party sends `PublicKeyCredentialRequestOptions` containing a random challenge and, for username-first flows, allowed credential descriptors.
 - The server must persist the options/challenge generated for a ceremony and verify the browser response against those same options.
 - `web-auth/webauthn-lib` v5.3 provides `PublicKeyCredentialCreationOptions`, `PublicKeyCredentialRequestOptions`, response denormalizers, and attestation/assertion validators.
-- The library explicitly leaves application storage of credential records to the application, so the service needs its own MongoDB credential and challenge entities.
+- The library explicitly leaves application storage of credential records to the application, so this bounded context needs its own MongoDB credential and challenge entities.
 
 ## Feature Surface
 
@@ -36,7 +36,7 @@ The first implementation should prioritize REST because the WebAuthn browser API
 
 ## Risks
 
-- WebAuthn payloads contain binary values serialized as base64/base64url; the service must preserve raw credential records without lossy string manipulation.
+- WebAuthn payloads contain binary values serialized as base64/base64url; the application must preserve raw credential records without lossy string manipulation.
 - Username-first sign-in can leak account existence if challenge responses differ for nonexistent users; the initial implementation should keep response shapes generic and document the remaining enumeration-hardening follow-up.
 - New passwordless sign-up still needs a `User.password` value for existing entity invariants; the backend should store a generated random hashed password and document password reset as the fallback credential enrollment path.
 - CI includes Deptrac, PHP Insights, Psalm, Infection, Behat, K6, and memory soak checks; code must stay small and layer-compliant.
