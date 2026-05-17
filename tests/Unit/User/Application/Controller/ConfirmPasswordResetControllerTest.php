@@ -8,7 +8,6 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Controller\ConfirmPasswordResetController;
-use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\DTO\ConfirmPasswordResetDto;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -30,9 +29,8 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     {
         $testData = $this->createTestData();
         $dto = new ConfirmPasswordResetDto($testData['token'], $testData['newPassword']);
-        $commandResponse = new ConfirmPasswordResetCommandResponse();
 
-        $this->setupCommandBusExpectations($testData, $commandResponse);
+        $this->setupCommandBusExpectations($testData);
 
         $response = ($this->controller)($dto);
 
@@ -64,18 +62,15 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     /**
      * @param array<string, string> $testData
      */
-    private function setupCommandBusExpectations(
-        array $testData,
-        ConfirmPasswordResetCommandResponse $commandResponse
-    ): void {
+    private function setupCommandBusExpectations(array $testData): void
+    {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
                 fn (ConfirmPasswordResetCommand $cmd) => $this->validateCommand(
                     $cmd,
                     $testData['token'],
-                    $testData['newPassword'],
-                    $commandResponse
+                    $testData['newPassword']
                 )
             ));
     }
@@ -83,12 +78,10 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     private function validateCommand(
         ConfirmPasswordResetCommand $command,
         string $token,
-        string $newPassword,
-        ConfirmPasswordResetCommandResponse $commandResponse
+        string $newPassword
     ): bool {
         $this->assertEquals($token, $command->token);
         $this->assertEquals($newPassword, $command->newPassword);
-        $command->setResponse($commandResponse);
 
         return true;
     }
