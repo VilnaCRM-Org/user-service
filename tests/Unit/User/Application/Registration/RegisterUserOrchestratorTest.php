@@ -34,7 +34,7 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         );
     }
 
-    public function testRegisterReturnsExistingUserWithoutDispatching(): void
+    public function testRegisterRejectsExistingUserWithoutDispatching(): void
     {
         [$email, $initials, $password] = $this->createInputFixture();
         $existingUser = $this->createMock(UserInterface::class);
@@ -45,13 +45,16 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         $this->commandBus->expects($this->never())
             ->method('dispatch');
 
-        $returnedUser = $this->orchestrator->register(
+        $this->expectException(DuplicateEmailException::class);
+        $this->expectExceptionMessage(
+            sprintf('Email "%s" is already registered', $email)
+        );
+
+        $this->orchestrator->register(
             $email,
             $initials,
             $password
         );
-
-        $this->assertSame($existingUser, $returnedUser);
     }
 
     public function testRegisterDispatchesAndReturnsPostDispatchUser(): void
@@ -78,39 +81,14 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         $this->assertSame($createdUser, $returnedUser);
     }
 
-    public function testRegisterReturnsConcurrentWinnerAfterDuplicateEmailFailure(): void
-    {
-        [$email, $initials, $password] = $this->createInputFixture();
-        $signUpCommand =
-            $this->signUpCommandFactory->create($email, $initials, $password);
-        $raceWinner = $this->createMock(UserInterface::class);
-
-        $this->expectEmailLookups($email, null, $raceWinner);
-        $this->expectDispatchFailure(
-            $email,
-            $initials,
-            $password,
-            $signUpCommand,
-            new DuplicateEmailException($email)
-        );
-
-        $returnedUser = $this->orchestrator->register(
-            $email,
-            $initials,
-            $password
-        );
-
-        $this->assertSame($raceWinner, $returnedUser);
-    }
-
-    public function testRegisterRethrowsDuplicateEmailFailureWhenNoConcurrentUserExists(): void
+    public function testRegisterRethrowsDuplicateEmailFailureWithoutRaceLookup(): void
     {
         [$email, $initials, $password] = $this->createInputFixture();
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
         $error = new DuplicateEmailException($email);
 
-        $this->expectEmailLookups($email, null, null);
+        $this->expectEmailLookups($email, null);
         $this->expectDispatchFailure(
             $email,
             $initials,

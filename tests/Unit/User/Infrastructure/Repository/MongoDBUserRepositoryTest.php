@@ -227,16 +227,21 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->save($user);
     }
 
-    public function testSaveClearsDocumentManagerWhenFlushFails(): void
+    public function testSaveClearsUserDocumentsWhenFlushFails(): void
     {
         $user = $this->createMock(UserInterface::class);
-        $error = new RuntimeException('Flush failed.');
+        $error = new RuntimeException(
+            'E11000 duplicate key error index: _id_',
+            11000
+        );
 
         $this->documentManager->expects($this->once())
             ->method('persist')->with($user);
         $this->documentManager->expects($this->once())
             ->method('flush')->willThrowException($error);
-        $this->documentManager->expects($this->once())->method('clear');
+        $this->documentManager->expects($this->once())
+            ->method('clear')
+            ->with(User::class);
 
         $this->expectExceptionObject($error);
 
@@ -247,14 +252,19 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
-        $error = new RuntimeException('E11000 duplicate key error', 11000);
+        $error = new RuntimeException(
+            'E11000 duplicate key error index: email_1',
+            11000
+        );
 
         $user->method('getEmail')->willReturn($email);
         $this->documentManager->expects($this->once())
             ->method('persist')->with($user);
         $this->documentManager->expects($this->once())
             ->method('flush')->willThrowException($error);
-        $this->documentManager->expects($this->once())->method('clear');
+        $this->documentManager->expects($this->once())
+            ->method('clear')
+            ->with(User::class);
 
         $this->expectException(DuplicateEmailException::class);
         $this->expectExceptionMessage(

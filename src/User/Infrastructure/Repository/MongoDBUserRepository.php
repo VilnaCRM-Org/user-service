@@ -50,11 +50,11 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             $this->documentManager->persist($user);
             $this->documentManager->flush();
         } catch (Throwable $error) {
-            $this->documentManager->clear();
+            $this->documentManager->clear(User::class);
 
             if (
                 $user instanceof UserInterface
-                && $this->isDuplicateKeyError($error)
+                && $this->isDuplicateEmailKeyError($error)
             ) {
                 throw new DuplicateEmailException($user->getEmail(), $error);
             }
@@ -161,6 +161,12 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
                 $trimmedEmails
             )
         )));
+    }
+
+    private function isDuplicateEmailKeyError(Throwable $error): bool
+    {
+        return $this->isDuplicateKeyError($error)
+            && str_contains($error->getMessage(), 'email');
     }
 
     private function isDuplicateKeyError(Throwable $error): bool

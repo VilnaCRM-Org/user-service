@@ -47,29 +47,27 @@ registration share the same trim/lowercase behavior.
 - save the user;
 - publish the registration event.
 
-If persistence fails, the repository detaches the rejected document before
-rethrowing so the failed `User` is not accidentally flushed later by a reused
-ODM document manager.
+If persistence fails, the repository clears managed `User` documents before
+rethrowing so the failed user write is not accidentally flushed later by a reused
+ODM document manager, without detaching unrelated document classes.
 
 ### Processor and Resolver
 
 `RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
 registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
-1. Use `FindUserByEmailQueryHandlerInterface` to return an existing user without
-   dispatching a command.
+1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard and throw
+   `DuplicateEmailException` without dispatching a command when the email exists.
 2. Create `RegisterUserCommand` from the API input when no user exists.
 3. Dispatch the command.
-4. On duplicate-email dispatch failure, re-run the email query and return the
-   concurrent winner when another request created the user; otherwise rethrow
-   the original error.
+4. On duplicate-email dispatch failure, rethrow `DuplicateEmailException`
+   without returning the stored user record.
 5. After successful dispatch, run the email query again and return the persisted
    user.
 
-The post-failure lookup keeps concurrent duplicate registrations idempotent while
-preserving the command handler as the write side of the flow.
-Registration API validation must not enforce `UniqueEmail` before the
-orchestrator, because duplicate registration is an idempotent read-side path.
+Registration API validation enforces `UniqueEmail` for normal REST and GraphQL
+requests. The orchestrator duplicate guard protects direct callers and race
+windows without exposing stored account data through signup responses.
 
 ## Dependency Boundaries
 
@@ -90,9 +88,8 @@ orchestrator, because duplicate registration is an idempotent read-side path.
   without publishing when persistence fails.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
-- Orchestrator tests: existing-user short circuit, dispatch plus post-dispatch
-  lookup, concurrent winner recovery after dispatch failure, and rethrow when no
-  concurrent user exists.
+- Orchestrator tests: existing-user rejection without dispatch, dispatch plus
+  post-dispatch lookup, and duplicate/non-duplicate dispatch failure propagation.
 - Processor tests: delegation to the orchestrator.
 - Resolver tests: validation/transform plus delegation to the orchestrator.
 

@@ -55,9 +55,9 @@ flow while preserving current REST and GraphQL registration behavior.
 - If the processor queries only before dispatch, a newly-created user must still
   be returned after dispatch. The safest flow is query before dispatch, dispatch
   only when missing, then query after dispatch.
-- There is a small race window between the pre-check and create command. This
-  issue does not request transaction or uniqueness changes, so the refactor
-  should preserve existing behavior and avoid broad concurrency work.
+- There is a small race window between the pre-check and create command.
+  Duplicate-key failures should surface as duplicate-email errors without
+  returning the stored user record.
 - Tests that assert command responses must be rewritten or removed.
 
 ## Recommendation

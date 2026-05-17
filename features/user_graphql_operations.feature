@@ -10,13 +10,13 @@ Feature: User GraphQL Operations
     When graphQL request is send
     Then mutation response should return requested fields
 
-  Scenario: Creating a user with duplicate email returns existing user
+  Scenario: Creating a user with duplicate email
     Given I am authenticated as user "gql-ops-auth2@test.com"
     And requesting to return user's id and email
     And user with email "graphqltest@mail.com2" exists
     And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then mutation response should return requested fields
+    Then graphql error message should be "email: This email address is already registered"
 
   Scenario: Creating a user with invalid email
     Given I am authenticated as user "gql-ops-auth3@test.com"

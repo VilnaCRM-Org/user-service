@@ -22,7 +22,7 @@ REST and GraphQL registration responses unchanged.
 4. Existing-user lookup must be performed through a query handler, not through
    command response mutation.
 5. `RegisterUserProcessor` must:
-   - return an existing user immediately when the email already exists;
+   - reject duplicate email attempts without dispatching a command;
    - dispatch `RegisterUserCommand` when missing;
    - return the persisted user after dispatch.
 6. `RegisterUserMutationResolver` must follow the same lookup/dispatch/return
@@ -44,7 +44,8 @@ REST and GraphQL registration responses unchanged.
 - No production or test references to `RegisterUserCommandResponse` remain.
 - No `getResponse()` or `setResponse()` exists on `RegisterUserCommand`.
 - Processor and resolver return `UserInterface`/`User` through query lookup.
-- Existing-user path avoids command dispatch in processors/resolver tests.
+- Duplicate-email path avoids command dispatch and does not return the stored
+  user record.
 - New-user path dispatches once and performs a post-dispatch lookup.
 - Focused unit tests pass.
 
