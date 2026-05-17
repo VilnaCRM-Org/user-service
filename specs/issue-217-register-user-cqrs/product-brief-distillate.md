@@ -9,7 +9,8 @@ date: '2026-05-10'
 
 Refactor register-user CQRS boundaries without changing external behavior.
 
-The command handler should only create and publish for new users. API
-orchestration should query by email before dispatch to return existing users and
-query after dispatch to return newly-created users. The command itself becomes
-an immutable write request with no response state.
+The command handler should only create and publish for new users. Public API
+validation keeps rejecting known duplicate emails, while API orchestration still
+queries by email before dispatch as the CQRS replacement for command response
+mutation and queries after dispatch to return newly-created users. The command
+itself becomes an immutable write request with no response state.

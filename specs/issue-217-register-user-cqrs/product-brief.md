@@ -42,7 +42,8 @@ the application code follows the intended CQRS split:
 
 - Changing REST or GraphQL schemas.
 - Refactoring all command response patterns in the service.
-- Changing repository persistence, unique indexes, or transaction semantics.
+- Changing repository unique indexes or broad transaction semantics beyond the
+  targeted duplicate-key failure handling needed by this refactor.
 - Implementing issue #230 or other handler-return refactors.
 
 ## Success Measures
@@ -50,7 +51,7 @@ the application code follows the intended CQRS split:
 - `RegisterUserCommandHandler::__invoke()` returns `void` and does not mutate
   the command.
 - `RegisterUserCommandResponse` no longer exists.
-- Existing register APIs still return the existing or newly-created user.
-- Duplicate-user registration returns the existing user and does not trigger
-  hashing, saving, or events.
+- Existing register APIs keep their current public duplicate-email validation
+  behavior and return newly-created users on successful registration.
+- Post-validation duplicate guards do not trigger hashing, saving, or events.
 - Focused unit tests pass locally.

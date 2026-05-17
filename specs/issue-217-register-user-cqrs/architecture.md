@@ -56,18 +56,23 @@ ODM document manager, without detaching unrelated document classes.
 `RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
 registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
-1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard and return
-   the existing user without dispatching a command when the email exists.
+1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard before
+   dispatching a command. This keeps duplicate lookup out of the write-side
+   command handler and prevents hashing, saving, and event publication when a
+   caller has already passed public API validation.
 2. Create `RegisterUserCommand` from the API input when no user exists.
 3. Dispatch the command.
 4. On duplicate-email dispatch failure caused by a race, query again and return
-   the stored user when it exists; otherwise rethrow `DuplicateEmailException`.
+   the read-side result when it exists; otherwise rethrow
+   `DuplicateEmailException`.
 5. After successful dispatch, run the email query again and return the persisted
    user, or throw `UserNotFoundException` if the user cannot be reloaded.
 
-Registration API validation does not enforce `UniqueEmail` for single-user REST
-and GraphQL create requests. The orchestrator handles duplicate and race-window
-scenarios through query-side resolution so signup responses remain idempotent.
+Single-user REST and GraphQL create requests keep `UniqueEmail` validation, so
+known duplicate emails continue to return the existing validation error before
+the public registration endpoint reaches orchestration. The orchestrator guard is
+the CQRS replacement for command-handler response mutation and a race-window
+fallback; it is not a public API behavior change for duplicate registration.
 
 ## Dependency Boundaries
 
@@ -88,7 +93,7 @@ scenarios through query-side resolution so signup responses remain idempotent.
   without publishing when persistence fails.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
-- Orchestrator tests: existing-user rejection without dispatch, dispatch plus
+- Orchestrator tests: duplicate-guard short-circuit without dispatch, dispatch plus
   post-dispatch lookup, and duplicate/non-duplicate dispatch failure propagation.
 - Processor tests: delegation to the orchestrator.
 - Resolver tests: validation/transform plus delegation to the orchestrator.

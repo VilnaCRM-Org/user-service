@@ -26,12 +26,12 @@ Feature: User Operations
     Then the response status code should be 201
     And user with email "test-ops@mail.com" and initials "name surname" should be returned
 
-  Scenario: Creating a user with duplicate email returns existing user
+  Scenario: Creating a user with duplicate email
     Given user with email "test2-ops@mail.com" exists
     And creating user with email "test2-ops@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
-    Then the response status code should be 201
-    And the response should contain "test2-ops@mail.com"
+    Then the response status code should be 422
+    And violation should be "This email address is already registered"
 
   Scenario: Creating a user with invalid email
     Given creating user with email "test", initials "name surname", password "passWORD1"

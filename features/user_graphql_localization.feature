@@ -3,14 +3,14 @@ Feature: User GraphQL Operations Localization
   As a user
   I want to receive messages in chosen language via GraphQL
 
-  Scenario: Creating a user with duplicate email returns existing user and Ukrainian language
+  Scenario: Creating a user with duplicate email and Ukrainian language
     Given I am authenticated as user "gql-loc-auth@test.com"
     And requesting to return user's id and email
     And with graphql language "uk"
     And user with email "graphqltest2@example.com" exists
     And creating user with email "graphqltest2@example.com" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then mutation response should return requested fields
+    Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 
   Scenario: Creating a user with invalid email and Ukrainian language
     Given I am authenticated as user "gql-loc-auth2@test.com"

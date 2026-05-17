@@ -17,8 +17,8 @@ flow while preserving current REST and GraphQL registration behavior.
 - `RegisterUserCommand` carries request data and a mutable
   `RegisterUserCommandResponse`.
 - `RegisterUserCommandHandler` checks `UserRepositoryInterface::findByEmail()`,
-  returns an existing user by writing a response onto the command, otherwise
-  creates, saves, and publishes a registration event.
+  writes the lookup result onto the command response when a match is found,
+  otherwise creates, saves, and publishes a registration event.
 - `RegisterUserProcessor` and `RegisterUserMutationResolver` dispatch the
   command and return `$command->getResponse()->createdUser`.
 - Existing query style is represented by `GetUserQueryHandler` and
@@ -30,7 +30,8 @@ flow while preserving current REST and GraphQL registration behavior.
 - Commands should remain immutable data carriers.
 - Command handlers should perform write-side work and return `void`.
 - API Platform processors and GraphQL resolvers must still return a `User`
-  object so current REST and GraphQL responses do not change.
+  object on successful registration so current REST and GraphQL responses do not
+  change.
 - Existing-user registration should not publish `UserRegisteredEvent`.
 - Code must respect repository guidance: use make commands for validation,
   keep Domain pure, keep class types in matching directories.
@@ -55,9 +56,10 @@ flow while preserving current REST and GraphQL registration behavior.
 - If the processor queries only before dispatch, a newly-created user must still
   be returned after dispatch. The safest flow is query before dispatch, dispatch
   only when missing, then query after dispatch.
-- There is a small race window between the pre-check and create command.
-  Duplicate-key failures should be translated into duplicate-email recovery
-  that returns the stored user record when the query side can resolve it.
+- There is a small race window between validation, the pre-check, and the create
+  command. Known public duplicates remain validation errors; duplicate-key
+  failures inside an accepted registration flow should be translated into
+  duplicate-email recovery when the query side can resolve the race winner.
 - Tests that assert command responses must be rewritten or removed.
 
 ## Recommendation
