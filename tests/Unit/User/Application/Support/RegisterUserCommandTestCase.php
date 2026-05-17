@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Support;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
-use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -23,7 +23,7 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
     protected UuidTransformer $uuidTransformer;
     protected SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
     protected CommandBusInterface&MockObject $commandBus;
-    protected FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
+    protected CommandResponseTypeGuard $commandResponseTypeGuard;
     protected RegisterUserCommandExpectationHelper $commandExpectationHelper;
 
     protected function setUpRegisterUserCommandContext(): void
@@ -32,7 +32,6 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
         $this->createRegistrationMocks();
         $this->commandExpectationHelper =
             new RegisterUserCommandExpectationHelper(
-                $this->findUserByEmailQueryHandler,
                 $this->mockSignUpCommandFactory,
                 $this->commandBus
             );
@@ -56,6 +55,7 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
+        $this->commandResponseTypeGuard = new CommandResponseTypeGuard();
     }
 
     private function createRegistrationMocks(): void
@@ -63,8 +63,5 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
         $this->mockSignUpCommandFactory =
             $this->createMock(SignUpCommandFactoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->findUserByEmailQueryHandler = $this->createMock(
-            FindUserByEmailQueryHandlerInterface::class
-        );
     }
 }

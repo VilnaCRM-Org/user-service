@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Controller;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
@@ -23,16 +24,18 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
         parent::setUp();
 
         $this->commandBus = $this->createMock(CommandBusInterface::class);
-        $this->controller = new ConfirmPasswordResetController($this->commandBus);
+        $this->controller = new ConfirmPasswordResetController(
+            $this->commandBus,
+            new CommandResponseTypeGuard()
+        );
     }
 
     public function testInvokeDispatchesCommandAndReturnsResponse(): void
     {
         $testData = $this->createTestData();
         $dto = new ConfirmPasswordResetDto($testData['token'], $testData['newPassword']);
-        $commandResponse = new ConfirmPasswordResetCommandResponse();
 
-        $this->setupCommandBusExpectations($testData, $commandResponse);
+        $this->setupCommandBusExpectations($testData);
 
         $response = ($this->controller)($dto);
 
@@ -43,7 +46,10 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     public function testConstructorSetsCommandBus(): void
     {
         $commandBus = $this->createMock(CommandBusInterface::class);
-        $controller = new ConfirmPasswordResetController($commandBus);
+        $controller = new ConfirmPasswordResetController(
+            $commandBus,
+            new CommandResponseTypeGuard()
+        );
 
         $this->assertInstanceOf(ConfirmPasswordResetController::class, $controller);
     }
@@ -64,31 +70,27 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
     /**
      * @param array<string, string> $testData
      */
-    private function setupCommandBusExpectations(
-        array $testData,
-        ConfirmPasswordResetCommandResponse $commandResponse
-    ): void {
+    private function setupCommandBusExpectations(array $testData): void
+    {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
                 fn (ConfirmPasswordResetCommand $cmd) => $this->validateCommand(
                     $cmd,
                     $testData['token'],
-                    $testData['newPassword'],
-                    $commandResponse
+                    $testData['newPassword']
                 )
-            ));
+            ))
+            ->willReturn(new ConfirmPasswordResetCommandResponse());
     }
 
     private function validateCommand(
         ConfirmPasswordResetCommand $command,
         string $token,
-        string $newPassword,
-        ConfirmPasswordResetCommandResponse $commandResponse
+        string $newPassword
     ): bool {
         $this->assertEquals($token, $command->token);
         $this->assertEquals($newPassword, $command->newPassword);
-        $command->setResponse($commandResponse);
 
         return true;
     }

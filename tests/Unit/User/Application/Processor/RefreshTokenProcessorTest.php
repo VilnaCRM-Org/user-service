@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
@@ -31,75 +32,86 @@ final class RefreshTokenProcessorTest extends UnitTestCase
 
     public function testProcessReturnsNewTokensAndSetsCookie(): void
     {
-        $dto = new RefreshTokenDto('old-refresh-token');
-        $this->expectRefreshDispatch();
+        $refreshToken = $this->faker->sha256();
+        $accessToken = $this->faker->sha256();
+        $newRefreshToken = $this->faker->sha256();
+        $dto = new RefreshTokenDto($refreshToken);
+        $this->expectRefreshDispatch($refreshToken, $accessToken, $newRefreshToken);
 
-        $processor = new RefreshTokenProcessor($this->commandBus, new RefreshTokenCommandFactory());
+        $processor = new RefreshTokenProcessor(
+            $this->commandBus,
+            new CommandResponseTypeGuard(),
+            new RefreshTokenCommandFactory()
+        );
         $response = $processor->process($dto, $this->operation);
 
-        $this->assertRefreshResponse($response);
+        $this->assertRefreshResponse($response, $accessToken, $newRefreshToken);
     }
 
     public function testProcessDoesNotSetCookieWhenAccessTokenIsEmpty(): void
     {
-        $dto = new RefreshTokenDto('old-refresh-token');
-        $this->expectEmptyAccessTokenDispatch();
+        $refreshToken = $this->faker->sha256();
+        $newRefreshToken = $this->faker->sha256();
+        $dto = new RefreshTokenDto($refreshToken);
+        $this->expectEmptyAccessTokenDispatch($refreshToken, $newRefreshToken);
 
-        $processor = new RefreshTokenProcessor($this->commandBus, new RefreshTokenCommandFactory());
+        $processor = new RefreshTokenProcessor(
+            $this->commandBus,
+            new CommandResponseTypeGuard(),
+            new RefreshTokenCommandFactory()
+        );
         $response = $processor->process($dto, $this->operation);
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertCount(0, $response->headers->getCookies());
     }
 
-    private function expectRefreshDispatch(): void
-    {
+    private function expectRefreshDispatch(
+        string $refreshToken,
+        string $accessToken,
+        string $newRefreshToken
+    ): void {
+        $this->expectDispatchResponse($refreshToken, $accessToken, $newRefreshToken);
+    }
+
+    private function expectEmptyAccessTokenDispatch(
+        string $refreshToken,
+        string $newRefreshToken
+    ): void {
+        $this->expectDispatchResponse($refreshToken, '', $newRefreshToken);
+    }
+
+    private function expectDispatchResponse(
+        string $refreshToken,
+        string $accessToken,
+        string $newRefreshToken
+    ): void {
         $this->commandBus
             ->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(/**
              * @return true
              */
-                function (RefreshTokenCommand $command): bool {
-                    $this->assertSame('old-refresh-token', $command->refreshToken);
-                    $command->setResponse(
-                        new RefreshTokenCommandResponse(
-                            'new-access-token',
-                            'new-refresh-token'
-                        )
-                    );
+                function (RefreshTokenCommand $command) use ($refreshToken): bool {
+                    $this->assertSame($refreshToken, $command->refreshToken);
 
                     return true;
                 }
+            ))
+            ->willReturn(new RefreshTokenCommandResponse(
+                $accessToken,
+                $newRefreshToken
             ));
     }
 
-    private function expectEmptyAccessTokenDispatch(): void
-    {
-        $this->commandBus
-            ->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(/**
-             * @return true
-             */
-                static function (RefreshTokenCommand $command): bool {
-                    $command->setResponse(
-                        new RefreshTokenCommandResponse(
-                            '',
-                            'new-refresh-token'
-                        )
-                    );
-
-                    return true;
-                }
-            ));
-    }
-
-    private function assertRefreshResponse(Response $response): void
-    {
+    private function assertRefreshResponse(
+        Response $response,
+        string $accessToken,
+        string $refreshToken
+    ): void {
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        $this->assertSame('new-access-token', $body['access_token']);
-        $this->assertSame('new-refresh-token', $body['refresh_token']);
+        $this->assertSame($accessToken, $body['access_token']);
+        $this->assertSame($refreshToken, $body['refresh_token']);
     }
 }

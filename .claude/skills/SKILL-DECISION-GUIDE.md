@@ -20,6 +20,7 @@ If you created or modified a **NEW feature**, you MUST execute **every** skill i
 - `api-platform-crud`
 - `cache-management`
 - `ci-workflow`
+- `clean-architecture-llm`
 - `code-organization`
 - `code-review`
 - `complexity-management`
@@ -52,6 +53,7 @@ What are you trying to do?
 
 ├─ Create something new
 │   ├─ Full BMALPH specs from short prompt → bmad-autonomous-planning
+│   ├─ New LLM-powered module / prompt workflow → clean-architecture-llm
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
@@ -62,6 +64,7 @@ What are you trying to do?
 │   └─ Fix file placement / boundaries → code-organization
 │
 ├─ Refactor existing code
+│   ├─ Extract LLM provider/prompt logic → clean-architecture-llm
 │   ├─ Move class / rename / restructure → code-organization
 │   ├─ Hardcoded config to .env → code-organization
 │   ├─ Reduce complexity → complexity-management
@@ -71,6 +74,7 @@ What are you trying to do?
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
+│   ├─ LLM architecture review → clean-architecture-llm
 │   ├─ Quality thresholds → quality-standards
 │   └─ Query performance → query-performance-analysis
 │
@@ -103,6 +107,19 @@ This skill guides proper DDD structure and file placement.
 
 **NOT**: deptrac-fixer (that's for fixing violations)
 **NOT**: database-migrations (that's for the database side)
+
+---
+
+### "I need to add an LLM-powered module or prompt workflow"
+
+**Use**: [clean-architecture-llm](clean-architecture-llm/SKILL.md)
+
+This skill guides Clean Architecture boundaries for provider-agnostic ports,
+prompt factories/templates, provider adapters, deterministic tests, privacy, and
+review evidence.
+
+**ALSO**: Check [implementing-ddd-architecture](implementing-ddd-architecture/SKILL.md) when the LLM feature touches domain/application/infrastructure code.
+**ALSO**: Check [code-organization](code-organization/SKILL.md) when adding or moving classes.
 
 ---
 
@@ -310,16 +327,17 @@ database-              ci-workflow
 
 ## Common Confusions
 
-| Confusion                                      | Clarification                                                                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                    |
-| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                    |
-| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                       |
-| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                         |
-| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                    |
-| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                         |
-| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer               |
-| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management |
+| Confusion                                      | Clarification                                                                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                       |
+| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                       |
+| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                          |
+| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                            |
+| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                       |
+| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                            |
+| clean-architecture-llm vs implementing-ddd     | **LLM provider/prompt boundaries** → clean-architecture-llm<br>**General domain modeling and CQRS** → implementing-ddd-architecture |
+| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer                  |
+| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management    |
 
 ## Multiple Skills for One Task
 
@@ -328,13 +346,14 @@ Some tasks benefit from multiple skills:
 ### Creating a complete new feature:
 
 1. **implementing-ddd-architecture** - Design domain model
-2. **api-platform-crud** - Create API endpoints
-3. **database-migrations** - Configure persistence
-4. **observability-instrumentation** - Add business metrics
-5. **testing-workflow** - Write tests
-6. **structurizr-architecture-sync** - Update architecture diagrams
-7. **documentation-sync** - Update docs
-8. **ci-workflow** - Validate everything
+2. **clean-architecture-llm** - Design provider/prompt boundaries when the feature uses LLMs
+3. **api-platform-crud** - Create API endpoints
+4. **database-migrations** - Configure persistence
+5. **observability-instrumentation** - Add business metrics
+6. **testing-workflow** - Write tests
+7. **structurizr-architecture-sync** - Update architecture diagrams
+8. **documentation-sync** - Update docs
+9. **ci-workflow** - Validate everything
 
 ### Fixing architecture issues:
 

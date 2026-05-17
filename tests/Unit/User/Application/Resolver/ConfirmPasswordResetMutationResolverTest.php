@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
@@ -27,6 +28,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
 
         $this->resolver = new ConfirmPasswordResetMutationResolver(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->validator
         );
     }
@@ -60,14 +62,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $this->validator->expects($this->once())
             ->method('validate');
 
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
-                $response = new ConfirmPasswordResetCommandResponse();
-                $command->setResponse($response);
-
-                return true;
-            }));
+        $this->expectCommandDispatch('', '');
 
         $result = $this->resolver->__invoke(null, $context);
 
@@ -106,11 +101,9 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
                     $this->assertSame($token, $command->token);
                     $this->assertSame($newPassword, $command->newPassword);
 
-                    $response = new ConfirmPasswordResetCommandResponse();
-                    $command->setResponse($response);
-
                     return true;
                 }
-            ));
+            ))
+            ->willReturn(new ConfirmPasswordResetCommandResponse());
     }
 }

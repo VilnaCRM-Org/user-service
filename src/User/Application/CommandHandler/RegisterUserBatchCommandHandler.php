@@ -23,14 +23,11 @@ final readonly class RegisterUserBatchCommandHandler implements
     ) {
     }
 
-    public function __invoke(RegisterUserBatchCommand $command): void
-    {
+    public function __invoke(
+        RegisterUserBatchCommand $command
+    ): RegisterUserBatchCommandResponse {
         if ($command->users->count() === 0) {
-            $command->setResponse(new RegisterUserBatchCommandResponse(
-                new UserCollection()
-            ));
-
-            return;
+            return new RegisterUserBatchCommandResponse(new UserCollection());
         }
 
         $knownUsers = $this->userRepository->findByEmails(
@@ -43,11 +40,11 @@ final readonly class RegisterUserBatchCommandHandler implements
 
         $this->persistUsersIfNeeded($registrationResult->usersToPersist);
 
-        $command->setResponse(new RegisterUserBatchCommandResponse(
-            $registrationResult->returnedUsers
-        ));
-
         $this->publishEventsIfNeeded($registrationResult->events);
+
+        return new RegisterUserBatchCommandResponse(
+            $registrationResult->returnedUsers
+        );
     }
 
     private function persistUsersIfNeeded(UserCollection $users): void

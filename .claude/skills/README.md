@@ -36,6 +36,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 - `api-platform-crud`
 - `cache-management`
 - `ci-workflow`
+- `clean-architecture-llm`
 - `code-organization`
 - `code-review`
 - `complexity-management`
@@ -332,7 +333,36 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 10. Deptrac Fixer (`deptrac-fixer/`)
+### 10. Clean Architecture for LLM Modules (`clean-architecture-llm/`)
+
+**Purpose**: Design LLM-powered modules with Clean Architecture boundaries, SOLID, DRY, KISS, and provider-agnostic ports/adapters
+
+**When activated**:
+
+- Adding prompt workflows, model/provider clients, or tool orchestration
+- Designing LLM-backed command/query handlers, subscribers, processors, or CLI commands
+- Refactoring prompt/provider logic out of controllers, handlers, or domain code
+- Reviewing LLM feature architecture for testability, privacy, and provider isolation
+
+**What it does**:
+
+- Defines where prompts, ports, adapters, model policy, retries, and parsing belong
+- Keeps Domain code prompt-free and provider-agnostic
+- Uses Adapter, Strategy, Factory, Decorator, and Pipeline patterns only where they reduce real complexity
+- Requires deterministic provider doubles and fixtures instead of live model calls in default tests
+- Provides a focused LLM architecture review checklist
+
+**Key commands**: `git diff --check`, `make ci` when runtime code changes
+
+**Structure**: Multi-file with supporting guides:
+
+- `SKILL.md` - Core Clean Architecture workflow for LLM modules
+- `examples/llm-module-template.md` - Provider-neutral port, adapter, prompt factory, strategy, and test double templates
+- `reference/review-checklist.md` - Review checklist for LLM-backed PRs
+
+---
+
+### 11. Deptrac Fixer (`deptrac-fixer/`)
 
 **Purpose**: Diagnose and fix Deptrac architectural violations automatically
 
@@ -377,7 +407,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 11. Complexity Management (`complexity-management/`)
+### 12. Complexity Management (`complexity-management/`)
 
 **Purpose**: Maintain and improve code quality using PHPInsights without decreasing thresholds
 
@@ -408,7 +438,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 12. OpenAPI Development (`openapi-development/`)
+### 13. OpenAPI Development (`openapi-development/`)
 
 **Purpose**: Guide for contributing to the OpenAPI layer (factories/processors)
 
@@ -421,7 +451,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 13. Query Performance Analysis (`query-performance-analysis/`)
+### 14. Query Performance Analysis (`query-performance-analysis/`)
 
 **Purpose**: Detect N+1 queries, analyze slow queries with EXPLAIN, identify missing indexes, and ensure safe index migrations
 
@@ -463,7 +493,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 14. API Platform CRUD (`api-platform-crud/`)
+### 15. API Platform CRUD (`api-platform-crud/`)
 
 **Purpose**: Create complete REST API CRUD operations using API Platform 4 with DDD and CQRS patterns
 
@@ -497,7 +527,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 15. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
+### 16. Structurizr Architecture Sync (`structurizr-architecture-sync/`)
 
 **Purpose**: Maintain Structurizr C4 architecture diagrams in sync with code changes
 
@@ -537,7 +567,7 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 
 ---
 
-### 16. Cache Management (`cache-management/`)
+### 17. Cache Management (`cache-management/`)
 
 **Purpose**: Implement production-grade caching with cache keys/TTLs/consistency classes per query, SWR (stale-while-revalidate), explicit invalidation, and tests for stale reads and cache warmup.
 

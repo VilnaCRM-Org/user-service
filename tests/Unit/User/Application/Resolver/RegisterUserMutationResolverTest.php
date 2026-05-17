@@ -12,6 +12,7 @@ use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\Entity\UserInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 final class RegisterUserMutationResolverTest extends UnitTestCase
 {
@@ -28,7 +29,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->validator = $this->createMock(MutationInputValidator::class);
         $this->transformer =
             $this->createMock(CreateUserMutationInputTransformer::class);
-        $this->registerUserOrchestrator = $this->createMock(RegisterUserOrchestrator::class);
+        $this->registerUserOrchestrator =
+            $this->createMock(RegisterUserOrchestrator::class);
         $this->resolver = new RegisterUserMutationResolver(
             $this->validator,
             $this->transformer,
@@ -67,7 +69,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $input['initials'],
             $input['password']
         );
-        $validationFailure = new \RuntimeException('Invalid input.');
+        $validationFailure = new RuntimeException('Invalid input.');
 
         $this->transformer->expects($this->once())
             ->method('transform')

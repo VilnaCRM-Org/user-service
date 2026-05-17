@@ -24,8 +24,10 @@ final class RegisterUserProcessorTest extends UnitTestCase
         parent::setUp();
 
         $this->mockOperation = $this->createMock(Operation::class);
-        $this->registerUserOrchestrator = $this->createMock(RegisterUserOrchestrator::class);
-        $this->processor = new RegisterUserProcessor($this->registerUserOrchestrator);
+        $this->registerUserOrchestrator =
+            $this->createMock(RegisterUserOrchestrator::class);
+        $this->processor =
+            new RegisterUserProcessor($this->registerUserOrchestrator);
     }
 
     public function testProcessDelegatesRegistration(): void

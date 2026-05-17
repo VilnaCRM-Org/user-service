@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Application\Query;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Query\FindUserByEmailQueryHandler;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
@@ -21,7 +22,10 @@ final class FindUserByEmailQueryHandlerTest extends UnitTestCase
             ->with($normalizedEmail)
             ->willReturn($user);
 
-        $handler = new FindUserByEmailQueryHandler($repository);
+        $handler = new FindUserByEmailQueryHandler(
+            $repository,
+            new EmailNormalizer()
+        );
 
         $this->assertSame($user, $handler->find($email));
     }
@@ -35,7 +39,10 @@ final class FindUserByEmailQueryHandlerTest extends UnitTestCase
             ->with($normalizedEmail)
             ->willReturn(null);
 
-        $handler = new FindUserByEmailQueryHandler($repository);
+        $handler = new FindUserByEmailQueryHandler(
+            $repository,
+            new EmailNormalizer()
+        );
 
         $this->assertNull($handler->find($email));
     }
