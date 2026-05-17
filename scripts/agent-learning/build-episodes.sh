@@ -126,7 +126,11 @@ while IFS= read -r signal_file; do
                 openai_base_url: $t.openai_base_url
             },
             bad_output: ($t.final_output // ""),
-            good_output: ($s.good_output // $s.reprompt // $s.diff // $s.summary // ""),
+            good_output: (
+                [$s.good_output, $s.reprompt, $s.diff, $s.summary]
+                | map(select(. != null and . != ""))
+                | .[0] // ""
+            ),
             intervention: {
                 type: $s.type,
                 summary: $s.summary,

@@ -186,6 +186,91 @@ JSON
   assert_success
 }
 
+@test "episode builder uses reprompt diff and summary fallback as desired output" {
+  local learning_dir="${BATS_TEST_TMPDIR}/learning"
+  local diff_file="${BATS_TEST_TMPDIR}/manual.diff"
+
+  cat > "${diff_file}" <<'DIFF'
+diff --git a/review.md b/review.md
+--- a/review.md
++++ b/review.md
+@@ -1 +1 @@
+-missing verification
++include exact verification command output
+DIFF
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:00:00Z" \
+    ./scripts/agent-learning/capture-codex-run.sh \
+      --skill ".claude/skills/code-review/SKILL.md" \
+      --skill-version "test-version" \
+      --prompt "review reprompt fallback" \
+      --trace-id "trace-reprompt-fallback" \
+      -- bash -c 'printf "bad reprompt output\n"' >/dev/null
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:01:00Z" \
+    ./scripts/agent-learning/record-intervention.sh \
+      --trace-id "trace-reprompt-fallback" \
+      --type "reprompt" \
+      --summary "Agent omitted verification evidence" \
+      --reprompt "Include exact local verification commands and results" >/dev/null
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:02:00Z" \
+    ./scripts/agent-learning/capture-codex-run.sh \
+      --skill ".claude/skills/code-review/SKILL.md" \
+      --skill-version "test-version" \
+      --prompt "review diff fallback" \
+      --trace-id "trace-diff-fallback" \
+      -- bash -c 'printf "bad diff output\n"' >/dev/null
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:03:00Z" \
+    ./scripts/agent-learning/record-intervention.sh \
+      --trace-id "trace-diff-fallback" \
+      --type "manual-diff" \
+      --summary "Manual edit added missing verification evidence" \
+      --diff-file "${diff_file}" >/dev/null
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:04:00Z" \
+    ./scripts/agent-learning/capture-codex-run.sh \
+      --skill ".claude/skills/code-review/SKILL.md" \
+      --skill-version "test-version" \
+      --prompt "review summary fallback" \
+      --trace-id "trace-summary-fallback" \
+      -- bash -c 'printf "bad summary output\n"' >/dev/null
+
+  env \
+    AGENT_LEARNING_DIR="${learning_dir}" \
+    AGENT_LEARNING_NOW="2026-05-10T00:05:00Z" \
+    ./scripts/agent-learning/record-intervention.sh \
+      --trace-id "trace-summary-fallback" \
+      --type "tool-retry" \
+      --summary "Retry tool command with preserved multiline arguments" >/dev/null
+
+  run ./scripts/agent-learning/build-episodes.sh --store-dir "${learning_dir}" --output "${learning_dir}/episodes.jsonl"
+  assert_success
+  assert_output --partial "(3 records)"
+
+  run jq -s -e '
+    (length == 3)
+    and (
+      (map({(.source.trace_id): .good_output}) | add) as $outputs
+      | $outputs["trace-reprompt-fallback"] == "Include exact local verification commands and results"
+        and ($outputs["trace-diff-fallback"] | contains("include exact verification command output"))
+        and $outputs["trace-summary-fallback"] == "Retry tool command with preserved multiline arguments"
+    )
+  ' "${learning_dir}/episodes.jsonl"
+  assert_success
+}
+
 @test "propose-skill-update outputs a concrete patch without mutating the source skill" {
   local learning_dir="${BATS_TEST_TMPDIR}/learning"
   local skill_file="${BATS_TEST_TMPDIR}/skill.md"
