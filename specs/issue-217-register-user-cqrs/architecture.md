@@ -46,7 +46,8 @@ It should not query for existing users or set any response data.
 
 ### Processor and Resolver
 
-`RegisterUserProcessor` and `RegisterUserMutationResolver` should orchestrate:
+`RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
+registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
 1. Query by email.
 2. Return existing user when found.
@@ -60,10 +61,14 @@ avoiding new response DTOs or write-side return values.
 ## Dependency Boundaries
 
 - Application query handler depends on Domain repository interface.
-- Processor/resolver depend on Application command factory, command bus, and
+- Processor/resolver depend on `RegisterUserOrchestrator`.
+- The orchestrator depends on the Application command factory, command bus, and
   query handler interface.
+- The query handler normalizes email input before repository lookup so direct
+  reads and registration reads use the same lookup form.
 - Domain layer is unchanged.
-- Infrastructure repository implementations are unchanged.
+- The cached user repository skips writing new negative email lookups and deletes
+  stale negative email-cache entries before falling back to the inner repository.
 
 ## Testing Strategy
 
@@ -71,9 +76,10 @@ avoiding new response DTOs or write-side return values.
 - Command handler tests: verify create/save/event path; no existing-user return
   assertion remains because existing-user lookup moved out.
 - Query handler tests: found and not-found cases.
-- Processor tests: existing-user short circuit and new-user dispatch plus
+- Orchestrator tests: existing-user short circuit and new-user dispatch plus
   post-dispatch lookup.
-- Resolver tests: validation/transform plus existing-user and new-user flows.
+- Processor tests: delegation to the orchestrator.
+- Resolver tests: validation/transform plus delegation to the orchestrator.
 
 ## Documentation
 

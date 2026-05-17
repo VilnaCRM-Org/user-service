@@ -8,7 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
-use App\User\Domain\Entity\User;
+use App\User\Domain\Entity\UserInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +44,7 @@ final readonly class RegisterUserCommandExpectationHelper
         string $initials,
         string $password,
         RegisterUserCommand $command,
-        User $user,
+        UserInterface $user,
     ): void {
         $this->findUserByEmailQueryHandler->expects(TestCase::exactly(2))
             ->method('find')
