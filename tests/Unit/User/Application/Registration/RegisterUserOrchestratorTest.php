@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Registration;
 
 use App\Tests\Unit\User\Application\Support\RegisterUserCommandTestCase;
+use App\User\Application\Command\RegisterUserCommand;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Registration\RegisterUserOrchestrator;
+use App\User\Domain\Entity\UserInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
 {
     private RegisterUserOrchestrator $orchestrator;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
 
     #[\Override]
     protected function setUp(): void
@@ -17,28 +23,48 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         parent::setUp();
 
         $this->setUpRegisterUserCommandContext();
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->orchestrator = new RegisterUserOrchestrator(
             $this->commandBus,
             $this->mockSignUpCommandFactory,
-            $this->commandResponseTypeGuard
+            $this->findUserByEmailQueryHandler
         );
     }
 
-    public function testRegisterDispatchesRegistrationAndReturnsCommandResponseUser(): void
+    public function testRegisterReturnsExistingUserWithoutDispatching(): void
     {
-        $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
+        [$email, $initials, $password] = $this->createInputFixture();
+        $existingUser = $this->createMock(UserInterface::class);
+
+        $this->expectEmailLookups($email, $existingUser);
+        $this->mockSignUpCommandFactory->expects($this->never())
+            ->method('create');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
+
+        $returnedUser = $this->orchestrator->register(
+            $email,
+            $initials,
+            $password
+        );
+
+        $this->assertSame($existingUser, $returnedUser);
+    }
+
+    public function testRegisterDispatchesAndReturnsPostDispatchUser(): void
+    {
+        [$email, $initials, $password] = $this->createInputFixture();
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
-        $user = $this->createUser($email, $initials, $password);
+        $createdUser = $this->createUser($email, $initials, $password);
 
+        $this->expectEmailLookups($email, null, $createdUser);
         $this->commandExpectationHelper->expectRegistration(
             $email,
             $initials,
             $password,
-            $signUpCommand,
-            $user
+            $signUpCommand
         );
 
         $returnedUser = $this->orchestrator->register(
@@ -47,6 +73,112 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
             $password
         );
 
-        $this->assertSame($user, $returnedUser);
+        $this->assertSame($createdUser, $returnedUser);
+    }
+
+    public function testRegisterReturnsConcurrentWinnerAfterDispatchFailure(): void
+    {
+        [$email, $initials, $password] = $this->createInputFixture();
+        $signUpCommand =
+            $this->signUpCommandFactory->create($email, $initials, $password);
+        $raceWinner = $this->createMock(UserInterface::class);
+
+        $this->expectEmailLookups($email, null, $raceWinner);
+        $this->expectDispatchFailure(
+            $email,
+            $initials,
+            $password,
+            $signUpCommand,
+            new RuntimeException('Duplicate email.')
+        );
+
+        $returnedUser = $this->orchestrator->register(
+            $email,
+            $initials,
+            $password
+        );
+
+        $this->assertSame($raceWinner, $returnedUser);
+    }
+
+    public function testRegisterRethrowsDispatchFailureWhenNoConcurrentUserExists(): void
+    {
+        [$email, $initials, $password] = $this->createInputFixture();
+        $signUpCommand =
+            $this->signUpCommandFactory->create($email, $initials, $password);
+        $error = new RuntimeException('Persistence failed.');
+
+        $this->expectEmailLookups($email, null, null);
+        $this->expectDispatchFailure(
+            $email,
+            $initials,
+            $password,
+            $signUpCommand,
+            $error
+        );
+
+        $this->expectExceptionObject($error);
+
+        $this->orchestrator->register($email, $initials, $password);
+    }
+
+    public function testRegisterThrowsWhenPostDispatchUserCannotBeLoaded(): void
+    {
+        [$email, $initials, $password] = $this->createInputFixture();
+        $signUpCommand =
+            $this->signUpCommandFactory->create($email, $initials, $password);
+
+        $this->expectEmailLookups($email, null, null);
+        $this->commandExpectationHelper->expectRegistration(
+            $email,
+            $initials,
+            $password,
+            $signUpCommand
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Registered user could not be loaded.');
+
+        $this->orchestrator->register($email, $initials, $password);
+    }
+
+    /**
+     * @return array{string,string,string}
+     */
+    private function createInputFixture(): array
+    {
+        return [
+            $this->faker->email(),
+            $this->faker->name(),
+            $this->faker->password(),
+        ];
+    }
+
+    private function expectEmailLookups(
+        string $email,
+        ?UserInterface ...$results,
+    ): void {
+        $this->findUserByEmailQueryHandler
+            ->expects($this->exactly(count($results)))
+            ->method('find')
+            ->with($email)
+            ->willReturnOnConsecutiveCalls(...$results);
+    }
+
+    private function expectDispatchFailure(
+        string $email,
+        string $initials,
+        string $password,
+        RegisterUserCommand $signUpCommand,
+        RuntimeException $error,
+    ): void {
+        $this->mockSignUpCommandFactory->expects($this->once())
+            ->method('create')
+            ->with($email, $initials, $password)
+            ->willReturn($signUpCommand);
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($signUpCommand)
+            ->willThrowException($error);
     }
 }

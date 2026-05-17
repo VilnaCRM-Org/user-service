@@ -6,9 +6,7 @@ namespace App\Tests\Unit\User\Application\Support;
 
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RegisterUserCommand;
-use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
-use App\User\Domain\Entity\UserInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +23,6 @@ final readonly class RegisterUserCommandExpectationHelper
         string $initials,
         string $password,
         RegisterUserCommand $command,
-        UserInterface $user,
     ): void {
         $this->signUpCommandFactory->expects(TestCase::once())
             ->method('create')
@@ -35,6 +32,6 @@ final readonly class RegisterUserCommandExpectationHelper
         $this->commandBus->expects(TestCase::once())
             ->method('dispatch')
             ->with($command)
-            ->willReturn(new RegisterUserCommandResponse($user));
+            ->willReturn(null);
     }
 }

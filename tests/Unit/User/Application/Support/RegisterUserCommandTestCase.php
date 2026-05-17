@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Support;
 
-use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -23,7 +22,6 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
     protected UuidTransformer $uuidTransformer;
     protected SignUpCommandFactoryInterface&MockObject $mockSignUpCommandFactory;
     protected CommandBusInterface&MockObject $commandBus;
-    protected CommandResponseTypeGuard $commandResponseTypeGuard;
     protected RegisterUserCommandExpectationHelper $commandExpectationHelper;
 
     protected function setUpRegisterUserCommandContext(): void
@@ -55,7 +53,6 @@ abstract class RegisterUserCommandTestCase extends UnitTestCase
         $this->signUpCommandFactory = new SignUpCommandFactory();
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-        $this->commandResponseTypeGuard = new CommandResponseTypeGuard();
     }
 
     private function createRegistrationMocks(): void

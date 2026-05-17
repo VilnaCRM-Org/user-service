@@ -10,7 +10,6 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
-use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Service\EmailNormalizer;
@@ -60,75 +59,22 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
         [$command, $normalizedEmail, $initials] =
             $this->createRegistrationFixture();
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn(null);
-        $hashedPassword = $this->expectUserCreation(
+        $this->expectNoEmailLookup();
+        $this->expectUserCreation(
             $normalizedEmail,
             $initials
         );
 
-        $response = $this->handler->__invoke($command);
-
-        $this->assertInstanceOf(RegisterUserCommandResponse::class, $response);
-        $this->assertUserMatches(
-            $response->createdUser,
-            $normalizedEmail,
-            $initials,
-            $hashedPassword
-        );
+        $this->handler->__invoke($command);
     }
 
-    public function testInvokeReturnsExistingUserWhenEmailAlreadyRegistered(): void
-    {
-        [$email, $normalizedEmail] = $this->createEmailFixture();
-        $existingUser = $this->createMock(UserInterface::class);
-        $command = $this->signUpCommandFactory->create(
-            $email,
-            $this->faker->name(),
-            $this->faker->password()
-        );
-
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn($existingUser);
-        $this->expectNoUserCreation();
-
-        $response = $this->handler->__invoke($command);
-
-        $this->assertSame($existingUser, $response->createdUser);
-    }
-
-    public function testInvokeReturnsConcurrentWinnerWhenSaveHitsEmailRace(): void
-    {
-        [$command, $normalizedEmail, $initials] =
-            $this->createRegistrationFixture();
-        $raceWinner = $this->createMock(UserInterface::class);
-
-        $this->expectTwoEmailLookups($normalizedEmail, null, $raceWinner);
-        $hashedPassword = $this->expectPasswordHash();
-        $this->expectSaveFailure(
-            $normalizedEmail,
-            $initials,
-            $hashedPassword,
-            new RuntimeException('Duplicate email.')
-        );
-        $this->expectNoRegistrationEvent();
-
-        $response = $this->handler->__invoke($command);
-
-        $this->assertSame($raceWinner, $response->createdUser);
-    }
-
-    public function testInvokeRethrowsSaveErrorWhenNoConcurrentUserExists(): void
+    public function testInvokeRethrowsSaveErrorWithoutPublishingRegistrationEvent(): void
     {
         [$command, $normalizedEmail, $initials] =
             $this->createRegistrationFixture();
         $error = new RuntimeException('Persistence failed.');
 
-        $this->expectTwoEmailLookups($normalizedEmail, null, null);
+        $this->expectNoEmailLookup();
         $hashedPassword = $this->expectPasswordHash();
         $this->expectSaveFailure(
             $normalizedEmail,
@@ -183,12 +129,10 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     private function expectUserCreation(
         string $email,
         string $initials,
-    ): string {
+    ): void {
         $hashedPassword = $this->expectPasswordHash();
         $this->expectUserSave($email, $initials, $hashedPassword);
         $this->expectRegistrationEvent($email, $initials, $hashedPassword);
-
-        return $hashedPassword;
     }
 
     private function expectRegistrationEvent(
@@ -227,17 +171,6 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
             ));
     }
 
-    private function expectTwoEmailLookups(
-        string $email,
-        ?UserInterface $firstResult,
-        ?UserInterface $secondResult,
-    ): void {
-        $this->userRepository->expects($this->exactly(2))
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturnOnConsecutiveCalls($firstResult, $secondResult);
-    }
-
     private function expectSaveFailure(
         string $email,
         string $initials,
@@ -260,15 +193,10 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
             ->method('publish');
     }
 
-    private function assertUserMatches(
-        UserInterface $user,
-        string $email,
-        string $initials,
-        string $password,
-    ): void {
-        $this->assertTrue(
-            $this->userMatches($user, $email, $initials, $password)
-        );
+    private function expectNoEmailLookup(): void
+    {
+        $this->userRepository->expects($this->never())
+            ->method('findByEmail');
     }
 
     private function userMatches(
@@ -308,18 +236,6 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
             ->willReturn($hasher);
 
         return $hashedPassword;
-    }
-
-    private function expectNoUserCreation(): void
-    {
-        $this->hasherFactory->expects($this->never())
-            ->method('getPasswordHasher');
-        $this->userRepository->expects($this->never())
-            ->method('save');
-        $this->registeredEventFactory->expects($this->never())
-            ->method('create');
-        $this->eventBus->expects($this->never())
-            ->method('publish');
     }
 
     /**

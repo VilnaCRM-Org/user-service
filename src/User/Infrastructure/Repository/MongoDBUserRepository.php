@@ -18,8 +18,9 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
-
 use function mb_strtolower;
+
+use Throwable;
 use function trim;
 
 /**
@@ -42,8 +43,14 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function save(object $user): void
     {
-        $this->documentManager->persist($user);
-        $this->documentManager->flush();
+        try {
+            $this->documentManager->persist($user);
+            $this->documentManager->flush();
+        } catch (Throwable $error) {
+            $this->documentManager->detach($user);
+
+            throw $error;
+        }
     }
 
     #[\Override]

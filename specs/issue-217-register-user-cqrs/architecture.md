@@ -10,8 +10,8 @@ date: '2026-05-10'
 ## Decision
 
 Use an Application-layer query handler for email lookup, keep API entry points
-delegating through a shared registration orchestrator, and let the registration
-command return the idempotent registration result.
+delegating through a shared registration orchestrator, and keep the registration
+command handler write-only.
 
 ## Component Changes
 
@@ -42,38 +42,38 @@ registration share the same trim/lowercase behavior.
 `RegisterUserCommandHandler` should:
 
 - normalize the command email with `EmailNormalizer`;
-- return the existing user when the normalized email is already registered;
 - transform the command into a `User`;
 - hash the password;
 - save the user;
 - publish the registration event.
 
-If persistence fails after a concurrent request wins the unique-email race, the
-handler should load and return that concurrent user instead of surfacing the
-database write error. It should return `RegisterUserCommandResponse` for both
-existing-user and newly-created-user paths.
+If persistence fails, the repository detaches the rejected document before
+rethrowing so the failed `User` is not accidentally flushed later by a reused
+ODM document manager.
 
 ### Processor and Resolver
 
 `RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
 registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
-1. Create `RegisterUserCommand` from the API input.
-2. Dispatch the command.
-3. Use `CommandResponseTypeGuard` to require `RegisterUserCommandResponse`.
-4. Return the response user.
+1. Use `FindUserByEmailQueryHandlerInterface` to return an existing user without
+   dispatching a command.
+2. Create `RegisterUserCommand` from the API input when no user exists.
+3. Dispatch the command.
+4. On dispatch failure, re-run the email query and return the concurrent winner
+   when another request created the user; otherwise rethrow the original error.
+5. After successful dispatch, run the email query again and return the persisted
+   user.
 
-The orchestrator does not pre-read and then post-read around dispatch, because
-that sequence is racy under concurrent registrations. Idempotent existing-user
-handling belongs inside the command handler where the write operation and
-unique-email fallback are closest together.
+The post-failure lookup keeps concurrent duplicate registrations idempotent while
+preserving the command handler as the write side of the flow.
 
 ## Dependency Boundaries
 
 - Application query handler depends on Domain repository interface.
 - Processor/resolver depend on `RegisterUserOrchestrator`.
 - The orchestrator depends on the Application command factory, command bus, and
-  command-response type guard.
+  email query handler.
 - The query handler and registration command handler both use `EmailNormalizer`
   so direct reads and registration writes use the same email form.
 - Domain layer is unchanged.
@@ -83,19 +83,17 @@ unique-email fallback are closest together.
 ## Testing Strategy
 
 - Command test: constructor only.
-- Command response test: wraps and exposes the returned user.
-- Command handler tests: verify normalized create/save/event path,
-  existing-user return, concurrent unique-email race fallback, and rethrow when
-  no concurrent user exists.
+- Command handler tests: verify normalized create/save/event path and rethrow
+  without publishing when persistence fails.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
-- Orchestrator tests: command dispatch plus guarded command-response return.
+- Orchestrator tests: existing-user short circuit, dispatch plus post-dispatch
+  lookup, concurrent winner recovery after dispatch failure, and rethrow when no
+  concurrent user exists.
 - Processor tests: delegation to the orchestrator.
 - Resolver tests: validation/transform plus delegation to the orchestrator.
 
 ## Documentation
 
-Update `docs/design-and-architecture.md` CQRS section to state that command
-handlers can return typed command responses when the write side owns the
-idempotent result, while processors/resolvers still avoid duplicating command
-dispatch logic by delegating to an orchestrator.
+Update docs to state that registration reads are handled by the Application
+query handler while the registration command handler remains write-only.

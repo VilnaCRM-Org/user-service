@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\User\Application\Registration;
 
-use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\UserInterface;
+use RuntimeException;
+use Throwable;
 
 final readonly class RegisterUserOrchestrator
 {
     public function __construct(
         private CommandBusInterface $commandBus,
         private SignUpCommandFactoryInterface $signUpCommandFactory,
-        private CommandResponseTypeGuard $commandResponseTypeGuard,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
     ) {
     }
 
@@ -24,16 +25,40 @@ final readonly class RegisterUserOrchestrator
         string $initials,
         string $password,
     ): UserInterface {
+        $existingUser = $this->findUserByEmailQueryHandler->find($email);
+        if ($existingUser !== null) {
+            return $existingUser;
+        }
+
         $command = $this->signUpCommandFactory->create(
             $email,
             $initials,
             $password
         );
-        $commandResponse = $this->commandResponseTypeGuard->expect(
-            $this->commandBus->dispatch($command),
-            RegisterUserCommandResponse::class
-        );
 
-        return $commandResponse->createdUser;
+        try {
+            $this->commandBus->dispatch($command);
+        } catch (Throwable $error) {
+            return $this->findConcurrentUserOrRethrow($email, $error);
+        }
+
+        $createdUser = $this->findUserByEmailQueryHandler->find($email);
+        if ($createdUser === null) {
+            throw new RuntimeException('Registered user could not be loaded.');
+        }
+
+        return $createdUser;
+    }
+
+    private function findConcurrentUserOrRethrow(
+        string $email,
+        Throwable $error,
+    ): UserInterface {
+        $concurrentUser = $this->findUserByEmailQueryHandler->find($email);
+        if ($concurrentUser !== null) {
+            return $concurrentUser;
+        }
+
+        throw $error;
     }
 }

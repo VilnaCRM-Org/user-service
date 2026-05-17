@@ -19,6 +19,7 @@ use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 final class MongoDBUserRepositoryTest extends UnitTestCase
 {
@@ -219,6 +220,29 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->documentManager
             ->expects($this->once())
             ->method('flush');
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveDetachesUserWhenFlushFails(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException('Flush failed.');
+
+        $this->documentManager
+            ->expects($this->once())
+            ->method('persist')
+            ->with($user);
+        $this->documentManager
+            ->expects($this->once())
+            ->method('flush')
+            ->willThrowException($error);
+        $this->documentManager
+            ->expects($this->once())
+            ->method('detach')
+            ->with($user);
+
+        $this->expectExceptionObject($error);
 
         $this->userRepository->save($user);
     }
