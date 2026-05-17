@@ -19,6 +19,7 @@ services:
     exclude:
       - '../src/Shared/Kernel.php'
       - '../src/OAuth/Infrastructure/Provider/DeterministicOAuthProvider.php'
+      - '../src/Shared/Infrastructure/Bus/Event/DefensiveEventSubscriberDecorator.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -215,6 +216,9 @@ services:
 
   App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface:
     alias: App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter
+
+  App\Shared\Application\Observability\Factory\EventSubscriberFailureMetricFactoryInterface:
+    alias: App\Shared\Infrastructure\Observability\Factory\EventSubscriberFailureMetricFactory
 
   App\Shared\Application\Observability\Factory\MetricDimensionsFactoryInterface:
     alias: App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory

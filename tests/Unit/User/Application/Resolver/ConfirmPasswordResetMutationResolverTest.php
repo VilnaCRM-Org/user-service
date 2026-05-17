@@ -62,13 +62,7 @@ final class ConfirmPasswordResetMutationResolverTest extends UnitTestCase
         $this->validator->expects($this->once())
             ->method('validate');
 
-        $this->commandBus->expects($this->once())
-            ->method('dispatch')
-            ->with($this->callback(static function (ConfirmPasswordResetCommand $command) {
-                return $command->token === ''
-                    && $command->newPassword === '';
-            }))
-            ->willReturn(new ConfirmPasswordResetCommandResponse());
+        $this->expectCommandDispatch('', '');
 
         $result = $this->resolver->__invoke(null, $context);
 
