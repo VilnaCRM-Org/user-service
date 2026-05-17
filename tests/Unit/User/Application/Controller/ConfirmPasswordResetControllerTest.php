@@ -9,6 +9,7 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Controller\ConfirmPasswordResetController;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\DTO\ConfirmPasswordResetDto;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -80,7 +81,7 @@ final class ConfirmPasswordResetControllerTest extends UnitTestCase
                     $testData['newPassword']
                 )
             ))
-            ->willReturn($commandResponse);
+            ->willReturn(new ConfirmPasswordResetCommandResponse());
     }
 
     private function validateCommand(
