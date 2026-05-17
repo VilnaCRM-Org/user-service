@@ -7,14 +7,14 @@ and use case.
 ## Directory Shape
 
 ```text
-src/Core/{Context}/
+src/{Context}/
 ├── Application/
 │   ├── DTO/
 │   │   ├── {Capability}Request.php
 │   │   └── {Capability}Response.php
 │   ├── Factory/
 │   │   └── {Capability}PromptFactory.php
-│   ├── Port/
+│   ├── {PortDirectory}/
 │   │   └── {Capability}EvaluatorInterface.php
 │   └── CommandHandler/
 │       └── {Action}{Entity}CommandHandler.php
@@ -32,6 +32,11 @@ If a new class-type directory is needed, follow `code-organization/SKILL.md` and
 choose only standard pattern names such as `Adapter`, `Factory`, `Parser`,
 `Strategy`, or `Decorator`.
 
+In the snippets below, `{PortDirectory}` means the existing Application
+class-type directory that best matches the port role, for example `Provider/`,
+`Validator/`, or `Resolver/`. Do not create `Port/` unless the user explicitly
+approves that new directory.
+
 ## Application Port
 
 ```php
@@ -39,10 +44,10 @@ choose only standard pattern names such as `Adapter`, `Factory`, `Parser`,
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Application\Port;
+namespace App\{Context}\Application\{PortDirectory};
 
-use App\Core\{Context}\Application\DTO\{Capability}Request;
-use App\Core\{Context}\Application\DTO\{Capability}Response;
+use App\{Context}\Application\DTO\{Capability}Request;
+use App\{Context}\Application\DTO\{Capability}Response;
 
 interface {Capability}EvaluatorInterface
 {
@@ -57,7 +62,7 @@ interface {Capability}EvaluatorInterface
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Application\DTO;
+namespace App\{Context}\Application\DTO;
 
 final readonly class {Capability}Request
 {
@@ -75,7 +80,7 @@ final readonly class {Capability}Request
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Application\DTO;
+namespace App\{Context}\Application\DTO;
 
 final readonly class {Capability}Response
 {
@@ -95,9 +100,9 @@ final readonly class {Capability}Response
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Application\Factory;
+namespace App\{Context}\Application\Factory;
 
-use App\Core\{Context}\Application\DTO\{Capability}Request;
+use App\{Context}\Application\DTO\{Capability}Request;
 
 final readonly class {Capability}PromptFactory
 {
@@ -123,14 +128,14 @@ responsible for binding typed variables.
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Infrastructure\Adapter;
+namespace App\{Context}\Infrastructure\Adapter;
 
-use App\Core\{Context}\Application\DTO\{Capability}Request;
-use App\Core\{Context}\Application\DTO\{Capability}Response;
-use App\Core\{Context}\Application\Factory\{Capability}PromptFactory;
-use App\Core\{Context}\Application\Port\{Capability}EvaluatorInterface;
-use App\Core\{Context}\Infrastructure\Factory\{Provider}RequestFactory;
-use App\Core\{Context}\Infrastructure\Parser\{Provider}{Capability}ResponseParser;
+use App\{Context}\Application\DTO\{Capability}Request;
+use App\{Context}\Application\DTO\{Capability}Response;
+use App\{Context}\Application\Factory\{Capability}PromptFactory;
+use App\{Context}\Application\{PortDirectory}\{Capability}EvaluatorInterface;
+use App\{Context}\Infrastructure\Factory\{Provider}RequestFactory;
+use App\{Context}\Infrastructure\Parser\{Provider}{Capability}ResponseParser;
 
 final readonly class {Provider}{Capability}Evaluator implements {Capability}EvaluatorInterface
 {
@@ -163,9 +168,9 @@ because they know provider payloads and failure formats.
 
 declare(strict_types=1);
 
-namespace App\Core\{Context}\Application\Strategy;
+namespace App\{Context}\Application\Strategy;
 
-use App\Core\{Context}\Application\DTO\{Capability}Request;
+use App\{Context}\Application\DTO\{Capability}Request;
 
 interface {Capability}ModelSelectionStrategyInterface
 {
@@ -183,11 +188,11 @@ tenant, risk level, or environment.
 
 declare(strict_types=1);
 
-namespace App\Tests\Core\{Context}\Double;
+namespace App\Tests\Unit\{Context}\Double;
 
-use App\Core\{Context}\Application\DTO\{Capability}Request;
-use App\Core\{Context}\Application\DTO\{Capability}Response;
-use App\Core\{Context}\Application\Port\{Capability}EvaluatorInterface;
+use App\{Context}\Application\DTO\{Capability}Request;
+use App\{Context}\Application\DTO\{Capability}Response;
+use App\{Context}\Application\{PortDirectory}\{Capability}EvaluatorInterface;
 
 final readonly class InMemory{Capability}Evaluator implements {Capability}EvaluatorInterface
 {

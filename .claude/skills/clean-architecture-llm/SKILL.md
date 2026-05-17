@@ -70,6 +70,11 @@ Create an Application-layer interface that describes the capability, not the
 vendor API. The interface should accept typed request objects and return typed
 response objects.
 
+In this repository, "port" means the provider-neutral Application-layer
+interface role. Put the interface in an existing class-type directory that
+matches its responsibility, such as `Provider/`, `Validator/`, or `Resolver/`,
+or get explicit approval before introducing a new `Port/` directory.
+
 Required:
 
 - Use specific names such as `RegistrationRiskEvaluatorInterface`, not
