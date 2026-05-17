@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
+use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\RecoveryCode;
@@ -64,8 +65,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->expectBulkSessionRevocation($user, $sessionId, 0);
         $this->expectSuccessEvents();
 
-        $command = $this->invokeHandler($user->getEmail(), $code, $sessionId);
-        $codes = $command->getResponse()->getRecoveryCodes();
+        $response = $this->invokeHandler($user->getEmail(), $code, $sessionId);
+        $codes = $response->getRecoveryCodes();
         $this->assertCount(RecoveryCode::COUNT, $codes);
     }
 
@@ -269,11 +270,11 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         string $email,
         string $code,
         string $sessionId
-    ): ConfirmTwoFactorCommand {
+    ): ConfirmTwoFactorCommandResponse {
         $handler = $this->createHandler();
         $command = new ConfirmTwoFactorCommand($email, $code, $sessionId);
-        $handler->__invoke($command);
-        return $command;
+
+        return $handler->__invoke($command);
     }
 
     private function createHandler(): ConfirmTwoFactorCommandHandler

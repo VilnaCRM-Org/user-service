@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
@@ -251,8 +252,8 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
             $this->faker->userAgent()
         );
 
-        $this->createHandler()->__invoke($command);
-        $this->assertResponseTokens($command, 'access-token', 'refresh-token');
+        $response = $this->createHandler()->__invoke($command);
+        $this->assertResponseTokens($response, 'access-token', 'refresh-token');
     }
 
     public function testInvokeThrowsUnauthorizedWhenPendingSessionConsumeFails(): void
@@ -322,11 +323,10 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
     }
 
     private function assertResponseTokens(
-        CompleteTwoFactorCommand $command,
+        CompleteTwoFactorCommandResponse $response,
         string $expectedAccessToken,
         string $expectedRefreshToken
     ): void {
-        $response = $command->getResponse();
         $this->assertSame($expectedAccessToken, $response->getAccessToken());
         $this->assertSame($expectedRefreshToken, $response->getRefreshToken());
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -45,6 +46,7 @@ final class RegisterUserProcessorTest extends UnitTestCase
         );
         $this->processor = new RegisterUserProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->mockSignUpCommandFactory
         );
     }
@@ -62,11 +64,8 @@ final class RegisterUserProcessorTest extends UnitTestCase
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
         $user = $this->userFactory->create($email, $initials, $password, $uuid);
-        $signUpCommand->setResponse(
-            new RegisterUserCommandResponse($user)
-        );
 
-        $this->setExpectations($userRegisterDto, $signUpCommand);
+        $this->setExpectations($userRegisterDto, $signUpCommand, $user);
 
         $returnedUser =
             $this->processor->process($userRegisterDto, $this->mockOperation);
@@ -80,6 +79,7 @@ final class RegisterUserProcessorTest extends UnitTestCase
     private function setExpectations(
         UserRegisterDto $userRegisterDto,
         RegisterUserCommand $signUpCommand,
+        User $user,
     ): void {
         $this->mockSignUpCommandFactory->expects($this->once())
             ->method('create')
@@ -92,6 +92,7 @@ final class RegisterUserProcessorTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($signUpCommand);
+            ->with($signUpCommand)
+            ->willReturn(new RegisterUserCommandResponse($user));
     }
 }

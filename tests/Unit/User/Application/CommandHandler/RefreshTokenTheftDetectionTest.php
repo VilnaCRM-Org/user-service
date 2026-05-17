@@ -9,8 +9,10 @@ use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use DateTimeImmutable;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Uid\Ulid;
+use Throwable;
 
 final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTestCase
 {
@@ -60,8 +62,14 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
         $this->expectTokenRevocationSave();
-        $this->expectTheftDetectionResponse($session, $user, 'grace_period_expired', [$token]);
-        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectTheftDetectionResponse(
+            $session,
+            $user,
+            'grace_period_expired',
+            [$token],
+            new RuntimeException('Publisher unavailable.')
+        );
+        $this->expectInvalidTokenException();
         $this->createHandler()->__invoke(new RefreshTokenCommand($plainToken));
     }
 
@@ -324,13 +332,14 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
         AuthSession $session,
         User $user,
         string $reason,
-        array $sessionTokens
+        array $sessionTokens,
+        ?Throwable $publishingFailure = null
     ): void {
         $this->refreshTokenRepository->expects($this->once())
             ->method('findBySessionId')->with($session->getId())
             ->willReturn($sessionTokens);
         $this->expectSessionRevoked();
-        $this->expectTheftEvent($session, $user, $reason);
+        $this->expectTheftEvent($session, $user, $reason, $publishingFailure);
     }
 
     private function expectSessionRevoked(): void
@@ -346,9 +355,10 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
     private function expectTheftEvent(
         AuthSession $session,
         User $user,
-        string $reason
+        string $reason,
+        ?Throwable $publishingFailure = null
     ): void {
-        $this->publisher
+        $expectation = $this->publisher
             ->expects($this->once())
             ->method('publishTheftDetected')
             ->with(
@@ -357,6 +367,9 @@ final class RefreshTokenTheftDetectionTest extends RefreshTokenCommandHandlerTes
                 $session->getIpAddress(),
                 $reason
             );
+        if ($publishingFailure instanceof Throwable) {
+            $expectation->willThrowException($publishingFailure);
+        }
     }
 
     private function createRevokedToken(

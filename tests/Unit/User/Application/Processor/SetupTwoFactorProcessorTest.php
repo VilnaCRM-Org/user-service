@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Post;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Application\Validator\Http\EmptyJsonObjectRequestValidator;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
@@ -159,6 +160,7 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
 
         return new SetupTwoFactorProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new SetupTwoFactorCommandFactory(),
             new HttpRequestContextResolver($requestStack),
@@ -221,14 +223,11 @@ final class SetupTwoFactorProcessorTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(
-                static function (SetupTwoFactorCommand $cmd) use ($email, $uri, $secret): bool {
-                    $cmd->setResponse(
-                        new SetupTwoFactorCommandResponse($uri, $secret)
-                    );
-
+                static function (SetupTwoFactorCommand $cmd) use ($email): bool {
                     return $cmd->userEmail === $email;
                 }
-            ));
+            ))
+            ->willReturn(new SetupTwoFactorCommandResponse($uri, $secret));
     }
 
     private function assertSetupResponse(

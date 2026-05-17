@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Infrastructure\Decorator;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
 use App\User\Infrastructure\Decorator\RateLimitedRequestPasswordResetHandlerDecorator;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -43,15 +44,17 @@ final class RateLimitedRequestPasswordResetHandlerDecoratorTest extends UnitTest
     {
         $email = $this->faker->email();
         $command = new RequestPasswordResetCommand($email);
+        $response = new RequestPasswordResetCommandResponse();
 
         $this->expectRateLimitCheck($email, accepted: true);
 
         $this->innerHandler
             ->expects($this->once())
             ->method('__invoke')
-            ->with($command);
+            ->with($command)
+            ->willReturn($response);
 
-        $this->decorator->__invoke($command);
+        $this->assertSame($response, $this->decorator->__invoke($command));
     }
 
     public function testThrowsExceptionWhenRateLimitExceeded(): void

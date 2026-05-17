@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RefreshTokenDto;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Factory\RefreshTokenCommandFactoryInterface;
@@ -16,6 +18,7 @@ final readonly class RefreshTokenAuthMutationResolver implements MutationResolve
     public function __construct(
         private MutationInputValidator $validator,
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private AuthPayloadFactory $authPayloadFactory,
         private RefreshTokenCommandFactoryInterface $refreshTokenCommandFactory,
     ) {
@@ -34,10 +37,13 @@ final readonly class RefreshTokenAuthMutationResolver implements MutationResolve
         $command = $this->refreshTokenCommandFactory->create(
             $dto->refreshTokenValue()
         );
-        $this->commandBus->dispatch($command);
+        $response = $this->commandResponseTypeGuard->expect(
+            $this->commandBus->dispatch($command),
+            RefreshTokenCommandResponse::class
+        );
 
         return $this->authPayloadFactory->createFromRefreshTokenResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

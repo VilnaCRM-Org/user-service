@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Transformer\SignUpTransformer;
@@ -76,7 +77,10 @@ final class SignUpCommandHandlerTest extends UnitTestCase
 
         $this->setExpectations($user);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
+
+        $this->assertInstanceOf(RegisterUserCommandResponse::class, $response);
+        $this->assertSame($user, $response->createdUser);
     }
 
     public function testInvokeReturnsExistingUserWhenEmailAlreadyRegistered(): void
@@ -89,9 +93,9 @@ final class SignUpCommandHandlerTest extends UnitTestCase
         $this->setupExistingUserExpectations($email, $existingUser);
         $this->setupNeverCalledForSignup();
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertSame($existingUser, $command->getResponse()->createdUser);
+        $this->assertSame($existingUser, $response->createdUser);
     }
 
     private function setExpectations(

@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\CommandHandler\SetupTwoFactorCommandHandler;
+use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\TOTPSecretFactoryInterface;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
@@ -49,8 +50,8 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         $this->expectSecretEncryption($secret);
         $this->expectUserSaveWithEncryptedSecret($user);
         $command = new SetupTwoFactorCommand($user->getEmail());
-        $this->createHandler()->__invoke($command);
-        $this->assertSetupTwoFactorResponse($command, $secret, $otpauthUri, $user->getEmail());
+        $response = $this->createHandler()->__invoke($command);
+        $this->assertSetupTwoFactorResponse($response, $secret, $otpauthUri, $user->getEmail());
     }
 
     public function testInvokeThrowsUnauthorizedWhenAuthenticatedUserIsMissing(): void
@@ -155,12 +156,11 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     }
 
     private function assertSetupTwoFactorResponse(
-        SetupTwoFactorCommand $command,
+        SetupTwoFactorCommandResponse $response,
         string $secret,
         string $otpauthUri,
         string $email
     ): void {
-        $response = $command->getResponse();
         $this->assertSame($secret, $response->getSecret());
         $this->assertSame($otpauthUri, $response->getOtpauthUri());
         $this->assertStringContainsString(rawurlencode($email), $response->getOtpauthUri());
