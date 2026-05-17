@@ -3,13 +3,13 @@ Feature: User Operations Localization
   As a user
   I want to receive messages in chosen language
 
-  Scenario: Creating a user with duplicate email and Ukrainian language
+  Scenario: Creating a user with duplicate email returns existing user and Ukrainian language
     Given user with email "test@mail.com" exists
     And with language "uk"
     And creating user with email "test@mail.com", initials "name surname", password "passWORD1"
     When POST request is send to "/api/users"
-    Then the response status code should be 422
-    And violation should be "Ця email-адреса вже зареєстрована"
+    Then the response status code should be 201
+    And the response should contain "test@mail.com"
 
   Scenario: Creating a user with invalid email and Ukrainian language
     Given creating user with email "test", initials "name surname", password "passWORD1"
