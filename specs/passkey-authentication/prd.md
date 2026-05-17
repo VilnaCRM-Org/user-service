@@ -13,6 +13,7 @@ Passkeys become a first-class authentication option alongside passwords, social 
 In scope:
 
 - REST WebAuthn ceremony endpoints for passkey sign-up, authenticated passkey enrollment, and passkey sign-in.
+- GraphQL passkey mutations for the same sign-up, enrollment, and sign-in ceremonies.
 - MongoDB persistence for active challenges and verified credential records.
 - WebAuthn attestation/assertion verification through `web-auth/webauthn-lib`.
 - Unit tests and integration documentation.
@@ -20,7 +21,6 @@ In scope:
 Out of scope:
 
 - Frontend UI implementation.
-- GraphQL passkey mutations.
 - Username-less discoverable credential login.
 - Enterprise attestation metadata policy.
 
@@ -74,7 +74,7 @@ Acceptance:
 
 Acceptance:
 
-- Existing user credentials become the allowed credentials list.
+- The options response does not expose whether the submitted email has stored passkey credentials.
 - Nonexistent users and users without passkeys receive the same response shape and cannot authenticate successfully.
 - The pending authentication challenge stores the remember-me choice and expires automatically.
 

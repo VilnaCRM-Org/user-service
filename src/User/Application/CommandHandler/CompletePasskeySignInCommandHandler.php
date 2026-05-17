@@ -6,7 +6,6 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\CompletePasskeySignInCommand;
-use App\User\Application\Factory\PasskeyAuthenticationResultFactory;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
 use App\User\Application\Resolver\PasskeyUserResolver;
@@ -26,24 +25,32 @@ final readonly class CompletePasskeySignInCommandHandler implements CommandHandl
         private PasskeyCredentialValidatorInterface $credentialValidator,
         private PasskeyCredentialRepositoryInterface $credentialRepository,
         private PasskeyChallengeRepositoryInterface $challengeRepository,
-        private PasskeyAuthenticationResultFactory $authenticationResultFactory
+        private PasskeyTwoFactorHandler $twoFactorHandler,
+        private PasskeyAuthenticationIssuer $authenticationIssuer
     ) {
     }
 
     public function __invoke(CompletePasskeySignInCommand $command): void
     {
         $challenge = $this->challengeResolver->resolveAuthentication($command->challengeId);
-        $challengeUserId = $this->challengeResolver->requireUserId($challenge);
         $storedCredential = $this->resolveStoredCredential(
             $command->credential,
-            $challengeUserId
+            $challenge->getUserId()
         );
-        $user = $this->userResolver->resolveCredentialOwner($challengeUserId);
+        $user = $this->userResolver->resolveCredentialOwner($storedCredential->getUserId());
         $now = $this->verifyAndMarkUsed($challenge, $command->credential, $storedCredential);
 
         $this->challengeRepository->delete($challenge);
 
-        $command->setResponse($this->authenticationResultFactory->issue(
+        if ($user->isTwoFactorEnabled()) {
+            $command->setResponse(
+                $this->twoFactorHandler->handle($user, $challenge->isRememberMe(), $now)
+            );
+
+            return;
+        }
+
+        $command->setResponse($this->authenticationIssuer->issue(
             $user,
             $challenge->isRememberMe(),
             $command->ipAddress,
@@ -55,11 +62,11 @@ final readonly class CompletePasskeySignInCommandHandler implements CommandHandl
     /**
      * @param array<string, scalar|array|null> $credential
      */
-    private function resolveStoredCredential(array $credential, string $userId): PasskeyCredential
+    private function resolveStoredCredential(array $credential, ?string $userId): PasskeyCredential
     {
         $credentialId = $this->credentialValidator->extractCredentialId($credential);
 
-        return $this->credentialResolver->resolveForUser($credentialId, $userId);
+        return $this->credentialResolver->resolveForOptionalUser($credentialId, $userId);
     }
 
     /**

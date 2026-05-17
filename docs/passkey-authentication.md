@@ -61,8 +61,8 @@ authenticators can reject duplicate enrollment when supported.
 3. Client calls `POST /api/passkeys/signin/complete` with `challengeId` and the
    WebAuthn credential JSON.
 4. The completion handler verifies assertion, updates the stored credential
-   record and counter, issues access and refresh tokens, and sets the auth
-   cookie.
+   record and counter, then either issues tokens/cookie or returns
+   `2fa_enabled` with a `pending_session_id` when the user requires TOTP.
 
 Users without a passkey should keep using the existing password sign-in and
 password reset flows. A failed passkey challenge does not remove password-based
@@ -102,6 +102,6 @@ The credential returned by the browser should be submitted as WebAuthn JSON.
 Use `credential.toJSON()` when available, or serialize `id`, `rawId`, and binary
 response members as base64url strings before submitting completion requests.
 
-The first backend implementation intentionally exposes REST endpoints only. The
-WebAuthn payloads are nested browser JSON objects and do not fit the existing
-GraphQL scalar conventions cleanly.
+GraphQL clients can use the matching passkey auth mutations on `AuthPayload`.
+The `credential` input and `publicKey` output use API Platform's `Iterable`
+scalar so WebAuthn browser JSON can be passed without flattening.

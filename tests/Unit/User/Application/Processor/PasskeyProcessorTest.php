@@ -40,7 +40,9 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
+
 use const JSON_THROW_ON_ERROR;
+
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -200,7 +202,14 @@ final class PasskeyProcessorTest extends UnitTestCase
         $request = new Request();
         $this->expectSignInCompletion($request);
 
-        $this->assertTokenResponse($this->createSignInCompleteProcessor()->process(
+        $processor = new PasskeySignInCompleteProcessor(
+            $this->commandBus,
+            new PasskeyResponseFactory(),
+            $this->requestContextResolver,
+            $this->authCookieFactory
+        );
+
+        $this->assertTokenResponse($processor->process(
             new PasskeySignInCompleteDto(
                 $this->fixture['challengeId'],
                 $this->fixture['credentialPayload']
@@ -442,6 +451,7 @@ final class PasskeyProcessorTest extends UnitTestCase
         $payload = json_decode((string) $response->getContent(), true);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertFalse($payload['2fa_enabled']);
         self::assertSame($this->fixture['accessToken'], $payload['access_token']);
         self::assertSame($this->fixture['refreshToken'], $payload['refresh_token']);
         self::assertCount(1, $response->headers->getCookies());
@@ -481,16 +491,6 @@ final class PasskeyProcessorTest extends UnitTestCase
         return new PasskeyRegistrationCompleteProcessor(
             $this->commandBus,
             $this->createIdentityResolver()
-        );
-    }
-
-    private function createSignInCompleteProcessor(): PasskeySignInCompleteProcessor
-    {
-        return new PasskeySignInCompleteProcessor(
-            $this->commandBus,
-            new PasskeyResponseFactory(),
-            $this->requestContextResolver,
-            $this->authCookieFactory
         );
     }
 

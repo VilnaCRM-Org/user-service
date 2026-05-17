@@ -31,17 +31,6 @@ final readonly class PasskeyChallengeResolver
         return $this->resolveActive($challengeId, PasskeyChallenge::PURPOSE_AUTHENTICATION);
     }
 
-    public function requireUserId(PasskeyChallenge $challenge): string
-    {
-        $userId = $challenge->getUserId();
-
-        if ($userId === null || $userId === '') {
-            $this->denyChallenge();
-        }
-
-        return $userId;
-    }
-
     public function assertSignupChallengeIsComplete(PasskeyChallenge $challenge): void
     {
         if (

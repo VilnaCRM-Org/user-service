@@ -7,6 +7,12 @@ namespace App\Tests\Integration\Auth;
 use App\User\Application\Resolver\CompleteTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\ConfirmTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\DisableTwoFactorAuthMutationResolver;
+use App\User\Application\Resolver\PasskeyRegistrationCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeyRegistrationOptionsAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignInCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver;
 use App\User\Application\Resolver\RefreshTokenAuthMutationResolver;
 use App\User\Application\Resolver\RegenerateRecoveryCodesAuthMutationResolver;
 use App\User\Application\Resolver\SetupTwoFactorAuthMutationResolver;
@@ -121,6 +127,12 @@ final class GraphQLAuthSupportTest extends AuthIntegrationTestCase
             'regenerateRecoveryCodes',
             'signOut',
             'signOutAll',
+            'passkeySignUpOptions',
+            'passkeySignUpComplete',
+            'passkeySignInOptions',
+            'passkeySignInComplete',
+            'passkeyRegistrationOptions',
+            'passkeyRegistrationComplete',
         ];
     }
 
@@ -139,6 +151,12 @@ final class GraphQLAuthSupportTest extends AuthIntegrationTestCase
             'regenerateRecoveryCodes' => RegenerateRecoveryCodesAuthMutationResolver::class,
             'signOut' => SignOutAuthMutationResolver::class,
             'signOutAll' => SignOutAllAuthMutationResolver::class,
+            'passkeySignUpOptions' => PasskeySignUpOptionsAuthMutationResolver::class,
+            'passkeySignUpComplete' => PasskeySignUpCompleteAuthMutationResolver::class,
+            'passkeySignInOptions' => PasskeySignInOptionsAuthMutationResolver::class,
+            'passkeySignInComplete' => PasskeySignInCompleteAuthMutationResolver::class,
+            'passkeyRegistrationOptions' => PasskeyRegistrationOptionsAuthMutationResolver::class,
+            'passkeyRegistrationComplete' => PasskeyRegistrationCompleteAuthMutationResolver::class,
         ];
     }
 

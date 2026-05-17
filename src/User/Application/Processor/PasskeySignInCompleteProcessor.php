@@ -53,9 +53,14 @@ final readonly class PasskeySignInCompleteProcessor implements ProcessorInterfac
         $result = $command->getResponse();
 
         $response = new JsonResponse($this->responseFactory->createTokenResponse($result));
-        $response->headers->setCookie(
-            $this->authCookieFactory->create($result->getAccessToken(), $result->isRememberMe())
-        );
+        if (!$result->isTwoFactorEnabled()) {
+            $response->headers->setCookie(
+                $this->authCookieFactory->create(
+                    $result->getAccessToken(),
+                    $result->isRememberMe()
+                )
+            );
+        }
 
         return $response;
     }

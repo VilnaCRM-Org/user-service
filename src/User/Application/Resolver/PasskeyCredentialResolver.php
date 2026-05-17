@@ -25,10 +25,17 @@ final readonly class PasskeyCredentialResolver
 
     public function resolveForUser(string $credentialId, string $userId): PasskeyCredential
     {
+        return $this->resolveForOptionalUser($credentialId, $userId);
+    }
+
+    public function resolveForOptionalUser(string $credentialId, ?string $userId): PasskeyCredential
+    {
         $storedCredential = $this->credentialRepository->findByCredentialId($credentialId);
 
         if (
             !$storedCredential instanceof PasskeyCredential
+            || $userId === null
+            || $userId === ''
             || $storedCredential->getUserId() !== $userId
         ) {
             throw new UnauthorizedHttpException('Bearer', 'Invalid passkey credential.');

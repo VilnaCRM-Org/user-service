@@ -12,12 +12,12 @@ use App\User\Application\DTO\VerifiedPasskeyCredential;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
-use App\User\Domain\Collection\PasskeyCredentialCollection;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
+use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use DateTimeImmutable;
@@ -32,6 +32,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
     private IdFactoryInterface&MockObject $idFactory;
     private PasskeyCredentialValidatorInterface&MockObject $credentialValidator;
     private IssuedSessionFactoryInterface&MockObject $sessionFactory;
+    private PendingTwoFactorRepositoryInterface&MockObject $pendingTwoFactorRepository;
     private SignInPublisherInterface&MockObject $signInPublisher;
     private PasskeyCommandHandlerTestObjects $objects;
     private PasskeySignInCommandHandlerTestSupport $support;
@@ -49,23 +50,25 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
         $this->credentialValidator = $this->createMock(PasskeyCredentialValidatorInterface::class);
         $this->sessionFactory = $this->createMock(IssuedSessionFactoryInterface::class);
+        $this->pendingTwoFactorRepository = $this->createMock(
+            PendingTwoFactorRepositoryInterface::class
+        );
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->objects = new PasskeyCommandHandlerTestObjects($this->faker);
         $this->support = $this->createSupport();
     }
 
-    public function testStartUsesExistingUserCredentialsWhenUserExists(): void
+    public function testStartUsesSameCredentialDescriptorShapeWhenUserExists(): void
     {
         $user = $this->objects->createUser(
             '018f33bb-1111-7222-8333-111111111111',
             $this->objects->user('authenticationEmail')
         );
-        $credential = $this->objects->createCredential($user->getId());
 
         $this->idFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->objects->token('challengeId'));
-        $this->expectExistingUserCredentials($user, $credential);
+        $this->expectExistingUserWithoutCredentialDescriptors($user);
         $this->expectAuthenticationOptionsChallenge($user);
 
         $result = $this->support->start(
@@ -74,6 +77,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         );
 
         $this->assertAuthenticationOptionsStarted($result);
+        self::assertSame([], $result->getPublicKeyOptions()['allowCredentials']);
     }
 
     public function testStartCreatesOptionsWithoutCredentialDescriptorsForUnknownEmail(): void
@@ -121,9 +125,11 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->assertAuthenticationCompleted($result, $storedCredential, $challenge);
     }
 
-    public function testCompleteRejectsChallengeWithoutUserId(): void
+    public function testCompleteRejectsChallengeWithoutUserIdLikeInvalidCredential(): void
     {
         $challenge = $this->objects->createAuthenticationChallenge(null);
+        $storedCredential = $this->objects->createCredential('user-id');
+        $credentialId = $storedCredential->getCredentialId();
 
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
@@ -133,10 +139,18 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
                 self::isInstanceOf(DateTimeImmutable::class)
             )
             ->willReturn($challenge);
-        $this->credentialValidator->expects($this->never())->method('extractCredentialId');
+        $this->credentialValidator->expects($this->once())
+            ->method('extractCredentialId')
+            ->with(['id' => 'credential'])
+            ->willReturn($credentialId);
+        $this->credentialRepository->expects($this->once())
+            ->method('findByCredentialId')
+            ->with($credentialId)
+            ->willReturn($storedCredential);
+        $this->userRepository->expects($this->never())->method('findById');
 
         $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid or expired passkey challenge.');
+        $this->expectExceptionMessage('Invalid passkey credential.');
 
         $this->support->complete(['id' => 'credential']);
     }
@@ -194,6 +208,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
             $this->idFactory,
             $this->credentialValidator,
             $this->sessionFactory,
+            $this->pendingTwoFactorRepository,
             $this->signInPublisher,
             $this->objects
         );
@@ -240,18 +255,13 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
             ->willReturn($storedCredential);
     }
 
-    private function expectExistingUserCredentials(
-        User $user,
-        PasskeyCredential $credential
-    ): void {
+    private function expectExistingUserWithoutCredentialDescriptors(User $user): void
+    {
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
             ->with($this->objects->user('authenticationEmail'))
             ->willReturn($user);
-        $this->credentialRepository->expects($this->once())
-            ->method('findByUserId')
-            ->with($user->getId())
-            ->willReturn(new PasskeyCredentialCollection($credential));
+        $this->credentialRepository->expects($this->never())->method('findByUserId');
     }
 
     private function expectAuthenticationOptionsChallenge(User $user): void
@@ -402,11 +412,6 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
                 $this->objects->token('accessToken'),
                 $this->objects->token('refreshToken')
             ));
-        $this->expectSignInPublished($user);
-    }
-
-    private function expectSignInPublished(User $user): void
-    {
         $this->signInPublisher->expects($this->once())
             ->method('publishSignedIn')
             ->with(

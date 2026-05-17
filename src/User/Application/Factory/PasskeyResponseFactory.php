@@ -21,13 +21,28 @@ final readonly class PasskeyResponseFactory
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, bool|string>
+     *
+     * @psalm-return array{2fa_enabled: bool, access_token?: string, refresh_token?: string, pending_session_id?: string}
      */
     public function createTokenResponse(PasskeyAuthenticationResult $result): array
     {
-        return [
-            'access_token' => $result->getAccessToken(),
-            'refresh_token' => $result->getRefreshToken(),
+        $body = [
+            '2fa_enabled' => $result->isTwoFactorEnabled(),
         ];
+
+        if ($result->isTwoFactorEnabled()) {
+            $pendingSessionId = $result->getPendingSessionId();
+            if ($pendingSessionId !== null) {
+                $body['pending_session_id'] = $pendingSessionId;
+            }
+
+            return $body;
+        }
+
+        $body['access_token'] = $result->getAccessToken();
+        $body['refresh_token'] = $result->getRefreshToken();
+
+        return $body;
     }
 }

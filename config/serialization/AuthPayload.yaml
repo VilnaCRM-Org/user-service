@@ -12,6 +12,12 @@ App\User\Application\DTO\AuthPayload:
       groups: ['auth:output']
     pendingSessionId:
       groups: ['auth:output']
+    challengeId:
+      groups: ['auth:output']
+    publicKey:
+      groups: ['auth:output']
+    credentialId:
+      groups: ['auth:output']
     otpauthUri:
       groups: ['auth:output']
     secret:

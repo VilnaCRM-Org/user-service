@@ -22,6 +22,12 @@ use App\User\Application\Resolver\ConfirmTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
 use App\User\Application\Resolver\DisableTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Resolver\PasskeyRegistrationCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeyRegistrationOptionsAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignInCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver;
+use App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver;
 use App\User\Application\Resolver\RefreshTokenAuthMutationResolver;
 use App\User\Application\Resolver\RegenerateRecoveryCodesAuthMutationResolver;
 use App\User\Application\Resolver\SetupTwoFactorAuthMutationResolver;
@@ -42,6 +48,11 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
             $this->createConfirmTwoFactorResolver(),
             $this->createDisableTwoFactorResolver(),
             $this->createRefreshTokenResolver(),
+            $this->createPasskeySignUpOptionsResolver(),
+            $this->createPasskeySignUpCompleteResolver(),
+            $this->createPasskeySignInOptionsResolver(),
+            $this->createPasskeySignInCompleteResolver(),
+            $this->createPasskeyRegistrationCompleteResolver(),
         ]);
     }
 
@@ -52,6 +63,7 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
             $this->createSetupTwoFactorResolver(),
             $this->createSignOutResolver(),
             $this->createSignOutAllResolver(),
+            $this->createPasskeyRegistrationOptionsResolver(),
         ]);
     }
 
@@ -116,6 +128,63 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
             $this->createCommandBus(),
             $this->createAuthPayloadFactory(),
             $this->createMock(RefreshTokenCommandFactoryInterface::class)
+        );
+    }
+
+    private function createPasskeySignUpOptionsResolver(): MutationResolverInterface
+    {
+        return new PasskeySignUpOptionsAuthMutationResolver(
+            $this->createValidator(),
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory()
+        );
+    }
+
+    private function createPasskeySignUpCompleteResolver(): MutationResolverInterface
+    {
+        return new PasskeySignUpCompleteAuthMutationResolver(
+            $this->createValidator(),
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory(),
+            $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createPasskeySignInOptionsResolver(): MutationResolverInterface
+    {
+        return new PasskeySignInOptionsAuthMutationResolver(
+            $this->createValidator(),
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory()
+        );
+    }
+
+    private function createPasskeySignInCompleteResolver(): MutationResolverInterface
+    {
+        return new PasskeySignInCompleteAuthMutationResolver(
+            $this->createValidator(),
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory(),
+            $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createPasskeyRegistrationOptionsResolver(): MutationResolverInterface
+    {
+        return new PasskeyRegistrationOptionsAuthMutationResolver(
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory(),
+            $this->createCurrentUserIdentityResolver()
+        );
+    }
+
+    private function createPasskeyRegistrationCompleteResolver(): MutationResolverInterface
+    {
+        return new PasskeyRegistrationCompleteAuthMutationResolver(
+            $this->createValidator(),
+            $this->createCommandBus(),
+            $this->createAuthPayloadFactory(),
+            $this->createCurrentUserIdentityResolver()
         );
     }
 

@@ -11,7 +11,7 @@
 
 - CI may reject large command handlers through PHPMD; keep orchestration small
   and split factories, resolvers, and validators.
-- GraphQL is intentionally out of scope for the first PR because WebAuthn credential JSON is nested and browser-shaped.
+- GraphQL is supported through `AuthPayload` mutations using API Platform's `Iterable` scalar for nested WebAuthn credential JSON.
 - New feature verification must execute every local skill or document non-applicability.
 - Frontend UI cannot be implemented in this backend repository; document request/response shapes instead.
 

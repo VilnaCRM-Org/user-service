@@ -65,7 +65,12 @@ final readonly class PasskeyWebauthnFactory implements PasskeyWebauthnFactoryInt
     private function createAttestationManager(): object
     {
         return $this->createWebauthnObject(
-            'AttestationStatement\\AttestationStatementSupportManager'
+            'AttestationStatement\\AttestationStatementSupportManager',
+            [
+                $this->createWebauthnObject(
+                    'AttestationStatement\\NoneAttestationStatementSupport'
+                ),
+            ]
         );
     }
 

@@ -11,17 +11,17 @@ use App\User\Application\Command\StartPasskeyRegistrationCommand;
 use App\User\Application\Command\StartPasskeySignUpCommand;
 use App\User\Application\CommandHandler\CompletePasskeyRegistrationCommandHandler;
 use App\User\Application\CommandHandler\CompletePasskeySignUpCommandHandler;
+use App\User\Application\CommandHandler\PasskeyAuthenticationIssuer;
+use App\User\Application\CommandHandler\PasskeySignUpCompletionHandler;
 use App\User\Application\CommandHandler\StartPasskeyRegistrationCommandHandler;
 use App\User\Application\CommandHandler\StartPasskeySignUpCommandHandler;
 use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\DTO\PasskeyConfiguration;
 use App\User\Application\DTO\PasskeyOptionsResult;
 use App\User\Application\Factory\IdFactoryInterface;
-use App\User\Application\Factory\PasskeyAuthenticationResultFactory;
 use App\User\Application\Factory\PasskeyCredentialFactory;
 use App\User\Application\Factory\PasskeyOptionsFactory;
 use App\User\Application\Factory\PasskeyPublicKeyOptionsFactory;
-use App\User\Application\Factory\PasskeyUserFactory;
 use App\User\Application\Factory\PasskeyWebauthnFactory;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
@@ -35,6 +35,7 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\Uid\Factory\UuidFactory as SymfonyUuidFactory;
 
@@ -45,10 +46,10 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
         private PasskeyCredentialRepositoryInterface $credentialRepository,
         private PasskeyChallengeRepositoryInterface $challengeRepository,
         private PasskeyCredentialValidatorInterface $credentialValidator,
-        private PasskeyAuthenticationResultFactory $authenticationResultFactory,
-        private PasskeyUserFactory $userFactory,
+        private PasskeyRegistrationCommandHandlerFactories $factories,
         private IdFactoryInterface $idFactory,
         private EventBusInterface $eventBus,
+        private SignInPublisherInterface $signInPublisher,
         private PasskeyCommandHandlerTestObjects $objects
     ) {
     }
@@ -153,15 +154,24 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
 
     private function createCompleteSignUpHandler(): CompletePasskeySignUpCommandHandler
     {
+        $challengeResolver = new PasskeyChallengeResolver($this->challengeRepository);
+        $userResolver = new PasskeyUserResolver($this->userRepository);
+
         return new CompletePasskeySignUpCommandHandler(
-            new PasskeyChallengeResolver($this->challengeRepository),
-            new PasskeyUserResolver($this->userRepository),
+            $challengeResolver,
             $this->credentialValidator,
             new PasskeyCredentialFactory($this->idFactory),
             new PasskeyCredentialResolver($this->credentialRepository),
-            $this->authenticationResultFactory,
-            $this->userFactory,
-            $this->eventBus
+            new PasskeySignUpCompletionHandler(
+                $userResolver,
+                $this->factories->userFactory,
+                $this->eventBus,
+                $challengeResolver,
+                new PasskeyAuthenticationIssuer(
+                    $this->factories->authenticationResultFactory,
+                    $this->signInPublisher
+                )
+            )
         );
     }
 

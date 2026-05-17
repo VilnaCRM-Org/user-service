@@ -49,7 +49,14 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
 
 ## Subagent Execution Log
 
-Subagents were not used because the active Codex developer policy only allows spawning when the user explicitly asks for subagents. The BMAD stages were executed in the main session:
+The user explicitly requested subagent coverage for this final review pass. Four focused audits were run in parallel:
+
+- Archimedes audited REST/OpenAPI/spec coverage and flagged missing full REST behavior coverage plus validation boundaries.
+- Zeno audited unit, integration, memory, and load-test coverage and flagged weak challenge lifecycle coverage.
+- Carver audited authentication interop and GraphQL coverage and found passkey sign-in needed 2FA parity plus GraphQL support.
+- Planck audited GitHub PR status, CI, and unresolved reviewer threads and identified the five current Cubic review findings.
+
+The BMAD stages were executed in the main session:
 
 - analyst / research: `research.md`
 - create-brief: `product-brief.md`
@@ -66,6 +73,8 @@ Subagents were not used because the active Codex developer policy only allows sp
 - Added a test-only Behat request-context decorator so `X-Test-Client-Ip` drives IP-sensitive session and rate-limit scenarios under the no-port local runner.
 - Regenerated `.github/openapi-spec/spec.yaml` with the new passkey endpoints.
 - Local AI review found and fixed three issues: passkey ceremonies now require WebAuthn user verification, frontend docs now explain WebAuthn JSON parsing or base64url-to-ArrayBuffer conversion before browser API calls, and passkey challenge consumption is now an atomic repository claim to prevent replay races.
+- Current Cubic review findings were addressed: `none` attestation support is registered, authentication result creation no longer publishes side effects from the factory, sign-in options no longer expose credential descriptors, unknown-email passkey completion follows the generic invalid-credential path, sign-in observes existing 2FA policy, and signup completion rolls back persisted user/credential state on downstream failures.
+- GraphQL passkey mutations were added for sign-up, sign-in, and authenticated registration using the existing `AuthPayload` mutation surface.
 
 ## Mandatory Skill Gate
 
@@ -90,14 +99,17 @@ Subagents were not used because the active Codex developer policy only allows sp
 
 ## Verification Evidence
 
-- Unit suite with coverage after review/CI fixes: 2331 tests, 6503 assertions; Classes 100%, Methods 100%, Lines 100%.
-- Integration suite: 120 tests, 721 assertions.
+- Full unit suite: 2372 tests, 6793 assertions.
+- Passkey unit filter: 126 tests, 656 assertions.
+- Targeted passkey/GraphQL/session rollback tests: 43 tests, 360 assertions.
+- Integration suite: 126 tests, 745 assertions.
+- GraphQL auth config integration suite: 4 tests, 33 assertions.
 - Behat suite: 644 scenarios, 3622 steps.
 - `phpmd src`: passed.
 - `phpmd tests`: passed.
 - `phpinsights` source: Code 100, Complexity 97.6, Architecture 100, Style 100.
 - `phpinsights analyse tests`: Code 100, Complexity 97.9, Architecture 100, Style 100.
-- `psalm --show-info=false --no-progress`: passed.
+- `psalm --no-cache --show-info=false --no-progress`: passed.
 - `psalm --taint-analysis --show-info=false --no-progress`: passed.
 - `deptrac analyse --config-file=deptrac.yaml --report-uncovered --fail-on-uncovered`: passed.
 - `bin/console lint:yaml --parse-tags` for changed YAML files: passed.
@@ -109,6 +121,8 @@ Subagents were not used because the active Codex developer policy only allows sp
 - OpenAPI diff against main: backward compatible; six passkey endpoints added.
 - Spectral OpenAPI validation: no hint-or-higher results.
 - `git diff --check`: passed.
+- PHP syntax lint for modified and added PHP files: passed.
+- PHP-CS-Fixer for modified and added PHP files: passed.
 - Local AI review loop was run in a clean temporary worktree at commit `32334012`; it reported the three issues listed above, the fix pass changed only passkey source/tests/docs, and targeted re-verification passed.
 - Targeted passkey/repository/rate-limit unit tests after AI review fixes: 195 tests, 484 assertions.
 - Passkey application Infection slice after CI fix: 183 mutations generated, 183 killed; MSI 100%, covered MSI 100%.
@@ -116,9 +130,11 @@ Subagents were not used because the active Codex developer policy only allows sp
 
 ## Local CI Note
 
-The literal `make ci` target could not be run in this workspace because another local checkout owns the hardcoded development port `8081`. Equivalent Docker commands were run with isolated dependency ports, and Behat was run through an internal one-off FrankenPHP server with `APP_ENV=test` and `APP_DEBUG=0`, matching the Makefile's test settings.
+The literal `make ci` target could not be run in this workspace because another local checkout owns hardcoded development ports. Equivalent Docker commands were run with isolated dependency ports.
+
+For Behat, the local `mongo:8.0` container repeatedly exited with code 139 after successful health checks in this workspace. The Behat verification therefore used an isolated, no-host-port Compose stack with a transient `mongo:7.0` override and a recreated PHP service running `APP_ENV=test` and `APP_DEBUG=0`. The test database was rebuilt immediately before the successful full Behat run.
 
 ## Open Questions
 
-- Whether passkey GraphQL mutations should be added in a later PR with a dedicated JSON scalar strategy.
+- Whether a dedicated passkey JSON scalar should replace API Platform's `Iterable` scalar later.
 - Whether enterprise attestation policy is required for managed organization devices.

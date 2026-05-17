@@ -5,28 +5,25 @@ declare(strict_types=1);
 namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
-use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\CompletePasskeySignUpCommand;
-use App\User\Application\Factory\PasskeyAuthenticationResultFactory;
+use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\Factory\PasskeyCredentialFactory;
-use App\User\Application\Factory\PasskeyUserFactory;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
-use App\User\Application\Resolver\PasskeyUserResolver;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
+use App\User\Domain\Entity\PasskeyChallenge;
+use App\User\Domain\Entity\PasskeyCredential;
+use App\User\Domain\Entity\User;
 use DateTimeImmutable;
 
 final readonly class CompletePasskeySignUpCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private PasskeyChallengeResolver $challengeResolver,
-        private PasskeyUserResolver $userResolver,
         private PasskeyCredentialValidatorInterface $credentialValidator,
         private PasskeyCredentialFactory $credentialFactory,
         private PasskeyCredentialResolver $credentialResolver,
-        private PasskeyAuthenticationResultFactory $authenticationResultFactory,
-        private PasskeyUserFactory $userFactory,
-        private EventBusInterface $eventBus
+        private PasskeySignUpCompletionHandler $completionHandler
     ) {
     }
 
@@ -34,56 +31,55 @@ final readonly class CompletePasskeySignUpCommandHandler implements CommandHandl
     {
         $challenge = $this->challengeResolver->resolveSignup($command->challengeId);
         $this->challengeResolver->assertSignupChallengeIsComplete($challenge);
-        $this->userResolver->assertEmailIsAvailable((string) $challenge->getEmail());
+        $this->completionHandler->assertEmailIsAvailable($challenge);
 
         $now = new DateTimeImmutable();
-        $user = $this->userFactory->createFromSignupChallenge($challenge);
+        $user = $this->completionHandler->createUser($challenge);
         $credential = $this->createCredential($challenge, $command, $user, $now);
 
-        $this->saveUserAfterCredential($user, $challenge, $credential);
-        $this->eventBus->publish($this->userFactory->createRegisteredEvent($user));
-
-        $this->challengeResolver->delete($challenge);
-        $command->setResponse($this->authenticationResultFactory->issue(
+        $command->setResponse($this->saveSignupAndIssueAuthentication(
             $user,
-            $command->rememberMe,
-            $command->ipAddress,
-            $command->userAgent,
+            $challenge,
+            $credential,
+            $command,
             $now
         ));
     }
 
-    /**
-     * @param \App\User\Domain\Entity\User $user
-     * @param \App\User\Domain\Entity\PasskeyChallenge $challenge
-     * @param \App\User\Domain\Entity\PasskeyCredential $credential
-     */
-    private function saveUserAfterCredential(
-        object $user,
-        object $challenge,
-        object $credential
-    ): void {
+    private function saveSignupAndIssueAuthentication(
+        User $user,
+        PasskeyChallenge $challenge,
+        PasskeyCredential $credential,
+        CompletePasskeySignUpCommand $command,
+        DateTimeImmutable $now
+    ): PasskeyAuthenticationResult {
+        $result = null;
+
         $this->credentialResolver->saveUniqueAndRun(
             $credential,
-            function () use ($user): void {
-                $this->userResolver->save($user);
+            function () use ($user, $challenge, $command, $now, &$result): void {
+                $result = $this->completionHandler->persistUserAndIssueAuthentication(
+                    $user,
+                    $challenge,
+                    $command,
+                    $now
+                );
             },
             function () use ($challenge): void {
                 $this->challengeResolver->release($challenge);
             }
         );
+
+        assert($result instanceof PasskeyAuthenticationResult);
+        return $result;
     }
 
-    /**
-     * @param \App\User\Domain\Entity\PasskeyChallenge $challenge
-     * @param \App\User\Domain\Entity\User $user
-     */
     private function createCredential(
-        object $challenge,
+        PasskeyChallenge $challenge,
         CompletePasskeySignUpCommand $command,
-        object $user,
+        User $user,
         DateTimeImmutable $now
-    ): \App\User\Domain\Entity\PasskeyCredential {
+    ): PasskeyCredential {
         return $this->credentialFactory->create(
             $user->getId(),
             $this->credentialValidator->verifyAttestation($challenge, $command->credential),

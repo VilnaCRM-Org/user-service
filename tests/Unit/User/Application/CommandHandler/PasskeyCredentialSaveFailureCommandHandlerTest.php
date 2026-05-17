@@ -94,6 +94,16 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->support()->completeSignup(['id' => 'credential']);
     }
 
+    public function testCompleteSignupRollsBackUserAndCredentialWhenPostPersistenceFails(): void
+    {
+        $eventFailure = new RuntimeException('Event bus unavailable.');
+
+        $this->expectSignupPostPersistenceFailure($eventFailure);
+        $this->expectExceptionObject($eventFailure);
+
+        $this->support()->completeSignup(['id' => 'credential']);
+    }
+
     public function testCompleteRegistrationRejectsDuplicateCredentialId(): void
     {
         $userId = $this->faker->uuid();
@@ -134,10 +144,13 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
             $this->credentialRepository,
             $this->challengeRepository,
             $this->credentialValidator,
-            new PasskeyAuthenticationResultFactory($this->sessionFactory, $this->signInPublisher),
-            $this->createUserFactory(),
+            new PasskeyRegistrationCommandHandlerFactories(
+                new PasskeyAuthenticationResultFactory($this->sessionFactory),
+                $this->createUserFactory()
+            ),
             $this->idFactory,
             $this->eventBus,
+            $this->signInPublisher,
             $this->objects
         );
     }
@@ -199,6 +212,23 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectCredentialSavedThenDeleted();
         $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
         $this->sessionFactory->expects($this->never())->method('create');
+    }
+
+    private function expectSignupPostPersistenceFailure(RuntimeException $eventFailure): void
+    {
+        $credentialPayload = ['id' => 'credential'];
+        $challenge = $this->objects->createSignupChallenge();
+
+        $this->expectClaimedChallenge($challenge);
+        $this->challengeRepository->expects($this->never())->method('delete');
+        $this->expectEmailIsAvailable();
+        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectUserCreatedAndDeletedAfterEventFailure($eventFailure);
+        $this->expectPasskeyId();
+        $this->expectCredentialSavedThenDeleted();
+        $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
+        $this->sessionFactory->expects($this->never())->method('create');
+        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
     }
 
     private function expectClaimedChallenge(PasskeyChallenge $challenge): void
@@ -265,6 +295,21 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->userRepository->expects($this->once())->method('save')->willThrowException(
             $exception
         );
+    }
+
+    private function expectUserCreatedAndDeletedAfterEventFailure(RuntimeException $exception): void
+    {
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn($this->objects->user('hashedPassword'));
+        $this->eventIdFactory->expects($this->once())->method('generate')->willReturn('event-id');
+        $this->userRepository->expects($this->once())->method('save');
+        $this->eventBus->expects($this->once())->method('publish')->willThrowException(
+            $exception
+        );
+        $this->userRepository->expects($this->once())
+            ->method('delete')
+            ->with(self::isInstanceOf(\App\User\Domain\Entity\User::class));
     }
 
     private function expectPasskeyId(): void

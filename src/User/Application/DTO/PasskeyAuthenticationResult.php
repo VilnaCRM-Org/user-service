@@ -9,7 +9,9 @@ final readonly class PasskeyAuthenticationResult
     public function __construct(
         private string $accessToken,
         private string $refreshToken,
-        private bool $rememberMe
+        private bool $rememberMe,
+        private string $sessionId = '',
+        private ?string $pendingSessionId = null
     ) {
     }
 
@@ -26,5 +28,20 @@ final readonly class PasskeyAuthenticationResult
     public function isRememberMe(): bool
     {
         return $this->rememberMe;
+    }
+
+    public function getSessionId(): string
+    {
+        return $this->sessionId;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->pendingSessionId !== null;
+    }
+
+    public function getPendingSessionId(): ?string
+    {
+        return $this->pendingSessionId;
     }
 }

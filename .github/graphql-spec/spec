@@ -195,6 +195,24 @@ type Mutation {
   "SignOutAlls a AuthPayload."
   signOutAllUser(input: signOutAllUserInput!): signOutAllUserPayload
 
+  "PasskeySignUpOptionss a AuthPayload."
+  passkeySignUpOptionsUser(input: passkeySignUpOptionsUserInput!): passkeySignUpOptionsUserPayload
+
+  "PasskeySignUpCompletes a AuthPayload."
+  passkeySignUpCompleteUser(input: passkeySignUpCompleteUserInput!): passkeySignUpCompleteUserPayload
+
+  "PasskeySignInOptionss a AuthPayload."
+  passkeySignInOptionsUser(input: passkeySignInOptionsUserInput!): passkeySignInOptionsUserPayload
+
+  "PasskeySignInCompletes a AuthPayload."
+  passkeySignInCompleteUser(input: passkeySignInCompleteUserInput!): passkeySignInCompleteUserPayload
+
+  "PasskeyRegistrationOptionss a AuthPayload."
+  passkeyRegistrationOptionsUser(input: passkeyRegistrationOptionsUserInput!): passkeyRegistrationOptionsUserPayload
+
+  "PasskeyRegistrationCompletes a AuthPayload."
+  passkeyRegistrationCompleteUser(input: passkeyRegistrationCompleteUserInput!): passkeyRegistrationCompleteUserPayload
+
   "Updates a EmptyResponse."
   updateEmptyResponse(input: updateEmptyResponseInput!): updateEmptyResponsePayload
 
@@ -258,6 +276,9 @@ type signInUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -290,6 +311,9 @@ type completeTwoFactorUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -318,6 +342,9 @@ type refreshTokenUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -345,6 +372,9 @@ type setupTwoFactorUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -373,6 +403,9 @@ type confirmTwoFactorUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -401,6 +434,9 @@ type disableTwoFactorUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -428,6 +464,9 @@ type regenerateRecoveryCodesUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -455,6 +494,9 @@ type signOutUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!
@@ -482,6 +524,203 @@ type signOutAllUserPayloadData implements Node {
   accessToken: String
   refreshToken: String
   pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeySignUpOptionss a AuthPayload."
+input passkeySignUpOptionsUserInput {
+  clientMutationId: String
+  email: String!
+  initials: String!
+  displayName: String
+}
+
+"PasskeySignUpOptionss a AuthPayload."
+type passkeySignUpOptionsUserPayload {
+  user: passkeySignUpOptionsUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeySignUpOptionss a AuthPayload."
+type passkeySignUpOptionsUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeySignUpCompletes a AuthPayload."
+input passkeySignUpCompleteUserInput {
+  clientMutationId: String
+  challengeId: String!
+  credential: Iterable!
+  label: String
+  rememberMe: Boolean
+}
+
+"PasskeySignUpCompletes a AuthPayload."
+type passkeySignUpCompleteUserPayload {
+  user: passkeySignUpCompleteUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeySignUpCompletes a AuthPayload."
+type passkeySignUpCompleteUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeySignInOptionss a AuthPayload."
+input passkeySignInOptionsUserInput {
+  clientMutationId: String
+  email: String!
+  rememberMe: Boolean
+}
+
+"PasskeySignInOptionss a AuthPayload."
+type passkeySignInOptionsUserPayload {
+  user: passkeySignInOptionsUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeySignInOptionss a AuthPayload."
+type passkeySignInOptionsUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeySignInCompletes a AuthPayload."
+input passkeySignInCompleteUserInput {
+  clientMutationId: String
+  challengeId: String!
+  credential: Iterable!
+}
+
+"PasskeySignInCompletes a AuthPayload."
+type passkeySignInCompleteUserPayload {
+  user: passkeySignInCompleteUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeySignInCompletes a AuthPayload."
+type passkeySignInCompleteUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeyRegistrationOptionss a AuthPayload."
+input passkeyRegistrationOptionsUserInput {
+  clientMutationId: String
+}
+
+"PasskeyRegistrationOptionss a AuthPayload."
+type passkeyRegistrationOptionsUserPayload {
+  user: passkeyRegistrationOptionsUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeyRegistrationOptionss a AuthPayload."
+type passkeyRegistrationOptionsUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
+  otpauthUri: String
+  secret: String
+  recoveryCodes: Iterable!
+  recoveryCodesRemaining: Int
+  warning: String
+}
+
+"PasskeyRegistrationCompletes a AuthPayload."
+input passkeyRegistrationCompleteUserInput {
+  clientMutationId: String
+  challengeId: String!
+  credential: Iterable!
+  label: String
+}
+
+"PasskeyRegistrationCompletes a AuthPayload."
+type passkeyRegistrationCompleteUserPayload {
+  user: passkeyRegistrationCompleteUserPayloadData
+  clientMutationId: String
+}
+
+"PasskeyRegistrationCompletes a AuthPayload."
+type passkeyRegistrationCompleteUserPayloadData implements Node {
+  id: ID!
+  _id: String!
+  success: Boolean!
+  twoFactorEnabled: Boolean
+  accessToken: String
+  refreshToken: String
+  pendingSessionId: String
+  challengeId: String
+  publicKey: Iterable!
+  credentialId: String
   otpauthUri: String
   secret: String
   recoveryCodes: Iterable!

@@ -7,6 +7,8 @@ namespace App\Tests\Unit\User\Application\CommandHandler;
 use App\User\Application\Command\CompletePasskeySignInCommand;
 use App\User\Application\Command\StartPasskeySignInCommand;
 use App\User\Application\CommandHandler\CompletePasskeySignInCommandHandler;
+use App\User\Application\CommandHandler\PasskeyAuthenticationIssuer;
+use App\User\Application\CommandHandler\PasskeyTwoFactorHandler;
 use App\User\Application\CommandHandler\StartPasskeySignInCommandHandler;
 use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\DTO\PasskeyConfiguration;
@@ -23,8 +25,10 @@ use App\User\Application\Resolver\PasskeyUserResolver;
 use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
+use App\User\Domain\Factory\PendingTwoFactorFactory;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
+use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 
@@ -37,6 +41,7 @@ final readonly class PasskeySignInCommandHandlerTestSupport
         private IdFactoryInterface $idFactory,
         private PasskeyCredentialValidatorInterface $credentialValidator,
         private IssuedSessionFactoryInterface $sessionFactory,
+        private PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
         private SignInPublisherInterface $signInPublisher,
         private PasskeyCommandHandlerTestObjects $objects
     ) {
@@ -70,7 +75,6 @@ final readonly class PasskeySignInCommandHandlerTestSupport
     {
         return new StartPasskeySignInCommandHandler(
             new PasskeyUserResolver($this->userRepository),
-            new PasskeyCredentialResolver($this->credentialRepository),
             $this->createOptionsFactory()
         );
     }
@@ -84,7 +88,15 @@ final readonly class PasskeySignInCommandHandlerTestSupport
             $this->credentialValidator,
             $this->credentialRepository,
             $this->challengeRepository,
-            new PasskeyAuthenticationResultFactory($this->sessionFactory, $this->signInPublisher)
+            new PasskeyTwoFactorHandler(
+                $this->pendingTwoFactorRepository,
+                new PendingTwoFactorFactory(),
+                $this->idFactory
+            ),
+            new PasskeyAuthenticationIssuer(
+                new PasskeyAuthenticationResultFactory($this->sessionFactory),
+                $this->signInPublisher
+            )
         );
     }
 

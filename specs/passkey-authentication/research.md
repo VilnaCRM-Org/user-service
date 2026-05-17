@@ -32,7 +32,8 @@ Backend REST endpoints:
 - `POST /api/passkeys/signin/options`
 - `POST /api/passkeys/signin/complete`
 
-The first implementation should prioritize REST because the WebAuthn browser APIs exchange nested JSON objects that fit REST request bodies better than the existing GraphQL scalar model.
+The first implementation should expose REST and GraphQL flows. GraphQL passkey
+mutations use API Platform's `Iterable` scalar for nested WebAuthn browser JSON.
 
 ## Risks
 

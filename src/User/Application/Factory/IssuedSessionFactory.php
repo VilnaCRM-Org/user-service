@@ -11,6 +11,7 @@ use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
+use Throwable;
 
 /**
  * @psalm-api
@@ -40,18 +41,27 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
         $session = $this->createSession($user, $ipAddress, $userAgent, $rememberMe, $issuedAt);
         $this->authSessionRepository->save($session);
 
-        $refreshToken = $this->authTokenFactory->generateOpaqueToken();
-        $this->authRefreshTokenRepository->save(
-            $this->authTokenFactory->createRefreshToken(
-                $session->getId(),
-                $refreshToken,
-                $issuedAt
-            )
-        );
+        try {
+            $refreshToken = $this->authTokenFactory->generateOpaqueToken();
+            $this->authRefreshTokenRepository->save(
+                $this->authTokenFactory->createRefreshToken(
+                    $session->getId(),
+                    $refreshToken,
+                    $issuedAt
+                )
+            );
 
-        $accessToken = $this->accessTokenFactory->create(
-            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
-        );
+            $accessToken = $this->accessTokenFactory->create(
+                $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
+            );
+        } catch (Throwable $exception) {
+            foreach ($this->authRefreshTokenRepository->findBySessionId($session->getId()) as $token) {
+                $this->authRefreshTokenRepository->delete($token);
+            }
+            $this->authSessionRepository->delete($session);
+
+            throw $exception;
+        }
 
         return new IssuedSession($session->getId(), $accessToken, $refreshToken);
     }
