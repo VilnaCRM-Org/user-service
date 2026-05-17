@@ -51,6 +51,7 @@ Also, please install the [Coderabbit AI Plugin](https://www.coderabbit.ai/blog/w
 - Run `make bmalph-setup` after previewing to write the BMALPH assets locally and configure planning artifacts under `specs/`.
 - If you run `bmalph upgrade --force` directly later, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
 - When you want a specs-first planning bundle from a short feature prompt, use the `bmad-autonomous-planning` skill after BMALPH assets are initialized locally.
+- For LLM-powered modules, prompt workflows, or provider integrations, read `.claude/skills/clean-architecture-llm/SKILL.md` before implementation so ports, adapters, prompts, and tests stay provider-agnostic.
 
 ### Version Control Configuration
 
