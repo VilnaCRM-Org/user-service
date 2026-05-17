@@ -50,6 +50,7 @@ near the existing mandatory gate while satisfying the issue's requested wording.
 - `git diff --check`
 - Markdown/formatting inspection of `AGENTS.md`
 - Confirm references to `.claude/skills`, all skills, violations, and refactoring are present
+- Confirm the static `AGENTS.md` skill list matches discovered `.claude/skills/*/SKILL.md` files
 
 ## Performance Impact
 

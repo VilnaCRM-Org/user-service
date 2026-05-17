@@ -58,6 +58,7 @@ This protocol covers both **finding** violations and **refactoring** them. A fea
 **Skills to execute for every new feature:**
 
 - `api-platform-crud`
+- `bmad-autonomous-planning`
 - `cache-management`
 - `ci-workflow`
 - `code-organization`
