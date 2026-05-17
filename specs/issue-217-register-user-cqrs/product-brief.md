@@ -50,7 +50,7 @@ the application code follows the intended CQRS split:
 - `RegisterUserCommandHandler::__invoke()` returns `void` and does not mutate
   the command.
 - `RegisterUserCommandResponse` no longer exists.
-- Existing register APIs still return newly-created users.
-- Duplicate-user registration does not return stored account data or trigger
+- Existing register APIs still return the existing or newly-created user.
+- Duplicate-user registration returns the existing user and does not trigger
   hashing, saving, or events.
 - Focused unit tests pass locally.

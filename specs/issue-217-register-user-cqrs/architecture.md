@@ -56,18 +56,18 @@ ODM document manager, without detaching unrelated document classes.
 `RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
 registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
-1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard and throw
-   `DuplicateEmailException` without dispatching a command when the email exists.
+1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard and return
+   the existing user without dispatching a command when the email exists.
 2. Create `RegisterUserCommand` from the API input when no user exists.
 3. Dispatch the command.
-4. On duplicate-email dispatch failure, rethrow `DuplicateEmailException`
-   without returning the stored user record.
+4. On duplicate-email dispatch failure caused by a race, query again and return
+   the stored user when it exists; otherwise rethrow `DuplicateEmailException`.
 5. After successful dispatch, run the email query again and return the persisted
-   user.
+   user, or throw `UserNotFoundException` if the user cannot be reloaded.
 
-Registration API validation enforces `UniqueEmail` for normal REST and GraphQL
-requests. The orchestrator duplicate guard protects direct callers and race
-windows without exposing stored account data through signup responses.
+Registration API validation does not enforce `UniqueEmail` for single-user REST
+and GraphQL create requests. The orchestrator handles duplicate and race-window
+scenarios through query-side resolution so signup responses remain idempotent.
 
 ## Dependency Boundaries
 

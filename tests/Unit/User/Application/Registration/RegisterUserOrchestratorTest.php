@@ -10,6 +10,7 @@ use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Registration\RegisterUserOrchestrator;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
+use App\User\Domain\Exception\UserNotFoundException;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
 use Throwable;
@@ -34,7 +35,7 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         );
     }
 
-    public function testRegisterRejectsExistingUserWithoutDispatching(): void
+    public function testRegisterReturnsExistingUserWithoutDispatching(): void
     {
         [$email, $initials, $password] = $this->createInputFixture();
         $existingUser = $this->createMock(UserInterface::class);
@@ -45,16 +46,13 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         $this->commandBus->expects($this->never())
             ->method('dispatch');
 
-        $this->expectException(DuplicateEmailException::class);
-        $this->expectExceptionMessage(
-            sprintf('Email "%s" is already registered', $email)
-        );
-
-        $this->orchestrator->register(
+        $returnedUser = $this->orchestrator->register(
             $email,
             $initials,
             $password
         );
+
+        $this->assertSame($existingUser, $returnedUser);
     }
 
     public function testRegisterDispatchesAndReturnsPostDispatchUser(): void
@@ -81,14 +79,39 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
         $this->assertSame($createdUser, $returnedUser);
     }
 
-    public function testRegisterRethrowsDuplicateEmailFailureWithoutRaceLookup(): void
+    public function testRegisterReturnsConcurrentWinnerAfterDuplicateEmailFailure(): void
+    {
+        [$email, $initials, $password] = $this->createInputFixture();
+        $signUpCommand =
+            $this->signUpCommandFactory->create($email, $initials, $password);
+        $raceWinner = $this->createMock(UserInterface::class);
+
+        $this->expectEmailLookups($email, null, $raceWinner);
+        $this->expectDispatchFailure(
+            $email,
+            $initials,
+            $password,
+            $signUpCommand,
+            new DuplicateEmailException($email)
+        );
+
+        $returnedUser = $this->orchestrator->register(
+            $email,
+            $initials,
+            $password
+        );
+
+        $this->assertSame($raceWinner, $returnedUser);
+    }
+
+    public function testRegisterRethrowsDuplicateEmailFailureWhenNoConcurrentUserExists(): void
     {
         [$email, $initials, $password] = $this->createInputFixture();
         $signUpCommand =
             $this->signUpCommandFactory->create($email, $initials, $password);
         $error = new DuplicateEmailException($email);
 
-        $this->expectEmailLookups($email, null);
+        $this->expectEmailLookups($email, null, null);
         $this->expectDispatchFailure(
             $email,
             $initials,
@@ -137,8 +160,8 @@ final class RegisterUserOrchestratorTest extends RegisterUserCommandTestCase
             $signUpCommand
         );
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Registered user could not be loaded.');
+        $this->expectException(UserNotFoundException::class);
+        $this->expectExceptionMessage('User not found');
 
         $this->orchestrator->register($email, $initials, $password);
     }

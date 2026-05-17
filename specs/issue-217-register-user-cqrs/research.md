@@ -56,8 +56,8 @@ flow while preserving current REST and GraphQL registration behavior.
   be returned after dispatch. The safest flow is query before dispatch, dispatch
   only when missing, then query after dispatch.
 - There is a small race window between the pre-check and create command.
-  Duplicate-key failures should surface as duplicate-email errors without
-  returning the stored user record.
+  Duplicate-key failures should be translated into duplicate-email recovery
+  that returns the stored user record when the query side can resolve it.
 - Tests that assert command responses must be rewritten or removed.
 
 ## Recommendation

@@ -9,7 +9,7 @@ use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
-use RuntimeException;
+use App\User\Domain\Exception\UserNotFoundException;
 
 final readonly class RegisterUserOrchestrator
 {
@@ -27,7 +27,7 @@ final readonly class RegisterUserOrchestrator
     ): UserInterface {
         $existingUser = $this->findUserByEmailQueryHandler->find($email);
         if ($existingUser !== null) {
-            throw new DuplicateEmailException($email);
+            return $existingUser;
         }
 
         $command = $this->signUpCommandFactory->create(
@@ -36,13 +36,29 @@ final readonly class RegisterUserOrchestrator
             $password
         );
 
-        $this->commandBus->dispatch($command);
+        try {
+            $this->commandBus->dispatch($command);
+        } catch (DuplicateEmailException $error) {
+            return $this->findConcurrentUserOrRethrow($email, $error);
+        }
 
         $createdUser = $this->findUserByEmailQueryHandler->find($email);
         if ($createdUser === null) {
-            throw new RuntimeException('Registered user could not be loaded.');
+            throw new UserNotFoundException();
         }
 
         return $createdUser;
+    }
+
+    private function findConcurrentUserOrRethrow(
+        string $email,
+        DuplicateEmailException $error,
+    ): UserInterface {
+        $concurrentUser = $this->findUserByEmailQueryHandler->find($email);
+        if ($concurrentUser !== null) {
+            return $concurrentUser;
+        }
+
+        throw $error;
     }
 }
