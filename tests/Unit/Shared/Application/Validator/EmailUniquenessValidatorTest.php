@@ -9,12 +9,12 @@ use App\Shared\Application\Validator\EmailUniquenessValidator;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use function mb_strtolower;
 use function sprintf;
 use function strtolower;
 use function strtoupper;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use function trim;
 use function ucfirst;
 
@@ -104,35 +104,16 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
 
     public function testChecksTrimmedOriginalEmailWhenNormalizedEmailIsNotFound(): void
     {
-        $trimmedEmail = sprintf(
-            '%s@%s',
-            ucfirst(strtolower($this->faker->unique()->lexify('????????'))),
-            strtolower($this->faker->safeEmailDomain())
-        );
+        $trimmedEmail = $this->mixedCaseEmail();
         $submittedEmail = sprintf('  %s  ', $trimmedEmail);
-        $normalizedEmail = mb_strtolower($trimmedEmail);
-
-        $existing = $this->createMock(UserInterface::class);
-        $existing->method('getId')->willReturn($this->faker->uuid());
+        $expectedLookups = [mb_strtolower($trimmedEmail), $trimmedEmail];
         $lookups = [];
 
-        $this->repository->expects($this->exactly(2))
-            ->method('findByEmail')
-            ->willReturnCallback(
-                function (string $email) use (&$lookups, $existing, $trimmedEmail): ?UserInterface {
-                    $lookups[] = $email;
-
-                    return $email === $trimmedEmail ? $existing : null;
-                }
-            );
-
+        $this->repositoryReturnsUserForMatchingEmail($trimmedEmail, $lookups);
         $this->requestStack->push(new Request());
 
         $this->assertFalse($this->checker->isUnique($submittedEmail));
-        $this->assertSame(
-            [$normalizedEmail, $trimmedEmail],
-            $lookups
-        );
+        $this->assertSame($expectedLookups, $lookups);
     }
 
     public function testReturnsTrueWhenIdentifiersMatch(): void
@@ -153,5 +134,41 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->requestStack->push($request);
 
         $this->assertTrue($this->checker->isUnique('same@example.com'));
+    }
+
+    /**
+     * @param list<string> $lookups
+     */
+    private function repositoryReturnsUserForMatchingEmail(
+        string $matchingEmail,
+        array &$lookups
+    ): void {
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn($this->faker->uuid());
+
+        $this->repository->expects($this->exactly(2))
+            ->method('findByEmail')
+            ->willReturnCallback(
+                static function (string $email) use (
+                    &$lookups,
+                    $existing,
+                    $matchingEmail
+                ): ?UserInterface {
+                    $lookups[] = $email;
+
+                    return $email === $matchingEmail ? $existing : null;
+                }
+            );
+    }
+
+    private function mixedCaseEmail(): string
+    {
+        return sprintf(
+            '%s@%s',
+            ucfirst(
+                strtolower($this->faker->unique()->lexify('????????'))
+            ),
+            strtolower($this->faker->safeEmailDomain())
+        );
     }
 }
