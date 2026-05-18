@@ -29,7 +29,7 @@ immutable data carrier:
 Add `FindUserByEmailQueryHandlerInterface` and `FindUserByEmailQueryHandler`
 under `User/Application/Query`.
 
-The handler wraps `UserRepositoryInterface::findByEmail()` and returns
+The handler wraps `UserRepositoryInterface::findByEmailCaseInsensitive()` and returns
 `?UserInterface`. Returning null is required because "not found" is a normal
 registration decision, unlike `GetUserQueryHandler::handle($id)` where missing
 users are exceptional.

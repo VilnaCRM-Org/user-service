@@ -169,6 +169,19 @@ final class CachedUserRepository extends UserRepositoryDecorator
     }
 
     #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $normalizedEmail = mb_strtolower(trim($email), 'UTF-8');
+        $cachedUser = $this->findByEmail($normalizedEmail);
+
+        if ($cachedUser !== null) {
+            return new UserCollection([$cachedUser]);
+        }
+
+        return $this->inner->findByEmailCaseInsensitive($normalizedEmail);
+    }
+
+    #[\Override]
     public function save(object $user): void
     {
         $previousEmailTag = $user instanceof UserInterface ? $this->previousEmailTag($user) : null;

@@ -76,7 +76,10 @@ final readonly class BatchUserRegistrationFactory
             return $existingUser;
         }
 
-        $createdUser = $this->createUser($user, $hasher);
+        $normalizedUser = $user;
+        $normalizedUser['email'] = $emailKey;
+
+        $createdUser = $this->createUser($normalizedUser, $hasher);
         $this->rememberUser(
             $createdUser,
             $emailKey,

@@ -19,11 +19,12 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
+
 use function mb_strtolower;
-use MongoDB\BSON\Regex;
-use function preg_quote;
 use function str_contains;
+
 use Throwable;
+
 use function trim;
 
 /**
@@ -56,7 +57,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
 
             if (
                 $user instanceof UserInterface
-                && $this->isDuplicateEmailKeyError($error)
+                && $this->isDuplicateEmailKeyError($error, $user->getEmail())
             ) {
                 throw new DuplicateEmailException($user->getEmail(), $error);
             }
@@ -106,13 +107,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function findByEmailCaseInsensitive(string $email): UserCollection
     {
-        $result = $this->createQueryBuilder()
-            ->field('email')
-            ->equals(new Regex('^' . preg_quote(trim($email), '/') . '$', 'i'))
-            ->getQuery()
-            ->execute();
-
-        return $this->userCollectionFromResult($result);
+        return $this->findByEmails([trim($email)]);
     }
 
     /**
@@ -167,10 +162,11 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         )));
     }
 
-    private function isDuplicateEmailKeyError(Throwable $error): bool
+    private function isDuplicateEmailKeyError(Throwable $error, string $email): bool
     {
         return $this->isDuplicateKeyError($error)
-            && str_contains($error->getMessage(), 'email');
+            && str_contains($error->getMessage(), 'email')
+            && str_contains($error->getMessage(), $email);
     }
 
     /**

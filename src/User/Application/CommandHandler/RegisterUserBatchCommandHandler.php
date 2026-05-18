@@ -12,6 +12,7 @@ use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\Factory\BatchUserRegistrationFactory;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use InvalidArgumentException;
 
 final readonly class RegisterUserBatchCommandHandler implements
     CommandHandlerInterface
@@ -75,7 +76,22 @@ final readonly class RegisterUserBatchCommandHandler implements
         $users = [];
 
         foreach ($command->users as $user) {
-            $users[] = $user;
+            if (
+                !isset($user['email'], $user['initials'], $user['password'])
+                || !is_string($user['email'])
+                || !is_string($user['initials'])
+                || !is_string($user['password'])
+            ) {
+                throw new InvalidArgumentException(
+                    'Batch user payload must contain string email, initials, and password fields.'
+                );
+            }
+
+            $users[] = [
+                'email' => $user['email'],
+                'initials' => $user['initials'],
+                'password' => $user['password'],
+            ];
         }
 
         return $users;
