@@ -14,21 +14,16 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
-
 use function count;
-
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
-
 use function mb_strtolower;
 use function mb_strtoupper;
-
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
-
 use function sprintf;
 use function trim;
 
@@ -94,13 +89,10 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
 
         $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
-    }
 
-    public function testFindByEmailCaseInsensitiveUsesNormalizedExactCandidates(): void
-    {
-        $email = $this->faker->unique()->email();
-        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
-        $user = $this->createUserWithEmail($email);
+        $caseInsensitiveEmail = $this->faker->unique()->email();
+        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($caseInsensitiveEmail);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
         $this->expectFindByEmailsQuery(
@@ -271,27 +263,17 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
-        $error = new RuntimeException(
-            sprintf(
-                'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
-                $email
-            ),
-            11000
-        );
+        $error = new RuntimeException(sprintf(
+            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
+            $email
+        ), 11000);
 
         $user->method('getEmail')->willReturn($email);
-        $this->documentManager->expects($this->once())
-            ->method('persist')->with($user);
-        $this->documentManager->expects($this->once())
-            ->method('flush')->willThrowException($error);
-        $this->documentManager->expects($this->once())
-            ->method('detach')
-            ->with($user);
-
+        $this->documentManager->expects($this->once())->method('persist')->with($user);
+        $this->documentManager->expects($this->once())->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('detach')->with($user);
         $this->expectException(DuplicateEmailException::class);
-        $this->expectExceptionMessage(
-            sprintf('Email "%s" is already registered', $email)
-        );
+        $this->expectExceptionMessage(sprintf('Email "%s" is already registered', $email));
 
         $this->userRepository->save($user);
     }
@@ -301,23 +283,15 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $email = $this->faker->unique()->email();
         $otherEmail = $this->faker->unique()->email();
         $user = $this->createMock(UserInterface::class);
-        $error = new RuntimeException(
-            sprintf(
-                'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
-                $otherEmail
-            ),
-            11000
-        );
+        $error = new RuntimeException(sprintf(
+            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
+            $otherEmail
+        ), 11000);
 
         $user->method('getEmail')->willReturn($email);
-        $this->documentManager->expects($this->once())
-            ->method('persist')->with($user);
-        $this->documentManager->expects($this->once())
-            ->method('flush')->willThrowException($error);
-        $this->documentManager->expects($this->once())
-            ->method('detach')
-            ->with($user);
-
+        $this->documentManager->expects($this->once())->method('persist')->with($user);
+        $this->documentManager->expects($this->once())->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('detach')->with($user);
         $this->expectExceptionObject($error);
 
         $this->userRepository->save($user);

@@ -8,6 +8,9 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
+use function mb_strtolower;
+use function trim;
+
 abstract class UserRepositoryDecorator implements UserRepositoryInterface
 {
     public function __construct(
@@ -36,7 +39,14 @@ abstract class UserRepositoryDecorator implements UserRepositoryInterface
     #[\Override]
     public function findByEmailCaseInsensitive(string $email): UserCollection
     {
-        return $this->inner->findByEmailCaseInsensitive($email);
+        $normalizedEmail = mb_strtolower(trim($email), 'UTF-8');
+        $cachedUser = $this->findByEmail($normalizedEmail);
+
+        if ($cachedUser !== null) {
+            return new UserCollection([$cachedUser]);
+        }
+
+        return $this->inner->findByEmailCaseInsensitive($normalizedEmail);
     }
 
     /**

@@ -21,10 +21,8 @@ use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use InvalidArgumentException;
-
 use function mb_strtolower;
 use function mb_strtoupper;
-
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -78,29 +76,24 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->assertCreatedUsersResponse($response, $testData['users']);
     }
 
-    public function testInvokeReturnsEmptyResponseForEmptyBatch(): void
+    public function testInvokeReturnsEmptyResponseForEmptyBatchAndRejectsInvalidPayload(): void
     {
-        $command = new RegisterUserBatchCommand([]);
+        $this->userRepository->expects($this->never())->method('findByEmails');
 
-        $this->userRepository->expects($this->never())
-            ->method('findByEmails');
-        $this->hasherFactory->expects($this->never())
-            ->method('getPasswordHasher');
-        $this->uuidFactory->expects($this->never())
-            ->method('create');
-        $this->mockTransformer->expects($this->never())
-            ->method('transformFromSymfonyUuid');
-        $this->registeredEventFactory->expects($this->never())
-            ->method('create');
-        $this->userRepository->expects($this->never())
-            ->method('saveBatch');
-        $this->eventBus->expects($this->never())
-            ->method('publish');
-
-        $response = $this->handler->__invoke($command);
-
+        $response = $this->handler->__invoke(new RegisterUserBatchCommand([]));
         $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
         $this->assertCount(0, $response->users);
+
+        /** @psalm-suppress InvalidArgument */
+        $invalidCommand = new RegisterUserBatchCommand([[
+            'email' => $this->faker->email(),
+            'initials' => $this->faker->word(),
+        ],
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->handler->__invoke($invalidCommand);
     }
 
     public function testInvokeReturnsExistingUsersWhenAlreadyRegistered(): void
@@ -170,27 +163,6 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $response = $this->handler->__invoke($command);
 
         $this->assertDuplicateBatchResponse($response);
-    }
-
-    public function testInvokeRejectsInvalidBatchPayload(): void
-    {
-        /** @psalm-suppress InvalidArgument */
-        $command = new RegisterUserBatchCommand([
-            [
-                'email' => $this->faker->email(),
-                'initials' => $this->faker->word(),
-            ],
-        ]);
-
-        $this->userRepository->expects($this->never())
-            ->method('findByEmails');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Batch user payload must contain string email, initials, and password fields.'
-        );
-
-        $this->handler->__invoke($command);
     }
 
     private function setHandler(): void

@@ -10,6 +10,10 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Repository\UserRepositoryDecorator;
 
+use function mb_strtolower;
+use function mb_strtoupper;
+use function trim;
+
 final class UserRepositoryDecoratorTest extends UnitTestCase
 {
     public function testFindByEmailDelegatesToInnerRepository(): void
@@ -46,21 +50,51 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
         );
     }
 
-    public function testFindByEmailCaseInsensitiveDelegatesToInnerRepository(): void
+    public function testFindByEmailCaseInsensitiveReturnsNormalizedExactMatch(): void
     {
         $email = $this->faker->email();
+        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
+        $normalizedEmail = mb_strtolower(trim($inputEmail), 'UTF-8');
+        $expectedUser = $this->createMock(UserInterface::class);
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($normalizedEmail)
+            ->willReturn($expectedUser);
+        $innerRepository->expects($this->never())
+            ->method('findByEmailCaseInsensitive');
+
+        self::assertSame(
+            [$expectedUser],
+            iterator_to_array(
+                $this->createDecorator($innerRepository)
+                    ->findByEmailCaseInsensitive($inputEmail)
+            )
+        );
+    }
+
+    public function testFindByEmailCaseInsensitiveDelegatesNormalizedMiss(): void
+    {
+        $email = $this->faker->email();
+        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
+        $normalizedEmail = mb_strtolower(trim($inputEmail), 'UTF-8');
         $expectedUsers = new UserCollection();
         $innerRepository = $this->createMock(UserRepositoryInterface::class);
 
         $innerRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($normalizedEmail)
+            ->willReturn(null);
+        $innerRepository->expects($this->once())
             ->method('findByEmailCaseInsensitive')
-            ->with($email)
+            ->with($normalizedEmail)
             ->willReturn($expectedUsers);
 
         $this->assertSame(
             $expectedUsers,
             $this->createDecorator($innerRepository)
-                ->findByEmailCaseInsensitive($email)
+                ->findByEmailCaseInsensitive($inputEmail)
         );
     }
 

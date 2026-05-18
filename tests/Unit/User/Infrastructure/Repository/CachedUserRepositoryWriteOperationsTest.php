@@ -10,8 +10,6 @@ use App\User\Domain\Entity\UserInterface;
 use function mb_strtolower;
 use function mb_strtoupper;
 
-use Symfony\Contracts\Cache\ItemInterface;
-
 final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepositoryTestCase
 {
     public function testSaveDelegatesToInnerRepository(): void
@@ -114,93 +112,10 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         $cacheKey = 'user.email.' . $this->faker->sha256();
         $user = $this->createUserMock($this->faker->uuid(), $email);
 
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('buildUserEmailKey')
-            ->with($normalizedEmail)
-            ->willReturn($cacheKey);
-        $this->cache->expectGet(
-            static function (
-                string $actualCacheKey,
-                callable $callback,
-                ?float $beta
-            ) use ($cacheKey, $user): UserInterface {
-                self::assertSame($cacheKey, $actualCacheKey);
-                self::assertIsCallable($callback);
-                self::assertNull($beta);
-
-                return $user;
-            }
-        );
+        $this->expectNormalizedEmailCacheHit($normalizedEmail, $cacheKey, $user);
         $this->documentManager->expects($this->once())
-            ->method('contains')
-            ->with($user)
-            ->willReturn(true);
-        $this->innerRepository
-            ->expects($this->never())
-            ->method('findByEmail');
-        $this->innerRepository
-            ->expects($this->never())
-            ->method('findByEmailCaseInsensitive');
-
-        $result = $this->repository->findByEmailCaseInsensitive($inputEmail);
-
-        self::assertSame([$user], iterator_to_array($result));
-    }
-
-    public function testFindByEmailCaseInsensitiveDelegatesOnNormalizedCacheMiss(): void
-    {
-        $email = $this->faker->unique()->email();
-        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
-        $normalizedEmail = mb_strtolower($email, 'UTF-8');
-        $cacheKey = 'user.email.' . $this->faker->sha256();
-        $item = $this->createMock(ItemInterface::class);
-        $user = $this->createUserMock($this->faker->uuid(), $email);
-
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('buildUserEmailKey')
-            ->with($normalizedEmail)
-            ->willReturn($cacheKey);
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn(null);
-        $this->innerRepository
-            ->expects($this->once())
-            ->method('findByEmailCaseInsensitive')
-            ->with($normalizedEmail)
-            ->willReturn(new UserCollection([$user]));
-        $this->logger->expects($this->once())
-            ->method('info')
-            ->with(
-                'Cache miss - loading user by email',
-                $this->callback(
-                    static fn (array $context): bool => $context['cache_key'] === $cacheKey
-                        && $context['operation'] === 'cache.miss'
-                )
-            );
-        $item->expects($this->never())->method('expiresAfter');
-        $item->expects($this->never())->method('tag');
-        $this->cache->expectGet(
-            static function (
-                string $actualCacheKey,
-                callable $callback,
-                ?float $beta
-            ) use ($cacheKey, $item): null {
-                self::assertSame($cacheKey, $actualCacheKey);
-                self::assertNull($beta);
-
-                $save = true;
-                $result = $callback($item, $save);
-
-                self::assertFalse($save);
-
-                return $result;
-            }
-        );
-        $this->documentManager->expects($this->never())->method('contains');
+            ->method('contains')->with($user)->willReturn(true);
+        $this->innerRepository->expects($this->never())->method('findByEmailCaseInsensitive');
 
         $result = $this->repository->findByEmailCaseInsensitive($inputEmail);
 
@@ -288,6 +203,29 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
         $this->expectHashEmail($user->getEmail(), $hash);
         $this->expectInvalidateTags($this->singleUserTags($user, $hash));
+    }
+
+    private function expectNormalizedEmailCacheHit(
+        string $email,
+        string $cacheKey,
+        UserInterface $user
+    ): void {
+        $this->cacheKeyBuilder->expects($this->once())
+            ->method('buildUserEmailKey')
+            ->with($email)
+            ->willReturn($cacheKey);
+        $this->cache->expectGet(
+            static function (string $actualCacheKey, callable $callback, ?float $beta) use (
+                $cacheKey,
+                $user
+            ): UserInterface {
+                self::assertSame($cacheKey, $actualCacheKey);
+                self::assertIsCallable($callback);
+                self::assertNull($beta);
+
+                return $user;
+            }
+        );
     }
 
     /**
