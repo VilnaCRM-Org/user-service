@@ -130,6 +130,21 @@ bmalph-setup: ## Install and initialize BMALPH for current project; defaults to 
 ai-review-loop: ## Run local AI code review + fix loop (Codex default)
 	./scripts/ai-review-loop.sh
 
+bmad-fr-nfr-review-gate: ## Run BMAD spec-driven FR/NFR review gate; set BMAD_REVIEW_SPEC_PATH=specs/my-bundle
+	@if [ -z "$${BMAD_REVIEW_SPEC_PATH:-}" ] && [ -z "$${AI_REVIEW_SPEC_PATH:-}" ]; then \
+		echo "Error: BMAD_REVIEW_SPEC_PATH or AI_REVIEW_SPEC_PATH is required, for example specs/my-bundle"; \
+		exit 1; \
+	fi
+	@./scripts/bmad-fr-nfr-review-gate.sh \
+		--spec "$${BMAD_REVIEW_SPEC_PATH:-$${AI_REVIEW_SPEC_PATH}}" \
+		$${BMAD_REVIEW_MANUAL_EVIDENCE:+--manual-evidence "$${BMAD_REVIEW_MANUAL_EVIDENCE}"} \
+		$${BMAD_REVIEW_PR:+--pr "$${BMAD_REVIEW_PR}"} \
+		$${BMAD_REVIEW_BASE:+--base "$${BMAD_REVIEW_BASE}"} \
+		$${BMAD_REVIEW_MAX_ITER:+--max-iter "$${BMAD_REVIEW_MAX_ITER}"} \
+		$${BMAD_REVIEW_VERIFY_CMD:+--verify-cmd "$${BMAD_REVIEW_VERIFY_CMD}"} \
+		$${BMAD_REVIEW_LOG_DIR:+--log-dir "$${BMAD_REVIEW_LOG_DIR}"} \
+		$${BMAD_REVIEW_AGENTS:+--agents "$${BMAD_REVIEW_AGENTS}"}
+
 bats: ## Run tests for bash commands
 	bats tests/CLI/bats/
 

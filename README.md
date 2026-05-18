@@ -154,6 +154,16 @@ This repository keeps BMAD planning artifacts under `specs/` instead of the upst
 
 For specs-only planning from a short feature description, use the `bmad-autonomous-planning` skill from your current AI agent session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
 
+After implementing work that has BMAD specs, run the strict FR/NFR review gate:
+
+```bash
+BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
+```
+
+The gate uses the pinned NonFunctionals.com categories and fails unless every
+applicable FR/NFR, manual-test expectation, QA checkpoint, GitHub completion
+gate, and CI gate scores 5/5 or has explicit not-applicable evidence.
+
 For LLM-powered features, prompt workflows, or provider integrations, read `.claude/skills/clean-architecture-llm/SKILL.md` before implementation. It defines provider-agnostic ports/adapters, prompt construction rules, deterministic testing, and privacy review expectations.
 
 `bmalph init` writes local BMAD/Ralph files such as `_bmad/` and `.ralph/`. Those generated directories are ignored in git for this repository, so use the dry-run first and initialize locally only when you want the tooling available in your workspace.

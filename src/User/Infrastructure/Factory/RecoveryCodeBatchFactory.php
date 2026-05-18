@@ -15,11 +15,19 @@ use Symfony\Component\Uid\Factory\UlidFactory;
 final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactoryInterface
 {
     private const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    private const EMPTY_RANDOM_BYTES_MESSAGE = 'Random byte generator returned no bytes.';
+    private const UNUSABLE_RANDOM_BYTES_MESSAGE =
+        'Random byte generator did not produce usable bytes.';
+    private const MAX_RANDOM_BYTE_CHUNK_ATTEMPTS_MULTIPLIER = 16;
 
+    /**
+     * @param (\Closure(int): string)|null $randomBytes
+     */
     public function __construct(
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private RecoveryCodeFactoryInterface $recoveryCodeFactory,
         private UlidFactory $ulidFactory,
+        private ?\Closure $randomBytes = null,
     ) {
     }
 
@@ -58,23 +66,54 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
     private function randomCodeCharacters(int $length): string
     {
         $code = '';
+        $maxAttempts = $length * self::MAX_RANDOM_BYTE_CHUNK_ATTEMPTS_MULTIPLIER;
+        $attempts = 0;
+
+        while (strlen($code) < $length) {
+            $attempts++;
+            $this->guardUsableRandomByteAttempts($attempts, $maxAttempts);
+            $code .= $this->acceptedRandomCharacters($this->randomBytes($length));
+        }
+
+        return substr($code, 0, $length);
+    }
+
+    private function acceptedRandomCharacters(string $bytes): string
+    {
+        $characters = '';
         $alphabetLength = strlen(self::ALPHABET);
         $maxUnbiasedByte = intdiv(256, $alphabetLength) * $alphabetLength;
 
-        while (strlen($code) < $length) {
-            foreach (str_split(random_bytes($length)) as $byte) {
-                $value = ord($byte);
-                if ($value >= $maxUnbiasedByte) {
-                    continue;
-                }
-
-                $code .= self::ALPHABET[$value % $alphabetLength];
-                if (strlen($code) === $length) {
-                    break;
-                }
+        foreach (str_split($bytes) as $byte) {
+            $value = ord($byte);
+            if ($value < $maxUnbiasedByte) {
+                $characters .= self::ALPHABET[$value % $alphabetLength];
             }
         }
 
-        return $code;
+        return $characters;
+    }
+
+    private function guardUsableRandomByteAttempts(int $attempts, int $maxAttempts): void
+    {
+        if ($attempts > $maxAttempts) {
+            throw new RecoveryCodeGenerationFailedException(
+                self::UNUSABLE_RANDOM_BYTES_MESSAGE
+            );
+        }
+    }
+
+    private function randomBytes(int $length): string
+    {
+        if ($this->randomBytes === null) {
+            return random_bytes($length);
+        }
+
+        $bytes = ($this->randomBytes)($length);
+        if ($bytes === '') {
+            throw new RecoveryCodeGenerationFailedException(self::EMPTY_RANDOM_BYTES_MESSAGE);
+        }
+
+        return $bytes;
     }
 }

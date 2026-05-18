@@ -12,27 +12,28 @@ Skills live in `.claude/skills/` and are auto-discovered. Use the decision tree 
 
 ### Quick Skill Guide
 
-| Task Type                     | Skill                           | When to Use                               |
-| ----------------------------- | ------------------------------- | ----------------------------------------- |
-| **Fix Deptrac violations**    | `deptrac-fixer`                 | Architecture boundary violations detected |
-| **Fix complexity issues**     | `complexity-management`         | PHPInsights complexity score drops        |
-| **Run CI checks**             | `ci-workflow`                   | Before committing, validating changes     |
-| **Debug test failures**       | `testing-workflow`              | PHPUnit, Behat, or Infection issues       |
-| **Plan specs autonomously**   | `bmad-autonomous-planning`      | BMALPH-wrapped planning from a short task |
-| **Handle PR feedback**        | `code-review`                   | Processing code review comments           |
-| **Organize code structure**   | `code-organization`             | Directory placement, naming, type safety  |
-| **Create DDD patterns**       | `implementing-ddd-architecture` | New entities, value objects, aggregates   |
-| **Add CRUD endpoints**        | `api-platform-crud`             | New API resources with full CRUD          |
-| **Add caching**               | `cache-management`              | Cache keys, TTLs, invalidation patterns   |
-| **Add business metrics**      | `observability-instrumentation` | AWS EMF metrics for domain events         |
-| **Create load tests**         | `load-testing`                  | K6 performance tests (REST/GraphQL)       |
-| **Update entity schema**      | `database-migrations`           | Modifying entities, adding fields         |
-| **Document APIs**             | `openapi-development`           | OpenAPI endpoint factories                |
-| **Create docs (new project)** | `documentation-creation`        | Initial documentation suite               |
-| **Sync documentation**        | `documentation-sync`            | After any code changes                    |
-| **Quality overview**          | `quality-standards`             | Understanding protected thresholds        |
-| **Query performance**         | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes           |
-| **Architecture diagrams**     | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)           |
+| Task Type                      | Skill                           | When to Use                                                   |
+| ------------------------------ | ------------------------------- | ------------------------------------------------------------- |
+| **Fix Deptrac violations**     | `deptrac-fixer`                 | Architecture boundary violations detected                     |
+| **Fix complexity issues**      | `complexity-management`         | PHPInsights complexity score drops                            |
+| **Run CI checks**              | `ci-workflow`                   | Before committing, validating changes                         |
+| **Debug test failures**        | `testing-workflow`              | PHPUnit, Behat, or Infection issues                           |
+| **Plan specs autonomously**    | `bmad-autonomous-planning`      | BMALPH-wrapped planning from a short task                     |
+| **Verify BMAD implementation** | `bmad-fr-nfr-review-gate`       | 5/5 FR/NFR, NFR catalog, manual evidence, GitHub, and CI gate |
+| **Handle PR feedback**         | `code-review`                   | Processing code review comments                               |
+| **Organize code structure**    | `code-organization`             | Directory placement, naming, type safety                      |
+| **Create DDD patterns**        | `implementing-ddd-architecture` | New entities, value objects, aggregates                       |
+| **Add CRUD endpoints**         | `api-platform-crud`             | New API resources with full CRUD                              |
+| **Add caching**                | `cache-management`              | Cache keys, TTLs, invalidation patterns                       |
+| **Add business metrics**       | `observability-instrumentation` | AWS EMF metrics for domain events                             |
+| **Create load tests**          | `load-testing`                  | K6 performance tests (REST/GraphQL)                           |
+| **Update entity schema**       | `database-migrations`           | Modifying entities, adding fields                             |
+| **Document APIs**              | `openapi-development`           | OpenAPI endpoint factories                                    |
+| **Create docs (new project)**  | `documentation-creation`        | Initial documentation suite                                   |
+| **Sync documentation**         | `documentation-sync`            | After any code changes                                        |
+| **Quality overview**           | `quality-standards`             | Understanding protected thresholds                            |
+| **Query performance**          | `query-performance-analysis`    | N+1 detection, EXPLAIN, indexes                               |
+| **Architecture diagrams**      | `structurizr-architecture-sync` | Update workspace.dsl (C4 model)                               |
 
 > For detailed flows and cross-agent guidance see `.claude/skills/AI-AGENT-GUIDE.md`.
 
@@ -75,6 +76,12 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 - `query-performance-analysis`
 - `structurizr-architecture-sync`
 - `testing-workflow`
+
+Conditional BMAD skills:
+
+- Use `bmad-autonomous-planning` only when the task is to produce BMAD planning artifacts from a short request.
+- If BMAD specs are present for the implemented work: run `bmad-fr-nfr-review-gate` with
+  `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`.
 
 ## 🛡️ Quality Standards (Protected Thresholds)
 

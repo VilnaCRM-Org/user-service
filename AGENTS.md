@@ -58,7 +58,6 @@ This protocol covers both **finding** violations and **refactoring** them. A fea
 **Skills to execute for every new feature:**
 
 - `api-platform-crud`
-- `bmad-autonomous-planning`
 - `cache-management`
 - `ci-workflow`
 - `code-organization`
@@ -76,6 +75,12 @@ This protocol covers both **finding** violations and **refactoring** them. A fea
 - `query-performance-analysis`
 - `structurizr-architecture-sync`
 - `testing-workflow`
+
+Conditional BMAD skills:
+
+- Use `bmad-autonomous-planning` only when the task is to produce BMAD planning artifacts from a short request.
+- If BMAD specs are present for the implemented work: run `bmad-fr-nfr-review-gate` with
+  `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`.
 
 ### ❌ DO NOT
 
@@ -272,6 +277,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **code-review**: Retrieve and address PR comments
 - **testing-workflow**: Manage tests (unit, integration, E2E, mutation)
 - **bmad-autonomous-planning**: Generate BMALPH planning artifacts autonomously from a short task description
+- **bmad-fr-nfr-review-gate**: Score implemented BMAD-scoped work against every FR/NFR, pinned NFR catalog category, manual-test expectation, GitHub review gate, and CI check
 - **implementing-ddd-architecture**: Design DDD patterns (entities, value objects, aggregates, CQRS)
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
@@ -437,6 +443,17 @@ config/
 BMAD commands are available as Codex Skills under `.agents/skills/`. To install the local BMAD/Ralph workspace, run `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview and `make bmalph-setup` when you intentionally want the generated files in your workspace. This repository keeps BMAD planning artifacts under `specs/`, and `make bmalph-setup` reapplies that layout after local init or upgrade.
 
 For non-interactive planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session and let the main agent orchestrate BMALPH subagents without relying on repo-local launcher scripts.
+
+For implemented work with BMAD specs, run the post-implementation gate before
+claiming completion:
+
+```bash
+BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
+```
+
+The gate requires every applicable FR/NFR, pinned NonFunctionals.com category,
+manual-test expectation, QA checkpoint, GitHub review gate, and CI gate to
+score 5/5 or have an explicit not-applicable reason with evidence.
 
 ## Quality Gates
 

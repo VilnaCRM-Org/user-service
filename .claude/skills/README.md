@@ -53,6 +53,11 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 - `structurizr-architecture-sync`
 - `testing-workflow`
 
+Conditional gate:
+
+- If BMAD specs are present: run `bmad-fr-nfr-review-gate` with
+  `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`.
+
 ## Available Skills
 
 ### Autonomous BMALPH Planning (`bmad-autonomous-planning/`)
@@ -144,6 +149,29 @@ For any **NEW feature** (new behavior, endpoint, domain model, schema change, or
 - Ensures all feedback is addressed with quality checks
 
 **Key commands**: `make pr-comments`, `make ci`
+
+---
+
+### 3b. BMAD FR/NFR Review Gate (`bmad-fr-nfr-review-gate/`)
+
+**Purpose**: Verify implemented BMAD-scoped work against every FR/NFR and
+NFR catalog category before completion
+
+**When activated**:
+
+- A PR, feature, bugfix, or task has BMAD specs under `specs/`
+- Need a strict 5/5 score gate across requirements, manual evidence, QA,
+  GitHub comments, approvals, and CI
+
+**What it does**:
+
+- Runs `make bmad-fr-nfr-review-gate`
+- Uses BMAD-specific AI review prompts and required PASS markers
+- Fails closed when evidence, manual testing, GitHub status, or CI cannot be
+  verified
+
+**Key command**:
+`BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`
 
 ---
 
