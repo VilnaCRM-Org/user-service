@@ -40,6 +40,11 @@ final readonly class PasskeyUserResolver
         $this->userRepository->save($user);
     }
 
+    public function delete(User $user): void
+    {
+        $this->userRepository->delete($user);
+    }
+
     public function resolveAuthenticated(string $userId): User
     {
         $user = $this->userRepository->findById($userId);

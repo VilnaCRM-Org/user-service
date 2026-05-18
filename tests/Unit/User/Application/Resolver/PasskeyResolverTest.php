@@ -179,7 +179,7 @@ final class PasskeyResolverTest extends UnitTestCase
         $this->createCredentialResolver()->resolveForOptionalUser($this->credentialId, '');
     }
 
-    public function testSaveUniqueAndRunPreservesAfterSaveFailureWhenDeleteFails(): void
+    public function testSaveUniqueAndRunSurfacesDeleteFailureAfterSaveFails(): void
     {
         $credential = $this->createCredential($this->userId);
         $afterSaveFailure = new RuntimeException('After save failed.');
@@ -192,9 +192,10 @@ final class PasskeyResolverTest extends UnitTestCase
             ->with($credential)
             ->willThrowException($deleteFailure);
 
-        $this->assertAfterSaveFailurePreserved(
+        $this->assertRollbackFailureSurfaced(
             $credential,
             $afterSaveFailure,
+            $deleteFailure,
             static function () use (&$rollbackCalls): void {
                 ++$rollbackCalls;
             }
@@ -202,7 +203,7 @@ final class PasskeyResolverTest extends UnitTestCase
         self::assertSame(1, $rollbackCalls);
     }
 
-    public function testSaveUniqueAndRunPreservesAfterSaveFailureWhenRollbackFails(): void
+    public function testSaveUniqueAndRunSurfacesRollbackFailureAfterSaveFails(): void
     {
         $credential = $this->createCredential($this->userId);
         $afterSaveFailure = new RuntimeException('After save failed.');
@@ -211,9 +212,10 @@ final class PasskeyResolverTest extends UnitTestCase
         $this->credentialRepository->expects($this->once())->method('save')->with($credential);
         $this->credentialRepository->expects($this->once())->method('delete')->with($credential);
 
-        $this->assertAfterSaveFailurePreserved(
+        $this->assertRollbackFailureSurfaced(
             $credential,
             $afterSaveFailure,
+            $rollbackFailure,
             static function () use ($rollbackFailure): void {
                 throw $rollbackFailure;
             }
@@ -223,9 +225,10 @@ final class PasskeyResolverTest extends UnitTestCase
     /**
      * @param callable(): void $rollback
      */
-    private function assertAfterSaveFailurePreserved(
+    private function assertRollbackFailureSurfaced(
         PasskeyCredential $credential,
         RuntimeException $afterSaveFailure,
+        RuntimeException $rollbackFailure,
         callable $rollback
     ): void {
         try {
@@ -238,7 +241,7 @@ final class PasskeyResolverTest extends UnitTestCase
             );
             self::fail('Expected after-save failure was not thrown.');
         } catch (RuntimeException $exception) {
-            self::assertSame($afterSaveFailure, $exception);
+            self::assertSame($rollbackFailure, $exception);
         }
     }
 

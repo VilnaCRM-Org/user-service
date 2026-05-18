@@ -74,20 +74,42 @@ final readonly class PasskeyCredentialResolver
         try {
             $afterSave();
         } catch (Throwable $exception) {
-            try {
-                $this->delete($credential);
-            } finally {
-                try {
-                    $rollback();
-                } finally {
-                    throw $exception;
-                }
+            $rollbackFailure = $this->runCredentialRollback($credential, $rollback);
+
+            if ($rollbackFailure instanceof Throwable) {
+                throw $rollbackFailure;
             }
+
+            throw $exception;
         }
     }
 
     public function delete(PasskeyCredential $credential): void
     {
         $this->credentialRepository->delete($credential);
+    }
+
+    /**
+     * @param callable(): void $rollback
+     */
+    private function runCredentialRollback(
+        PasskeyCredential $credential,
+        callable $rollback
+    ): ?Throwable {
+        $rollbackFailure = null;
+
+        try {
+            $this->delete($credential);
+        } catch (Throwable $exception) {
+            $rollbackFailure = $exception;
+        }
+
+        try {
+            $rollback();
+        } catch (Throwable $exception) {
+            $rollbackFailure ??= $exception;
+        }
+
+        return $rollbackFailure;
     }
 }

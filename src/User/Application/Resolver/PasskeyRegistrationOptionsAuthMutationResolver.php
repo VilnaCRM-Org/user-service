@@ -26,8 +26,7 @@ final readonly class PasskeyRegistrationOptionsAuthMutationResolver implements
     public function __invoke(?object $item, array $context): object
     {
         $command = new StartPasskeyRegistrationCommand(
-            $this->userIdentityResolver->resolveUserId(),
-            $this->userIdentityResolver->resolveEmail()
+            $this->userIdentityResolver->resolveUserId()
         );
         $this->commandBus->dispatch($command);
 

@@ -46,18 +46,47 @@ final readonly class PasskeySignUpCompletionHandler
     ): PasskeyAuthenticationResult {
         $this->userResolver->save($user);
 
-        $result = $this->authenticationIssuer->issue(
+        try {
+            $result = $this->issueAuthentication($user, $command, $now);
+        } catch (Throwable $exception) {
+            $rollbackFailure = $this->deleteUserAfterAuthenticationFailure($user);
+
+            if ($rollbackFailure instanceof Throwable) {
+                throw $rollbackFailure;
+            }
+
+            throw $exception;
+        }
+
+        $this->deleteChallenge($challenge);
+        $this->publishRegisteredEvent($user);
+
+        return $result;
+    }
+
+    private function issueAuthentication(
+        User $user,
+        CompletePasskeySignUpCommand $command,
+        DateTimeImmutable $now
+    ): PasskeyAuthenticationResult {
+        return $this->authenticationIssuer->issue(
             $user,
             $command->rememberMe,
             $command->ipAddress,
             $command->userAgent,
             $now
         );
+    }
 
-        $this->deleteChallenge($challenge);
-        $this->publishRegisteredEvent($user);
+    private function deleteUserAfterAuthenticationFailure(User $user): ?Throwable
+    {
+        try {
+            $this->userResolver->delete($user);
+        } catch (Throwable $exception) {
+            return $exception;
+        }
 
-        return $result;
+        return null;
     }
 
     private function deleteChallenge(PasskeyChallenge $challenge): void

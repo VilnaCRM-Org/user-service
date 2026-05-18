@@ -185,7 +185,6 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             $this->createOptionsResult(),
             function (StartPasskeyRegistrationCommand $command): void {
                 self::assertSame($this->fixtures['userId'], $command->userId);
-                self::assertSame($this->fixtures['email'], $command->email);
             }
         );
 

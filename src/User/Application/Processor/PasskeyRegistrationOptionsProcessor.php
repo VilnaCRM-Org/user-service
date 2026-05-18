@@ -50,8 +50,7 @@ final readonly class PasskeyRegistrationOptionsProcessor implements ProcessorInt
         );
 
         $command = new StartPasskeyRegistrationCommand(
-            $this->userIdentityResolver->resolveUserId(),
-            $this->userIdentityResolver->resolveEmail()
+            $this->userIdentityResolver->resolveUserId()
         );
         $this->commandBus->dispatch($command);
 

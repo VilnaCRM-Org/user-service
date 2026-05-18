@@ -66,9 +66,9 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
         return $command->getResponse();
     }
 
-    public function startRegistration(string $userId, string $email): PasskeyOptionsResult
+    public function startRegistration(string $userId): PasskeyOptionsResult
     {
-        $command = new StartPasskeyRegistrationCommand($userId, $email);
+        $command = new StartPasskeyRegistrationCommand($userId);
         $this->createStartRegistrationHandler()->__invoke($command);
 
         return $command->getResponse();

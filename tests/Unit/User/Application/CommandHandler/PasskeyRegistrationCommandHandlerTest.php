@@ -123,7 +123,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
             ->willReturn($this->objects->token('challengeId'));
         $this->challengeRepository->expects($this->once())->method('save');
 
-        $result = $this->support()->startRegistration($user->getId(), $this->faker->safeEmail());
+        $result = $this->support()->startRegistration($user->getId());
 
         $this->support()->assertRegistrationOptionsStarted($result);
         self::assertSame($user->getEmail(), $result->getPublicKeyOptions()['user']['name']);
@@ -142,10 +142,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Authentication required.');
 
-        $this->support()->startRegistration(
-            $missingUserId,
-            $this->objects->user('authenticationEmail')
-        );
+        $this->support()->startRegistration($missingUserId);
     }
 
     public function testCompleteSignupRejectsIncompleteChallenge(): void

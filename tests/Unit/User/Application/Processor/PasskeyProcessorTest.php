@@ -305,7 +305,6 @@ final class PasskeyProcessorTest extends UnitTestCase
             $this->createOptionsResult(),
             function (StartPasskeyRegistrationCommand $command): void {
                 self::assertSame($this->fixture['userId'], $command->userId);
-                self::assertSame($this->fixture['email'], $command->email);
             }
         );
     }
