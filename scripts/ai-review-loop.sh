@@ -399,7 +399,11 @@ review_section_has_text_with_score() {
         }
 
         if (normalized ~ /\|/) {
+          for (i = 1; i <= last_cell_count; i++) {
+            delete cells[i]
+          }
           cell_count = split_gfm_table_row(normalized, cells)
+          last_cell_count = cell_count
           first_cell = cells[1]
           if (tolower(first_cell) == "category") {
             score_col = 0
@@ -408,7 +412,7 @@ review_section_has_text_with_score() {
                 score_col = i
               }
             }
-          } else if (first_cell == category && score_col > 0 && cells[score_col] ~ threshold_regex) {
+          } else if (first_cell == category && score_col > 0 && score_col <= cell_count && cells[score_col] ~ threshold_regex) {
             found = 1
           }
         }
