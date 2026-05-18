@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Shared\Application\Validator;
 
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use function mb_strtolower;
 use function trim;
 
 final readonly class EmailUniquenessValidator
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private RouteIdentifierProvider $routeIdentifierProvider
+        private RouteIdentifierProvider $routeIdentifierProvider,
+        private EmailNormalizer $emailNormalizer
     ) {
     }
 
@@ -69,7 +70,7 @@ final readonly class EmailUniquenessValidator
 
     private function normalizeEmail(string $email): string
     {
-        return mb_strtolower($email, 'UTF-8');
+        return $this->emailNormalizer->normalize($email);
     }
 
     private function findExactUsersByEmail(string $email): UserCollection

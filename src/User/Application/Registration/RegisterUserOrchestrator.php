@@ -27,7 +27,7 @@ final readonly class RegisterUserOrchestrator
     ): UserInterface {
         $existingUser = $this->findUserByEmailQueryHandler->find($email);
         if ($existingUser !== null) {
-            return $existingUser;
+            throw new DuplicateEmailException($email);
         }
 
         $command = $this->signUpCommandFactory->create(
@@ -36,11 +36,7 @@ final readonly class RegisterUserOrchestrator
             $password
         );
 
-        try {
-            $this->commandBus->dispatch($command);
-        } catch (DuplicateEmailException $error) {
-            return $this->findConcurrentUserOrRethrow($email, $error);
-        }
+        $this->commandBus->dispatch($command);
 
         $createdUser = $this->findUserByEmailQueryHandler->find($email);
         if ($createdUser === null) {
@@ -48,17 +44,5 @@ final readonly class RegisterUserOrchestrator
         }
 
         return $createdUser;
-    }
-
-    private function findConcurrentUserOrRethrow(
-        string $email,
-        DuplicateEmailException $error,
-    ): UserInterface {
-        $concurrentUser = $this->findUserByEmailQueryHandler->find($email);
-        if ($concurrentUser !== null) {
-            return $concurrentUser;
-        }
-
-        throw $error;
     }
 }

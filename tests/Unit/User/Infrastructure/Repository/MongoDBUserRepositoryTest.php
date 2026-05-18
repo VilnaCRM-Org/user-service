@@ -231,7 +231,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->save($user);
     }
 
-    public function testSaveClearsUserDocumentsWhenFlushFails(): void
+    public function testSaveDetachesFailedUserWhenFlushFails(): void
     {
         $user = $this->createMock(UserInterface::class);
         $error = new RuntimeException(
@@ -244,8 +244,8 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->documentManager->expects($this->once())
             ->method('flush')->willThrowException($error);
         $this->documentManager->expects($this->once())
-            ->method('clear')
-            ->with(User::class);
+            ->method('detach')
+            ->with($user);
 
         $this->expectExceptionObject($error);
 
@@ -267,8 +267,8 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->documentManager->expects($this->once())
             ->method('flush')->willThrowException($error);
         $this->documentManager->expects($this->once())
-            ->method('clear')
-            ->with(User::class);
+            ->method('detach')
+            ->with($user);
 
         $this->expectException(DuplicateEmailException::class);
         $this->expectExceptionMessage(

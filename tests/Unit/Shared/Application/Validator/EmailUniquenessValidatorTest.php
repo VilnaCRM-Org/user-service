@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\Shared\Application\Validator\EmailUniquenessValidator;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -33,7 +34,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->requestStack = new RequestStack();
         $this->checker = new EmailUniquenessValidator(
             $this->repository,
-            new RouteIdentifierProvider($this->requestStack)
+            new RouteIdentifierProvider($this->requestStack),
+            new EmailNormalizer()
         );
     }
 

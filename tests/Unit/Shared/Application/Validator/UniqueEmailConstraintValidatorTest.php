@@ -11,6 +11,7 @@ use App\Shared\Application\Validator\UniqueEmailConstraintValidator;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
@@ -49,7 +50,8 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
         $this->requestStack->push($this->request);
         $this->emailUniquenessValidator = new EmailUniquenessValidator(
             $this->userRepository,
-            new RouteIdentifierProvider($this->requestStack)
+            new RouteIdentifierProvider($this->requestStack),
+            new EmailNormalizer()
         );
         $this->validator = new UniqueEmailConstraintValidator(
             $this->emailUniquenessValidator,

@@ -52,7 +52,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             $this->documentManager->persist($user);
             $this->documentManager->flush();
         } catch (Throwable $error) {
-            $this->documentManager->clear(User::class);
+            $this->documentManager->detach($user);
 
             if (
                 $user instanceof UserInterface

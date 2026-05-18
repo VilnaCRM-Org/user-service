@@ -10,7 +10,7 @@ Feature: User GraphQL Operations Localization
     And user with email "graphqltest2@example.com" exists
     And creating user with email "graphqltest2@example.com" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then mutation response should return requested fields
+    Then graphql error message should be "email: Ця email-адреса вже зареєстрована"
 
   Scenario: Creating a user with invalid email and Ukrainian language
     Given I am authenticated as user "gql-loc-auth2@test.com"

@@ -50,8 +50,8 @@ BMALPH command names.
 - Add an Application query handler for lookup by email.
 - Keep the command handler write-only and response-free.
 - Have REST and GraphQL orchestration query before dispatch and after dispatch.
-- Do not alter API schemas, persistence mappings, or unrelated command response
-  patterns.
+- Keep API schemas, duplicate-email validation behavior, persistence mappings, and
+  unrelated command response patterns unchanged.
 
 ## Warnings and Open Questions
 

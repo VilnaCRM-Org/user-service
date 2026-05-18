@@ -47,9 +47,9 @@ registration share the same trim/lowercase behavior.
 - save the user;
 - publish the registration event.
 
-If persistence fails, the repository clears managed `User` documents before
-rethrowing so the failed user write is not accidentally flushed later by a reused
-ODM document manager, without detaching unrelated document classes.
+If persistence fails, the repository detaches only the failed user before
+rethrowing so that failed write is not accidentally flushed later by a reused ODM
+document manager, without discarding unrelated managed `User` changes.
 
 ### Processor and Resolver
 
@@ -57,13 +57,13 @@ ODM document manager, without detaching unrelated document classes.
 registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 
 1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard before
-   dispatching a command. This keeps duplicate lookup out of the write-side
-   command handler and prevents hashing, saving, and event publication when a
-   caller has already passed public API validation.
+   dispatching a command, throwing `DuplicateEmailException` when an email is
+   already registered. This keeps duplicate lookup out of the write-side command
+   handler and prevents hashing, saving, and event publication when a caller has
+   already passed public API validation.
 2. Create `RegisterUserCommand` from the API input when no user exists.
 3. Dispatch the command.
-4. On duplicate-email dispatch failure caused by a race, query again and return
-   the read-side result when it exists; otherwise rethrow
+4. On duplicate-email dispatch failure caused by a race, rethrow
    `DuplicateEmailException`.
 5. After successful dispatch, run the email query again and return the persisted
    user, or throw `UserNotFoundException` if the user cannot be reloaded.
@@ -71,8 +71,8 @@ registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 Single-user REST and GraphQL create requests keep `UniqueEmail` validation, so
 known duplicate emails continue to return the existing validation error before
 the public registration endpoint reaches orchestration. The orchestrator guard is
-the CQRS replacement for command-handler response mutation and a race-window
-fallback; it is not a public API behavior change for duplicate registration.
+the CQRS replacement for command-handler response mutation and a defense-in-depth
+race fallback; it is not a public API behavior change for duplicate registration.
 
 ## Dependency Boundaries
 
@@ -93,7 +93,7 @@ fallback; it is not a public API behavior change for duplicate registration.
   without publishing when persistence fails.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
-- Orchestrator tests: duplicate-guard short-circuit without dispatch, dispatch plus
+- Orchestrator tests: duplicate-guard failure without dispatch, dispatch plus
   post-dispatch lookup, and duplicate/non-duplicate dispatch failure propagation.
 - Processor tests: delegation to the orchestrator.
 - Resolver tests: validation/transform plus delegation to the orchestrator.
