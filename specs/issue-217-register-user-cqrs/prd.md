@@ -30,7 +30,8 @@ REST and GraphQL registration responses unchanged.
    - dispatch `RegisterUserCommand` when missing;
    - return the persisted user after dispatch.
 6. `RegisterUserMutationResolver` must follow the same lookup/dispatch/return
-   orchestration as the REST processor.
+   orchestration as the REST processor, using the orchestrator duplicate guard
+   as the single known-duplicate enforcement point for GraphQL create requests.
 7. Tests must verify state changes and collaborator calls rather than command
    response values.
 8. Documentation must state that write commands do not carry response payloads

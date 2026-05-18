@@ -68,11 +68,13 @@ registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
 5. After successful dispatch, run the email query again and return the persisted
    user, or throw `UserNotFoundException` if the user cannot be reloaded.
 
-Single-user REST and GraphQL create requests keep `UniqueEmail` validation, so
-known duplicate emails continue to return the existing validation error before
-the public registration endpoint reaches orchestration. The orchestrator guard is
-the CQRS replacement for command-handler response mutation and a defense-in-depth
-race fallback; it is not a public API behavior change for duplicate registration.
+Single-user REST create requests keep `UniqueEmail` validation, so known
+duplicate emails continue to return the existing validation error before the
+public registration endpoint reaches orchestration. GraphQL create requests use
+the orchestrator guard as the single duplicate-email enforcement point for that
+mutation. The orchestrator guard is the CQRS replacement for command-handler
+response mutation and a defense-in-depth race fallback; duplicate registration
+still fails instead of returning existing account data.
 
 ## Dependency Boundaries
 
