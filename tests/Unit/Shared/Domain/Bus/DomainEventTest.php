@@ -13,7 +13,7 @@ final class DomainEventTest extends UnitTestCase
 {
     public function testConstructWithProvidedDate(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
         $occurredOn = '2023-07-24';
 
         $event = $this->getMockForAbstractClass(
@@ -25,7 +25,7 @@ final class DomainEventTest extends UnitTestCase
 
     public function testEventIdIsAccessibleAndCorrect(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
         $occurredOn = '2023-07-24';
 
         $event = $this->getMockForAbstractClass(
@@ -43,7 +43,7 @@ final class DomainEventTest extends UnitTestCase
 
     public function testConstructWithoutProvidedDate(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
         $beforeConstruction = new DateTimeImmutable();
 
         $event = $this->getMockForAbstractClass(
