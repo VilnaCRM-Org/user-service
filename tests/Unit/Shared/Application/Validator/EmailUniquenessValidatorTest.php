@@ -55,6 +55,21 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->assertFalse($this->checker->isUnique('duplicate@example.com'));
     }
 
+    public function testNormalizesEmailBeforeLookup(): void
+    {
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn('identifier');
+
+        $this->repository->expects($this->once())
+            ->method('findByEmail')
+            ->with('duplicate@example.com')
+            ->willReturn($existing);
+
+        $this->requestStack->push(new Request());
+
+        $this->assertFalse($this->checker->isUnique('  DUPLICATE@example.com  '));
+    }
+
     public function testReturnsTrueWhenIdentifiersMatch(): void
     {
         $existing = $this->createMock(UserInterface::class);

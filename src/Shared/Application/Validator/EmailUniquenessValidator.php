@@ -7,6 +7,8 @@ namespace App\Shared\Application\Validator;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function mb_strtolower;
+use function trim;
 
 final readonly class EmailUniquenessValidator
 {
@@ -18,7 +20,9 @@ final readonly class EmailUniquenessValidator
 
     public function isUnique(string $email): bool
     {
-        $existingUserWithEmail = $this->userRepository->findByEmail($email);
+        $existingUserWithEmail = $this->userRepository->findByEmail(
+            $this->normalizeEmail($email)
+        );
 
         $emailNotUsed = !$existingUserWithEmail instanceof UserInterface;
         if ($emailNotUsed) {
@@ -52,5 +56,10 @@ final readonly class EmailUniquenessValidator
     private function normalizeUuid(string $uuid): string
     {
         return strtolower(str_replace('-', '', $uuid));
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email));
     }
 }
