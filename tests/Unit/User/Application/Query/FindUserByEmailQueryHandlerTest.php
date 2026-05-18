@@ -26,7 +26,7 @@ final class FindUserByEmailQueryHandlerTest extends UnitTestCase
         $repository->expects($this->once())
             ->method('findByEmailCaseInsensitive')
             ->with($normalizedEmail)
-            ->willReturn(new UserCollection([$user]));
+            ->willReturn(new UserCollection());
 
         $handler = new FindUserByEmailQueryHandler(
             $repository,
