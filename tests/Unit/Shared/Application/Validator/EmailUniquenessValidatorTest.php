@@ -70,6 +70,46 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->assertFalse($this->checker->isUnique('  DUPLICATE@example.com  '));
     }
 
+    public function testNormalizesMultibyteEmailBeforeLookup(): void
+    {
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn('identifier');
+
+        $this->repository->expects($this->once())
+            ->method('findByEmail')
+            ->with('дuplicate@example.com')
+            ->willReturn($existing);
+
+        $this->requestStack->push(new Request());
+
+        $this->assertFalse($this->checker->isUnique('  Дuplicate@example.com  '));
+    }
+
+    public function testChecksTrimmedOriginalEmailWhenNormalizedEmailIsNotFound(): void
+    {
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn('identifier');
+        $lookups = [];
+
+        $this->repository->expects($this->exactly(2))
+            ->method('findByEmail')
+            ->willReturnCallback(
+                function (string $email) use (&$lookups, $existing): ?UserInterface {
+                    $lookups[] = $email;
+
+                    return $email === 'testUpdateGraphQL2@mail.com' ? $existing : null;
+                }
+            );
+
+        $this->requestStack->push(new Request());
+
+        $this->assertFalse($this->checker->isUnique('  testUpdateGraphQL2@mail.com  '));
+        $this->assertSame(
+            ['testupdategraphql2@mail.com', 'testUpdateGraphQL2@mail.com'],
+            $lookups
+        );
+    }
+
     public function testReturnsTrueWhenIdentifiersMatch(): void
     {
         $existing = $this->createMock(UserInterface::class);

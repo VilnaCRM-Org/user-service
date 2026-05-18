@@ -7,6 +7,8 @@ namespace App\Shared\Application\Validator;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function array_unique;
+use function array_values;
 use function mb_strtolower;
 use function trim;
 
@@ -20,16 +22,19 @@ final readonly class EmailUniquenessValidator
 
     public function isUnique(string $email): bool
     {
-        $existingUserWithEmail = $this->userRepository->findByEmail(
-            $this->normalizeEmail($email)
-        );
+        foreach ($this->emailLookupCandidates($email) as $candidate) {
+            $existingUserWithEmail = $this->userRepository->findByEmail($candidate);
 
-        $emailNotUsed = !$existingUserWithEmail instanceof UserInterface;
-        if ($emailNotUsed) {
-            return true;
+            if (!$existingUserWithEmail instanceof UserInterface) {
+                continue;
+            }
+
+            if (!$this->isCurrentUserUpdatingOwnEmail($existingUserWithEmail)) {
+                return false;
+            }
         }
 
-        return $this->isCurrentUserUpdatingOwnEmail($existingUserWithEmail);
+        return true;
     }
 
     private function isCurrentUserUpdatingOwnEmail(
@@ -61,5 +66,18 @@ final readonly class EmailUniquenessValidator
     private function normalizeEmail(string $email): string
     {
         return mb_strtolower(trim($email));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function emailLookupCandidates(string $email): array
+    {
+        $trimmed = trim($email);
+
+        return array_values(array_unique([
+            $this->normalizeEmail($trimmed),
+            $trimmed,
+        ]));
     }
 }

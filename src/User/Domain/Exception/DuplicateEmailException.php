@@ -22,11 +22,11 @@ final class DuplicateEmailException extends DomainException
     }
 
     /**
-     * @psalm-return 'email.unique'
+     * @psalm-return 'email.not.unique'
      */
     #[\Override]
     public function getTranslationTemplate(): string
     {
-        return 'email.unique';
+        return 'email.not.unique';
     }
 }

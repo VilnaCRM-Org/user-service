@@ -33,7 +33,7 @@ final class DuplicateEmailExceptionTest extends UnitTestCase
     {
         $exception = new DuplicateEmailException('test@example.com');
 
-        $this->assertSame('email.unique', $exception->getTranslationTemplate());
+        $this->assertSame('email.not.unique', $exception->getTranslationTemplate());
     }
 
     public function testGetTranslationArgs(): void
