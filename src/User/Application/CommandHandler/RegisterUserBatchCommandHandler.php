@@ -77,7 +77,8 @@ final readonly class RegisterUserBatchCommandHandler implements
 
         foreach ($command->users as $user) {
             if (
-                !isset($user['email'], $user['initials'], $user['password'])
+                !is_array($user)
+                || !isset($user['email'], $user['initials'], $user['password'])
                 || !is_string($user['email'])
                 || !is_string($user['initials'])
                 || !is_string($user['password'])

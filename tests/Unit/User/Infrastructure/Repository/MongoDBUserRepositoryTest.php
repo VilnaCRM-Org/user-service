@@ -22,7 +22,9 @@ use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
 use function mb_strtolower;
 use function mb_strtoupper;
+use MongoDB\BSON\Regex;
 use PHPUnit\Framework\MockObject\MockObject;
+use function preg_quote;
 use RuntimeException;
 use function sprintf;
 use function trim;
@@ -99,7 +101,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             $repository,
             $queryBuilder,
             $query,
-            [trim($inputEmail), mb_strtolower(trim($inputEmail), 'UTF-8')],
+            new Regex('^' . preg_quote(trim($inputEmail), '/') . '$', 'i'),
             [$user]
         );
 
@@ -506,14 +508,14 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param list<string> $emails
+     * @param list<string>|Regex $emails
      * @param list<object> $queryResult
      */
     private function expectFindByEmailsQuery(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
         Query $query,
-        array $emails,
+        array|Regex $emails,
         array $queryResult
     ): void {
         $this->expectQueryBuilder($repository, $queryBuilder, $emails);
@@ -526,20 +528,31 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param list<string> $emails
+     * @param list<string>|Regex $emails
      */
     private function expectQueryBuilder(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
-        array $emails
+        array|Regex $emails
     ): void {
-        $repository->expects($this->once())
-            ->method('createQueryBuilder')
+        $repository->expects($this->once())->method('createQueryBuilder')
             ->willReturn($queryBuilder);
-        $queryBuilder->expects($this->once())
-            ->method('field')
-            ->with('email')
+        $queryBuilder->expects($this->once())->method('field')->with('email')
             ->willReturnSelf();
+
+        if ($emails instanceof Regex) {
+            $queryBuilder->expects($this->once())
+                ->method('equals')
+                ->with($this->callback(
+                    static fn (Regex $regex): bool => $regex->getPattern()
+                    === $emails->getPattern()
+                        && $regex->getFlags() === $emails->getFlags()
+                ))
+                ->willReturnSelf();
+
+            return;
+        }
+
         $queryBuilder->expects($this->once())
             ->method('in')
             ->with($emails)

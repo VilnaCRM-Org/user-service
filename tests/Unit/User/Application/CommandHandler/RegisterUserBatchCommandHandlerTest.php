@@ -85,9 +85,10 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->assertCount(0, $response->users);
 
         /** @psalm-suppress InvalidArgument */
-        $invalidCommand = new RegisterUserBatchCommand([[
+        $invalidCommand = new RegisterUserBatchCommand([(object) [
             'email' => $this->faker->email(),
             'initials' => $this->faker->word(),
+            'password' => $this->faker->password(),
         ],
         ]);
 
