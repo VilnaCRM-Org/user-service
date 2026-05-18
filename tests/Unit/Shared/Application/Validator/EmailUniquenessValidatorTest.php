@@ -42,7 +42,7 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->expectExactLookups(['unique@example.com'], [null]);
         $this->expectCaseInsensitiveLookup('unique@example.com', []);
 
-        $this->assertTrue($this->checker->isUnique('unique@example.com'));
+        $this->assertTrue($this->checker->isUnique('  unique@example.com  '));
     }
 
     public function testReturnsFalseWhenIdentifierIsMissing(): void
