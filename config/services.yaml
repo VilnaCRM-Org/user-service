@@ -388,6 +388,10 @@ services:
     arguments:
       $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
 
+  App\User\Application\Service\PasskeyTwoFactorHandler:
+    arguments:
+      $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
+
   App\User\Application\CommandHandler\RefreshTokenCommandHandler:
     arguments:
       $refreshTokenGraceWindowSeconds: '%env(int:REFRESH_TOKEN_GRACE_WINDOW_SECONDS)%'

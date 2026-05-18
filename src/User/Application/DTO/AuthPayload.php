@@ -21,9 +21,9 @@ final class AuthPayload
     private ?string $challengeId = null;
 
     /**
-     * @var array<string, scalar|array|null>
+     * @var array<string, scalar|array|null>|null
      */
-    private array $publicKey = [];
+    private ?array $publicKey = null;
 
     private ?string $credentialId = null;
 
@@ -178,9 +178,9 @@ final class AuthPayload
     }
 
     /**
-     * @return array<string, scalar|array|null>
+     * @return array<string, scalar|array|null>|null
      */
-    public function getPublicKey(): array
+    public function getPublicKey(): ?array
     {
         return $this->publicKey;
     }

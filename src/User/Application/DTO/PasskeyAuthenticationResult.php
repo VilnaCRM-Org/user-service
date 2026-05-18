@@ -37,11 +37,15 @@ final readonly class PasskeyAuthenticationResult
 
     public function isTwoFactorEnabled(): bool
     {
-        return $this->pendingSessionId !== null;
+        return $this->pendingSessionId !== null && $this->pendingSessionId !== '';
     }
 
     public function getPendingSessionId(): ?string
     {
+        if ($this->pendingSessionId === null || $this->pendingSessionId === '') {
+            return null;
+        }
+
         return $this->pendingSessionId;
     }
 }

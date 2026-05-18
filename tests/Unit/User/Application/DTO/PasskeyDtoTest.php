@@ -103,6 +103,14 @@ final class PasskeyDtoTest extends UnitTestCase
         $this->assertVerifiedCredential($verified, $credentialId, $credentialRecord);
     }
 
+    public function testAuthenticationResultTreatsEmptyPendingSessionAsMissing(): void
+    {
+        $authResult = new PasskeyAuthenticationResult('', '', true, '', '');
+
+        self::assertFalse($authResult->isTwoFactorEnabled());
+        self::assertNull($authResult->getPendingSessionId());
+    }
+
     /**
      * @param array<string, string> $options
      */
@@ -123,6 +131,8 @@ final class PasskeyDtoTest extends UnitTestCase
         self::assertSame($accessToken, $authResult->getAccessToken());
         self::assertSame($refreshToken, $authResult->getRefreshToken());
         self::assertTrue($authResult->isRememberMe());
+        self::assertFalse($authResult->isTwoFactorEnabled());
+        self::assertNull($authResult->getPendingSessionId());
     }
 
     private function assertVerifiedCredential(
