@@ -11,6 +11,7 @@ use App\Shared\Application\Validator\UniqueEmailConstraintValidator;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -69,9 +70,9 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
         );
 
         $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
+            ->method('findByEmails')
+            ->with([$email])
+            ->willReturn(new UserCollection([$user]));
 
         $this->request->attributes->set('id', $this->faker->uuid());
 
@@ -104,9 +105,9 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
         );
 
         $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
+            ->method('findByEmails')
+            ->with([$email])
+            ->willReturn(new UserCollection([$user]));
 
         $this->context->expects($this->never())->method('buildViolation');
         $this->translator->expects($this->never())->method('trans');
@@ -120,7 +121,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->userRepository->expects($this->never())->method('findByEmails');
 
         $this->validator->validate('   ', new UniqueEmail());
     }
@@ -129,7 +130,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->userRepository->expects($this->never())->method('findByEmails');
 
         $this->validator->validate('', new UniqueEmail());
     }
@@ -138,7 +139,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->userRepository->expects($this->never())->method('findByEmails');
 
         $this->validator->validate("\t\n  \r", new UniqueEmail());
     }
@@ -183,9 +184,9 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
         );
 
         $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
+            ->method('findByEmails')
+            ->with([$email])
+            ->willReturn(new UserCollection([$user]));
 
         $this->request->attributes->set(
             'id',
@@ -211,9 +212,9 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     private function setupUserFoundExpectation(string $email, UserInterface $user): void
     {
         $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($email)
-            ->willReturn($user);
+            ->method('findByEmails')
+            ->with([$email])
+            ->willReturn(new UserCollection([$user]));
     }
 
     private function setupViolationExpectations(): void

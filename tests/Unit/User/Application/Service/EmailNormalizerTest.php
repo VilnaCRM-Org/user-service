@@ -14,7 +14,7 @@ final class EmailNormalizerTest extends UnitTestCase
         $email = ' ' . "\u{00C4}" . strtoupper($this->faker->safeEmail()) . ' ';
 
         $this->assertSame(
-            mb_strtolower(trim($email)),
+            mb_strtolower(trim($email), 'UTF-8'),
             (new EmailNormalizer())->normalize($email)
         );
     }

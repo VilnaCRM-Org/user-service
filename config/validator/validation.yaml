@@ -124,7 +124,6 @@ App\User\Application\MutationInput\CreateUserMutationInput:
       - NotBlank: { message: 'not.blank' }
       - Length:
           max: 255
-      - App\Shared\Application\Validator\Constraint\UniqueEmail: ~
     initials:
       - NotBlank: { message: 'not.blank' }
       - Length:

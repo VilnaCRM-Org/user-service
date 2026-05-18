@@ -82,6 +82,10 @@ parameters:
       collectors:
         - type: className
           regex: '.*Psr\\Cache\\.*'
+    - name: MongoDB
+      collectors:
+        - type: className
+          regex: '.*MongoDB\\.*'
   ruleset:
     Application:
       - Domain
@@ -107,5 +111,6 @@ parameters:
       - Lexik
       - OTPHP
       - PsrCache
+      - MongoDB
     Domain:
       - PhpAttributes

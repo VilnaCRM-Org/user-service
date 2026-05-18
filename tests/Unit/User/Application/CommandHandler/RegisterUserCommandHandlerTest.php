@@ -259,6 +259,6 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     {
         $email = ' ' . "\u{00C4}" . strtoupper($this->faker->safeEmail()) . ' ';
 
-        return [$email, mb_strtolower(trim($email))];
+        return [$email, mb_strtolower(trim($email), 'UTF-8')];
     }
 }

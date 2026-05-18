@@ -20,6 +20,8 @@ use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 use function mb_strtolower;
+use MongoDB\BSON\Regex;
+use function preg_quote;
 use function str_contains;
 use Throwable;
 use function trim;
@@ -82,8 +84,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches each email exactly, with defensive trimmed and lowercase
-     * candidates for callers that pass already-normalized user input variants.
+     * Matches exact, trimmed, lowercase, and legacy mixed-case email variants.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -95,7 +96,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         }
 
         $result = $this->createQueryBuilder()
-            ->field('email')->in($uniqueEmails)
+            ->field('email')->in($this->emailLookupExpressions($uniqueEmails))
             ->getQuery()
             ->execute();
         $users = [];
@@ -157,10 +158,29 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             $emails,
             $trimmedEmails,
             array_map(
-                static fn (string $email): string => mb_strtolower($email),
+                static fn (string $email): string => mb_strtolower($email, 'UTF-8'),
                 $trimmedEmails
             )
         )));
+    }
+
+    /**
+     * @param list<string> $emails
+     *
+     * @return list<string|Regex>
+     */
+    private function emailLookupExpressions(array $emails): array
+    {
+        return array_values(array_merge(
+            $emails,
+            array_map(
+                static fn (string $email): Regex => new Regex(
+                    '^' . preg_quote($email, '/') . '$',
+                    'i'
+                ),
+                $emails
+            )
+        ));
     }
 
     private function isDuplicateEmailKeyError(Throwable $error): bool

@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Validator;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\Shared\Application\Validator\EmailUniquenessValidator;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use function mb_strtolower;
@@ -39,9 +40,9 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
     public function testReturnsTrueWhenUserIsNotFound(): void
     {
         $this->repository->expects($this->once())
-            ->method('findByEmail')
-            ->with('unique@example.com')
-            ->willReturn(null);
+            ->method('findByEmails')
+            ->with(['unique@example.com'])
+            ->willReturn(new UserCollection());
 
         $this->assertTrue($this->checker->isUnique('unique@example.com'));
     }
@@ -52,9 +53,9 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing->method('getId')->willReturn('identifier');
 
         $this->repository->expects($this->once())
-            ->method('findByEmail')
-            ->with('duplicate@example.com')
-            ->willReturn($existing);
+            ->method('findByEmails')
+            ->with(['duplicate@example.com'])
+            ->willReturn(new UserCollection([$existing]));
 
         $this->requestStack->push(new Request());
 
@@ -65,15 +66,16 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
     {
         $email = $this->faker->unique()->safeEmail();
         $submittedEmail = sprintf('  %s  ', strtoupper($email));
-        $normalizedEmail = mb_strtolower(trim($submittedEmail));
+        $trimmedEmail = trim($submittedEmail);
+        $normalizedEmail = mb_strtolower($trimmedEmail, 'UTF-8');
 
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
         $this->repository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn($existing);
+            ->method('findByEmails')
+            ->with([$normalizedEmail, $trimmedEmail])
+            ->willReturn(new UserCollection([$existing]));
 
         $this->requestStack->push(new Request());
 
@@ -87,33 +89,56 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
             strtolower($this->faker->unique()->lexify('??????')),
             strtolower($this->faker->safeEmailDomain())
         );
-        $normalizedEmail = mb_strtolower(trim($submittedEmail));
+        $trimmedEmail = trim($submittedEmail);
+        $normalizedEmail = mb_strtolower($trimmedEmail, 'UTF-8');
 
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
         $this->repository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn($existing);
+            ->method('findByEmails')
+            ->with([$normalizedEmail, $trimmedEmail])
+            ->willReturn(new UserCollection([$existing]));
 
         $this->requestStack->push(new Request());
 
         $this->assertFalse($this->checker->isUnique($submittedEmail));
     }
 
-    public function testChecksTrimmedOriginalEmailWhenNormalizedEmailIsNotFound(): void
+    public function testChecksTrimmedOriginalEmailCandidate(): void
     {
         $trimmedEmail = $this->mixedCaseEmail();
         $submittedEmail = sprintf('  %s  ', $trimmedEmail);
-        $expectedLookups = [mb_strtolower($trimmedEmail), $trimmedEmail];
-        $lookups = [];
+        $expectedLookups = [
+            mb_strtolower($trimmedEmail, 'UTF-8'),
+            $trimmedEmail,
+        ];
 
-        $this->repositoryReturnsUserForMatchingEmail($trimmedEmail, $lookups);
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn($this->faker->uuid());
+
+        $this->repository->expects($this->once())
+            ->method('findByEmails')
+            ->with($expectedLookups)
+            ->willReturn(new UserCollection([$existing]));
         $this->requestStack->push(new Request());
 
         $this->assertFalse($this->checker->isUnique($submittedEmail));
-        $this->assertSame($expectedLookups, $lookups);
+    }
+
+    public function testLowercaseSubmissionCanMatchLegacyMixedCaseUser(): void
+    {
+        $existing = $this->createMock(UserInterface::class);
+        $existing->method('getId')->willReturn($this->faker->uuid());
+
+        $this->repository->expects($this->once())
+            ->method('findByEmails')
+            ->with(['legacy@example.com'])
+            ->willReturn(new UserCollection([$existing]));
+
+        $this->requestStack->push(new Request());
+
+        $this->assertFalse($this->checker->isUnique('legacy@example.com'));
     }
 
     public function testReturnsTrueWhenIdentifiersMatch(): void
@@ -122,9 +147,9 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing->method('getId')->willReturn('0199ddf7b47b72359bc423b847dbde1e');
 
         $this->repository->expects($this->once())
-            ->method('findByEmail')
-            ->with('same@example.com')
-            ->willReturn($existing);
+            ->method('findByEmails')
+            ->with(['same@example.com'])
+            ->willReturn(new UserCollection([$existing]));
 
         $request = new Request();
         $request->attributes->set(
@@ -134,31 +159,6 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $this->requestStack->push($request);
 
         $this->assertTrue($this->checker->isUnique('same@example.com'));
-    }
-
-    /**
-     * @param list<string> $lookups
-     */
-    private function repositoryReturnsUserForMatchingEmail(
-        string $matchingEmail,
-        array &$lookups
-    ): void {
-        $existing = $this->createMock(UserInterface::class);
-        $existing->method('getId')->willReturn($this->faker->uuid());
-
-        $this->repository->expects($this->exactly(2))
-            ->method('findByEmail')
-            ->willReturnCallback(
-                static function (string $email) use (
-                    &$lookups,
-                    $existing,
-                    $matchingEmail
-                ): ?UserInterface {
-                    $lookups[] = $email;
-
-                    return $email === $matchingEmail ? $existing : null;
-                }
-            );
     }
 
     private function mixedCaseEmail(): string

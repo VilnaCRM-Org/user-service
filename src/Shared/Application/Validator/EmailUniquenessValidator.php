@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\Validator;
 
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
+use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use function mb_strtolower;
@@ -20,13 +21,7 @@ final readonly class EmailUniquenessValidator
 
     public function isUnique(string $email): bool
     {
-        foreach ($this->emailLookupCandidates($email) as $candidate) {
-            $existingUserWithEmail = $this->userRepository->findByEmail($candidate);
-
-            if (!$existingUserWithEmail instanceof UserInterface) {
-                continue;
-            }
-
+        foreach ($this->findUsersByEmail($email) as $existingUserWithEmail) {
             if (!$this->isCurrentUserUpdatingOwnEmail($existingUserWithEmail)) {
                 return false;
             }
@@ -63,7 +58,14 @@ final readonly class EmailUniquenessValidator
 
     private function normalizeEmail(string $email): string
     {
-        return mb_strtolower($email);
+        return mb_strtolower($email, 'UTF-8');
+    }
+
+    private function findUsersByEmail(string $email): UserCollection
+    {
+        return $this->userRepository->findByEmails(
+            $this->emailLookupCandidates($email)
+        );
     }
 
     /**

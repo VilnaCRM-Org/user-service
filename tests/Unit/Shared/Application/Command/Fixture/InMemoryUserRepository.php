@@ -7,6 +7,9 @@ namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function array_map;
+use function mb_strtolower;
+use function trim;
 
 final class InMemoryUserRepository implements UserRepositoryInterface
 {
@@ -51,11 +54,14 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $requestedEmails = array_flip($emails);
+        $requestedEmails = array_flip(array_map(
+            $this->normalizeEmail(...),
+            $emails
+        ));
         $users = [];
 
         foreach ($this->users as $user) {
-            if (!isset($requestedEmails[$user->getEmail()])) {
+            if (!isset($requestedEmails[$this->normalizeEmail($user->getEmail())])) {
                 continue;
             }
 
@@ -111,5 +117,10 @@ final class InMemoryUserRepository implements UserRepositoryInterface
             }
         }
         return null;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email), 'UTF-8');
     }
 }
