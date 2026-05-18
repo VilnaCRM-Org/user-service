@@ -9,6 +9,8 @@ use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use Closure;
+use function random_bytes;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
 /** @psalm-suppress UnusedClass */
@@ -16,11 +18,22 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
 {
     private const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
+    /**
+     * @var Closure(int): string
+     */
+    private Closure $randomBytes;
+
+    /**
+     * @param Closure(int): string|null $randomBytes
+     */
     public function __construct(
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private RecoveryCodeFactoryInterface $recoveryCodeFactory,
         private UlidFactory $ulidFactory,
+        ?Closure $randomBytes = null,
     ) {
+        $this->randomBytes = $randomBytes
+            ?? static fn (int $length): string => random_bytes($length);
     }
 
     /**
@@ -62,7 +75,7 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
         $maxUnbiasedByte = intdiv(256, $alphabetLength) * $alphabetLength;
 
         while (strlen($code) < $length) {
-            foreach (str_split(random_bytes($length)) as $byte) {
+            foreach (str_split(($this->randomBytes)($length)) as $byte) {
                 $value = ord($byte);
                 if ($value >= $maxUnbiasedByte) {
                     continue;
