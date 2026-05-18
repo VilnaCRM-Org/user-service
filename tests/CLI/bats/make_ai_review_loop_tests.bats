@@ -2058,6 +2058,7 @@ SCRIPT
 
 @test "ai-review-loop scorecard validation honors configured threshold" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local prompt_capture="${BATS_TEST_TMPDIR}/prompt.txt"
   mkdir -p "$bin_dir"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -2080,7 +2081,7 @@ if [[ "${1:-}" == "exec" ]]; then
     shift
   done
 
-  cat >/dev/null
+  cat > "${PROMPT_CAPTURE:-/dev/null}"
   cat > "$output_file" <<'STATUS'
 STATUS: PASS
 0 issues.
@@ -2136,7 +2137,9 @@ SCRIPT
 
   run env \
     PATH="$bin_dir:$PATH" \
+    PROMPT_CAPTURE="$prompt_capture" \
     AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_REVIEW_PROMPT=scripts/ai-review-prompts/bmad-fr-nfr-review.md \
     AI_REVIEW_BASE=HEAD \
     AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     AI_REVIEW_VERIFY_CMD=true \
@@ -2148,6 +2151,13 @@ SCRIPT
 
   assert_success
   assert_output --partial "AI review PASS."
+
+  run grep -F "FR_NFR_MIN_SCORE: 4/5" "$prompt_capture"
+  assert_success
+  run grep -F "NFR_CATALOG_MIN_SCORE: 4/5" "$prompt_capture"
+  assert_success
+  run grep -F 'evidence at `4/5` or higher' "$prompt_capture"
+  assert_success
 }
 
 @test "ai-review-loop rejects PASS without scored gate sections" {

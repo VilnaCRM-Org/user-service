@@ -74,8 +74,8 @@ CI_GATE: PASS
 
 Then include these exact evidence markers, each on its own line:
 
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
+FR_NFR_MIN_SCORE: {SCORE_THRESHOLD}/5
+NFR_CATALOG_MIN_SCORE: {SCORE_THRESHOLD}/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -97,5 +97,5 @@ Then include these sections using the exact section names:
 - Required Fixes: file path, short description, expected fix
 
 For PASS, every listed section except Required Fixes must include scored
-evidence at 5/5, and the NFR Catalog Scorecard must cover each pinned category:
-`{NFR_CATEGORIES}`.
+evidence at `{SCORE_THRESHOLD}/5` or higher, and the NFR Catalog Scorecard must
+cover each pinned category: `{NFR_CATEGORIES}`.

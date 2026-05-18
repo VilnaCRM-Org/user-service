@@ -3,7 +3,7 @@ workflowType: manual-evidence
 project_name: BMAD FR/NFR Review Gate
 author: Codex
 date: 2026-05-18
-revision: 19
+revision: 20
 ---
 
 # Manual Evidence: BMAD FR/NFR Review Gate
@@ -43,7 +43,7 @@ revision: 19
 | No required CI checks fallback  | Run Bats fake-agent test `bmad-fr-nfr-review-gate falls back to visible checks when required check rollup is empty`.   | Command exits successfully after verifying every visible PR check is passing.            | AC-11, NFR-09        |
 | Empty visible CI check rollup   | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty`.             | Command exits non-zero with `Warning: GitHub PR check rollup is empty.`                  | AC-11, NFR-03        |
 | GitHub hard-gate fail-fast      | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing`.                    | Command exits before AI review with `GitHub corroboration failed before AI review.`      | AC-11, NFR-03        |
-| GitHub/CI evidence markers      | Run Bats fake-agent marker and scorecard validation scenarios.                                                         | PASS output must include approved GitHub state and passing CI rollup evidence markers.   | FR-07, AC-05         |
+| GitHub/CI evidence markers      | Run Bats fake-agent marker, threshold, and scorecard validation scenarios.                                             | PASS output must include thresholded min-score, approved GitHub, and passing CI markers. | FR-07, AC-05         |
 | Markdown NFR scorecard rows     | Run Bats fake-agent tests for markdown NFR scorecard table rows.                                                       | GFM rows, escaped pipe cells, and malformed short rows require row-local score-cell 5/5. | FR-06, FR-07, AC-05  |
 | Markdown formatting             | Run the targeted Prettier check for touched docs/spec/prompt files.                                                    | Command exits successfully with `All matched files use Prettier code style!`.            | NFR-01, NFR-07       |
 
