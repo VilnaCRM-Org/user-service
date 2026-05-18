@@ -93,7 +93,7 @@ final readonly class EmailUniquenessValidator
     private function findCaseInsensitiveUsersByEmail(string $email): UserCollection
     {
         return $this->userRepository->findByEmailCaseInsensitive(
-            $this->normalizeEmail(trim($email))
+            $this->normalizeEmail($email)
         );
     }
 
