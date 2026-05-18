@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as SharedUuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\IssuedSession;
 use App\User\Application\DTO\VerifiedPasskeyCredential;
 use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Application\Factory\IdFactoryInterface;
@@ -27,7 +28,7 @@ use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Log\NullLogger;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
@@ -42,6 +43,7 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
     private EventBusInterface&MockObject $eventBus;
     private EventIdFactoryInterface&MockObject $eventIdFactory;
     private SignInPublisherInterface&MockObject $signInPublisher;
+    private LoggerInterface&MockObject $logger;
     private PasskeyCommandHandlerTestObjects $objects;
 
     #[\Override]
@@ -61,6 +63,7 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->objects = new PasskeyCommandHandlerTestObjects($this->faker);
     }
 
@@ -88,6 +91,26 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->support()->completeSignup($credentialPayload);
     }
 
+    public function testCompleteSignupKeepsUserAndCredentialWhenSignInPublishFails(): void
+    {
+        $failure = new RuntimeException('Sign-in event unavailable.');
+        $challenge = $this->objects->createSignupChallenge();
+        $credentialPayload = ['id' => 'credential'];
+
+        $this->expectClaimedChallenge($challenge);
+        $this->expectSignupUserPersistedAndRegisteredEventPublished();
+        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialSavedAndKept();
+        $this->challengeRepository->expects($this->once())->method('delete')->with($challenge);
+        $this->challengeRepository->expects($this->never())->method('release');
+        $this->expectSessionIssuedWithPublishFailure($failure);
+
+        $result = $this->support()->completeSignup($credentialPayload);
+
+        self::assertSame($this->objects->token('accessToken'), $result->getAccessToken());
+        self::assertSame($this->objects->token('refreshToken'), $result->getRefreshToken());
+    }
+
     private function support(): PasskeyRegistrationCommandHandlerTestSupport
     {
         return new PasskeyRegistrationCommandHandlerTestSupport(
@@ -98,7 +121,7 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
             new PasskeyRegistrationCommandHandlerFactories(
                 new PasskeyAuthenticationResultFactory($this->sessionFactory),
                 $this->createUserFactory(),
-                new NullLogger()
+                $this->logger
             ),
             $this->idFactory,
             $this->eventBus,
@@ -129,6 +152,22 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->userRepository->expects($this->once())->method('save');
         $this->userRepository->expects($this->once())->method('delete')
             ->with(self::isInstanceOf(User::class));
+    }
+
+    private function expectSignupUserPersistedAndRegisteredEventPublished(): void
+    {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->willReturn(null);
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn($this->objects->user('hashedPassword'));
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($this->objects->token('eventId'));
+        $this->userRepository->expects($this->once())->method('save');
+        $this->userRepository->expects($this->never())->method('delete');
+        $this->eventBus->expects($this->once())->method('publish');
     }
 
     private function expectClaimedChallenge(PasskeyChallenge $challenge): void
@@ -172,5 +211,65 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->credentialRepository->expects($this->once())
             ->method('delete')
             ->with(self::isInstanceOf(PasskeyCredential::class));
+    }
+
+    private function expectCredentialSavedAndKept(): void
+    {
+        $this->idFactory->expects($this->once())
+            ->method('create')
+            ->willReturn($this->objects->credential('passkeyId'));
+        $this->credentialRepository->expects($this->once())->method('save');
+        $this->credentialRepository->expects($this->never())->method('existsByCredentialId');
+        $this->credentialRepository->expects($this->never())->method('delete');
+    }
+
+    private function expectSessionIssuedWithPublishFailure(RuntimeException $failure): void
+    {
+        $this->expectIssuedSessionCreated();
+        $this->expectSignInPublishFailure($failure);
+        $this->expectSignInPublishWarning($failure);
+    }
+
+    private function expectIssuedSessionCreated(): void
+    {
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->willReturn(new IssuedSession(
+                $this->objects->token('sessionId'),
+                $this->objects->token('accessToken'),
+                $this->objects->token('refreshToken')
+            ));
+    }
+
+    private function expectSignInPublishFailure(RuntimeException $failure): void
+    {
+        $this->signInPublisher->expects($this->once())
+            ->method('publishSignedIn')
+            ->willThrowException($failure);
+    }
+
+    private function expectSignInPublishWarning(RuntimeException $failure): void
+    {
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Passkey sign-in event dispatch failed.',
+                self::callback(fn (array $context): bool => $this->hasSignInWarningContext(
+                    $context,
+                    $failure
+                ))
+            );
+    }
+
+    /**
+     * @param array<string, object|string> $context
+     */
+    private function hasSignInWarningContext(array $context, RuntimeException $failure): bool
+    {
+        self::assertSame($failure, $context['exception']);
+        self::assertSame($this->objects->token('sessionId'), $context['session_id']);
+        self::assertSame($this->objects->user('signupUserId'), $context['user_id']);
+
+        return true;
     }
 }

@@ -37,6 +37,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\Assert;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Factory\UuidFactory as SymfonyUuidFactory;
 
@@ -156,24 +157,38 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
     private function createCompleteSignUpHandler(): CompletePasskeySignUpCommandHandler
     {
         $challengeResolver = new PasskeyChallengeResolver($this->challengeRepository);
-        $userResolver = new PasskeyUserResolver($this->userRepository);
 
         return new CompletePasskeySignUpCommandHandler(
             $challengeResolver,
             $this->credentialValidator,
             new PasskeyCredentialFactory($this->idFactory),
             new PasskeyCredentialResolver($this->credentialRepository),
-            new PasskeySignUpCompletionHandler(
-                $userResolver,
-                $this->factories->userFactory,
-                $this->eventBus,
-                $challengeResolver,
-                new PasskeyAuthenticationIssuer(
-                    $this->factories->authenticationResultFactory,
-                    $this->signInPublisher
-                ),
-                $this->factories->logger ?? new NullLogger()
-            )
+            $this->createSignUpCompletionHandler($challengeResolver)
+        );
+    }
+
+    private function createSignUpCompletionHandler(
+        PasskeyChallengeResolver $challengeResolver
+    ): PasskeySignUpCompletionHandler {
+        $logger = $this->factories->logger ?? new NullLogger();
+
+        return new PasskeySignUpCompletionHandler(
+            new PasskeyUserResolver($this->userRepository),
+            $this->factories->userFactory,
+            $this->eventBus,
+            $challengeResolver,
+            $this->createAuthenticationIssuer($logger),
+            $logger
+        );
+    }
+
+    private function createAuthenticationIssuer(
+        LoggerInterface $logger
+    ): PasskeyAuthenticationIssuer {
+        return new PasskeyAuthenticationIssuer(
+            $this->factories->authenticationResultFactory,
+            $this->signInPublisher,
+            $logger
         );
     }
 

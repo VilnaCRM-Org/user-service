@@ -9,12 +9,15 @@ use App\User\Application\Factory\PasskeyAuthenticationResultFactory;
 use App\User\Domain\Entity\User;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use DateTimeImmutable;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 final readonly class PasskeyAuthenticationIssuer
 {
     public function __construct(
         private PasskeyAuthenticationResultFactory $authenticationResultFactory,
-        private SignInPublisherInterface $signInPublisher
+        private SignInPublisherInterface $signInPublisher,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -33,15 +36,32 @@ final readonly class PasskeyAuthenticationIssuer
             $issuedAt
         );
 
-        $this->signInPublisher->publishSignedIn(
-            $user->getId(),
-            $user->getEmail(),
-            $result->getSessionId(),
-            $ipAddress,
-            $userAgent,
-            false
-        );
+        $this->publishSignedIn($user, $result, $ipAddress, $userAgent);
 
         return $result;
+    }
+
+    private function publishSignedIn(
+        User $user,
+        PasskeyAuthenticationResult $result,
+        string $ipAddress,
+        string $userAgent
+    ): void {
+        try {
+            $this->signInPublisher->publishSignedIn(
+                $user->getId(),
+                $user->getEmail(),
+                $result->getSessionId(),
+                $ipAddress,
+                $userAgent,
+                false
+            );
+        } catch (Throwable $exception) {
+            $this->logger->warning('Passkey sign-in event dispatch failed.', [
+                'exception' => $exception,
+                'session_id' => $result->getSessionId(),
+                'user_id' => $user->getId(),
+            ]);
+        }
     }
 }

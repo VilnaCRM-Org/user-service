@@ -31,6 +31,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
+use Psr\Log\NullLogger;
 
 final readonly class PasskeySignInCommandHandlerTestSupport
 {
@@ -95,7 +96,8 @@ final readonly class PasskeySignInCommandHandlerTestSupport
             ),
             new PasskeyAuthenticationIssuer(
                 new PasskeyAuthenticationResultFactory($this->sessionFactory),
-                $this->signInPublisher
+                $this->signInPublisher,
+                new NullLogger()
             )
         );
     }

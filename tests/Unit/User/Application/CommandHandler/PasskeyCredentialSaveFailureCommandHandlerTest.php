@@ -416,15 +416,15 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
                 $this->objects->token('accessToken'),
                 $this->objects->token('refreshToken')
             ));
-        $this->signInPublisher->expects($this->once())
-            ->method('publishSignedIn')
-            ->with(
-                $this->objects->user('signupUserId'),
-                $this->objects->user('signupEmail'),
-                $this->objects->token('sessionId'),
-                $this->objects->user('ipAddress'),
-                $this->objects->user('userAgent'),
-                false
-            );
+        $publish = $this->signInPublisher->expects($this->once())
+            ->method('publishSignedIn');
+        $publish->with(
+            $this->objects->user('signupUserId'),
+            $this->objects->user('signupEmail'),
+            $this->objects->token('sessionId'),
+            $this->objects->user('ipAddress'),
+            $this->objects->user('userAgent'),
+            false
+        );
     }
 }
