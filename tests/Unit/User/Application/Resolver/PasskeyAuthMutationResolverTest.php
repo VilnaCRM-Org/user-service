@@ -43,6 +43,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
     private MutationInputValidator $validator;
     private CommandBusInterface $commandBus;
     private HttpRequestContextResolverInterface $requestContextResolver;
+    private PasskeySignInCompleteAuthMutationResolver $signInCompleteResolver;
     private AuthPayloadFactory $payloadFactory;
     private Request $request;
     /**
@@ -80,6 +81,12 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             HttpRequestContextResolverInterface::class
         );
         $this->payloadFactory = new AuthPayloadFactory();
+        $this->signInCompleteResolver = new PasskeySignInCompleteAuthMutationResolver(
+            $this->validator,
+            $this->commandBus,
+            $this->payloadFactory,
+            $this->requestContextResolver
+        );
         $this->request = Request::create('/api/graphql');
         $this->fixtures = $this->createFixtures();
     }
@@ -127,6 +134,27 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         $this->assertTokenPayload($payload, 'auth-passkey-signup-complete');
     }
 
+    public function testPasskeySignUpCompleteIgnoresNonArrayCredential(): void
+    {
+        $this->expectValidation(PasskeySignUpCompleteDto::class);
+        $this->expectRequestContext();
+        $this->expectDispatch(
+            CompletePasskeySignUpCommand::class,
+            $this->createAuthenticationResult(),
+            function (CompletePasskeySignUpCommand $command): void {
+                self::assertSame($this->fixtures['challengeId'], $command->challengeId);
+                self::assertSame([], $command->credential);
+                self::assertFalse($command->rememberMe);
+            }
+        );
+
+        $payload = $this->createSignUpCompleteResolver()->__invoke(null, $this->completeContext([
+            'credential' => $this->fixtures['credentialId'],
+        ]));
+
+        $this->assertTokenPayload($payload, 'auth-passkey-signup-complete');
+    }
+
     public function testPasskeySignInOptionsDispatchesCommand(): void
     {
         $this->expectValidation(PasskeySignInOptionsDto::class);
@@ -164,18 +192,38 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             }
         );
 
-        $payload = (new PasskeySignInCompleteAuthMutationResolver(
-            $this->validator,
-            $this->commandBus,
-            $this->payloadFactory,
-            $this->requestContextResolver
-        ))->__invoke(null, $this->completeContext());
+        $payload = $this->signInCompleteResolver->__invoke(
+            null,
+            $this->completeContext()
+        );
 
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame('auth-passkey-signin-complete', $payload->getId());
         self::assertTrue($payload->isTwoFactorEnabled());
         self::assertSame($this->fixtures['challengeId'], $payload->getPendingSessionId());
         self::assertNull($payload->getAccessToken());
+    }
+
+    public function testPasskeySignInCompleteIgnoresNonArrayCredential(): void
+    {
+        $this->expectValidation(PasskeySignInCompleteDto::class);
+        $this->expectRequestContext();
+        $this->expectDispatch(
+            CompletePasskeySignInCommand::class,
+            $this->createAuthenticationResult(),
+            function (CompletePasskeySignInCommand $command): void {
+                self::assertSame($this->fixtures['challengeId'], $command->challengeId);
+                self::assertSame([], $command->credential);
+                self::assertSame($this->fixtures['ipAddress'], $command->ipAddress);
+                self::assertSame($this->fixtures['userAgent'], $command->userAgent);
+            }
+        );
+
+        $payload = $this->signInCompleteResolver->__invoke(null, $this->completeContext([
+            'credential' => $this->fixtures['credentialId'],
+        ]));
+
+        $this->assertTokenPayload($payload, 'auth-passkey-signin-complete');
     }
 
     public function testPasskeyRegistrationOptionsUsesCurrentIdentity(): void
@@ -213,6 +261,32 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         );
 
         $context = $this->completeContext(['label' => $this->fixtures['registrationLabel']]);
+        $payload = $this->registrationCompleteResolver()->__invoke(null, $context);
+
+        self::assertInstanceOf(AuthPayload::class, $payload);
+        self::assertSame('auth-passkey-registration-complete', $payload->getId());
+        self::assertSame($credential->getCredentialId(), $payload->getCredentialId());
+    }
+
+    public function testPasskeyRegistrationCompleteIgnoresNonArrayCredential(): void
+    {
+        $this->expectValidation(PasskeyRegistrationCompleteDto::class);
+        $credential = $this->createCredential();
+        $this->expectDispatch(
+            CompletePasskeyRegistrationCommand::class,
+            $credential,
+            function (CompletePasskeyRegistrationCommand $command): void {
+                self::assertSame($this->fixtures['challengeId'], $command->challengeId);
+                self::assertSame([], $command->credential);
+                self::assertSame($this->fixtures['registrationLabel'], $command->label);
+                self::assertSame($this->fixtures['userId'], $command->currentUserId);
+            }
+        );
+
+        $context = $this->completeContext([
+            'credential' => $this->fixtures['credentialId'],
+            'label' => $this->fixtures['registrationLabel'],
+        ]);
         $payload = $this->registrationCompleteResolver()->__invoke(null, $context);
 
         self::assertInstanceOf(AuthPayload::class, $payload);

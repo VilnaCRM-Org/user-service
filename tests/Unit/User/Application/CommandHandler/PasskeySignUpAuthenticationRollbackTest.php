@@ -95,6 +95,30 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->support()->completeSignup($this->credentialPayload);
     }
 
+    public function testCompleteSignupThrowsUserDeleteFailureWhenAuthenticationRollbackFails(): void
+    {
+        $authenticationFailure = new RuntimeException('Authentication unavailable.');
+        $rollbackFailure = new RuntimeException('User rollback unavailable.');
+        $challenge = $this->objects->createSignupChallenge();
+
+        $this->expectClaimedChallenge($challenge);
+        $this->expectSignupUserPersistedThenDeleteFails($rollbackFailure);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
+        $this->expectCredentialSavedThenDeleted();
+        $this->challengeRepository->expects($this->never())->method('delete');
+        $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->willThrowException($authenticationFailure);
+        $this->eventIdFactory->expects($this->never())->method('generate');
+        $this->eventBus->expects($this->never())->method('publish');
+        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
+
+        $this->expectExceptionObject($rollbackFailure);
+
+        $this->support()->completeSignup($this->credentialPayload);
+    }
+
     public function testCompleteSignupKeepsUserAndCredentialWhenSignInPublishFails(): void
     {
         $failure = new RuntimeException('Sign-in event unavailable.');
@@ -155,6 +179,21 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->userRepository->expects($this->once())->method('save');
         $this->userRepository->expects($this->once())->method('delete')
             ->with(self::isInstanceOf(User::class));
+    }
+
+    private function expectSignupUserPersistedThenDeleteFails(
+        RuntimeException $rollbackFailure
+    ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->willReturn(null);
+        $this->passwordHasher->expects($this->once())
+            ->method('hash')
+            ->willReturn($this->objects->user('hashedPassword'));
+        $this->userRepository->expects($this->once())->method('save');
+        $this->userRepository->expects($this->once())->method('delete')
+            ->with(self::isInstanceOf(User::class))
+            ->willThrowException($rollbackFailure);
     }
 
     private function expectSignupUserPersistedAndRegisteredEventPublished(): void
