@@ -203,6 +203,29 @@ final class PasskeyResolverTest extends UnitTestCase
         self::assertSame(1, $rollbackCalls);
     }
 
+    public function testSaveUniqueAndRunKeepsDeleteFailureWhenRollbackAlsoFails(): void
+    {
+        $credential = $this->createCredential($this->userId);
+        $afterSaveFailure = new RuntimeException('After save failed.');
+        $deleteFailure = new RuntimeException('Delete failed.');
+        $rollbackFailure = new RuntimeException('Rollback failed.');
+
+        $this->credentialRepository->expects($this->once())->method('save')->with($credential);
+        $this->credentialRepository->expects($this->once())
+            ->method('delete')
+            ->with($credential)
+            ->willThrowException($deleteFailure);
+
+        $this->assertRollbackFailureSurfaced(
+            $credential,
+            $afterSaveFailure,
+            $deleteFailure,
+            static function () use ($rollbackFailure): void {
+                throw $rollbackFailure;
+            }
+        );
+    }
+
     public function testSaveUniqueAndRunSurfacesRollbackFailureAfterSaveFails(): void
     {
         $credential = $this->createCredential($this->userId);
