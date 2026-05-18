@@ -364,13 +364,26 @@ review_section_has_text_with_score() {
           found = 1
         }
 
-        table_row = normalized
-        sub(/^\|[[:space:]]*/, "", table_row)
-        split(table_row, cells, /\|/)
-        first_cell = cells[1]
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", first_cell)
-        if (first_cell == category && line ~ threshold_regex) {
-          found = 1
+        if (normalized ~ /^\|/) {
+          table_row = normalized
+          sub(/^\|/, "", table_row)
+          sub(/\|[[:space:]]*$/, "", table_row)
+          cell_count = split(table_row, cells, /\|/)
+          for (i = 1; i <= cell_count; i++) {
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", cells[i])
+          }
+
+          first_cell = cells[1]
+          if (tolower(first_cell) == "category") {
+            score_col = 0
+            for (i = 1; i <= cell_count; i++) {
+              if (tolower(cells[i]) == "score") {
+                score_col = i
+              }
+            }
+          } else if (first_cell == category && score_col > 0 && cells[score_col] ~ threshold_regex) {
+            found = 1
+          }
         }
       }
       END { exit found ? 0 : 1 }
