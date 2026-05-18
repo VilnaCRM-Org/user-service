@@ -9,7 +9,8 @@ use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\StartPasskeyRegistrationCommand;
 use App\User\Application\Factory\AuthPayloadFactory;
 
-final readonly class PasskeyRegistrationOptionsAuthMutationResolver implements MutationResolverInterface
+final readonly class PasskeyRegistrationOptionsAuthMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private CommandBusInterface $commandBus,

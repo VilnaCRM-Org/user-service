@@ -371,7 +371,13 @@ final class PasskeyCredentialValidatorTest extends UnitTestCase
             ->willReturn($validator);
         $validator->expects($this->once())
             ->method('check')
-            ->with($storedRecord, $response, $options, $this->fixtures['rpId'], $this->fixtures['userId'])
+            ->with(
+                $storedRecord,
+                $response,
+                $options,
+                $this->fixtures['rpId'],
+                $this->fixtures['userId']
+            )
             ->willReturn($verifiedRecord);
     }
 
@@ -427,7 +433,11 @@ final class PasskeyCredentialValidatorTest extends UnitTestCase
     {
         return new PublicKeyCredentialCreationOptions(
             new PublicKeyCredentialRpEntity($this->fixtures['rpName'], $this->fixtures['rpId']),
-            new PublicKeyCredentialUserEntity($this->fixtures['email'], $this->fixtures['userId'], $this->fixtures['displayName']),
+            new PublicKeyCredentialUserEntity(
+                $this->fixtures['email'],
+                $this->fixtures['userId'],
+                $this->fixtures['displayName']
+            ),
             $this->fixtures['challenge'],
             attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE
         );

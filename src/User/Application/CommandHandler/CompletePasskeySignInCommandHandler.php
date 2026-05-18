@@ -41,20 +41,19 @@ final readonly class CompletePasskeySignInCommandHandler implements CommandHandl
         );
         $user = $this->userResolver->resolveCredentialOwner($storedCredential->getUserId());
         $now = $this->verifyAndMarkUsed($challenge, $command->credential, $storedCredential);
+        $rememberMe = $challenge->isRememberMe();
 
         $this->challengeRepository->delete($challenge);
 
         if ($user->isTwoFactorEnabled()) {
-            $command->setResponse(
-                $this->twoFactorHandler->handle($user, $challenge->isRememberMe(), $now)
-            );
+            $command->setResponse($this->twoFactorHandler->handle($user, $rememberMe, $now));
 
             return;
         }
 
         $command->setResponse($this->authenticationIssuer->issue(
             $user,
-            $challenge->isRememberMe(),
+            $rememberMe,
             $command->ipAddress,
             $command->userAgent,
             $now

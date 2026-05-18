@@ -136,22 +136,8 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $credentialId = $storedCredential->getCredentialId();
         $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
 
-        $this->challengeRepository->expects($this->once())
-            ->method('claimActive')
-            ->with(
-                $this->objects->token('challengeId'),
-                PasskeyChallenge::PURPOSE_AUTHENTICATION,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
-            ->willReturn($challenge);
-        $this->credentialValidator->expects($this->once())
-            ->method('extractCredentialId')
-            ->with($credentialPayload)
-            ->willReturn($credentialId);
-        $this->credentialRepository->expects($this->once())
-            ->method('findByCredentialId')
-            ->with($credentialId)
-            ->willReturn($storedCredential);
+        $this->expectChallengeConsumedButNotDeleted($challenge);
+        $this->expectCredentialLookup($credentialPayload, $credentialId, $storedCredential);
         $this->userRepository->expects($this->never())->method('findById');
 
         $this->expectException(UnauthorizedHttpException::class);
@@ -411,29 +397,21 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
 
     private function expectSessionIssue(User $user): void
     {
+        $sessionId = $this->objects->token('sessionId');
+        $ipAddress = $this->objects->user('ipAddress');
+        $userAgent = $this->objects->user('userAgent');
+        $issuedAt = self::isInstanceOf(DateTimeImmutable::class);
+
         $this->sessionFactory->expects($this->once())
             ->method('create')
-            ->with(
-                $user,
-                $this->objects->user('ipAddress'),
-                $this->objects->user('userAgent'),
-                true,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
+            ->with($user, $ipAddress, $userAgent, true, $issuedAt)
             ->willReturn(new IssuedSession(
-                $this->objects->token('sessionId'),
+                $sessionId,
                 $this->objects->token('accessToken'),
                 $this->objects->token('refreshToken')
             ));
         $this->signInPublisher->expects($this->once())
             ->method('publishSignedIn')
-            ->with(
-                $user->getId(),
-                $user->getEmail(),
-                $this->objects->token('sessionId'),
-                $this->objects->user('ipAddress'),
-                $this->objects->user('userAgent'),
-                false
-            );
+            ->with($user->getId(), $user->getEmail(), $sessionId, $ipAddress, $userAgent, false);
     }
 }

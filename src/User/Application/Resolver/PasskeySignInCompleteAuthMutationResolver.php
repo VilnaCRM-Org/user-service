@@ -54,9 +54,11 @@ final readonly class PasskeySignInCompleteAuthMutationResolver implements Mutati
      */
     private function credentialFrom(mixed $credential): array
     {
-        /** @var array<string, scalar|array|null> $normalized */
-        $normalized = is_array($credential) ? $credential : [];
+        if (!is_array($credential)) {
+            return [];
+        }
 
-        return $normalized;
+        /** @psalm-var array<string, scalar|array|null> $credential */
+        return $credential;
     }
 }

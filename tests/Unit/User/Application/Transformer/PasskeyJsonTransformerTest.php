@@ -12,13 +12,9 @@ use App\User\Application\Factory\PasskeyWebauthnFactoryInterface;
 use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyCredential;
-
 use function array_map;
-
 use DateTimeImmutable;
-
 use const JSON_THROW_ON_ERROR;
-
 use ReflectionProperty;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
@@ -32,7 +28,6 @@ use Webauthn\CredentialRecord;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialRequestOptions as RequestOptions;
 use Webauthn\TrustPath\EmptyTrustPath;
-
 final class PasskeyJsonTransformerTest extends UnitTestCase
 {
     private PasskeyEncodingTransformer $encoding;

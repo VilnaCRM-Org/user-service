@@ -87,28 +87,8 @@ final class IssuedSessionFactoryTest extends UnitTestCase
 
     public function testCreateRollsBackSessionAndRefreshTokenWhenAccessTokenFails(): void
     {
-        $userId = $this->faker->uuid();
-        $sessionId = $this->faker->uuid();
-        $issuedAt = new DateTimeImmutable();
         $failure = new RuntimeException('JWT signing failed.');
-        $refreshTokenValue = $this->faker->sha256();
-        $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn($userId);
-        $session = $this->createMock(AuthSession::class);
-        $session->method('getId')->willReturn($sessionId);
-        $refreshToken = $this->createMock(AuthRefreshToken::class);
-
-        $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
-        $this->authTokenFactory->method('generateOpaqueToken')->willReturn($refreshTokenValue);
-        $this->authTokenFactory->method('createRefreshToken')->willReturn($refreshToken);
-        $this->authTokenFactory->method('buildJwtPayload')->willReturn(['sub' => $userId]);
-        $this->accessTokenFactory->method('create')->willThrowException($failure);
-        $this->refreshTokenRepo->expects($this->once())
-            ->method('findBySessionId')
-            ->with($sessionId)
-            ->willReturn([$refreshToken]);
-        $this->refreshTokenRepo->expects($this->once())->method('delete')->with($refreshToken);
-        $this->authSessionRepo->expects($this->once())->method('delete')->with($session);
+        [$user, $issuedAt] = $this->arrangeAccessTokenFailureRollback($failure);
 
         $this->expectExceptionObject($failure);
 
@@ -119,6 +99,51 @@ final class IssuedSessionFactoryTest extends UnitTestCase
             false,
             $issuedAt
         );
+    }
+
+    /**
+     * @return array{User&MockObject, DateTimeImmutable}
+     */
+    private function arrangeAccessTokenFailureRollback(RuntimeException $failure): array
+    {
+        $userId = $this->faker->uuid();
+        $sessionId = $this->faker->uuid();
+        $issuedAt = new DateTimeImmutable();
+        $session = $this->createMock(AuthSession::class);
+        $refreshToken = $this->createMock(AuthRefreshToken::class);
+        $user = $this->createMock(User::class);
+
+        $user->method('getId')->willReturn($userId);
+        $session->method('getId')->willReturn($sessionId);
+        $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
+        $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
+        $this->expectSessionRollback($sessionId, $session, $refreshToken);
+
+        return [$user, $issuedAt];
+    }
+
+    private function arrangeFailingAccessTokenCreation(
+        string $userId,
+        AuthRefreshToken&MockObject $refreshToken,
+        RuntimeException $failure
+    ): void {
+        $this->authTokenFactory->method('generateOpaqueToken')->willReturn($this->faker->sha256());
+        $this->authTokenFactory->method('createRefreshToken')->willReturn($refreshToken);
+        $this->authTokenFactory->method('buildJwtPayload')->willReturn(['sub' => $userId]);
+        $this->accessTokenFactory->method('create')->willThrowException($failure);
+    }
+
+    private function expectSessionRollback(
+        string $sessionId,
+        AuthSession&MockObject $session,
+        AuthRefreshToken&MockObject $refreshToken
+    ): void {
+        $this->refreshTokenRepo->expects($this->once())
+            ->method('findBySessionId')
+            ->with($sessionId)
+            ->willReturn([$refreshToken]);
+        $this->refreshTokenRepo->expects($this->once())->method('delete')->with($refreshToken);
+        $this->authSessionRepo->expects($this->once())->method('delete')->with($session);
     }
 
     /**

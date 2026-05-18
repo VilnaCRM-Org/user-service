@@ -192,21 +192,14 @@ final class PasskeyResolverTest extends UnitTestCase
             ->with($credential)
             ->willThrowException($deleteFailure);
 
-        try {
-            $this->createCredentialResolver()->saveUniqueAndRun(
-                $credential,
-                static function () use ($afterSaveFailure): void {
-                    throw $afterSaveFailure;
-                },
-                static function () use (&$rollbackCalls): void {
-                    ++$rollbackCalls;
-                }
-            );
-            self::fail('Expected after-save failure was not thrown.');
-        } catch (RuntimeException $exception) {
-            self::assertSame($afterSaveFailure, $exception);
-            self::assertSame(1, $rollbackCalls);
-        }
+        $this->assertAfterSaveFailurePreserved(
+            $credential,
+            $afterSaveFailure,
+            static function () use (&$rollbackCalls): void {
+                ++$rollbackCalls;
+            }
+        );
+        self::assertSame(1, $rollbackCalls);
     }
 
     public function testSaveUniqueAndRunPreservesAfterSaveFailureWhenRollbackFails(): void
@@ -218,15 +211,30 @@ final class PasskeyResolverTest extends UnitTestCase
         $this->credentialRepository->expects($this->once())->method('save')->with($credential);
         $this->credentialRepository->expects($this->once())->method('delete')->with($credential);
 
+        $this->assertAfterSaveFailurePreserved(
+            $credential,
+            $afterSaveFailure,
+            static function () use ($rollbackFailure): void {
+                throw $rollbackFailure;
+            }
+        );
+    }
+
+    /**
+     * @param callable(): void $rollback
+     */
+    private function assertAfterSaveFailurePreserved(
+        PasskeyCredential $credential,
+        RuntimeException $afterSaveFailure,
+        callable $rollback
+    ): void {
         try {
             $this->createCredentialResolver()->saveUniqueAndRun(
                 $credential,
                 static function () use ($afterSaveFailure): void {
                     throw $afterSaveFailure;
                 },
-                static function () use ($rollbackFailure): void {
-                    throw $rollbackFailure;
-                }
+                $rollback
             );
             self::fail('Expected after-save failure was not thrown.');
         } catch (RuntimeException $exception) {

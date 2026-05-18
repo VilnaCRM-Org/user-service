@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\DTO\VerifiedPasskeyCredential;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
@@ -58,11 +59,7 @@ final class PasskeySignInTwoFactorCommandHandlerTest extends UnitTestCase
 
     public function testCompleteCreatesPendingTwoFactorForUserWithTwoFactorEnabled(): void
     {
-        $user = $this->objects->createUser(
-            $this->objects->user('authenticationUserId'),
-            $this->objects->user('authenticationEmail')
-        );
-        $user->setTwoFactorEnabled(true);
+        $user = $this->createTwoFactorUser();
         $challenge = $this->objects->createAuthenticationChallenge($user->getId());
         $storedCredential = $this->objects->createCredential($user->getId());
         $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
@@ -77,13 +74,11 @@ final class PasskeySignInTwoFactorCommandHandlerTest extends UnitTestCase
         $this->expectAssertionVerification($challenge, $credentialPayload, $storedCredential);
         $this->expectCredentialSaved($storedCredential);
         $this->expectPendingTwoFactorSaved();
-        $this->sessionFactory->expects($this->never())->method('create');
-        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
+        $this->expectAuthenticationNotIssued();
 
         $result = $this->createSupport()->complete($credentialPayload);
 
-        self::assertTrue($result->isTwoFactorEnabled());
-        self::assertSame($this->objects->token('sessionId'), $result->getPendingSessionId());
+        $this->assertPendingTwoFactorResult($result);
     }
 
     public function testPasskeyTwoFactorHandlerRejectsInvalidTtl(): void
@@ -97,6 +92,17 @@ final class PasskeySignInTwoFactorCommandHandlerTest extends UnitTestCase
             $this->idFactory,
             0
         );
+    }
+
+    private function createTwoFactorUser(): User
+    {
+        $user = $this->objects->createUser(
+            $this->objects->user('authenticationUserId'),
+            $this->objects->user('authenticationEmail')
+        );
+        $user->setTwoFactorEnabled(true);
+
+        return $user;
     }
 
     private function createSupport(): PasskeySignInCommandHandlerTestSupport
@@ -183,6 +189,18 @@ final class PasskeySignInTwoFactorCommandHandlerTest extends UnitTestCase
         $this->credentialRepository->expects($this->once())
             ->method('save')
             ->with($storedCredential);
+    }
+
+    private function expectAuthenticationNotIssued(): void
+    {
+        $this->sessionFactory->expects($this->never())->method('create');
+        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
+    }
+
+    private function assertPendingTwoFactorResult(PasskeyAuthenticationResult $result): void
+    {
+        self::assertTrue($result->isTwoFactorEnabled());
+        self::assertSame($this->objects->token('sessionId'), $result->getPendingSessionId());
     }
 
     private function expectPendingTwoFactorSaved(): void

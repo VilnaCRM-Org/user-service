@@ -11,7 +11,8 @@ use App\User\Application\DTO\PasskeyRegistrationCompleteDto;
 use App\User\Application\Factory\AuthPayloadFactory;
 use App\User\Application\Validator\MutationInputValidator;
 
-final readonly class PasskeyRegistrationCompleteAuthMutationResolver implements MutationResolverInterface
+final readonly class PasskeyRegistrationCompleteAuthMutationResolver implements
+    MutationResolverInterface
 {
     public function __construct(
         private MutationInputValidator $validator,
@@ -53,9 +54,11 @@ final readonly class PasskeyRegistrationCompleteAuthMutationResolver implements 
      */
     private function credentialFrom(mixed $credential): array
     {
-        /** @var array<string, scalar|array|null> $normalized */
-        $normalized = is_array($credential) ? $credential : [];
+        if (!is_array($credential)) {
+            return [];
+        }
 
-        return $normalized;
+        /** @psalm-var array<string, scalar|array|null> $credential */
+        return $credential;
     }
 }

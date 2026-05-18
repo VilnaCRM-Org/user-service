@@ -81,26 +81,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         );
         $this->payloadFactory = new AuthPayloadFactory();
         $this->request = Request::create('/api/graphql');
-        $this->fixtures = [
-            'email' => $this->faker->safeEmail(),
-            'challengeId' => $this->faker->uuid(),
-            'userId' => $this->faker->uuid(),
-            'accessToken' => $this->faker->sha256(),
-            'refreshToken' => $this->faker->sha256(),
-            'sessionId' => $this->faker->uuid(),
-            'passkeyId' => $this->faker->uuid(),
-            'credentialId' => $this->faker->sha256(),
-            'challenge' => $this->faker->sha256(),
-            'ipAddress' => $this->faker->ipv4(),
-            'userAgent' => $this->faker->userAgent(),
-            'initials' => strtoupper($this->faker->lexify('??')),
-            'displayName' => $this->faker->name(),
-            'signupLabel' => $this->faker->words(2, true),
-            'registrationLabel' => $this->faker->words(2, true),
-            'rpId' => $this->faker->domainName(),
-            'passwordHash' => $this->faker->password(),
-            'credential' => ['id' => $this->faker->sha256()],
-        ];
+        $this->fixtures = $this->createFixtures();
     }
 
     public function testPasskeySignUpOptionsDispatchesCommand(): void
@@ -116,19 +97,10 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             }
         );
 
-        $payload = (new PasskeySignUpOptionsAuthMutationResolver(
-            $this->validator,
-            $this->commandBus,
-            $this->payloadFactory
-        ))->__invoke(null, [
-            'args' => [
-                'input' => [
-                    'email' => $this->fixtures['email'],
-                    'initials' => $this->fixtures['initials'],
-                    'displayName' => $this->fixtures['displayName'],
-                ],
-            ],
-        ]);
+        $payload = $this->createSignUpOptionsResolver()->__invoke(
+            null,
+            $this->signUpOptionsContext()
+        );
 
         $this->assertOptionsPayload($payload, 'auth-passkey-signup-options');
     }
@@ -147,12 +119,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             }
         );
 
-        $payload = (new PasskeySignUpCompleteAuthMutationResolver(
-            $this->validator,
-            $this->commandBus,
-            $this->payloadFactory,
-            $this->requestContextResolver
-        ))->__invoke(null, $this->completeContext([
+        $payload = $this->createSignUpCompleteResolver()->__invoke(null, $this->completeContext([
             'label' => $this->fixtures['signupLabel'],
             'rememberMe' => true,
         ]));
@@ -246,16 +213,103 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             }
         );
 
-        $payload = (new PasskeyRegistrationCompleteAuthMutationResolver(
-            $this->validator,
-            $this->commandBus,
-            $this->payloadFactory,
-            $this->identityResolver()
-        ))->__invoke(null, $this->completeContext(['label' => $this->fixtures['registrationLabel']]));
+        $context = $this->completeContext(['label' => $this->fixtures['registrationLabel']]);
+        $payload = $this->registrationCompleteResolver()->__invoke(null, $context);
 
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame('auth-passkey-registration-complete', $payload->getId());
         self::assertSame($credential->getCredentialId(), $payload->getCredentialId());
+    }
+
+    /**
+     * @return array{
+     *     email: string,
+     *     challengeId: string,
+     *     userId: string,
+     *     accessToken: string,
+     *     refreshToken: string,
+     *     sessionId: string,
+     *     passkeyId: string,
+     *     credentialId: string,
+     *     challenge: string,
+     *     ipAddress: string,
+     *     userAgent: string,
+     *     initials: string,
+     *     displayName: string,
+     *     signupLabel: string,
+     *     registrationLabel: string,
+     *     rpId: string,
+     *     passwordHash: string,
+     *     credential: array<string, string>
+     * }
+     */
+    private function createFixtures(): array
+    {
+        return [
+            'email' => $this->faker->safeEmail(),
+            'challengeId' => $this->faker->uuid(),
+            'userId' => $this->faker->uuid(),
+            'accessToken' => $this->faker->sha256(),
+            'refreshToken' => $this->faker->sha256(),
+            'sessionId' => $this->faker->uuid(),
+            'passkeyId' => $this->faker->uuid(),
+            'credentialId' => $this->faker->sha256(),
+            'challenge' => $this->faker->sha256(),
+            'ipAddress' => $this->faker->ipv4(),
+            'userAgent' => $this->faker->userAgent(),
+            'initials' => strtoupper($this->faker->lexify('??')),
+            'displayName' => $this->faker->name(),
+            'signupLabel' => $this->faker->words(2, true),
+            'registrationLabel' => $this->faker->words(2, true),
+            'rpId' => $this->faker->domainName(),
+            'passwordHash' => $this->faker->password(),
+            'credential' => ['id' => $this->faker->sha256()],
+        ];
+    }
+
+    private function createSignUpOptionsResolver(): PasskeySignUpOptionsAuthMutationResolver
+    {
+        return new PasskeySignUpOptionsAuthMutationResolver(
+            $this->validator,
+            $this->commandBus,
+            $this->payloadFactory
+        );
+    }
+
+    private function createSignUpCompleteResolver(): PasskeySignUpCompleteAuthMutationResolver
+    {
+        return new PasskeySignUpCompleteAuthMutationResolver(
+            $this->validator,
+            $this->commandBus,
+            $this->payloadFactory,
+            $this->requestContextResolver
+        );
+    }
+
+    private function registrationCompleteResolver(): PasskeyRegistrationCompleteAuthMutationResolver
+    {
+        return new PasskeyRegistrationCompleteAuthMutationResolver(
+            $this->validator,
+            $this->commandBus,
+            $this->payloadFactory,
+            $this->identityResolver()
+        );
+    }
+
+    /**
+     * @return array{args: array{input: array<string, string>}}
+     */
+    private function signUpOptionsContext(): array
+    {
+        return [
+            'args' => [
+                'input' => [
+                    'email' => $this->fixtures['email'],
+                    'initials' => $this->fixtures['initials'],
+                    'displayName' => $this->fixtures['displayName'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -345,7 +399,10 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
     /**
      * @param array<string, bool|string> $extraInput
      *
-     * @return array<string, mixed>
+     * @return array{
+     *     args: array{input: array<string, array<string, string>|bool|string>},
+     *     request: Request
+     * }
      */
     private function completeContext(array $extraInput = []): array
     {
@@ -389,7 +446,10 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
                 '{}',
                 $now,
                 $now->modify('+5 minutes'),
-                new PasskeyChallengeContext($this->fixtures['email'], userId: $this->fixtures['userId'])
+                new PasskeyChallengeContext(
+                    $this->fixtures['email'],
+                    userId: $this->fixtures['userId']
+                )
             ),
             ['rpId' => $this->fixtures['rpId']]
         );

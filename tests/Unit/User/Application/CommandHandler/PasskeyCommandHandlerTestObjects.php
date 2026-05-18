@@ -192,15 +192,24 @@ final class PasskeyCommandHandlerTestObjects
             'registrationDisplayName' => $this->faker->name(),
             'rpId' => $rpId,
             'rpName' => $this->faker->company(),
+            'unknownEmail' => $this->faker->unique()->safeEmail(),
+            'userAgent' => $this->faker->userAgent(),
+            'userInitials' => strtoupper($this->faker->lexify('??')),
+            'userPassword' => $this->faker->password(),
+        ] + $this->createSignupUserFixtures();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function createSignupUserFixtures(): array
+    {
+        return [
             'signupDisplayName' => $this->faker->name(),
             'signupEmail' => $this->faker->unique()->safeEmail(),
             'signupInitials' => strtoupper($this->faker->lexify('??')),
             'signupLabel' => $this->faker->words(2, true),
             'signupUserId' => $this->faker->uuid(),
-            'unknownEmail' => $this->faker->unique()->safeEmail(),
-            'userAgent' => $this->faker->userAgent(),
-            'userInitials' => strtoupper($this->faker->lexify('??')),
-            'userPassword' => $this->faker->password(),
         ];
     }
 

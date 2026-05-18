@@ -47,13 +47,7 @@ final class PasskeySignInCompleteProcessorTwoFactorTest extends UnitTestCase
         $pendingSessionId = $this->faker->uuid();
 
         $this->expectRequestContext($request);
-        $this->expectCommandDispatch(new PasskeyAuthenticationResult(
-            '',
-            '',
-            true,
-            '',
-            $pendingSessionId
-        ));
+        $this->expectCommandDispatch($this->createTwoFactorResult($pendingSessionId));
         $this->authCookieFactory->expects($this->never())->method('create');
 
         $response = $this->createProcessor()->process(
@@ -64,6 +58,22 @@ final class PasskeySignInCompleteProcessorTwoFactorTest extends UnitTestCase
         );
         $payload = json_decode((string) $response->getContent(), true);
 
+        $this->assertPendingTwoFactorResponse($response, $payload, $pendingSessionId);
+    }
+
+    private function createTwoFactorResult(string $pendingSessionId): PasskeyAuthenticationResult
+    {
+        return new PasskeyAuthenticationResult('', '', true, '', $pendingSessionId);
+    }
+
+    /**
+     * @param array<string, bool|string> $payload
+     */
+    private function assertPendingTwoFactorResponse(
+        Response $response,
+        array $payload,
+        string $pendingSessionId
+    ): void {
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
         self::assertTrue($payload['2fa_enabled']);
         self::assertSame($pendingSessionId, $payload['pending_session_id']);
@@ -101,7 +111,9 @@ final class PasskeySignInCompleteProcessorTwoFactorTest extends UnitTestCase
     {
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with(self::callback(static function (CommandInterface $command) use ($response): bool {
+            ->with(self::callback(static function (
+                CommandInterface $command
+            ) use ($response): bool {
                 self::assertInstanceOf(CompletePasskeySignInCommand::class, $command);
                 $command->setResponse($response);
 

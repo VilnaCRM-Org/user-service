@@ -31,8 +31,11 @@ final readonly class PasskeyTwoFactorHandler
         }
     }
 
-    public function handle(User $user, bool $rememberMe, DateTimeImmutable $now): PasskeyAuthenticationResult
-    {
+    public function handle(
+        User $user,
+        bool $rememberMe,
+        DateTimeImmutable $now
+    ): PasskeyAuthenticationResult {
         $pending = $this->pendingTwoFactorFactory->create(
             $this->idFactory->create(),
             $user->getId(),

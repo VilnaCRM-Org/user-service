@@ -250,7 +250,9 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
     private function support(): PasskeyRegistrationCommandHandlerTestSupport
     {
-        $authenticationResultFactory = new PasskeyAuthenticationResultFactory($this->sessionFactory);
+        $authenticationResultFactory = new PasskeyAuthenticationResultFactory(
+            $this->sessionFactory
+        );
 
         return new PasskeyRegistrationCommandHandlerTestSupport(
             $this->userRepository,

@@ -28,12 +28,7 @@ final readonly class PasskeySignUpCompleteAuthMutationResolver implements Mutati
     public function __invoke(?object $item, array $context): object
     {
         $args = $context['args']['input'] ?? [];
-        $dto = new PasskeySignUpCompleteDto(
-            $args['challengeId'] ?? '',
-            $this->credentialFrom($args['credential'] ?? []),
-            $args['label'] ?? ''
-        );
-        $dto->setRememberMe((bool) ($args['rememberMe'] ?? false));
+        $dto = $this->createDto($args);
         $this->validator->validate($dto);
 
         $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
@@ -58,9 +53,26 @@ final readonly class PasskeySignUpCompleteAuthMutationResolver implements Mutati
      */
     private function credentialFrom(mixed $credential): array
     {
-        /** @var array<string, scalar|array|null> $normalized */
-        $normalized = is_array($credential) ? $credential : [];
+        if (!is_array($credential)) {
+            return [];
+        }
 
-        return $normalized;
+        /** @psalm-var array<string, scalar|array|null> $credential */
+        return $credential;
+    }
+
+    /**
+     * @param array<string, bool|iterable|string> $args
+     */
+    private function createDto(array $args): PasskeySignUpCompleteDto
+    {
+        $dto = new PasskeySignUpCompleteDto(
+            $args['challengeId'] ?? '',
+            $this->credentialFrom($args['credential'] ?? []),
+            $args['label'] ?? ''
+        );
+        $dto->setRememberMe((bool) ($args['rememberMe'] ?? false));
+
+        return $dto;
     }
 }
