@@ -354,6 +354,40 @@ review_section_has_text_with_score() {
 
   review_section_content "$file" "$section" \
     | awk -v category="$text" -v threshold_regex="$threshold_regex" '
+      function trim(value) {
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+        return value
+      }
+
+      function split_gfm_table_row(row, output, i, char, cell, count, row_length) {
+        row = trim(row)
+        if (substr(row, 1, 1) == "|") {
+          row = substr(row, 2)
+        }
+        row_length = length(row)
+        if (row_length > 0 && substr(row, row_length, 1) == "|" && (row_length == 1 || substr(row, row_length - 1, 1) != "\\")) {
+          row = substr(row, 1, row_length - 1)
+        }
+
+        count = 1
+        cell = ""
+        row_length = length(row)
+        for (i = 1; i <= row_length; i++) {
+          char = substr(row, i, 1)
+          if (char == "|" && (i == 1 || substr(row, i - 1, 1) != "\\")) {
+            output[count] = trim(cell)
+            count++
+            cell = ""
+          } else if (char == "|" && i > 1 && substr(row, i - 1, 1) == "\\") {
+            cell = substr(cell, 1, length(cell) - 1) "|"
+          } else {
+            cell = cell char
+          }
+        }
+        output[count] = trim(cell)
+        return count
+      }
+
       {
         line = $0
         sub(/\r$/, "", line)
@@ -364,15 +398,8 @@ review_section_has_text_with_score() {
           found = 1
         }
 
-        if (normalized ~ /^\|/) {
-          table_row = normalized
-          sub(/^\|/, "", table_row)
-          sub(/\|[[:space:]]*$/, "", table_row)
-          cell_count = split(table_row, cells, /\|/)
-          for (i = 1; i <= cell_count; i++) {
-            gsub(/^[[:space:]]+|[[:space:]]+$/, "", cells[i])
-          }
-
+        if (normalized ~ /\|/) {
+          cell_count = split_gfm_table_row(normalized, cells)
           first_cell = cells[1]
           if (tolower(first_cell) == "category") {
             score_col = 0
