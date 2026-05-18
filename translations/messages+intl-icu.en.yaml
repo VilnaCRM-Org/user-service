@@ -1,4 +1,6 @@
 email:
+  not:
+    unique: 'This email address is already registered'
   password:
     changed:
       subject: 'Password Change Notification'
