@@ -45,6 +45,10 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
     private SignInPublisherInterface&MockObject $signInPublisher;
     private LoggerInterface&MockObject $logger;
     private PasskeyCommandHandlerTestObjects $objects;
+    /**
+     * @var array{id: string}
+     */
+    private array $credentialPayload;
 
     #[\Override]
     protected function setUp(): void
@@ -65,6 +69,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->objects = new PasskeyCommandHandlerTestObjects($this->faker);
+        $this->credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
     }
 
     public function testCompleteSignupRejectsDuplicateCredentialId(): void
@@ -75,7 +80,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectException(ConflictHttpException::class);
         $this->expectExceptionMessage('Passkey credential is already registered.');
 
-        $this->support()->completeSignup(['id' => 'credential']);
+        $this->support()->completeSignup($this->credentialPayload);
     }
 
     public function testCompleteSignupRethrowsUnexpectedCredentialSaveFailure(): void
@@ -85,7 +90,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectSignupCredentialSaveFailure($storageFailure, false);
         $this->expectExceptionObject($storageFailure);
 
-        $this->support()->completeSignup(['id' => 'credential']);
+        $this->support()->completeSignup($this->credentialPayload);
     }
 
     public function testCompleteSignupRollsBackCredentialWhenUserSaveFails(): void
@@ -95,7 +100,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectSignupUserPersistenceFailure($storageFailure);
         $this->expectExceptionObject($storageFailure);
 
-        $this->support()->completeSignup(['id' => 'credential']);
+        $this->support()->completeSignup($this->credentialPayload);
     }
 
     public function testCompleteSignupKeepsAuthenticationWhenRegisteredEventPublishFails(): void
@@ -104,7 +109,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
         $this->expectSignupPostPersistenceFailure($eventFailure);
 
-        $result = $this->support()->completeSignup(['id' => 'credential']);
+        $result = $this->support()->completeSignup($this->credentialPayload);
 
         self::assertSame($this->objects->token('accessToken'), $result->getAccessToken());
         self::assertSame($this->objects->token('refreshToken'), $result->getRefreshToken());
@@ -116,7 +121,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
         $this->expectSignupChallengeCleanupFailure($cleanupFailure);
 
-        $result = $this->support()->completeSignup(['id' => 'credential']);
+        $result = $this->support()->completeSignup($this->credentialPayload);
 
         self::assertSame($this->objects->token('accessToken'), $result->getAccessToken());
         self::assertSame($this->objects->token('refreshToken'), $result->getRefreshToken());
@@ -133,7 +138,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
         $this->support()->completeRegistration(
             $this->objects->token('challengeId'),
-            ['id' => 'credential'],
+            $this->credentialPayload,
             $this->objects->credential('credentialLabel'),
             $userId
         );
@@ -149,7 +154,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
         $this->support()->completeRegistration(
             $this->objects->token('challengeId'),
-            ['id' => 'credential'],
+            $this->credentialPayload,
             $this->objects->credential('credentialLabel'),
             $userId
         );
@@ -189,13 +194,12 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         RuntimeException $storageFailure,
         bool $credentialExists
     ): void {
-        $credentialPayload = ['id' => 'credential'];
         $challenge = $this->objects->createSignupChallenge();
 
         $this->expectClaimedChallenge($challenge);
         $this->challengeRepository->expects($this->never())->method('delete');
         $this->expectEmailIsAvailable();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectUserCreationBeforeSave(null);
         $this->expectPasskeyId();
         $this->expectCredentialSaveFailure($storageFailure, $credentialExists);
@@ -207,25 +211,23 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         RuntimeException $storageFailure,
         bool $credentialExists
     ): void {
-        $credentialPayload = ['id' => 'credential'];
         $challenge = $this->objects->createRegistrationChallenge($userId);
 
         $this->expectClaimedChallenge($challenge);
         $this->challengeRepository->expects($this->never())->method('delete');
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectPasskeyId();
         $this->expectCredentialSaveFailure($storageFailure, $credentialExists);
     }
 
     private function expectSignupUserPersistenceFailure(RuntimeException $storageFailure): void
     {
-        $credentialPayload = ['id' => 'credential'];
         $challenge = $this->objects->createSignupChallenge();
 
         $this->expectClaimedChallenge($challenge);
         $this->challengeRepository->expects($this->never())->method('delete');
         $this->expectEmailIsAvailable();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectUserCreationBeforeSave($storageFailure);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('delete');
@@ -235,13 +237,12 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
     private function expectSignupPostPersistenceFailure(RuntimeException $eventFailure): void
     {
-        $credentialPayload = ['id' => 'credential'];
         $challenge = $this->objects->createSignupChallenge();
 
         $this->expectClaimedChallenge($challenge);
         $this->challengeRepository->expects($this->once())->method('delete')->with($challenge);
         $this->expectEmailIsAvailable();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectPersistedUserCreation($eventFailure);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('keep');
@@ -255,7 +256,6 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
     private function expectSignupChallengeCleanupFailure(RuntimeException $cleanupFailure): void
     {
-        $credentialPayload = ['id' => 'credential'];
         $challenge = $this->objects->createSignupChallenge();
 
         $this->expectClaimedChallenge($challenge);
@@ -264,7 +264,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
             ->with($challenge)
             ->willThrowException($cleanupFailure);
         $this->expectEmailIsAvailable();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectPersistedUserCreation(null);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('keep');

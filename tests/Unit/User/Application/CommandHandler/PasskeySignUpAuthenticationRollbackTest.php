@@ -45,6 +45,10 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
     private SignInPublisherInterface&MockObject $signInPublisher;
     private LoggerInterface&MockObject $logger;
     private PasskeyCommandHandlerTestObjects $objects;
+    /**
+     * @var array{id: string}
+     */
+    private array $credentialPayload;
 
     #[\Override]
     protected function setUp(): void
@@ -65,17 +69,17 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->signInPublisher = $this->createMock(SignInPublisherInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->objects = new PasskeyCommandHandlerTestObjects($this->faker);
+        $this->credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
     }
 
     public function testCompleteSignupDeletesUserWhenAuthenticationIssueFails(): void
     {
         $failure = new RuntimeException('Authentication unavailable.');
         $challenge = $this->objects->createSignupChallenge();
-        $credentialPayload = ['id' => 'credential'];
 
         $this->expectClaimedChallenge($challenge);
         $this->expectSignupUserPersistedThenDeleted();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectCredentialSavedThenDeleted();
         $this->challengeRepository->expects($this->never())->method('delete');
         $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
@@ -88,24 +92,23 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
 
         $this->expectExceptionObject($failure);
 
-        $this->support()->completeSignup($credentialPayload);
+        $this->support()->completeSignup($this->credentialPayload);
     }
 
     public function testCompleteSignupKeepsUserAndCredentialWhenSignInPublishFails(): void
     {
         $failure = new RuntimeException('Sign-in event unavailable.');
         $challenge = $this->objects->createSignupChallenge();
-        $credentialPayload = ['id' => 'credential'];
 
         $this->expectClaimedChallenge($challenge);
         $this->expectSignupUserPersistedAndRegisteredEventPublished();
-        $this->expectCredentialVerification($challenge, $credentialPayload);
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectCredentialSavedAndKept();
         $this->challengeRepository->expects($this->once())->method('delete')->with($challenge);
         $this->challengeRepository->expects($this->never())->method('release');
         $this->expectSessionIssuedWithPublishFailure($failure);
 
-        $result = $this->support()->completeSignup($credentialPayload);
+        $result = $this->support()->completeSignup($this->credentialPayload);
 
         self::assertSame($this->objects->token('accessToken'), $result->getAccessToken());
         self::assertSame($this->objects->token('refreshToken'), $result->getRefreshToken());
