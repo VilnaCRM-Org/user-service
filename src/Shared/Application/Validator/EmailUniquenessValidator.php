@@ -7,8 +7,6 @@ namespace App\Shared\Application\Validator;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use function array_unique;
-use function array_values;
 use function mb_strtolower;
 use function trim;
 
@@ -65,7 +63,7 @@ final readonly class EmailUniquenessValidator
 
     private function normalizeEmail(string $email): string
     {
-        return mb_strtolower(trim($email));
+        return mb_strtolower($email);
     }
 
     /**
@@ -74,10 +72,12 @@ final readonly class EmailUniquenessValidator
     private function emailLookupCandidates(string $email): array
     {
         $trimmed = trim($email);
+        $normalized = $this->normalizeEmail($trimmed);
 
-        return array_values(array_unique([
-            $this->normalizeEmail($trimmed),
-            $trimmed,
-        ]));
+        if ($normalized === $trimmed) {
+            return [$normalized];
+        }
+
+        return [$normalized, $trimmed];
     }
 }
