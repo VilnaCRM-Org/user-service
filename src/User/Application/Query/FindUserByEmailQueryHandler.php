@@ -23,16 +23,15 @@ final class FindUserByEmailQueryHandler implements
     {
         $normalizedEmail = $this->emailNormalizer->normalize($email);
         $exactUser = $this->userRepository->findByEmail($normalizedEmail);
-
-        if ($exactUser !== null) {
-            return $exactUser;
-        }
-
         $caseInsensitiveUsers =
             $this->userRepository->findByEmailCaseInsensitive($normalizedEmail);
 
         if ($caseInsensitiveUsers->count() > 1) {
             throw new DuplicateEmailException($normalizedEmail);
+        }
+
+        if ($exactUser !== null) {
+            return $exactUser;
         }
 
         foreach ($caseInsensitiveUsers as $user) {

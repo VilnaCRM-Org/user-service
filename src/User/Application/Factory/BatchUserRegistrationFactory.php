@@ -28,10 +28,11 @@ final readonly class BatchUserRegistrationFactory
     ) {
     }
 
-    public function create(
-        UserCollection $users,
-        UserCollection $knownUsers
-    ): BatchUserRegistrationResult {
+    /**
+     * @param list<array{email: string, initials: string, password: string}> $users
+     */
+    public function create(array $users, UserCollection $knownUsers): BatchUserRegistrationResult
+    {
         $returnedUsers = [];
         $usersToPersist = new UserCollection();
         $events = new DomainEventCollection();

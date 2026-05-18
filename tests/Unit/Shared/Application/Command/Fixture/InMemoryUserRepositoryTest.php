@@ -30,7 +30,7 @@ final class InMemoryUserRepositoryTest extends UnitTestCase
         );
     }
 
-    public function testFindByEmailsDoesNotMatchLegacyMixedCaseEmail(): void
+    public function testFindByEmailsMatchesLegacyMixedCaseStoredEmail(): void
     {
         $email = $this->faker->email();
         $legacyEmail = mb_strtoupper($email, 'UTF-8');
@@ -41,7 +41,7 @@ final class InMemoryUserRepositoryTest extends UnitTestCase
         $repository = new InMemoryUserRepository($storedUser);
 
         $this->assertSame(
-            [],
+            [$storedUser],
             iterator_to_array($repository->findByEmails([mb_strtolower($email, 'UTF-8')]), false)
         );
     }

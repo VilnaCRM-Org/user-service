@@ -75,7 +75,12 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         $users = [];
 
         foreach ($this->users as $user) {
-            if (!isset($requestedEmails[$user->getEmail()])) {
+            $email = $user->getEmail();
+
+            if (
+                !isset($requestedEmails[$email])
+                && !isset($requestedEmails[$this->normalizeEmail($email)])
+            ) {
                 continue;
             }
 

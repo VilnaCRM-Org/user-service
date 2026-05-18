@@ -26,15 +26,17 @@ final readonly class RegisterUserBatchCommandHandler implements
     public function __invoke(
         RegisterUserBatchCommand $command
     ): RegisterUserBatchCommandResponse {
-        if ($command->users->count() === 0) {
+        $users = $this->usersFromCommand($command);
+
+        if ($users === []) {
             return new RegisterUserBatchCommandResponse(new UserCollection());
         }
 
         $knownUsers = $this->userRepository->findByEmails(
-            $this->emailsFromCommand($command)
+            array_column($users, 'email')
         );
         $registrationResult = $this->batchUserRegistrationFactory->create(
-            $command->users,
+            $users,
             $knownUsers
         );
 
@@ -66,16 +68,16 @@ final readonly class RegisterUserBatchCommandHandler implements
     }
 
     /**
-     * @return array<int, string>
+     * @return list<array{email: string, initials: string, password: string}>
      */
-    private function emailsFromCommand(RegisterUserBatchCommand $command): array
+    private function usersFromCommand(RegisterUserBatchCommand $command): array
     {
-        $emails = [];
+        $users = [];
 
         foreach ($command->users as $user) {
-            $emails[] = $user['email'];
+            $users[] = $user;
         }
 
-        return $emails;
+        return $users;
     }
 }

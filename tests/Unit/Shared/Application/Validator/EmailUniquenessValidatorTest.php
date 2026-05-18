@@ -39,23 +39,26 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
 
     public function testReturnsTrueWhenUserIsNotFound(): void
     {
-        $this->expectExactLookups(['unique@example.com'], [null]);
-        $this->expectCaseInsensitiveLookup('unique@example.com', []);
+        $email = $this->faker->unique()->safeEmail();
 
-        $this->assertTrue($this->checker->isUnique('  unique@example.com  '));
+        $this->expectExactLookups([$email], [null]);
+        $this->expectCaseInsensitiveLookup($email, []);
+
+        $this->assertTrue($this->checker->isUnique(sprintf('  %s  ', $email)));
     }
 
     public function testReturnsFalseWhenIdentifierIsMissing(): void
     {
+        $email = $this->faker->unique()->safeEmail();
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn('identifier');
 
-        $this->expectExactLookups(['duplicate@example.com'], [$existing]);
+        $this->expectExactLookups([$email], [$existing]);
         $this->expectNoCaseInsensitiveLookup();
 
         $this->requestStack->push(new Request());
 
-        $this->assertFalse($this->checker->isUnique('duplicate@example.com'));
+        $this->assertFalse($this->checker->isUnique($email));
     }
 
     public function testNormalizesEmailBeforeLookup(): void
@@ -124,24 +127,26 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
 
     public function testLowercaseSubmissionCanMatchLegacyMixedCaseUser(): void
     {
+        $email = mb_strtolower($this->faker->unique()->safeEmail(), 'UTF-8');
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
-        $this->expectExactLookups(['legacy@example.com'], [null]);
-        $this->expectCaseInsensitiveLookup('legacy@example.com', [$existing]);
+        $this->expectExactLookups([$email], [null]);
+        $this->expectCaseInsensitiveLookup($email, [$existing]);
 
         $this->requestStack->push(new Request());
 
-        $this->assertFalse($this->checker->isUnique('legacy@example.com'));
+        $this->assertFalse($this->checker->isUnique($email));
     }
 
     public function testReturnsTrueWhenIdentifiersMatch(): void
     {
+        $email = $this->faker->unique()->safeEmail();
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn('0199ddf7b47b72359bc423b847dbde1e');
 
-        $this->expectExactLookups(['same@example.com'], [$existing]);
-        $this->expectCaseInsensitiveLookup('same@example.com', [$existing]);
+        $this->expectExactLookups([$email], [$existing]);
+        $this->expectCaseInsensitiveLookup($email, [$existing]);
 
         $request = new Request();
         $request->attributes->set(
@@ -150,7 +155,7 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         );
         $this->requestStack->push($request);
 
-        $this->assertTrue($this->checker->isUnique('same@example.com'));
+        $this->assertTrue($this->checker->isUnique($email));
     }
 
     private function mixedCaseEmail(): string

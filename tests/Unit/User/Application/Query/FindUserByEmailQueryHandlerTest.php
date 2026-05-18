@@ -23,8 +23,10 @@ final class FindUserByEmailQueryHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->with($normalizedEmail)
             ->willReturn($user);
-        $repository->expects($this->never())
-            ->method('findByEmailCaseInsensitive');
+        $repository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($normalizedEmail)
+            ->willReturn(new UserCollection([$user]));
 
         $handler = new FindUserByEmailQueryHandler(
             $repository,
@@ -32,6 +34,31 @@ final class FindUserByEmailQueryHandlerTest extends UnitTestCase
         );
 
         $this->assertSame($user, $handler->find($email));
+    }
+
+    public function testThrowsWhenExactUserHasAmbiguousCaseInsensitiveVariants(): void
+    {
+        [$email, $normalizedEmail] = $this->createEmailFixture();
+        $exactUser = $this->createMock(UserInterface::class);
+        $legacyUser = $this->createMock(UserInterface::class);
+        $repository = $this->createMock(UserRepositoryInterface::class);
+        $repository->expects($this->once())
+            ->method('findByEmail')
+            ->with($normalizedEmail)
+            ->willReturn($exactUser);
+        $repository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($normalizedEmail)
+            ->willReturn(new UserCollection([$exactUser, $legacyUser]));
+
+        $handler = new FindUserByEmailQueryHandler(
+            $repository,
+            new EmailNormalizer()
+        );
+
+        $this->expectException(DuplicateEmailException::class);
+
+        $handler->find($email);
     }
 
     public function testReturnsNullIfUserNotFound(): void
