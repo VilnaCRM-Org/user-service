@@ -11,6 +11,12 @@ use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use function mb_strtolower;
+use function sprintf;
+use function strtolower;
+use function strtoupper;
+use function trim;
+use function ucfirst;
 
 final class EmailUniquenessValidatorTest extends UnitTestCase
 {
@@ -57,55 +63,74 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
 
     public function testNormalizesEmailBeforeLookup(): void
     {
+        $email = $this->faker->unique()->safeEmail();
+        $submittedEmail = sprintf('  %s  ', strtoupper($email));
+        $normalizedEmail = mb_strtolower(trim($submittedEmail));
+
         $existing = $this->createMock(UserInterface::class);
-        $existing->method('getId')->willReturn('identifier');
+        $existing->method('getId')->willReturn($this->faker->uuid());
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
-            ->with('duplicate@example.com')
+            ->with($normalizedEmail)
             ->willReturn($existing);
 
         $this->requestStack->push(new Request());
 
-        $this->assertFalse($this->checker->isUnique('  DUPLICATE@example.com  '));
+        $this->assertFalse($this->checker->isUnique($submittedEmail));
     }
 
     public function testNormalizesMultibyteEmailBeforeLookup(): void
     {
+        $submittedEmail = sprintf(
+            '  Д%s@%s  ',
+            strtolower($this->faker->unique()->lexify('??????')),
+            strtolower($this->faker->safeEmailDomain())
+        );
+        $normalizedEmail = mb_strtolower(trim($submittedEmail));
+
         $existing = $this->createMock(UserInterface::class);
-        $existing->method('getId')->willReturn('identifier');
+        $existing->method('getId')->willReturn($this->faker->uuid());
 
         $this->repository->expects($this->once())
             ->method('findByEmail')
-            ->with('дuplicate@example.com')
+            ->with($normalizedEmail)
             ->willReturn($existing);
 
         $this->requestStack->push(new Request());
 
-        $this->assertFalse($this->checker->isUnique('  Дuplicate@example.com  '));
+        $this->assertFalse($this->checker->isUnique($submittedEmail));
     }
 
     public function testChecksTrimmedOriginalEmailWhenNormalizedEmailIsNotFound(): void
     {
+        $trimmedEmail = sprintf(
+            '%s@%s',
+            ucfirst(strtolower($this->faker->unique()->lexify('????????'))),
+            strtolower($this->faker->safeEmailDomain())
+        );
+        $submittedEmail = sprintf('  %s  ', $trimmedEmail);
+        $normalizedEmail = mb_strtolower($trimmedEmail);
+
         $existing = $this->createMock(UserInterface::class);
-        $existing->method('getId')->willReturn('identifier');
+        $existing->method('getId')->willReturn($this->faker->uuid());
         $lookups = [];
 
         $this->repository->expects($this->exactly(2))
             ->method('findByEmail')
             ->willReturnCallback(
-                function (string $email) use (&$lookups, $existing): ?UserInterface {
+                function (string $email) use (&$lookups, $existing, $trimmedEmail): ?UserInterface {
                     $lookups[] = $email;
 
-                    return $email === 'testUpdateGraphQL2@mail.com' ? $existing : null;
+                    return $email === $trimmedEmail ? $existing : null;
                 }
             );
 
         $this->requestStack->push(new Request());
 
-        $this->assertFalse($this->checker->isUnique('  testUpdateGraphQL2@mail.com  '));
+        $this->assertFalse($this->checker->isUnique($submittedEmail));
         $this->assertSame(
-            ['testupdategraphql2@mail.com', 'testUpdateGraphQL2@mail.com'],
+            [$normalizedEmail, $trimmedEmail],
             $lookups
         );
     }
