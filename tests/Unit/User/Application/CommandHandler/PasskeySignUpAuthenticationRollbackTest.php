@@ -309,7 +309,9 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
     private function hasSignInWarningContext(array $context, RuntimeException $failure): bool
     {
         self::assertSame($failure, $context['exception']);
+        self::assertSame($this->objects->user('ipAddress'), $context['ip_address']);
         self::assertSame($this->objects->token('sessionId'), $context['session_id']);
+        self::assertSame($this->objects->user('userAgent'), $context['user_agent']);
         self::assertSame($this->objects->user('signupUserId'), $context['user_id']);
 
         return true;
