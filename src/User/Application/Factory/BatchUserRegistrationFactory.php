@@ -6,11 +6,11 @@ namespace App\User\Application\Factory;
 
 use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\DTO\BatchUserRegistrationResult;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -29,7 +29,7 @@ final readonly class BatchUserRegistrationFactory
     }
 
     public function create(
-        RegisterUserBatchCommand $command,
+        UserCollection $users,
         UserCollection $knownUsers
     ): BatchUserRegistrationResult {
         $returnedUsers = [];
@@ -38,7 +38,7 @@ final readonly class BatchUserRegistrationFactory
         $knownUsersByEmail = $this->knownUsersByEmail($knownUsers);
         $hasher = null;
 
-        foreach ($command->users as $user) {
+        foreach ($users as $user) {
             $returnedUsers[] = $this->registerUser(
                 $user,
                 $knownUsers,
@@ -133,7 +133,13 @@ final readonly class BatchUserRegistrationFactory
         $usersByEmail = [];
 
         foreach ($knownUsers as $knownUser) {
-            $usersByEmail[$this->emailKey($knownUser->getEmail())] = $knownUser;
+            $emailKey = $this->emailKey($knownUser->getEmail());
+
+            if (isset($usersByEmail[$emailKey])) {
+                throw new DuplicateEmailException($knownUser->getEmail());
+            }
+
+            $usersByEmail[$emailKey] = $knownUser;
         }
 
         return $usersByEmail;
@@ -155,6 +161,6 @@ final readonly class BatchUserRegistrationFactory
 
     private function emailKey(string $email): string
     {
-        return mb_strtolower($email);
+        return mb_strtolower(trim($email), 'UTF-8');
     }
 }

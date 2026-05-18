@@ -33,6 +33,12 @@ abstract class UserRepositoryDecorator implements UserRepositoryInterface
         return $this->inner->findByEmail($email);
     }
 
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        return $this->inner->findByEmailCaseInsensitive($email);
+    }
+
     /**
      * @param array<int, string> $emails
      */

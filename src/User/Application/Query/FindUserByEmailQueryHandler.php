@@ -6,6 +6,7 @@ namespace App\User\Application\Query;
 
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 final class FindUserByEmailQueryHandler implements
@@ -20,8 +21,24 @@ final class FindUserByEmailQueryHandler implements
     #[\Override]
     public function find(string $email): ?UserInterface
     {
-        return $this->userRepository->findByEmail(
-            $this->emailNormalizer->normalize($email)
-        );
+        $normalizedEmail = $this->emailNormalizer->normalize($email);
+        $exactUser = $this->userRepository->findByEmail($normalizedEmail);
+
+        if ($exactUser !== null) {
+            return $exactUser;
+        }
+
+        $caseInsensitiveUsers =
+            $this->userRepository->findByEmailCaseInsensitive($normalizedEmail);
+
+        if ($caseInsensitiveUsers->count() > 1) {
+            throw new DuplicateEmailException($normalizedEmail);
+        }
+
+        foreach ($caseInsensitiveUsers as $user) {
+            return $user;
+        }
+
+        return null;
     }
 }

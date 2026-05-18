@@ -14,16 +14,14 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
-use function array_slice;
 use function count;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
-use MongoDB\BSON\Regex;
+use function mb_strtoupper;
 use PHPUnit\Framework\MockObject\MockObject;
-use function preg_quote;
 use RuntimeException;
 use function sprintf;
 
@@ -84,21 +82,24 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     public function testFindByEmailReturnsUser(): void
     {
         $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-
-        $expectedUser = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($this->faker->uuid())
-        );
+        $expectedUser = $this->createUserWithEmail($email);
 
         $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
 
-        $user = $this->userRepository->findByEmail($email);
+        $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+        $legacyUser = $this->createUserWithEmail(mb_strtoupper($email, 'UTF-8'));
 
-        $this->assertSame($expectedUser, $user);
+        $repository->method('createQueryBuilder')->willReturn($queryBuilder);
+        $queryBuilder->expects($this->once())->method('field')->with('email')->willReturnSelf();
+        $queryBuilder->expects($this->once())->method('equals')->willReturnSelf();
+        $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
+        $query->expects($this->once())->method('execute')->willReturn([$legacyUser]);
+
+        $this->assertSame(
+            [$legacyUser],
+            iterator_to_array($repository->findByEmailCaseInsensitive('  ' . $email . '  '))
+        );
     }
 
     public function testFindByEmailsReturnsUsersForNormalizedUniqueEmails(): void
@@ -522,39 +523,8 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->willReturnSelf();
         $queryBuilder->expects($this->once())
             ->method('in')
-            ->with($this->callback(
-                fn (mixed $expressions): bool => $this->matchesEmailLookupExpressions(
-                    $emails,
-                    $expressions
-                )
-            ))
+            ->with($emails)
             ->willReturnSelf();
-    }
-
-    /**
-     * @param list<string> $emails
-     */
-    private function matchesEmailLookupExpressions(
-        array $emails,
-        mixed $expressions
-    ): bool {
-        if (!is_array($expressions)) {
-            return false;
-        }
-
-        $this->assertSame($emails, array_slice($expressions, 0, count($emails)));
-
-        $regexExpressions = array_slice($expressions, count($emails));
-        $this->assertCount(count($emails), $regexExpressions);
-
-        foreach ($emails as $index => $email) {
-            $regex = $regexExpressions[$index] ?? null;
-            $this->assertInstanceOf(Regex::class, $regex);
-            $this->assertSame('^' . preg_quote($email, '/') . '$', $regex->getPattern());
-            $this->assertSame('i', $regex->getFlags());
-        }
-
-        return true;
     }
 
     private function createUserWithEmail(string $email): User

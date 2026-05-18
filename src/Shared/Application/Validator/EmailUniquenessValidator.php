@@ -21,13 +21,24 @@ final readonly class EmailUniquenessValidator
 
     public function isUnique(string $email): bool
     {
-        foreach ($this->findUsersByEmail($email) as $existingUserWithEmail) {
+        if ($this->hasConflictingUser($this->findExactUsersByEmail($email))) {
+            return false;
+        }
+
+        return !$this->hasConflictingUser(
+            $this->findCaseInsensitiveUsersByEmail($email)
+        );
+    }
+
+    private function hasConflictingUser(UserCollection $users): bool
+    {
+        foreach ($users as $existingUserWithEmail) {
             if (!$this->isCurrentUserUpdatingOwnEmail($existingUserWithEmail)) {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     private function isCurrentUserUpdatingOwnEmail(
@@ -61,10 +72,27 @@ final readonly class EmailUniquenessValidator
         return mb_strtolower($email, 'UTF-8');
     }
 
-    private function findUsersByEmail(string $email): UserCollection
+    private function findExactUsersByEmail(string $email): UserCollection
     {
-        return $this->userRepository->findByEmails(
-            $this->emailLookupCandidates($email)
+        $users = [];
+
+        foreach ($this->emailLookupCandidates($email) as $candidate) {
+            $user = $this->userRepository->findByEmail($candidate);
+
+            if ($user === null) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    private function findCaseInsensitiveUsersByEmail(string $email): UserCollection
+    {
+        return $this->userRepository->findByEmailCaseInsensitive(
+            $this->normalizeEmail(trim($email))
         );
     }
 

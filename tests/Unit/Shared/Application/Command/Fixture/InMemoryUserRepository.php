@@ -48,20 +48,34 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->findUserBy($matcher);
     }
 
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $requestedEmail = $this->normalizeEmail($email);
+        $users = [];
+
+        foreach ($this->users as $user) {
+            if ($this->normalizeEmail($user->getEmail()) !== $requestedEmail) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
     /**
      * @param array<int, string> $emails
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $requestedEmails = array_flip(array_map(
-            $this->normalizeEmail(...),
-            $emails
-        ));
+        $requestedEmails = array_flip($this->emailLookupCandidates($emails));
         $users = [];
 
         foreach ($this->users as $user) {
-            if (!isset($requestedEmails[$this->normalizeEmail($user->getEmail())])) {
+            if (!isset($requestedEmails[$user->getEmail()])) {
                 continue;
             }
 
@@ -122,5 +136,24 @@ final class InMemoryUserRepository implements UserRepositoryInterface
     private function normalizeEmail(string $email): string
     {
         return mb_strtolower(trim($email), 'UTF-8');
+    }
+
+    /**
+     * @param array<int, string> $emails
+     *
+     * @return list<string>
+     */
+    private function emailLookupCandidates(array $emails): array
+    {
+        $candidates = [];
+
+        foreach ($emails as $email) {
+            $trimmedEmail = trim($email);
+            $candidates[] = $email;
+            $candidates[] = $trimmedEmail;
+            $candidates[] = mb_strtolower($trimmedEmail, 'UTF-8');
+        }
+
+        return array_values(array_unique($candidates));
     }
 }

@@ -34,7 +34,7 @@ final readonly class RegisterUserBatchCommandHandler implements
             $this->emailsFromCommand($command)
         );
         $registrationResult = $this->batchUserRegistrationFactory->create(
-            $command,
+            $command->users,
             $knownUsers
         );
 

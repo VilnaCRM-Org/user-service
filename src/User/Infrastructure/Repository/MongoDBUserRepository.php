@@ -84,7 +84,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches exact, trimmed, lowercase, and legacy mixed-case email variants.
+     * Matches exact, trimmed, and lowercase email candidates.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -96,20 +96,23 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         }
 
         $result = $this->createQueryBuilder()
-            ->field('email')->in($this->emailLookupExpressions($uniqueEmails))
+            ->field('email')->in($uniqueEmails)
             ->getQuery()
             ->execute();
-        $users = [];
 
-        foreach ($result as $user) {
-            if (!$user instanceof UserInterface) {
-                continue;
-            }
+        return $this->userCollectionFromResult($result);
+    }
 
-            $users[] = $user;
-        }
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $result = $this->createQueryBuilder()
+            ->field('email')
+            ->equals(new Regex('^' . preg_quote(trim($email), '/') . '$', 'i'))
+            ->getQuery()
+            ->execute();
 
-        return new UserCollection($users);
+        return $this->userCollectionFromResult($result);
     }
 
     /**
@@ -164,29 +167,28 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         )));
     }
 
-    /**
-     * @param list<string> $emails
-     *
-     * @return list<string|Regex>
-     */
-    private function emailLookupExpressions(array $emails): array
-    {
-        return array_values(array_merge(
-            $emails,
-            array_map(
-                static fn (string $email): Regex => new Regex(
-                    '^' . preg_quote($email, '/') . '$',
-                    'i'
-                ),
-                $emails
-            )
-        ));
-    }
-
     private function isDuplicateEmailKeyError(Throwable $error): bool
     {
         return $this->isDuplicateKeyError($error)
             && str_contains($error->getMessage(), 'email');
+    }
+
+    /**
+     * @param iterable<object> $result
+     */
+    private function userCollectionFromResult(iterable $result): UserCollection
+    {
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
     }
 
     private function isDuplicateKeyError(Throwable $error): bool

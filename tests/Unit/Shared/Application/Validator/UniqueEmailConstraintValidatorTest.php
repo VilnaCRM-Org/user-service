@@ -69,10 +69,8 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
             $this->transformer->transformFromString($this->faker->uuid()),
         );
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$email])
-            ->willReturn(new UserCollection([$user]));
+        $this->setupUserFoundExpectation($email, $user);
+        $this->expectNoCaseInsensitiveLookup();
 
         $this->request->attributes->set('id', $this->faker->uuid());
 
@@ -104,10 +102,8 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
             $this->transformer->transformFromString($userId),
         );
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$email])
-            ->willReturn(new UserCollection([$user]));
+        $this->setupUserFoundExpectation($email, $user);
+        $this->setupCaseInsensitiveUsersExpectation($email, [$user]);
 
         $this->context->expects($this->never())->method('buildViolation');
         $this->translator->expects($this->never())->method('trans');
@@ -121,7 +117,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmails');
+        $this->expectNoEmailLookup();
 
         $this->validator->validate('   ', new UniqueEmail());
     }
@@ -130,7 +126,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmails');
+        $this->expectNoEmailLookup();
 
         $this->validator->validate('', new UniqueEmail());
     }
@@ -139,7 +135,7 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     {
         $this->translator->expects($this->never())->method('trans');
         $this->context->expects($this->never())->method('buildViolation');
-        $this->userRepository->expects($this->never())->method('findByEmails');
+        $this->expectNoEmailLookup();
 
         $this->validator->validate("\t\n  \r", new UniqueEmail());
     }
@@ -183,10 +179,8 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
             $this->transformer->transformFromString($userId)
         );
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$email])
-            ->willReturn(new UserCollection([$user]));
+        $this->setupUserFoundExpectation($email, $user);
+        $this->setupCaseInsensitiveUsersExpectation($email, [$user]);
 
         $this->request->attributes->set(
             'id',
@@ -212,9 +206,9 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
     private function setupUserFoundExpectation(string $email, UserInterface $user): void
     {
         $this->userRepository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$email])
-            ->willReturn(new UserCollection([$user]));
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
     }
 
     private function setupViolationExpectations(): void
@@ -229,5 +223,30 @@ final class UniqueEmailConstraintValidatorTest extends UnitTestCase
         $this->context->expects($this->once())
             ->method('buildViolation')
             ->with($message);
+    }
+
+    /**
+     * @param list<UserInterface> $users
+     */
+    private function setupCaseInsensitiveUsersExpectation(
+        string $email,
+        array $users
+    ): void {
+        $this->userRepository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($email)
+            ->willReturn(new UserCollection($users));
+    }
+
+    private function expectNoCaseInsensitiveLookup(): void
+    {
+        $this->userRepository->expects($this->never())
+            ->method('findByEmailCaseInsensitive');
+    }
+
+    private function expectNoEmailLookup(): void
+    {
+        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->expectNoCaseInsensitiveLookup();
     }
 }

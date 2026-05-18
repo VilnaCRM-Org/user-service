@@ -39,10 +39,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
 
     public function testReturnsTrueWhenUserIsNotFound(): void
     {
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with(['unique@example.com'])
-            ->willReturn(new UserCollection());
+        $this->expectExactLookups(['unique@example.com'], [null]);
+        $this->expectCaseInsensitiveLookup('unique@example.com', []);
 
         $this->assertTrue($this->checker->isUnique('unique@example.com'));
     }
@@ -52,10 +50,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn('identifier');
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with(['duplicate@example.com'])
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups(['duplicate@example.com'], [$existing]);
+        $this->expectNoCaseInsensitiveLookup();
 
         $this->requestStack->push(new Request());
 
@@ -72,10 +68,11 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$normalizedEmail, $trimmedEmail])
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups(
+            [$normalizedEmail, $trimmedEmail],
+            [$existing, null]
+        );
+        $this->expectNoCaseInsensitiveLookup();
 
         $this->requestStack->push(new Request());
 
@@ -95,10 +92,11 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with([$normalizedEmail, $trimmedEmail])
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups(
+            [$normalizedEmail, $trimmedEmail],
+            [$existing, null]
+        );
+        $this->expectNoCaseInsensitiveLookup();
 
         $this->requestStack->push(new Request());
 
@@ -117,10 +115,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with($expectedLookups)
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups($expectedLookups, [null, $existing]);
+        $this->expectNoCaseInsensitiveLookup();
         $this->requestStack->push(new Request());
 
         $this->assertFalse($this->checker->isUnique($submittedEmail));
@@ -131,10 +127,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn($this->faker->uuid());
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with(['legacy@example.com'])
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups(['legacy@example.com'], [null]);
+        $this->expectCaseInsensitiveLookup('legacy@example.com', [$existing]);
 
         $this->requestStack->push(new Request());
 
@@ -146,10 +140,8 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
         $existing = $this->createMock(UserInterface::class);
         $existing->method('getId')->willReturn('0199ddf7b47b72359bc423b847dbde1e');
 
-        $this->repository->expects($this->once())
-            ->method('findByEmails')
-            ->with(['same@example.com'])
-            ->willReturn(new UserCollection([$existing]));
+        $this->expectExactLookups(['same@example.com'], [$existing]);
+        $this->expectCaseInsensitiveLookup('same@example.com', [$existing]);
 
         $request = new Request();
         $request->attributes->set(
@@ -170,5 +162,47 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
             ),
             strtolower($this->faker->safeEmailDomain())
         );
+    }
+
+    /**
+     * @param list<string> $emails
+     * @param list<UserInterface|null> $results
+     */
+    private function expectExactLookups(array $emails, array $results): void
+    {
+        $lookups = [];
+
+        $this->repository->expects($this->exactly(count($emails)))
+            ->method('findByEmail')
+            ->willReturnCallback(
+                static function (string $email) use (
+                    $emails,
+                    $results,
+                    &$lookups
+                ): ?UserInterface {
+                    $index = count($lookups);
+                    self::assertSame($emails[$index], $email);
+                    $lookups[] = $email;
+
+                    return $results[$index];
+                }
+            );
+    }
+
+    /**
+     * @param list<UserInterface> $users
+     */
+    private function expectCaseInsensitiveLookup(string $email, array $users): void
+    {
+        $this->repository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($email)
+            ->willReturn(new UserCollection($users));
+    }
+
+    private function expectNoCaseInsensitiveLookup(): void
+    {
+        $this->repository->expects($this->never())
+            ->method('findByEmailCaseInsensitive');
     }
 }

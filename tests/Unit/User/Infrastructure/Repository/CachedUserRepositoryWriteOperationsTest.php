@@ -101,6 +101,22 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         self::assertSame([$user], iterator_to_array($result));
     }
 
+    public function testFindByEmailCaseInsensitiveDelegatesToInnerRepository(): void
+    {
+        $email = $this->faker->unique()->email();
+        $user = $this->createUserMock($this->faker->uuid(), $email);
+
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($email)
+            ->willReturn(new UserCollection([$user]));
+
+        $result = $this->repository->findByEmailCaseInsensitive($email);
+
+        self::assertSame([$user], iterator_to_array($result));
+    }
+
     public function testDeleteBatchDelegatesToInnerRepository(): void
     {
         [$users, $hashesByEmail, $expectedTags] = $this->createBatchWriteFixtures();

@@ -16,9 +16,11 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function mb_strtoupper;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -112,6 +114,30 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $response = $this->handler->__invoke($command);
 
         $this->assertBatchResponse($response, $existingUser);
+    }
+
+    public function testInvokeRejectsAmbiguousKnownEmailVariants(): void
+    {
+        $testData = $this->createExistingUserTestData();
+        $email = $testData['email'];
+        $command = $this->createBatchCommandWithUser($testData);
+        $firstUser = $testData['existingUser'];
+        $secondUser = $this->createUserWithCredentials(
+            mb_strtoupper($email, 'UTF-8'),
+            $this->faker->word(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->userRepository->expects($this->once())
+            ->method('findByEmails')
+            ->with([$email])
+            ->willReturn(new UserCollection([$firstUser, $secondUser]));
+        $this->setupNeverCalledForBatchRegistration();
+
+        $this->expectException(DuplicateEmailException::class);
+
+        $this->handler->__invoke($command);
     }
 
     public function testInvokeDeduplicatesNewUsersWithinSameBatch(): void

@@ -46,6 +46,24 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
         );
     }
 
+    public function testFindByEmailCaseInsensitiveDelegatesToInnerRepository(): void
+    {
+        $email = $this->faker->email();
+        $expectedUsers = new UserCollection();
+        $innerRepository = $this->createMock(UserRepositoryInterface::class);
+
+        $innerRepository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($email)
+            ->willReturn($expectedUsers);
+
+        $this->assertSame(
+            $expectedUsers,
+            $this->createDecorator($innerRepository)
+                ->findByEmailCaseInsensitive($email)
+        );
+    }
+
     public function testFindByIdDelegatesToInnerRepository(): void
     {
         $id = $this->faker->uuid();
