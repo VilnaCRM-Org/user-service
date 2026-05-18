@@ -9,7 +9,7 @@ namespace App\User\Application\DTO;
  */
 final class PasskeySignUpCompleteDto
 {
-    private bool $rememberMe = false;
+    public bool $rememberMe = false;
 
     /**
      * @param array<string, scalar|array|null> $credential

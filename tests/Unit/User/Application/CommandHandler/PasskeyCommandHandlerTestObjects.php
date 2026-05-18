@@ -153,6 +153,7 @@ final class PasskeyCommandHandlerTestObjects
             'accessToken' => $this->faker->sha256(),
             'challenge' => $this->faker->sha256(),
             'challengeId' => $this->faker->uuid(),
+            'eventId' => $this->faker->uuid(),
             'refreshToken' => $this->faker->sha256(),
             'sessionId' => $this->faker->uuid(),
         ];
@@ -183,9 +184,11 @@ final class PasskeyCommandHandlerTestObjects
 
         return [
             'authenticationEmail' => $this->faker->unique()->safeEmail(),
+            'authenticationUserId' => $this->faker->uuid(),
             'hashedPassword' => $this->faker->password(),
             'ipAddress' => $this->faker->ipv4(),
             'origin' => sprintf('https://%s', $rpId),
+            'otherUserId' => $this->faker->uuid(),
             'registrationDisplayName' => $this->faker->name(),
             'rpId' => $rpId,
             'rpName' => $this->faker->company(),

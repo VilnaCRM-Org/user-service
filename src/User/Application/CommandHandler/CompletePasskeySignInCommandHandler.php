@@ -9,6 +9,8 @@ use App\User\Application\Command\CompletePasskeySignInCommand;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
 use App\User\Application\Resolver\PasskeyUserResolver;
+use App\User\Application\Service\PasskeyAuthenticationIssuer;
+use App\User\Application\Service\PasskeyTwoFactorHandler;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;

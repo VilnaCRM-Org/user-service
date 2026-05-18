@@ -12,9 +12,13 @@ use App\User\Application\Factory\PasskeyWebauthnFactoryInterface;
 use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyCredential;
+
 use function array_map;
+
 use DateTimeImmutable;
+
 use const JSON_THROW_ON_ERROR;
+
 use ReflectionProperty;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
@@ -52,30 +56,36 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
 
     public function testDecodeCredentialBuildsPublicKeyAssertionCredential(): void
     {
-        $credential = $this->createCodec()->decodeCredential($this->createAssertionPayload());
+        $rawCredentialId = $this->faker->sha256();
+        $credential = $this->createCodec()->decodeCredential(
+            $this->createAssertionPayload($rawCredentialId)
+        );
 
         self::assertInstanceOf(PublicKeyCredential::class, $credential);
-        self::assertSame('raw-credential-id', $credential->rawId);
+        self::assertSame($rawCredentialId, $credential->rawId);
         self::assertInstanceOf(AuthenticatorAssertionResponse::class, $credential->response);
     }
 
     public function testCredentialRecordRoundTripThroughJson(): void
     {
         $codec = $this->createCodec();
+        $credentialId = $this->faker->sha256();
+        $userId = $this->faker->uuid();
+        $credentialPublicKey = $this->faker->sha256();
         $record = new CredentialRecord(
-            'credential-id',
+            $credentialId,
             'public-key',
             [],
             'none',
             new EmptyTrustPath(),
             Uuid::v4(),
-            'credential-public-key',
-            'user-id',
+            $credentialPublicKey,
+            $userId,
             1
         );
 
         self::assertSame(
-            'credential-id',
+            $credentialId,
             $codec->decodeCredentialRecord($codec->encodeCredentialRecord($record))
                 ->publicKeyCredentialId
         );
@@ -188,16 +198,19 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
         PasskeyJsonTransformer $codec,
         PasskeyPublicKeyOptionsFactory $factory
     ): void {
+        $email = $this->faker->safeEmail();
+        $userId = $this->faker->uuid();
+        $displayName = $this->faker->name();
         $options = $factory->createRegistrationOptions(
-            'person@example.com',
-            'user-id',
-            'Person Example',
-            'challenge',
+            $email,
+            $userId,
+            $displayName,
+            $this->faker->sha256(),
             [$this->createPasskeyCredential()]
         );
 
         self::assertSame(
-            'person@example.com',
+            $email,
             $codec->decodeCreationOptions($codec->encodeOptions($options))->user->name
         );
     }
@@ -207,7 +220,7 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
         PasskeyPublicKeyOptionsFactory $factory
     ): void {
         $options = $factory->createAuthenticationOptions(
-            'challenge',
+            $this->faker->sha256(),
             [$this->createPasskeyCredential()]
         );
 
@@ -247,7 +260,7 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
         $userVerification = RequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED;
 
         return new RequestOptions(
-            'challenge',
+            $this->faker->sha256(),
             'localhost',
             userVerification: $userVerification
         );
@@ -283,16 +296,16 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
     /**
      * @return array<string, scalar|array<string, scalar|null>|null>
      */
-    private function createAssertionPayload(): array
+    private function createAssertionPayload(string $rawCredentialId): array
     {
         return [
-            'id' => $this->encoding->encode('raw-credential-id'),
-            'rawId' => $this->encoding->encode('raw-credential-id'),
+            'id' => $this->encoding->encode($rawCredentialId),
+            'rawId' => $this->encoding->encode($rawCredentialId),
             'type' => 'public-key',
             'response' => [
                 'clientDataJSON' => $this->encoding->encode($this->createClientDataJson()),
                 'authenticatorData' => $this->encoding->encode($this->createAuthenticatorData()),
-                'signature' => $this->encoding->encode('signature'),
+                'signature' => $this->encoding->encode($this->faker->sha256()),
                 'userHandle' => null,
             ],
         ];
@@ -302,7 +315,7 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
     {
         return json_encode([
             'type' => 'webauthn.get',
-            'challenge' => $this->encoding->encode('challenge'),
+            'challenge' => $this->encoding->encode($this->faker->sha256()),
             'origin' => 'https://localhost',
         ], JSON_THROW_ON_ERROR);
     }
@@ -314,12 +327,14 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
 
     private function createPasskeyCredential(): PasskeyCredential
     {
+        $rawCredentialId = $this->faker->sha256();
+
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            $this->encoding->encode('raw-credential-id'),
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            $this->encoding->encode($rawCredentialId),
             '{}',
-            'Laptop',
+            $this->faker->words(2, true),
             new DateTimeImmutable()
         );
     }

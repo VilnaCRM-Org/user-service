@@ -61,7 +61,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
     public function testStartUsesSameCredentialDescriptorShapeWhenUserExists(): void
     {
         $user = $this->objects->createUser(
-            '018f33bb-1111-7222-8333-111111111111',
+            $this->objects->user('authenticationUserId'),
             $this->objects->user('authenticationEmail')
         );
 
@@ -82,22 +82,24 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
 
     public function testStartCreatesOptionsWithoutCredentialDescriptorsForUnknownEmail(): void
     {
-        $email = '  Missing.Passkey@Example.COM ';
+        $localPart = strtolower($this->faker->lexify('missing.passkey.????'));
+        $email = sprintf('  %s@Example.COM ', ucfirst($localPart));
+        $normalizedEmail = sprintf('%s@example.com', $localPart);
 
         $this->idFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->objects->token('challengeId'));
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
-            ->with('missing.passkey@example.com')
+            ->with($normalizedEmail)
             ->willReturn(null);
         $this->credentialRepository->expects($this->never())->method('findByUserId');
-        $this->expectUnknownEmailAuthenticationOptionsChallenge();
+        $this->expectUnknownEmailAuthenticationOptionsChallenge($normalizedEmail);
 
         $result = $this->support->start($email, false);
 
         self::assertSame($this->objects->token('challengeId'), $result->getChallenge()->getId());
-        self::assertSame('missing.passkey@example.com', $result->getChallenge()->getEmail());
+        self::assertSame($normalizedEmail, $result->getChallenge()->getEmail());
         self::assertNull($result->getChallenge()->getUserId());
         self::assertSame([], $result->getPublicKeyOptions()['allowCredentials']);
     }
@@ -105,13 +107,13 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
     public function testCompleteVerifiesCredentialUpdatesRecordAndIssuesSession(): void
     {
         $user = $this->objects->createUser(
-            '018f33bb-1111-7222-8333-111111111111',
+            $this->objects->user('authenticationUserId'),
             $this->objects->user('authenticationEmail')
         );
         $challenge = $this->objects->createAuthenticationChallenge($user->getId());
         $storedCredential = $this->objects->createCredential($user->getId());
         $credentialId = $storedCredential->getCredentialId();
-        $credentialPayload = ['id' => 'credential'];
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
 
         $this->expectAuthenticationChallenge($challenge);
         $this->expectCredentialLookup($credentialPayload, $credentialId, $storedCredential);
@@ -128,8 +130,11 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
     public function testCompleteRejectsChallengeWithoutUserIdLikeInvalidCredential(): void
     {
         $challenge = $this->objects->createAuthenticationChallenge(null);
-        $storedCredential = $this->objects->createCredential('user-id');
+        $storedCredential = $this->objects->createCredential(
+            $this->objects->user('authenticationUserId')
+        );
         $credentialId = $storedCredential->getCredentialId();
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
 
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
@@ -141,7 +146,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
             ->willReturn($challenge);
         $this->credentialValidator->expects($this->once())
             ->method('extractCredentialId')
-            ->with(['id' => 'credential'])
+            ->with($credentialPayload)
             ->willReturn($credentialId);
         $this->credentialRepository->expects($this->once())
             ->method('findByCredentialId')
@@ -152,7 +157,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid passkey credential.');
 
-        $this->support->complete(['id' => 'credential']);
+        $this->support->complete($credentialPayload);
     }
 
     public function testCompleteRejectsExpiredChallenge(): void
@@ -164,30 +169,36 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired passkey challenge.');
 
-        $this->support->complete(['id' => 'credential']);
+        $this->support->complete(['id' => $this->objects->credential('rawCredentialId')]);
     }
 
     public function testCompleteRejectsMissingCredentialOwner(): void
     {
-        $challenge = $this->objects->createAuthenticationChallenge('user-id');
-        $storedCredential = $this->objects->createCredential('user-id');
+        $userId = $this->objects->user('authenticationUserId');
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
+        $challenge = $this->objects->createAuthenticationChallenge($userId);
+        $storedCredential = $this->objects->createCredential($userId);
         $credentialId = $storedCredential->getCredentialId();
 
         $this->expectChallengeConsumedButNotDeleted($challenge);
-        $this->expectCredentialLookup(['id' => 'credential'], $credentialId, $storedCredential);
-        $this->expectMissingUser();
+        $this->expectCredentialLookup($credentialPayload, $credentialId, $storedCredential);
+        $this->expectMissingUser($userId);
         $this->credentialValidator->expects($this->never())->method('verifyAssertion');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid passkey credential.');
 
-        $this->support->complete(['id' => 'credential']);
+        $this->support->complete($credentialPayload);
     }
 
     public function testCompleteRejectsCredentialOwnedByAnotherUser(): void
     {
-        $challenge = $this->objects->createAuthenticationChallenge('user-id');
-        $storedCredential = $this->objects->createCredential('other-user-id');
+        $challenge = $this->objects->createAuthenticationChallenge(
+            $this->objects->user('authenticationUserId')
+        );
+        $storedCredential = $this->objects->createCredential(
+            $this->objects->user('otherUserId')
+        );
         $credentialId = $storedCredential->getCredentialId();
 
         $this->expectCredentialOwnerMismatch($challenge, $credentialId, $storedCredential);
@@ -196,7 +207,7 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid passkey credential.');
 
-        $this->support->complete(['id' => 'credential']);
+        $this->support->complete(['id' => $this->objects->credential('rawCredentialId')]);
     }
 
     private function createSupport(): PasskeySignInCommandHandlerTestSupport
@@ -232,11 +243,11 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
         $this->challengeRepository->expects($this->never())->method('delete');
     }
 
-    private function expectMissingUser(): void
+    private function expectMissingUser(string $userId): void
     {
         $this->userRepository->expects($this->once())
             ->method('findById')
-            ->with('user-id')
+            ->with($userId)
             ->willReturn(null);
     }
 
@@ -285,12 +296,14 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
             }));
     }
 
-    private function expectUnknownEmailAuthenticationOptionsChallenge(): void
+    private function expectUnknownEmailAuthenticationOptionsChallenge(string $normalizedEmail): void
     {
         $this->challengeRepository->expects($this->once())
             ->method('save')
-            ->with(self::callback(static function (PasskeyChallenge $challenge): bool {
-                self::assertSame('missing.passkey@example.com', $challenge->getEmail());
+            ->with(self::callback(static function (
+                PasskeyChallenge $challenge
+            ) use ($normalizedEmail): bool {
+                self::assertSame($normalizedEmail, $challenge->getEmail());
                 self::assertNull($challenge->getUserId());
 
                 return true;

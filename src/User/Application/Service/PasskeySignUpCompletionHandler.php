@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\CommandHandler;
+namespace App\User\Application\Service;
 
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\CompletePasskeySignUpCommand;
@@ -13,6 +13,7 @@ use App\User\Application\Resolver\PasskeyUserResolver;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\User;
 use DateTimeImmutable;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 final readonly class PasskeySignUpCompletionHandler
@@ -22,7 +23,8 @@ final readonly class PasskeySignUpCompletionHandler
         private PasskeyUserFactory $userFactory,
         private EventBusInterface $eventBus,
         private PasskeyChallengeResolver $challengeResolver,
-        private PasskeyAuthenticationIssuer $authenticationIssuer
+        private PasskeyAuthenticationIssuer $authenticationIssuer,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -44,21 +46,41 @@ final readonly class PasskeySignUpCompletionHandler
     ): PasskeyAuthenticationResult {
         $this->userResolver->save($user);
 
+        $result = $this->authenticationIssuer->issue(
+            $user,
+            $command->rememberMe,
+            $command->ipAddress,
+            $command->userAgent,
+            $now
+        );
+
+        $this->deleteChallenge($challenge);
+        $this->publishRegisteredEvent($user);
+
+        return $result;
+    }
+
+    private function deleteChallenge(PasskeyChallenge $challenge): void
+    {
+        try {
+            $this->challengeResolver->delete($challenge);
+        } catch (Throwable $exception) {
+            $this->logger->warning('Passkey signup challenge cleanup failed.', [
+                'challenge_id' => $challenge->getId(),
+                'exception' => $exception,
+            ]);
+        }
+    }
+
+    private function publishRegisteredEvent(User $user): void
+    {
         try {
             $this->eventBus->publish($this->userFactory->createRegisteredEvent($user));
-            $this->challengeResolver->delete($challenge);
-
-            return $this->authenticationIssuer->issue(
-                $user,
-                $command->rememberMe,
-                $command->ipAddress,
-                $command->userAgent,
-                $now
-            );
         } catch (Throwable $exception) {
-            $this->userResolver->delete($user);
-
-            throw $exception;
+            $this->logger->warning('Passkey signup registered event dispatch failed.', [
+                'exception' => $exception,
+                'user_id' => $user->getId(),
+            ]);
         }
     }
 }

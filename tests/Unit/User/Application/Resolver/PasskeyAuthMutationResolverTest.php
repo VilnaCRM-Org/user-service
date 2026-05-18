@@ -45,10 +45,29 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
     private HttpRequestContextResolverInterface $requestContextResolver;
     private AuthPayloadFactory $payloadFactory;
     private Request $request;
-    private string $email;
-    private string $challengeId;
-    /** @var array<string, string> */
-    private array $credential;
+    /**
+     * @var array{
+     *     email: string,
+     *     challengeId: string,
+     *     userId: string,
+     *     accessToken: string,
+     *     refreshToken: string,
+     *     sessionId: string,
+     *     passkeyId: string,
+     *     credentialId: string,
+     *     challenge: string,
+     *     ipAddress: string,
+     *     userAgent: string,
+     *     initials: string,
+     *     displayName: string,
+     *     signupLabel: string,
+     *     registrationLabel: string,
+     *     rpId: string,
+     *     passwordHash: string,
+     *     credential: array<string, string>
+     * }
+     */
+    private array $fixtures;
 
     #[\Override]
     protected function setUp(): void
@@ -62,9 +81,26 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         );
         $this->payloadFactory = new AuthPayloadFactory();
         $this->request = Request::create('/api/graphql');
-        $this->email = $this->faker->safeEmail();
-        $this->challengeId = $this->faker->uuid();
-        $this->credential = ['id' => $this->faker->sha256()];
+        $this->fixtures = [
+            'email' => $this->faker->safeEmail(),
+            'challengeId' => $this->faker->uuid(),
+            'userId' => $this->faker->uuid(),
+            'accessToken' => $this->faker->sha256(),
+            'refreshToken' => $this->faker->sha256(),
+            'sessionId' => $this->faker->uuid(),
+            'passkeyId' => $this->faker->uuid(),
+            'credentialId' => $this->faker->sha256(),
+            'challenge' => $this->faker->sha256(),
+            'ipAddress' => $this->faker->ipv4(),
+            'userAgent' => $this->faker->userAgent(),
+            'initials' => strtoupper($this->faker->lexify('??')),
+            'displayName' => $this->faker->name(),
+            'signupLabel' => $this->faker->words(2, true),
+            'registrationLabel' => $this->faker->words(2, true),
+            'rpId' => $this->faker->domainName(),
+            'passwordHash' => $this->faker->password(),
+            'credential' => ['id' => $this->faker->sha256()],
+        ];
     }
 
     public function testPasskeySignUpOptionsDispatchesCommand(): void
@@ -74,9 +110,9 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             StartPasskeySignUpCommand::class,
             $this->createOptionsResult(),
             function (StartPasskeySignUpCommand $command): void {
-                self::assertSame($this->email, $command->email);
-                self::assertSame('AB', $command->initials);
-                self::assertSame('Passkey User', $command->displayName);
+                self::assertSame($this->fixtures['email'], $command->email);
+                self::assertSame($this->fixtures['initials'], $command->initials);
+                self::assertSame($this->fixtures['displayName'], $command->displayName);
             }
         );
 
@@ -87,9 +123,9 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         ))->__invoke(null, [
             'args' => [
                 'input' => [
-                    'email' => $this->email,
-                    'initials' => 'AB',
-                    'displayName' => 'Passkey User',
+                    'email' => $this->fixtures['email'],
+                    'initials' => $this->fixtures['initials'],
+                    'displayName' => $this->fixtures['displayName'],
                 ],
             ],
         ]);
@@ -106,7 +142,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             $this->createAuthenticationResult(),
             function (CompletePasskeySignUpCommand $command): void {
                 $this->assertCompleteCommand($command);
-                self::assertSame('MacBook', $command->label);
+                self::assertSame($this->fixtures['signupLabel'], $command->label);
                 self::assertTrue($command->rememberMe);
             }
         );
@@ -116,7 +152,10 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             $this->commandBus,
             $this->payloadFactory,
             $this->requestContextResolver
-        ))->__invoke(null, $this->completeContext(['label' => 'MacBook', 'rememberMe' => true]));
+        ))->__invoke(null, $this->completeContext([
+            'label' => $this->fixtures['signupLabel'],
+            'rememberMe' => true,
+        ]));
 
         $this->assertTokenPayload($payload, 'auth-passkey-signup-complete');
     }
@@ -128,7 +167,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             StartPasskeySignInCommand::class,
             $this->createOptionsResult(),
             function (StartPasskeySignInCommand $command): void {
-                self::assertSame($this->email, $command->email);
+                self::assertSame($this->fixtures['email'], $command->email);
                 self::assertTrue($command->rememberMe);
             }
         );
@@ -139,7 +178,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             $this->payloadFactory
         ))->__invoke(null, [
             'args' => [
-                'input' => ['email' => $this->email, 'rememberMe' => true],
+                'input' => ['email' => $this->fixtures['email'], 'rememberMe' => true],
             ],
         ]);
 
@@ -152,7 +191,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         $this->expectRequestContext();
         $this->expectDispatch(
             CompletePasskeySignInCommand::class,
-            new PasskeyAuthenticationResult('', '', true, '', $this->challengeId),
+            new PasskeyAuthenticationResult('', '', true, '', $this->fixtures['challengeId']),
             function (CompletePasskeySignInCommand $command): void {
                 $this->assertCompleteCommand($command);
             }
@@ -168,7 +207,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame('auth-passkey-signin-complete', $payload->getId());
         self::assertTrue($payload->isTwoFactorEnabled());
-        self::assertSame($this->challengeId, $payload->getPendingSessionId());
+        self::assertSame($this->fixtures['challengeId'], $payload->getPendingSessionId());
         self::assertNull($payload->getAccessToken());
     }
 
@@ -178,8 +217,8 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             StartPasskeyRegistrationCommand::class,
             $this->createOptionsResult(),
             function (StartPasskeyRegistrationCommand $command): void {
-                self::assertSame('user-id', $command->userId);
-                self::assertSame($this->email, $command->email);
+                self::assertSame($this->fixtures['userId'], $command->userId);
+                self::assertSame($this->fixtures['email'], $command->email);
             }
         );
 
@@ -200,10 +239,10 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             CompletePasskeyRegistrationCommand::class,
             $credential,
             function (CompletePasskeyRegistrationCommand $command): void {
-                self::assertSame($this->challengeId, $command->challengeId);
-                self::assertSame($this->credential, $command->credential);
-                self::assertSame('Security key', $command->label);
-                self::assertSame('user-id', $command->currentUserId);
+                self::assertSame($this->fixtures['challengeId'], $command->challengeId);
+                self::assertSame($this->fixtures['credential'], $command->credential);
+                self::assertSame($this->fixtures['registrationLabel'], $command->label);
+                self::assertSame($this->fixtures['userId'], $command->currentUserId);
             }
         );
 
@@ -212,7 +251,7 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
             $this->commandBus,
             $this->payloadFactory,
             $this->identityResolver()
-        ))->__invoke(null, $this->completeContext(['label' => 'Security key']));
+        ))->__invoke(null, $this->completeContext(['label' => $this->fixtures['registrationLabel']]));
 
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame('auth-passkey-registration-complete', $payload->getId());
@@ -287,20 +326,20 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         $this->requestContextResolver->expects($this->once())
             ->method('resolveIpAddress')
             ->with($this->request)
-            ->willReturn('127.0.0.1');
+            ->willReturn($this->fixtures['ipAddress']);
         $this->requestContextResolver->expects($this->once())
             ->method('resolveUserAgent')
             ->with($this->request)
-            ->willReturn('GraphQL Passkey Test');
+            ->willReturn($this->fixtures['userAgent']);
     }
 
     private function assertCompleteCommand(
         CompletePasskeySignUpCommand|CompletePasskeySignInCommand $command
     ): void {
-        self::assertSame($this->challengeId, $command->challengeId);
-        self::assertSame($this->credential, $command->credential);
-        self::assertSame('127.0.0.1', $command->ipAddress);
-        self::assertSame('GraphQL Passkey Test', $command->userAgent);
+        self::assertSame($this->fixtures['challengeId'], $command->challengeId);
+        self::assertSame($this->fixtures['credential'], $command->credential);
+        self::assertSame($this->fixtures['ipAddress'], $command->ipAddress);
+        self::assertSame($this->fixtures['userAgent'], $command->userAgent);
     }
 
     /**
@@ -313,8 +352,8 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         return [
             'args' => [
                 'input' => array_merge([
-                    'challengeId' => $this->challengeId,
-                    'credential' => $this->credential,
+                    'challengeId' => $this->fixtures['challengeId'],
+                    'credential' => $this->fixtures['credential'],
                 ], $extraInput),
             ],
             'request' => $this->request,
@@ -325,8 +364,8 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
     {
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame($id, $payload->getId());
-        self::assertSame($this->challengeId, $payload->getChallengeId());
-        self::assertSame(['rpId' => 'example.com'], $payload->getPublicKey());
+        self::assertSame($this->fixtures['challengeId'], $payload->getChallengeId());
+        self::assertSame(['rpId' => $this->fixtures['rpId']], $payload->getPublicKey());
     }
 
     private function assertTokenPayload(object $payload, string $id): void
@@ -334,8 +373,8 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         self::assertInstanceOf(AuthPayload::class, $payload);
         self::assertSame($id, $payload->getId());
         self::assertFalse($payload->isTwoFactorEnabled());
-        self::assertSame('access-token', $payload->getAccessToken());
-        self::assertSame('refresh-token', $payload->getRefreshToken());
+        self::assertSame($this->fixtures['accessToken'], $payload->getAccessToken());
+        self::assertSame($this->fixtures['refreshToken'], $payload->getRefreshToken());
     }
 
     private function createOptionsResult(): PasskeyOptionsResult
@@ -344,36 +383,36 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
 
         return new PasskeyOptionsResult(
             new PasskeyChallenge(
-                $this->challengeId,
+                $this->fixtures['challengeId'],
                 PasskeyChallenge::PURPOSE_AUTHENTICATION,
-                'challenge',
+                $this->fixtures['challenge'],
                 '{}',
                 $now,
                 $now->modify('+5 minutes'),
-                new PasskeyChallengeContext($this->email, userId: 'user-id')
+                new PasskeyChallengeContext($this->fixtures['email'], userId: $this->fixtures['userId'])
             ),
-            ['rpId' => 'example.com']
+            ['rpId' => $this->fixtures['rpId']]
         );
     }
 
     private function createAuthenticationResult(): PasskeyAuthenticationResult
     {
         return new PasskeyAuthenticationResult(
-            'access-token',
-            'refresh-token',
+            $this->fixtures['accessToken'],
+            $this->fixtures['refreshToken'],
             true,
-            'session-id'
+            $this->fixtures['sessionId']
         );
     }
 
     private function createCredential(): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            'credential-id',
+            $this->fixtures['passkeyId'],
+            $this->fixtures['userId'],
+            $this->fixtures['credentialId'],
             '{}',
-            'Security key',
+            $this->fixtures['registrationLabel'],
             new DateTimeImmutable()
         );
     }
@@ -383,14 +422,14 @@ final class PasskeyAuthMutationResolverTest extends UnitTestCase
         $security = $this->createMock(Security::class);
         $security->method('getUser')
             ->willReturn(new \App\User\Application\DTO\AuthorizationUserDto(
-                $this->email,
-                'AB',
-                'hashed',
-                new \App\Shared\Domain\ValueObject\Uuid('user-id'),
+                $this->fixtures['email'],
+                $this->fixtures['initials'],
+                $this->fixtures['passwordHash'],
+                new \App\Shared\Domain\ValueObject\Uuid($this->fixtures['userId']),
                 true
             ));
         $token = $this->createMock(TokenInterface::class);
-        $token->method('getAttribute')->with('sid')->willReturn('session-id');
+        $token->method('getAttribute')->with('sid')->willReturn($this->fixtures['sessionId']);
         $security->method('getToken')->willReturn($token);
 
         return new \App\User\Application\Resolver\CurrentUserIdentityResolver($security);

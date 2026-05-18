@@ -24,7 +24,7 @@ final readonly class StartPasskeyRegistrationCommandHandler implements CommandHa
         $user = $this->userResolver->resolveAuthenticated($command->userId);
 
         $command->setResponse($this->optionsFactory->createRegistrationOptions(
-            $command->email,
+            (string) $user->getEmail(),
             $user->getInitials(),
             $user->getId(),
             $this->credentialResolver->findByUserId($user->getId())

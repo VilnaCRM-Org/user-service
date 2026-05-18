@@ -74,10 +74,15 @@ final readonly class PasskeyCredentialResolver
         try {
             $afterSave();
         } catch (Throwable $exception) {
-            $this->delete($credential);
-            $rollback();
-
-            throw $exception;
+            try {
+                $this->delete($credential);
+            } finally {
+                try {
+                    $rollback();
+                } finally {
+                    throw $exception;
+                }
+            }
         }
     }
 

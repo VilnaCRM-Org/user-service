@@ -15,6 +15,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class PasskeyResolverTest extends UnitTestCase
@@ -164,6 +165,73 @@ final class PasskeyResolverTest extends UnitTestCase
         $this->expectCredentialUnauthorized();
 
         $this->createCredentialResolver()->resolveForUser($this->credentialId, $this->userId);
+    }
+
+    public function testResolveForOptionalUserRejectsEmptyUserId(): void
+    {
+        $this->credentialRepository->expects($this->once())
+            ->method('findByCredentialId')
+            ->with($this->credentialId)
+            ->willReturn($this->createCredential(''));
+
+        $this->expectCredentialUnauthorized();
+
+        $this->createCredentialResolver()->resolveForOptionalUser($this->credentialId, '');
+    }
+
+    public function testSaveUniqueAndRunPreservesAfterSaveFailureWhenDeleteFails(): void
+    {
+        $credential = $this->createCredential($this->userId);
+        $afterSaveFailure = new RuntimeException('After save failed.');
+        $deleteFailure = new RuntimeException('Delete failed.');
+        $rollbackCalls = 0;
+
+        $this->credentialRepository->expects($this->once())->method('save')->with($credential);
+        $this->credentialRepository->expects($this->once())
+            ->method('delete')
+            ->with($credential)
+            ->willThrowException($deleteFailure);
+
+        try {
+            $this->createCredentialResolver()->saveUniqueAndRun(
+                $credential,
+                static function () use ($afterSaveFailure): void {
+                    throw $afterSaveFailure;
+                },
+                static function () use (&$rollbackCalls): void {
+                    ++$rollbackCalls;
+                }
+            );
+            self::fail('Expected after-save failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($afterSaveFailure, $exception);
+            self::assertSame(1, $rollbackCalls);
+        }
+    }
+
+    public function testSaveUniqueAndRunPreservesAfterSaveFailureWhenRollbackFails(): void
+    {
+        $credential = $this->createCredential($this->userId);
+        $afterSaveFailure = new RuntimeException('After save failed.');
+        $rollbackFailure = new RuntimeException('Rollback failed.');
+
+        $this->credentialRepository->expects($this->once())->method('save')->with($credential);
+        $this->credentialRepository->expects($this->once())->method('delete')->with($credential);
+
+        try {
+            $this->createCredentialResolver()->saveUniqueAndRun(
+                $credential,
+                static function () use ($afterSaveFailure): void {
+                    throw $afterSaveFailure;
+                },
+                static function () use ($rollbackFailure): void {
+                    throw $rollbackFailure;
+                }
+            );
+            self::fail('Expected after-save failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($afterSaveFailure, $exception);
+        }
     }
 
     private function createCredentialResolver(): PasskeyCredentialResolver

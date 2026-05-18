@@ -33,6 +33,19 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
 {
     private PasskeyJsonTransformerInterface&MockObject $jsonTransformer;
     private PasskeyWebauthnFactoryInterface&MockObject $webauthnFactory;
+    private string $rpId;
+    private string $rpName;
+    private string $origin;
+    private string $email;
+    private string $userId;
+    private string $displayName;
+    private string $rawCredentialId;
+    private string $challengeId;
+    private string $challenge;
+    private string $passkeyId;
+    private string $credentialId;
+    private string $credentialPublicKey;
+    private string $credentialLabel;
 
     #[\Override]
     protected function setUp(): void
@@ -41,6 +54,19 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
 
         $this->jsonTransformer = $this->createMock(PasskeyJsonTransformerInterface::class);
         $this->webauthnFactory = $this->createMock(PasskeyWebauthnFactoryInterface::class);
+        $this->rpId = $this->faker->domainName();
+        $this->rpName = $this->faker->company();
+        $this->origin = sprintf('https://%s', $this->rpId);
+        $this->email = $this->faker->safeEmail();
+        $this->userId = $this->faker->uuid();
+        $this->displayName = $this->faker->name();
+        $this->rawCredentialId = $this->faker->sha256();
+        $this->challengeId = $this->faker->uuid();
+        $this->challenge = $this->faker->sha256();
+        $this->passkeyId = $this->faker->uuid();
+        $this->credentialId = $this->faker->sha256();
+        $this->credentialPublicKey = $this->faker->sha256();
+        $this->credentialLabel = $this->faker->words(2, true);
     }
 
     public function testAttestationRejectsInvalidValidator(): void
@@ -109,7 +135,7 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
         $this->jsonTransformer->method('decodeCredential')
             ->willReturn($this->createPublicKeyCredential($response));
         $this->jsonTransformer->method('decodeCredentialRecord')
-            ->willReturn($this->createCredentialRecord('stored-credential-id'));
+            ->willReturn($this->createCredentialRecord($this->faker->sha256()));
         $this->jsonTransformer->method('decodeRequestOptions')
             ->willReturn($this->createRequestOptions());
         $this->webauthnFactory->method('createAssertionValidator')
@@ -158,9 +184,9 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
     private function createConfiguration(): PasskeyConfiguration
     {
         return new PasskeyConfiguration(
-            'localhost',
-            'VilnaCRM User Service',
-            'https://localhost',
+            $this->rpId,
+            $this->rpName,
+            $this->origin,
             300,
             300
         );
@@ -169,15 +195,15 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
     private function createPublicKeyCredential(
         AuthenticatorAssertionResponse|AuthenticatorAttestationResponse $response
     ): PublicKeyCredential {
-        return new PublicKeyCredential('public-key', 'raw-credential-id', $response);
+        return new PublicKeyCredential('public-key', $this->rawCredentialId, $response);
     }
 
     private function createCreationOptions(): PublicKeyCredentialCreationOptions
     {
         return new PublicKeyCredentialCreationOptions(
-            new PublicKeyCredentialRpEntity('VilnaCRM User Service', 'localhost'),
-            new PublicKeyCredentialUserEntity('person@example.com', 'user-id', 'Person Example'),
-            'challenge',
+            new PublicKeyCredentialRpEntity($this->rpName, $this->rpId),
+            new PublicKeyCredentialUserEntity($this->email, $this->userId, $this->displayName),
+            $this->challenge,
             attestation: PublicKeyCredentialCreationOptions::ATTESTATION_CONVEYANCE_PREFERENCE_NONE
         );
     }
@@ -187,8 +213,8 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
         $userVerification = RequestOptions::USER_VERIFICATION_REQUIREMENT_REQUIRED;
 
         return new RequestOptions(
-            'challenge',
-            'localhost',
+            $this->challenge,
+            $this->rpId,
             userVerification: $userVerification
         );
     }
@@ -202,8 +228,8 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
             'none',
             new EmptyTrustPath(),
             Uuid::v4(),
-            'credential-public-key',
-            'user-id',
+            $this->credentialPublicKey,
+            $this->userId,
             0
         );
     }
@@ -213,24 +239,24 @@ final class PasskeyCredentialRecordValidatorTest extends UnitTestCase
         $createdAt = new DateTimeImmutable();
 
         return new PasskeyChallenge(
-            'challenge-id',
+            $this->challengeId,
             $purpose,
-            'challenge',
+            $this->challenge,
             '{}',
             $createdAt,
             $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext('person@example.com', userId: 'user-id')
+            new PasskeyChallengeContext($this->email, userId: $this->userId)
         );
     }
 
     private function createStoredCredential(): PasskeyCredential
     {
         return new PasskeyCredential(
-            'passkey-id',
-            'user-id',
-            'credential-id',
+            $this->passkeyId,
+            $this->userId,
+            $this->credentialId,
             '{"record":true}',
-            'Laptop',
+            $this->credentialLabel,
             new DateTimeImmutable()
         );
     }

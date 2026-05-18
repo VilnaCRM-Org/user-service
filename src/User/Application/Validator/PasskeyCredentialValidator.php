@@ -10,6 +10,7 @@ use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformerInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
+use LogicException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Throwable;
@@ -82,6 +83,8 @@ final class PasskeyCredentialValidator implements PasskeyCredentialValidatorInte
         try {
             return $verification();
         } catch (BadRequestHttpException $exception) {
+            throw $exception;
+        } catch (LogicException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             throw new UnauthorizedHttpException(

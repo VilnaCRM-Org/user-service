@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\CommandHandler;
+namespace App\User\Application\Service;
 
 use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\Factory\PasskeyAuthenticationResultFactory;

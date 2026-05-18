@@ -10,6 +10,7 @@ use App\User\Application\DTO\PasskeyAuthenticationResult;
 use App\User\Application\Factory\PasskeyCredentialFactory;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
+use App\User\Application\Service\PasskeySignUpCompletionHandler;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;

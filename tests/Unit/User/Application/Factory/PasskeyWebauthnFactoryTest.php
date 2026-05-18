@@ -9,8 +9,10 @@ use App\User\Application\DTO\PasskeyConfiguration;
 use App\User\Application\Factory\PasskeyWebauthnFactory;
 use LogicException;
 use ReflectionMethod;
+use ReflectionProperty;
 use stdClass;
 use Symfony\Component\Serializer\SerializerInterface;
+use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
 
 final class PasskeyWebauthnFactoryTest extends UnitTestCase
 {
@@ -21,6 +23,19 @@ final class PasskeyWebauthnFactoryTest extends UnitTestCase
         self::assertInstanceOf(SerializerInterface::class, $factory->createSerializer());
         self::assertIsObject($factory->createAttestationValidator());
         self::assertIsObject($factory->createAssertionValidator());
+    }
+
+    public function testAttestationManagerIncludesNoneStatementSupport(): void
+    {
+        $manager = $this->invokeFactoryMethod('createAttestationManager');
+        $supports = (new ReflectionProperty($manager, 'attestationStatementSupports'))
+            ->getValue($manager);
+
+        self::assertIsArray($supports);
+        self::assertArrayHasKey(0, $supports);
+        self::assertArrayHasKey('none', $supports);
+        self::assertInstanceOf(NoneAttestationStatementSupport::class, $supports[0]);
+        self::assertInstanceOf(NoneAttestationStatementSupport::class, $supports['none']);
     }
 
     public function testRejectsUnavailableWebauthnClass(): void
@@ -62,10 +77,10 @@ final class PasskeyWebauthnFactoryTest extends UnitTestCase
         ));
     }
 
-    private function invokeFactoryMethod(string $methodName, mixed ...$arguments): void
+    private function invokeFactoryMethod(string $methodName, mixed ...$arguments): mixed
     {
         $method = new ReflectionMethod(PasskeyWebauthnFactory::class, $methodName);
 
-        $method->invoke($this->createFactory(), ...$arguments);
+        return $method->invoke($this->createFactory(), ...$arguments);
     }
 }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\CommandHandler\PasskeyTwoFactorHandler;
 use App\User\Application\DTO\VerifiedPasskeyCredential;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
+use App\User\Application\Service\PasskeyTwoFactorHandler;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
@@ -59,13 +59,13 @@ final class PasskeySignInTwoFactorCommandHandlerTest extends UnitTestCase
     public function testCompleteCreatesPendingTwoFactorForUserWithTwoFactorEnabled(): void
     {
         $user = $this->objects->createUser(
-            '018f33bb-1111-7222-8333-111111111111',
+            $this->objects->user('authenticationUserId'),
             $this->objects->user('authenticationEmail')
         );
         $user->setTwoFactorEnabled(true);
         $challenge = $this->objects->createAuthenticationChallenge($user->getId());
         $storedCredential = $this->objects->createCredential($user->getId());
-        $credentialPayload = ['id' => 'credential'];
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
 
         $this->expectAuthenticationChallenge($challenge);
         $this->expectCredentialLookup(

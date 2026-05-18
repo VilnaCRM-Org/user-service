@@ -9,7 +9,7 @@ namespace App\User\Application\DTO;
  */
 final class PasskeySignInOptionsDto
 {
-    private bool $rememberMe = false;
+    public bool $rememberMe = false;
 
     /**
      * @psalm-api

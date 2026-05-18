@@ -91,6 +91,7 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         $sessionId = $this->faker->uuid();
         $issuedAt = new DateTimeImmutable();
         $failure = new RuntimeException('JWT signing failed.');
+        $refreshTokenValue = $this->faker->sha256();
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn($userId);
         $session = $this->createMock(AuthSession::class);
@@ -98,7 +99,7 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         $refreshToken = $this->createMock(AuthRefreshToken::class);
 
         $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
-        $this->authTokenFactory->method('generateOpaqueToken')->willReturn('refresh-token');
+        $this->authTokenFactory->method('generateOpaqueToken')->willReturn($refreshTokenValue);
         $this->authTokenFactory->method('createRefreshToken')->willReturn($refreshToken);
         $this->authTokenFactory->method('buildJwtPayload')->willReturn(['sub' => $userId]);
         $this->accessTokenFactory->method('create')->willThrowException($failure);

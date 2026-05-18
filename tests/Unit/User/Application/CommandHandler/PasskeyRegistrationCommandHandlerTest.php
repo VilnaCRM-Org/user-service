@@ -85,7 +85,9 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
     public function testStartSignupReturnsCreationOptionsForAvailableEmail(): void
     {
-        $email = '  PassKey.User@Example.COM ';
+        $localPart = strtolower($this->faker->lexify('passkey.user.????'));
+        $email = sprintf('  %s@Example.COM ', ucfirst($localPart));
+        $normalizedEmail = sprintf('%s@example.com', $localPart);
 
         $this->userRepository->expects($this->never())->method('findByEmail');
         $this->idFactory->expects($this->once())
@@ -100,9 +102,9 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         );
 
         self::assertSame($this->objects->token('challengeId'), $result->getChallenge()->getId());
-        self::assertSame('passkey.user@example.com', $result->getChallenge()->getEmail());
+        self::assertSame($normalizedEmail, $result->getChallenge()->getEmail());
         self::assertSame(
-            'passkey.user@example.com',
+            $normalizedEmail,
             $result->getPublicKeyOptions()['user']['name']
         );
     }
@@ -110,7 +112,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
     public function testStartRegistrationReturnsOptionsForAuthenticatedUser(): void
     {
         $user = $this->objects->createUser(
-            '018f33bb-1111-7222-8333-111111111111',
+            $this->objects->user('authenticationUserId'),
             $this->objects->user('authenticationEmail')
         );
         $credential = $this->support()->createPasskeyCredential($user);
@@ -121,9 +123,10 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
             ->willReturn($this->objects->token('challengeId'));
         $this->challengeRepository->expects($this->once())->method('save');
 
-        $result = $this->support()->startRegistration($user->getId(), $user->getEmail());
+        $result = $this->support()->startRegistration($user->getId(), $this->faker->safeEmail());
 
         $this->support()->assertRegistrationOptionsStarted($result);
+        self::assertSame($user->getEmail(), $result->getPublicKeyOptions()['user']['name']);
     }
 
     public function testStartRegistrationRejectsMissingAuthenticatedUser(): void
@@ -148,6 +151,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
     public function testCompleteSignupRejectsIncompleteChallenge(): void
     {
         $challenge = $this->objects->createIncompleteSignupChallenge();
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
 
         $this->expectIncompleteChallengeLifecycle($challenge);
         $this->credentialValidator->expects($this->never())->method('verifyAttestation');
@@ -155,12 +159,12 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid or expired passkey challenge.');
 
-        $this->support()->completeSignup(['id' => 'credential']);
+        $this->support()->completeSignup($credentialPayload);
     }
 
     public function testCompleteSignupCreatesUserStoresCredentialAndIssuesSession(): void
     {
-        $credentialPayload = ['id' => 'credential'];
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
         $challenge = $this->objects->createSignupChallenge();
         $verifiedCredential = new VerifiedPasskeyCredential(
             $this->objects->credential('credentialId'),
@@ -189,7 +193,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
             ->method('findByEmail')
             ->with($this->objects->user('signupEmail'))
             ->willReturn($this->objects->createUser(
-                '018f33bb-1111-7222-8333-111111111111',
+                $this->objects->user('authenticationUserId'),
                 $this->objects->user('signupEmail')
             ));
         $this->credentialValidator->expects($this->never())->method('verifyAttestation');
@@ -197,13 +201,13 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $this->expectException(ConflictHttpException::class);
         $this->expectExceptionMessage('Email is already registered.');
 
-        $this->support()->completeSignup(['id' => 'credential']);
+        $this->support()->completeSignup(['id' => $this->objects->credential('rawCredentialId')]);
     }
 
     public function testCompleteRegistrationStoresCredentialForCurrentUser(): void
     {
         $userId = $this->faker->uuid();
-        $credentialPayload = ['id' => 'credential'];
+        $credentialPayload = ['id' => $this->objects->credential('rawCredentialId')];
         $challenge = $this->objects->createRegistrationChallenge($userId);
         $credentialId = $this->objects->credential('credentialId');
         $credentialRecord = $this->objects->credential('credentialRecord');
@@ -238,9 +242,9 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
         $this->support()->completeRegistration(
             $this->objects->token('challengeId'),
-            ['id' => 'credential'],
+            ['id' => $this->objects->credential('rawCredentialId')],
             $this->objects->credential('credentialLabel'),
-            'other-id'
+            $this->objects->user('otherUserId')
         );
     }
 
@@ -347,7 +351,9 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->willReturn($this->objects->user('hashedPassword'));
-        $this->eventIdFactory->expects($this->once())->method('generate')->willReturn('event-id');
+        $this->eventIdFactory->expects($this->once())
+            ->method('generate')
+            ->willReturn($this->objects->token('eventId'));
         $this->eventBus->expects($this->once())->method('publish');
         $this->expectSignupUserSaved();
     }

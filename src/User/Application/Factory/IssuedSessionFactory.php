@@ -55,12 +55,17 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
                 $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
             );
         } catch (Throwable $exception) {
-            foreach ($this->authRefreshTokenRepository->findBySessionId($session->getId()) as $token) {
-                $this->authRefreshTokenRepository->delete($token);
+            try {
+                try {
+                    foreach ($this->authRefreshTokenRepository->findBySessionId($session->getId()) as $token) {
+                        $this->authRefreshTokenRepository->delete($token);
+                    }
+                } finally {
+                    $this->authSessionRepository->delete($session);
+                }
+            } finally {
+                throw $exception;
             }
-            $this->authSessionRepository->delete($session);
-
-            throw $exception;
         }
 
         return new IssuedSession($session->getId(), $accessToken, $refreshToken);

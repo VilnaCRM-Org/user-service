@@ -11,8 +11,6 @@ use App\User\Application\Command\StartPasskeyRegistrationCommand;
 use App\User\Application\Command\StartPasskeySignUpCommand;
 use App\User\Application\CommandHandler\CompletePasskeyRegistrationCommandHandler;
 use App\User\Application\CommandHandler\CompletePasskeySignUpCommandHandler;
-use App\User\Application\CommandHandler\PasskeyAuthenticationIssuer;
-use App\User\Application\CommandHandler\PasskeySignUpCompletionHandler;
 use App\User\Application\CommandHandler\StartPasskeyRegistrationCommandHandler;
 use App\User\Application\CommandHandler\StartPasskeySignUpCommandHandler;
 use App\User\Application\DTO\PasskeyAuthenticationResult;
@@ -26,6 +24,8 @@ use App\User\Application\Factory\PasskeyWebauthnFactory;
 use App\User\Application\Resolver\PasskeyChallengeResolver;
 use App\User\Application\Resolver\PasskeyCredentialResolver;
 use App\User\Application\Resolver\PasskeyUserResolver;
+use App\User\Application\Service\PasskeyAuthenticationIssuer;
+use App\User\Application\Service\PasskeySignUpCompletionHandler;
 use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
@@ -37,6 +37,7 @@ use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use PHPUnit\Framework\Assert;
+use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Factory\UuidFactory as SymfonyUuidFactory;
 
 final readonly class PasskeyRegistrationCommandHandlerTestSupport
@@ -170,7 +171,8 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
                 new PasskeyAuthenticationIssuer(
                     $this->factories->authenticationResultFactory,
                     $this->signInPublisher
-                )
+                ),
+                $this->factories->logger ?? new NullLogger()
             )
         );
     }
