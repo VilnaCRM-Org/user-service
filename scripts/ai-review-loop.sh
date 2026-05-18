@@ -360,7 +360,16 @@ review_section_has_text_with_score() {
         normalized = line
         sub(/^[[:space:]]*/, "", normalized)
         sub(/^[-*][[:space:]]*/, "", normalized)
-        if (normalized ~ "^" category "[[:space:]]*:" && line ~ threshold_regex) {
+        if (index(normalized, category ":") == 1 && line ~ threshold_regex) {
+          found = 1
+        }
+
+        table_row = normalized
+        sub(/^\|[[:space:]]*/, "", table_row)
+        split(table_row, cells, /\|/)
+        first_cell = cells[1]
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", first_cell)
+        if (first_cell == category && line ~ threshold_regex) {
           found = 1
         }
       }

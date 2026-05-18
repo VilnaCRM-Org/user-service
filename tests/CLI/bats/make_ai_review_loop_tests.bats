@@ -2318,6 +2318,98 @@ SCRIPT
   assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for NFR category: Usability."
 }
 
+@test "ai-review-loop accepts pinned NFR category coverage in markdown table rows" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+| Source | Evidence | Score | Status |
+| --- | --- | --- | --- |
+| FR-01 | Verified by tests. | 5/5 | PASS |
+
+NFR Catalog Scorecard:
+| Category | Evidence | Score | Status |
+| --- | --- | --- | --- |
+| Performance | Lightweight wrapper and bounded validation. | 5/5 | PASS |
+| Usability | Make target and docs. | 5/5 | PASS |
+| Maintainability | Focused shell functions and Bats coverage. | 5/5 | PASS |
+| Availability | Fails closed on unavailable gates. | 5/5 | PASS |
+| Interoperability | Codex, Claude, GitHub CLI, and BMAD specs. | 5/5 | PASS |
+| Security | Review control env is sanitized. | 5/5 | PASS |
+| Manageability | Inputs are configurable through BMAD env. | 5/5 | PASS |
+| Automatability | Non-interactive Make target. | 5/5 | PASS |
+| Dependability | Invalid markers and scores fail closed. | 5/5 | PASS |
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+}
+
 @test "bmad-fr-nfr-review-gate ignores scorecard title mentions outside scorecard sections" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
