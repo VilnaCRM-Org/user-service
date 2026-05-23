@@ -1,0 +1,107 @@
+name: Build and push production image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-image-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    if: github.ref == 'refs/heads/main'
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS credentials
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        run: |
+          OIDC_TOKEN="$(curl -fsSL \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | jq -r '.value')"
+
+          CREDENTIALS="$(aws sts assume-role-with-web-identity \
+            --role-arn "${AWS_ROLE_TO_ASSUME}" \
+            --role-session-name "github-actions-user-service-${GITHUB_RUN_ID}" \
+            --web-identity-token "${OIDC_TOKEN}" \
+            --duration-seconds 3600)"
+
+          {
+            echo "AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<< "${CREDENTIALS}")"
+            echo "AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<< "${CREDENTIALS}")"
+            echo "AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<< "${CREDENTIALS}")"
+            echo "AWS_REGION=${AWS_REGION}"
+          } >> "$GITHUB_ENV"
+
+      - name: Log in to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        run: |
+          aws ecr get-login-password --region "${AWS_REGION}" \
+            | docker login \
+              --username AWS \
+              --password-stdin "${ECR_REGISTRY}"
+
+      - name: Prepare image metadata
+        id: image
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: |
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}"
+          IMAGE_TAG="${GITHUB_SHA::12}"
+
+          {
+            echo "image_uri=${IMAGE_URI}"
+            echo "image_tag=${IMAGE_TAG}"
+            echo "versioned_image=${IMAGE_URI}:${IMAGE_TAG}"
+            echo "latest_image=${IMAGE_URI}:latest"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        env:
+          LATEST_IMAGE: ${{ steps.image.outputs.latest_image }}
+          VERSIONED_IMAGE: ${{ steps.image.outputs.versioned_image }}
+        run: |
+          docker pull "${LATEST_IMAGE}" || true
+          docker build \
+            --target app_php \
+            --cache-from "${LATEST_IMAGE}" \
+            --tag "${VERSIONED_IMAGE}" \
+            --tag "${LATEST_IMAGE}" \
+            -f Dockerfile .
+
+      - name: Push Docker image to ECR
+        env:
+          LATEST_IMAGE: ${{ steps.image.outputs.latest_image }}
+          VERSIONED_IMAGE: ${{ steps.image.outputs.versioned_image }}
+        run: |
+          docker push "${VERSIONED_IMAGE}"
+          docker push "${LATEST_IMAGE}"
+
+      - name: Start ECR image scan
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image.outputs.image_tag }}
+        run: |
+          if ! aws ecr start-image-scan \
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-id imageTag="${IMAGE_TAG}"; then
+            echo "ECR image scan was not started. The repository may use enhanced scanning or scan on push."
+          fi
