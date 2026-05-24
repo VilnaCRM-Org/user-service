@@ -135,7 +135,7 @@ npx --yes prettier --check \
 - GitHub PR checks and approval evidence are intentionally not recorded here;
   the gate must verify those from the open PR before completion.
 - `src/User/Infrastructure/Factory/RecoveryCodeBatchFactory.php`,
-  `src/User/Infrastructure/Exception/RecoveryCodeGenerationFailedException.php`,
+  `src/User/Domain/Exception/RecoveryCodeGenerationFailedException.php`,
   and
   `tests/Unit/User/Infrastructure/Factory/RecoveryCodeBatchFactoryTest.php`:
   scoped external-review remediation for recovery-code generation behavior,

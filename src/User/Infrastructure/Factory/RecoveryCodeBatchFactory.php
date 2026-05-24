@@ -7,9 +7,9 @@ namespace App\User\Infrastructure\Factory;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\RecoveryCodeGenerationFailedException;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
-use App\User\Infrastructure\Exception\RecoveryCodeGenerationFailedException;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
 /** @psalm-suppress UnusedClass */

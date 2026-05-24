@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Infrastructure\Exception;
+namespace App\User\Domain\Exception;
 
 final class RecoveryCodeGenerationFailedException extends \RuntimeException
 {
