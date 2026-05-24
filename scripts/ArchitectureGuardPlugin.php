@@ -273,23 +273,13 @@ final class ArchitectureGuardPlugin implements
         AfterFunctionLikeAnalysisEvent $event,
         Node $node,
     ): bool {
-        if ($node instanceof Stmt\Foreach_) {
-            return self::reportForeachRepositoryLookups($event, $node);
-        }
-
-        if ($node instanceof Stmt\For_) {
-            return self::reportForRepositoryLookups($event, $node);
-        }
-
-        if ($node instanceof Stmt\While_) {
-            return self::reportWhileRepositoryLookups($event, $node);
-        }
-
-        if ($node instanceof Stmt\Do_) {
-            return self::reportDoRepositoryLookups($event, $node);
-        }
-
-        return false;
+        return match (true) {
+            $node instanceof Stmt\Foreach_ => self::reportForeachRepositoryLookups($event, $node),
+            $node instanceof Stmt\For_ => self::reportForRepositoryLookups($event, $node),
+            $node instanceof Stmt\While_ => self::reportWhileRepositoryLookups($event, $node),
+            $node instanceof Stmt\Do_ => self::reportDoRepositoryLookups($event, $node),
+            default => false,
+        };
     }
 
     private static function reportForeachRepositoryLookups(
