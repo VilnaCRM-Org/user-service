@@ -40,14 +40,14 @@ When a comment (or a CI failure during verification) maps to one of the concerns
 | Quality threshold questions         | `quality-standards`             |
 | Comprehensive CI checks             | `ci-workflow`                   |
 
-### Tool-Driven Fixes (no skill — run the command)
+### Tool-Driven Fixes (no skill — run `make ci`)
 
-Some failure types have no dedicated skill because the tool itself is the remediation. Do NOT manually patch the underlying code; run the command.
+Some failure types have no dedicated skill because the tool itself is the remediation. Do NOT manually patch the underlying code; `make ci` runs every quality tool (Psalm, PHP CS Fixer, etc.) and is the single command for both fixing and verifying these issues.
 
-| Concern                              | Command            |
-| ------------------------------------ | ------------------ |
-| Static analysis errors (Psalm types) | `make psalm`       |
-| Code style violations                | `make phpcsfixer`  |
+| Concern                              | Command   |
+| ------------------------------------ | --------- |
+| Static analysis errors (Psalm types) | `make ci` |
+| Code style violations                | `make ci` |
 
 ## Execution Steps
 
