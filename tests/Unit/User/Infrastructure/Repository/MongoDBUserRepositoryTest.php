@@ -14,6 +14,7 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
+use function array_key_exists;
 use function count;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -22,7 +23,6 @@ use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
 use function mb_strtolower;
 use function mb_strtoupper;
-use MongoDB\BSON\Regex;
 use PHPUnit\Framework\MockObject\MockObject;
 use function preg_quote;
 use RuntimeException;
@@ -91,24 +91,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
 
         $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
-
-        $caseInsensitiveEmail = $this->faker->unique()->email();
-        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
-        $user = $this->createUserWithEmail($caseInsensitiveEmail);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            new Regex('^' . preg_quote(trim($inputEmail), '/') . '$', 'i'),
-            [$user]
-        );
-
-        $this->assertSame(
-            [$user],
-            iterator_to_array($repository->findByEmailCaseInsensitive($inputEmail))
-        );
+        $this->assertFindByEmailCaseInsensitiveReturnsUser();
     }
 
     public function testFindByEmailsReturnsUsersForNormalizedUniqueEmails(): void
@@ -400,6 +383,30 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->deleteBatch($users);
     }
 
+    private function assertFindByEmailCaseInsensitiveReturnsUser(): void
+    {
+        $caseInsensitiveEmail = $this->faker->unique()->email();
+        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($caseInsensitiveEmail);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [
+                '$regex' => '^' . preg_quote(trim($inputEmail), '/') . '$',
+                '$options' => 'i',
+            ],
+            [$user]
+        );
+
+        $this->assertSame(
+            [$user],
+            iterator_to_array($repository->findByEmailCaseInsensitive($inputEmail))
+        );
+    }
+
     /**
      * @return array{Builder, Query}
      */
@@ -508,14 +515,14 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param list<string>|Regex $emails
+     * @param array<string, string>|list<string> $emails
      * @param list<object> $queryResult
      */
     private function expectFindByEmailsQuery(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
         Query $query,
-        array|Regex $emails,
+        array $emails,
         array $queryResult
     ): void {
         $this->expectQueryBuilder($repository, $queryBuilder, $emails);
@@ -528,26 +535,22 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param list<string>|Regex $emails
+     * @param array<string, string>|list<string> $emails
      */
     private function expectQueryBuilder(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
-        array|Regex $emails
+        array $emails
     ): void {
         $repository->expects($this->once())->method('createQueryBuilder')
             ->willReturn($queryBuilder);
         $queryBuilder->expects($this->once())->method('field')->with('email')
             ->willReturnSelf();
 
-        if ($emails instanceof Regex) {
+        if (array_key_exists('$regex', $emails)) {
             $queryBuilder->expects($this->once())
                 ->method('equals')
-                ->with($this->callback(
-                    static fn (Regex $regex): bool => $regex->getPattern()
-                    === $emails->getPattern()
-                        && $regex->getFlags() === $emails->getFlags()
-                ))
+                ->with($emails)
                 ->willReturnSelf();
 
             return;

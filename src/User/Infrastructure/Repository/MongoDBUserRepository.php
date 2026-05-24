@@ -19,7 +19,6 @@ use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 use function mb_strtolower;
-use MongoDB\BSON\Regex;
 use function preg_quote;
 use function str_contains;
 use Throwable;
@@ -107,7 +106,10 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     {
         $result = $this->createQueryBuilder()
             ->field('email')
-            ->equals(new Regex('^' . preg_quote(trim($email), '/') . '$', 'i'))
+            ->equals([
+                '$regex' => '^' . preg_quote(trim($email), '/') . '$',
+                '$options' => 'i',
+            ])
             ->getQuery()
             ->execute();
 
