@@ -113,7 +113,7 @@ If `make ci` fails, route the failure type through **Skill Routing**. Do not fin
 
 **Commit Message Template** (Conventional Commits; the `(#PR)` suffix is appended by GitHub on squash-merge):
 
-```
+```text
 <type>(#<issue>): <imperative description of what changed>
 
 [Optional: why, if non-obvious]
@@ -127,7 +127,7 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 
 **Example**:
 
-```
+```text
 fix(#230): null-check user lookup before command dispatch
 
 Ref: https://github.com/VilnaCRM-Org/user-service/pull/285#discussion_r1234567890
