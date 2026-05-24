@@ -21,7 +21,8 @@ completion until all applicable rows score 5/5.
   `true`)
 - Optional status context: `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
 - Optional status self-filter override:
-  `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT='BMAD FR/NFR Review Gate'`
+  `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT=<check-context>`; defaults to the final
+  status context.
 
 ## Pinned NFR Catalog
 

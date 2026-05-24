@@ -32,7 +32,7 @@ post_pr_comment="${AI_REVIEW_POST_PR_COMMENT:-false}"
 post_github_status="${AI_REVIEW_POST_GITHUB_STATUS:-false}"
 review_result_label="${AI_REVIEW_RESULT_LABEL:-AI Review}"
 github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-$review_result_label}"
-github_status_excluded_context="${AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT:-}"
+github_status_excluded_context="${AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT:-$github_status_context}"
 github_status_target_url="${AI_REVIEW_GITHUB_STATUS_TARGET_URL:-}"
 pr_comment_max_lines="${AI_REVIEW_PR_COMMENT_MAX_LINES:-160}"
 

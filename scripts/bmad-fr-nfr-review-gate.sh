@@ -46,7 +46,7 @@ agents="${BMAD_REVIEW_AGENTS:-}"
 post_pr_comment="${BMAD_REVIEW_POST_PR_COMMENT:-true}"
 post_github_status="${BMAD_REVIEW_POST_GITHUB_STATUS:-true}"
 status_context="${BMAD_REVIEW_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
-status_excluded_context="${BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT:-$status_context}"
+status_excluded_context="${BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT:-}"
 
 require_option_value() {
   local option="$1"
@@ -127,6 +127,8 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+status_excluded_context="${status_excluded_context:-$status_context}"
 
 if [[ -z "$spec_path" ]]; then
   echo "Error: --spec or BMAD_REVIEW_SPEC_PATH is required." >&2

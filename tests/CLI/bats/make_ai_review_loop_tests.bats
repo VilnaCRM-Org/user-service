@@ -3156,6 +3156,36 @@ SCRIPT
   assert_success
 }
 
+@test "bmad-fr-nfr-review-gate excludes custom status context after argument parsing" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_PR_CHECKS_ARGS_LOG="$checks_args_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh --status-context 'Custom Gate' 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run grep -F 'select(.name != "Custom Gate")' "$checks_args_log"
+  assert_success
+}
+
 @test "bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
