@@ -66,21 +66,28 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $this->objects = new PasskeyCommandHandlerTestObjects($this->faker);
     }
 
-    public function testStartSignupDoesNotExposeExistingEmail(): void
+    public function testStartSignupRejectsExistingEmail(): void
     {
-        $this->userRepository->expects($this->never())->method('findByEmail');
-        $this->idFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($this->objects->token('challengeId'));
-        $this->challengeRepository->expects($this->once())->method('save');
+        $email = $this->objects->user('signupEmail');
 
-        $result = $this->support()->startSignup(
-            $this->faker->safeEmail(),
-            $this->faker->lexify('??'),
-            $this->faker->name()
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($this->objects->createUser(
+                $this->objects->user('authenticationUserId'),
+                $email
+            ));
+        $this->idFactory->expects($this->never())->method('create');
+        $this->challengeRepository->expects($this->never())->method('save');
+
+        $this->expectException(ConflictHttpException::class);
+        $this->expectExceptionMessage('Email is already registered.');
+
+        $this->support()->startSignup(
+            $email,
+            $this->objects->user('signupInitials'),
+            $this->objects->user('signupDisplayName')
         );
-
-        self::assertSame($this->objects->token('challengeId'), $result->getChallenge()->getId());
     }
 
     public function testStartSignupReturnsCreationOptionsForAvailableEmail(): void
@@ -89,7 +96,10 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
         $email = sprintf('  %s@Example.COM ', ucfirst($localPart));
         $normalizedEmail = sprintf('%s@example.com', $localPart);
 
-        $this->userRepository->expects($this->never())->method('findByEmail');
+        $this->userRepository->expects($this->once())
+            ->method('findByEmail')
+            ->with($normalizedEmail)
+            ->willReturn(null);
         $this->idFactory->expects($this->once())
             ->method('create')
             ->willReturn($this->objects->token('challengeId'));

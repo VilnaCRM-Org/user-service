@@ -34,9 +34,10 @@ a TTL index on `expires_at`.
    passkey credential, issues access and refresh tokens, and sets the auth
    cookie.
 
-The options endpoint does not reveal whether an email is registered. The
-completion endpoint re-checks the email and returns a conflict if it was
-registered after options were issued.
+The options endpoint returns a conflict when the submitted email is already
+registered, matching the existing registration behavior. The completion
+endpoint re-checks the email and returns a conflict if it was registered after
+options were issued.
 
 ## Authenticated Enrollment
 

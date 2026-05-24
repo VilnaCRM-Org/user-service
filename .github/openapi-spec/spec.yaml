@@ -475,6 +475,8 @@ paths:
       responses:
         '200':
           description: 'Passkey creation options generated'
+        '409':
+          description: 'Email is already registered'
         '422':
           description: 'Validation error'
         '500':

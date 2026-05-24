@@ -140,6 +140,7 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
     private function createStartSignUpHandler(): StartPasskeySignUpCommandHandler
     {
         return new StartPasskeySignUpCommandHandler(
+            new PasskeyUserResolver($this->userRepository),
             $this->createOptionsFactory(),
             new SymfonyUuidFactory()
         );

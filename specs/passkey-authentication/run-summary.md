@@ -75,12 +75,15 @@ The BMAD stages were executed in the main session:
 - Local AI review found and fixed three issues: passkey ceremonies now require WebAuthn user verification, frontend docs now explain WebAuthn JSON parsing or base64url-to-ArrayBuffer conversion before browser API calls, and passkey challenge consumption is now an atomic repository claim to prevent replay races.
 - Current Cubic review findings were addressed: `none` attestation support is registered, authentication result creation no longer publishes side effects from the factory, sign-in options no longer expose credential descriptors, unknown-email passkey completion follows the generic invalid-credential path, sign-in observes existing 2FA policy, and signup completion rolls back persisted user/credential state on downstream failures.
 - GraphQL passkey mutations were added for sign-up, sign-in, and authenticated registration using the existing `AuthPayload` mutation surface.
+- BMAD FR/NFR remediation updated sign-up options so existing emails are rejected before challenge creation, documented the `409` signup-options response in API Platform/OpenAPI, aligned frontend documentation with that behavior, and added manual/required-check evidence without fabricating browser authenticator results.
 
 ## Mandatory Skill Gate
 
 - `api-platform-crud`: Applicable. API Platform YAML operations were added for the passkey REST endpoints.
+- `bmad-autonomous-planning`: Applicable. The BMALPH planning bundle for this feature is listed in Planning Artifacts; no new autonomous planning artifacts were required for this remediation pass.
 - `cache-management`: Applicable. Verified no new cache invalidation contract is required; existing user/session cache behavior is unchanged.
 - `ci-workflow`: Applicable. CI-equivalent commands were run through Docker because the local `make ci` port is occupied by another workspace.
+- `clean-architecture-llm`: Not applicable. Passkey authentication does not introduce LLM providers, prompts, model clients, tool orchestration, or AI-backed runtime behavior.
 - `code-organization`: Applicable. Passkey code follows existing User bounded-context Application/Domain/Infrastructure layout.
 - `code-review`: Applicable. Review feedback was addressed before push.
 - `complexity-management`: Applicable. Verifier and test support classes were split to keep complexity gates green.
@@ -97,7 +100,127 @@ The BMAD stages were executed in the main session:
 - `structurizr-architecture-sync`: Not applicable for this PR. No deployment/container relationship changed.
 - `testing-workflow`: Applicable. Unit, integration, Behat, and targeted passkey/rate-limit tests were run.
 
+## Manual Test Evidence Checklist
+
+Status: completed for manual code-trace review plus targeted automated
+verification on 2026-05-25. A browser/hardware authenticator ceremony was not
+executed in this sandbox; no browser result is claimed below.
+
+Manual tester: Codex.
+Execution date: 2026-05-25.
+Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree based on
+commit `36bac4ef10d278d1e78762e6d6044dde5d74ed7e`, isolated Docker Compose
+project `user-service-pr286-bmad`, PHP 8.4.5, API Platform OpenAPI export.
+Browser/authenticator: not available in this sandbox.
+
+### Scenario 1: Passkey Sign-Up Rejects Existing Email
+
+Steps:
+
+1. Sign in or create a baseline user with a known email address.
+2. Submit `POST /api/passkeys/signup/options` with the existing email, valid
+   initials, and an optional display name.
+3. Confirm the API returns the documented conflict response and no WebAuthn
+   challenge is created.
+
+Observed result: targeted test
+`PasskeyRegistrationCommandHandlerTest::testStartSignupRejectsExistingEmail`
+passes. The handler looks up the normalized email, throws
+`ConflictHttpException` with `Email is already registered.`, does not allocate a
+challenge id, and does not save a challenge. API Platform and generated OpenAPI
+now document the `409` response for `/api/passkeys/signup/options`.
+Artifacts: `docker compose ... phpunit ... PasskeyRegistrationCommandHandlerTest.php`
+passed as part of 24 targeted tests / 244 assertions, and the broader passkey
+unit slice passed 136 tests / 769 assertions.
+
+### Scenario 2: Passkey Sign-Up Creates Options for New Email
+
+Steps:
+
+1. Submit `POST /api/passkeys/signup/options` with an email that is not
+   registered, valid initials, and an optional display name.
+2. Start the browser WebAuthn creation ceremony from the returned `public_key`
+   JSON.
+3. Submit `POST /api/passkeys/signup/complete` with the returned `challengeId`
+   and browser credential JSON.
+4. Confirm a user session is issued and the credential can be used for a later
+   passkey sign-in.
+
+Observed result: targeted tests
+`testStartSignupReturnsCreationOptionsForAvailableEmail` and
+`testCompleteSignupCreatesUserStoresCredentialAndIssuesSession` pass. They verify
+available-email lookup, challenge creation, normalized user identity in creation
+options, user and credential persistence on completion, and session issuance.
+Artifacts: same targeted PHPUnit run above; generated OpenAPI contains the
+signup options and completion endpoints.
+
+### Scenario 3: Authenticated Passkey Enrollment
+
+Steps:
+
+1. Sign in with an existing account.
+2. Submit `POST /api/passkeys/register/options`.
+3. Start the browser WebAuthn creation ceremony from the returned `public_key`
+   JSON.
+4. Submit `POST /api/passkeys/register/complete` with the returned
+   `challengeId` and browser credential JSON.
+5. Confirm the account can sign in with the newly enrolled passkey.
+
+Observed result: targeted tests
+`testStartRegistrationReturnsOptionsForAuthenticatedUser`,
+`testCompleteRegistrationStoresCredentialForCurrentUser`, and
+`PasskeyAuthMutationResolverTest` pass. They verify authenticated identity use,
+credential exclusion/options generation, current-user challenge ownership, stored
+credential response, and matching GraphQL resolver dispatch.
+Artifacts: same targeted PHPUnit run above plus all passkey-related unit tests
+passing 136 tests / 769 assertions.
+
+### Scenario 4: Passkey Sign-In With 2FA Parity
+
+Steps:
+
+1. Use an account that has both a passkey and TOTP enabled.
+2. Submit `POST /api/passkeys/signin/options` for that account.
+3. Complete the browser WebAuthn assertion ceremony.
+4. Submit `POST /api/passkeys/signin/complete`.
+5. Confirm the response follows the existing 2FA pending-session behavior
+   instead of issuing final tokens immediately.
+
+Observed result: targeted tests
+`PasskeySignInTwoFactorCommandHandlerTest::testCompleteCreatesPendingTwoFactorForUserWithTwoFactorEnabled`
+and
+`PasskeySignInCompleteProcessorTwoFactorTest::testSignInCompleteProcessorReturnsPendingTwoFactorWithoutCookie`
+pass. They verify passkey sign-in enters the existing pending 2FA flow, stores a
+pending session, returns the pending-session response, and does not set the final
+auth cookie at this stage.
+Artifacts: same targeted PHPUnit run above.
+
 ## Verification Evidence
+
+Remediation note for 2026-05-25: targeted validation was rerun in an isolated
+Docker Compose project because local PHP is not installed and another checkout
+owns the default development ports. Local `mongo:8.0` exited with code 139 after
+initial health checks, so full local integration/Behat CI was not rerun in this
+workspace; GitHub Actions is the source of full-suite verification after push.
+
+- Targeted BMAD remediation tests:
+  `PasskeyRegistrationCommandHandlerTest`,
+  `PasskeySignInTwoFactorCommandHandlerTest`,
+  `PasskeySignInCompleteProcessorTwoFactorTest`,
+  `PasskeyAuthMutationResolverTest`, and
+  `PasskeySignUpAuthenticationRollbackTest` passed: 24 tests, 244 assertions.
+- All passkey-related unit tests under `tests/Unit` passed: 136 tests, 769
+  assertions.
+- `php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml`
+  regenerated the OpenAPI spec; the resulting diff is exactly the documented
+  `409` response for `/api/passkeys/signup/options`.
+- `./scripts/validate-configuration.sh`: passed.
+- `php bin/console lint:yaml --parse-tags config/api_platform/resources/EmptyResponse.yaml .github/openapi-spec/spec.yaml`:
+  passed.
+- `php bin/console lint:container`: passed.
+- `./scripts/validate-openapi-spec.sh`: passed with no Spectral results at hint
+  severity or higher.
+- `git diff --check`: passed.
 
 - Full unit suite: 2372 tests, 6793 assertions.
 - Passkey unit filter: 126 tests, 656 assertions.
@@ -133,6 +256,35 @@ The BMAD stages were executed in the main session:
 The literal `make ci` target could not be run in this workspace because another local checkout owns hardcoded development ports. Equivalent Docker commands were run with isolated dependency ports.
 
 For Behat, the local `mongo:8.0` container repeatedly exited with code 139 after successful health checks in this workspace. The Behat verification therefore used an isolated, no-host-port Compose stack with a transient `mongo:7.0` override and a recreated PHP service running `APP_ENV=test` and `APP_DEBUG=0`. The test database was rebuilt immediately before the successful full Behat run.
+
+## GitHub Required Check Configuration Evidence
+
+Status: verified from this workspace with GitHub CLI on 2026-05-25.
+
+Verifier: Codex.
+Date: 2026-05-25.
+Observed required checks: GitHub branch protection for `main` has strict status
+checks enabled but currently lists no required status check contexts/checks.
+Conversation resolution is required, code owner review is required,
+last-push approval is required, and two approving reviews are required.
+Artifacts:
+
+- `gh api repos/VilnaCRM-Org/user-service/branches/main/protection` reported
+  `required_status_checks.strict=true`, empty `contexts` and `checks`,
+  `required_conversation_resolution.enabled=true`,
+  `required_pull_request_reviews.required_approving_review_count=2`,
+  `require_code_owner_reviews=true`, and `require_last_push_approval=true`.
+- `gh pr view 286 --json ...` reported PR #286 open, non-draft, review decision
+  `APPROVED`, and merge state `UNSTABLE` only because the BMAD status context was
+  failing on the pre-remediation commit.
+- `gh pr checks 286` reported all non-BMAD checks passing on
+  `36bac4ef10d278d1e78762e6d6044dde5d74ed7e`: Behat, Deptrac, GraphQL
+  Inspector, Infection, K6, Memory leak tests, Openapi-diff, PHP Insights,
+  PHPUnit, Psalm, Schemathesis, Spectral Lint, CodeRabbit, cubic, codecov, qlty,
+  Snyk, symfony-checks, eslint, lint, openapi-diff, and test-and-report.
+- Thread-aware GraphQL export for PR #286 reported 288 conversation comments,
+  450 reviews, 894 review threads, 0 unresolved threads, and 0 active unresolved
+  threads.
 
 ## Open Questions
 
