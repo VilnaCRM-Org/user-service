@@ -69,13 +69,13 @@ make pr-comments FORMAT=json  # JSON output
 
 ### Step 2: Categorize Comments
 
-| Type                   | Identifier                  | Priority | Action                                     |
-| ---------------------- | --------------------------- | -------- | ------------------------------------------ |
-| Committable Suggestion | Code block, "```suggestion" | Highest  | Apply verbatim, commit separately          |
-| LLM Prompt             | "🤖 Prompt for AI Agents"   | High     | Execute prompt, implement, commit          |
-| Architecture Concern   | Class naming, file location | High     | Route through Skill Routing                |
-| Question               | Ends with "?"               | Medium   | Answer inline or via code change           |
-| General Feedback       | Discussion, recommendation  | Low      | Apply if beneficial                        |
+| Type                   | Identifier                  | Priority | Action                            |
+| ---------------------- | --------------------------- | -------- | --------------------------------- |
+| Committable Suggestion | Code block, "```suggestion" | Highest  | Apply verbatim, commit separately |
+| LLM Prompt             | "🤖 Prompt for AI Agents"   | High     | Execute prompt, implement, commit |
+| Architecture Concern   | Class naming, file location | High     | Route through Skill Routing       |
+| Question               | Ends with "?"               | Medium   | Answer inline or via code change  |
+| General Feedback       | Discussion, recommendation  | Low      | Apply if beneficial               |
 
 Per-type handling: [reference/comment-types.md](reference/comment-types.md).
 
