@@ -9,6 +9,7 @@ use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use App\User\Infrastructure\Exception\RecoveryCodeGenerationFailedException;
 use Symfony\Component\Uid\Factory\UlidFactory;
 
 /** @psalm-suppress UnusedClass */

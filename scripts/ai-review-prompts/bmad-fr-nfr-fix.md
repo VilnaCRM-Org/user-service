@@ -14,8 +14,9 @@ Review context:
 Constraints:
 
 - Edit source, test, and configuration files directly as needed.
-- If validation is needed, suggest commands such as `make ci` or `make test`
-  in the response instead of running them.
+- If validation is needed, suggest documented targets such as `make ci`,
+  `make all-tests`, or `make unit-tests` in the response instead of running
+  them.
 - Use make targets for any PHP tooling. Do not run PHP directly on the host.
 - Keep changes within the current PR scope and the referenced BMAD specs.
 - Do not fabricate manual evidence. If manual evidence is missing, add or
