@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Systematically retrieve and address PR code review comments using make pr-comments. Use when handling code review feedback or addressing PR comments.
+description: Fetch unresolved PR review comments, categorize by type (committable suggestions, LLM prompts, architecture concerns, questions, general feedback), apply changes, and verify with CI. Use when addressing pull request feedback, reviewer comments, requested changes, GitHub review suggestions, resolving review threads, or running `make pr-comments` / `make ai-review-loop`.
 ---
 
 # Code Review Workflow Skill
@@ -8,9 +8,7 @@ description: Systematically retrieve and address PR code review comments using m
 ## Context (Input)
 
 - PR has unresolved code review comments
-- Need systematic approach to address feedback
-- Ready to implement reviewer suggestions
-- Need to maintain quality standards during review implementation
+- Quality standards must hold while addressing feedback
 
 ## Task (Function)
 
@@ -18,258 +16,135 @@ Systematically retrieve, categorize, and address all PR code review comments whi
 
 **Success Criteria**: `make pr-comments` shows 0 unresolved AND `make ci` shows "✅ CI checks successfully passed!"
 
-## Workflow Overview
-
-```mermaid
-AI Review Loop → PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
-```
-
 ## Quick Start
 
 ```bash
-# 0. Run autonomous AI review + fix loop (Codex default, Claude optional)
-make ai-review-loop
-
-# 1. Get comments
-make pr-comments
-
-# 2. Apply each suggestion/fix (one commit per comment)
-git commit -m "Apply review suggestion: [description]
-
-Ref: [comment URL]"
-
-# 3. Verify all addressed
-make pr-comments  # Should show 0 unresolved
-
-# 4. Run CI
-make ci  # Must show "✅ CI checks successfully passed!"
+make ai-review-loop                                    # 0. Autonomous review + fix loop
+make pr-comments                                       # 1. Get unresolved comments
+# 2. Apply each fix and commit per comment (template below)
+make pr-comments                                       # 3. Verify 0 unresolved
+make ci                                                # 4. CI must pass
 ```
+
+## Skill Routing
+
+When a comment (or a CI failure during verification) maps to one of the concerns below, invoke the matching skill instead of fixing ad-hoc.
+
+| Concern                             | Skill                           |
+| ----------------------------------- | ------------------------------- |
+| Class placement / naming            | `code-organization`             |
+| DDD pattern violations              | `implementing-ddd-architecture` |
+| Deptrac / layer violations          | `deptrac-fixer`                 |
+| Cyclomatic complexity / PHPInsights | `complexity-management`         |
+| Test failures, coverage, mutation   | `testing-workflow`              |
+| Quality threshold questions         | `quality-standards`             |
+| Comprehensive CI checks             | `ci-workflow`                   |
+
+### Tool-Driven Fixes (no skill — run `make ci`)
+
+Some failure types have no dedicated skill because the tool itself is the remediation. Do NOT manually patch the underlying code; `make ci` runs every quality tool (Psalm, PHP CS Fixer, etc.) and is the single command for both fixing and verifying these issues.
+
+| Concern                              | Command   |
+| ------------------------------------ | --------- |
+| Static analysis errors (Psalm types) | `make ci` |
+| Code style violations                | `make ci` |
 
 ## Execution Steps
 
 ### Step 0: Run Autonomous AI Review Loop
 
-Before addressing PR comments manually, run the autonomous review loop:
-
 ```bash
 make ai-review-loop
 ```
 
-This executes `scripts/ai-review-loop.sh`, which:
-
-1. Runs an AI review agent against the current diff (base: `main` by default)
-2. If issues are found (`STATUS: FAIL`), runs a fix agent to auto-remediate
-3. Verifies fixes with `make ci`
-4. Repeats up to `AI_REVIEW_MAX_ITER` times (default: 3)
-
-**Configuration** (all overridable via environment):
-
-| Variable               | Default         | Description                         |
-| ---------------------- | --------------- | ----------------------------------- |
-| `AI_REVIEW_AGENTS`     | `codex`         | Agent(s) to use (`codex`, `claude`) |
-| `AI_REVIEW_BASE`       | `main`          | Base branch for diff comparison     |
-| `AI_REVIEW_MAX_ITER`   | `3`             | Max review/fix iterations (0=∞)     |
-| `AI_REVIEW_VERIFY_CMD` | `make ci`       | Verification command after each fix |
-| `AI_REVIEW_LOG_DIR`    | `var/ai-review` | Directory for review/fix logs       |
-
-**Examples**:
-
-```bash
-# Use Claude instead of Codex
-AI_REVIEW_AGENTS=claude make ai-review-loop
-
-# Limit to 1 iteration, custom base branch
-AI_REVIEW_BASE=develop AI_REVIEW_MAX_ITER=1 make ai-review-loop
-
-# Run both agents
-AI_REVIEW_AGENTS=codex,claude make ai-review-loop
-```
-
-**Prompt templates**: `scripts/ai-review-prompts/review.md` (reviewer) and `scripts/ai-review-prompts/fix.md` (fixer).
+Configuration, alternative agents, and prompt template paths: [reference/ai-review-loop.md](reference/ai-review-loop.md).
 
 ### Step 1: Get PR Comments
 
 ```bash
 make pr-comments              # Auto-detect from current branch
-make pr-comments PR=62       # Specify PR number
+make pr-comments PR=62        # Specify PR number
 make pr-comments FORMAT=json  # JSON output
 ```
 
-**Output**: All unresolved comments with file/line, author, timestamp, URL
-
 ### Step 2: Categorize Comments
 
-| Type                   | Identifier                  | Priority | Action                               |
-| ---------------------- | --------------------------- | -------- | ------------------------------------ |
-| Committable Suggestion | Code block, "```suggestion" | Highest  | Apply immediately, commit separately |
-| LLM Prompt             | "🤖 Prompt for AI Agents"   | High     | Execute prompt, implement changes    |
-| Architecture Concern   | Class naming, file location | High     | Invoke appropriate skill             |
-| Question               | Ends with "?"               | Medium   | Answer inline or via code change     |
-| General Feedback       | Discussion, recommendation  | Low      | Consider and improve                 |
+| Type                   | Identifier                  | Priority | Action                            |
+| ---------------------- | --------------------------- | -------- | --------------------------------- |
+| Committable Suggestion | Code block, "```suggestion" | Highest  | Apply verbatim, commit separately |
+| LLM Prompt             | "🤖 Prompt for AI Agents"   | High     | Execute prompt, implement, commit |
+| Architecture Concern   | Class naming, file location | High     | Route through Skill Routing       |
+| Question               | Ends with "?"               | Medium   | Answer inline or via code change  |
+| General Feedback       | Discussion, recommendation  | Low      | Apply if beneficial               |
 
-### Step 3: Verify Architecture & Organization
+Per-type handling: [reference/comment-types.md](reference/comment-types.md).
 
-For code changes (suggestions, prompts, new files), invoke verification skills:
+### Step 3: Apply Changes Systematically
 
-| Concern Type           | Skill to Invoke                    |
-| ---------------------- | ---------------------------------- |
-| Class placement/naming | `code-organization`                |
-| DDD patterns           | `implementing-ddd-architecture`    |
-| Layer violations       | `deptrac-fixer` (if deptrac fails) |
+Process comments in priority order from Step 2. For each comment, route through **Skill Routing** when applicable; otherwise apply the change and commit using the template in [reference/comment-types.md](reference/comment-types.md).
 
-**Quick verification**: Run `make phpcsfixer && make psalm && make deptrac && make unit-tests`
+Local verification before pushing: `make ci`.
 
-### Step 4: Apply Changes Systematically
-
-#### For Committable Suggestions
-
-1. Apply code change exactly as suggested
-2. Commit with reference:
-
-   ```bash
-   git commit -m "Apply review suggestion: [brief description]
-
-   Ref: [comment URL]"
-   ```
-
-#### For LLM Prompts
-
-1. Copy prompt from comment
-2. Execute as instructed
-3. Verify output meets requirements
-4. Commit with reference
-
-#### For Architecture/Organization Concerns
-
-1. Invoke appropriate skill (`code-organization` or `implementing-ddd-architecture`)
-2. Implement recommended changes
-3. Verify: `make phpcsfixer && make psalm && make deptrac && make unit-tests`
-4. Commit with reference
-
-#### For Questions
-
-1. Determine if code change or reply needed
-2. If code: implement + commit
-3. If reply: respond on GitHub
-
-#### For General Feedback
-
-1. Evaluate suggestion merit
-2. Implement if beneficial
-3. Document reasoning if declined
-
-### Step 5: Verify All Addressed
+### Step 4: Verify Complete
 
 ```bash
-make pr-comments  # Should show zero unresolved comments
+make pr-comments  # Must show zero unresolved
+make ci           # Must show "✅ CI checks successfully passed!"
 ```
 
-### Step 6: Run Quality Checks
-
-**MANDATORY**: Run comprehensive CI checks after implementing all changes:
-
-```bash
-make ci  # Must output "✅ CI checks successfully passed!"
-```
-
-**If CI fails**, invoke appropriate skill:
-
-| Failure Type            | Skill to Use            |
-| ----------------------- | ----------------------- |
-| Architecture violations | `deptrac-fixer`         |
-| Complexity issues       | `complexity-management` |
-| Test failures           | `testing-workflow`      |
-| Mutation testing issues | `testing-workflow`      |
-| Code style              | Run `make phpcsfixer`   |
-| Static analysis         | Run `make psalm`        |
-
-**DO NOT** finish the task until `make ci` shows: `✅ CI checks successfully passed!`
+If `make ci` fails, route the failure type through **Skill Routing**. Do not finish until both commands succeed.
 
 ## Constraints (Parameters)
 
 **NEVER**:
 
-- Skip the autonomous AI review loop (`make ai-review-loop`) without justification
-- Skip committable suggestions
+- Skip `make ai-review-loop` without justification
 - Batch unrelated changes in one commit
-- Ignore LLM prompts from reviewers
-- Commit without running verification
-- Leave questions unanswered
-- Accept organizational violations (invoke `code-organization` skill)
-- Accept architecture violations (invoke `implementing-ddd-architecture` skill)
-- Add suppression/ignore annotations to "fix" review comments or CI failures
-- Finish task before `make ci` shows success message
+- Add suppression / ignore annotations to "fix" comments or CI failures
+- Finish before `make ci` succeeds
 
 **ALWAYS**:
 
-- Run `make ai-review-loop` before manually addressing PR comments
-- Apply suggestions exactly as provided
-- Commit each suggestion separately with URL reference
-- Invoke `code-organization` skill for structural issues
-- Invoke `implementing-ddd-architecture` skill for DDD violations
-- Run `make ci` after implementing all changes
-- Address ALL CI failures before finishing
-- Mark conversations resolved after addressing
+- Route concerns through **Skill Routing** rather than fixing ad-hoc
+- Include the comment URL in every commit message
+- Mark conversations resolved on GitHub after addressing
 
 ## Format (Output)
 
-**Commit Message Template**:
+**Commit Message Template** (Conventional Commits; the `(#PR)` suffix is appended by GitHub on squash-merge):
 
-```
-Apply review suggestion: [concise description]
+```text
+<type>(#<issue>): <imperative description of what changed>
 
-[Optional: explanation if non-obvious]
+[Optional: why, if non-obvious]
 
 Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 ```
 
-**Final Verification**:
+- `<type>` ∈ `feat | fix | refactor | docs | perf | test | chore`
+- `(#<issue>)` scope is optional — include the GitHub issue number when there is one
+- Subject is lowercase, imperative, describes the change (not "apply review suggestion")
 
-```bash
-✅ make pr-comments shows 0 unresolved
-✅ make ci shows "CI checks successfully passed!"
+**Example**:
+
+```text
+fix(#230): null-check user lookup before command dispatch
+
+Ref: https://github.com/VilnaCRM-Org/user-service/pull/285#discussion_r1234567890
 ```
 
 ## Verification Checklist
 
-- [ ] Autonomous AI review loop run via `make ai-review-loop` (or skipped with justification)
-- [ ] All PR comments retrieved via `make pr-comments`
-- [ ] Comments categorized by type (suggestion/prompt/architecture/question/feedback)
-- [ ] Architecture verified using appropriate skills
-- [ ] `make deptrac` passes (0 violations)
-- [ ] Committable suggestions applied and committed separately
-- [ ] LLM prompts executed and implemented
-- [ ] Questions answered (code or reply)
-- [ ] General feedback evaluated and addressed
-- [ ] `make ci` shows "✅ CI checks successfully passed!"
+- [ ] `make ai-review-loop` run (or skipped with justification)
+- [ ] Comments retrieved and categorized per Step 2
+- [ ] Architecture concerns routed through matching skills
+- [ ] Suggestions applied verbatim, one commit per comment with URL ref
 - [ ] `make pr-comments` shows zero unresolved
+- [ ] `make ci` shows "✅ CI checks successfully passed!"
 - [ ] All conversations marked resolved on GitHub
-
-## Quick Reference: When to Use Related Skills
-
-During code review, you may need to invoke other skills:
-
-| Issue                    | Skill to Use                    |
-| ------------------------ | ------------------------------- |
-| Class in wrong directory | `code-organization`             |
-| Vague naming             | `code-organization`             |
-| DDD pattern violations   | `implementing-ddd-architecture` |
-| Deptrac failures         | `deptrac-fixer`                 |
-| Complexity too high      | `complexity-management`         |
-| Test failures            | `testing-workflow`              |
-| Quality standards        | `quality-standards`             |
-
-## Related Skills
-
-- **code-organization**: Enforces "Directory X contains ONLY class type X" and naming conventions
-- **implementing-ddd-architecture**: DDD patterns, layer structure, and boundaries
-- **deptrac-fixer**: Fixes architectural boundary violations
-- **complexity-management**: Reduces cyclomatic complexity
-- **testing-workflow**: Test coverage and mutation testing
-- **quality-standards**: Overall quality metrics and thresholds
-- **ci-workflow**: Comprehensive CI checks
 
 ## Related Documentation
 
-- Examples: `examples/organization-fixes.md` - Real-world organization fix examples
-- Reference: `reference/quality-standards.md` - Quality standards integration details
+- [reference/ai-review-loop.md](reference/ai-review-loop.md) — Configuration for `make ai-review-loop`
+- [reference/comment-types.md](reference/comment-types.md) — Per-type execution details
+- [reference/quality-standards.md](reference/quality-standards.md) — Quality standards integration
