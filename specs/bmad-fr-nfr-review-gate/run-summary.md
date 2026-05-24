@@ -3,7 +3,7 @@ workflowType: run-summary
 project_name: BMAD FR/NFR Review Gate
 author: Codex
 date: 2026-05-17
-revision: 1
+revision: 2
 ---
 
 # Run Summary: BMAD FR/NFR Review Gate
@@ -38,6 +38,8 @@ revision: 1
   category list, and required PASS markers.
 - Include a separate `CI_GATE: PASS` marker and exact first-line status parsing
   for BMAD PASS decisions.
+- Publish bounded PR comments and a GitHub commit status for BMAD PR runs so
+  the gate result is visible on the pull request.
 
 ## Validation Rounds
 
@@ -53,4 +55,5 @@ code, existing skills, BMALPH setup behavior, and the pinned NFR catalog source.
 ## Recommended Next Step
 
 Run the targeted shell and Bats verification commands, then run the new gate
-against this spec bundle before opening the PR.
+against this spec bundle before opening the PR. For PR runs, leave the final
+BMAD result comment and `BMAD FR/NFR Review Gate` status visible on the PR.

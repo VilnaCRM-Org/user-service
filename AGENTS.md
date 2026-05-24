@@ -454,6 +454,10 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 The gate requires every applicable FR/NFR, pinned NonFunctionals.com category,
 manual-test expectation, QA checkpoint, GitHub review gate, and CI gate to
 score 5/5 or have an explicit not-applicable reason with evidence.
+For PR runs, it publishes a bounded PR result comment and a
+`BMAD FR/NFR Review Gate` commit status by default; disable those only for dry
+runs with `BMAD_REVIEW_POST_PR_COMMENT=false` or
+`BMAD_REVIEW_POST_GITHUB_STATUS=false`.
 
 ## Quality Gates
 

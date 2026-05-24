@@ -22,6 +22,8 @@ second agent orchestration implementation.
   `scripts/ai-review-loop.sh`.
 - `scripts/ai-review-loop.sh`: adds generic placeholder substitution, optional
   spec/manual/PR values, required marker validation, and verification-on-PASS.
+  In BMAD mode it can also publish bounded PR comments and a GitHub commit
+  status for pending, failed, and passed gate outcomes.
 - `scripts/ai-review-prompts/bmad-fr-nfr-review.md`: strict reviewer contract.
 - `scripts/ai-review-prompts/bmad-fr-nfr-fix.md`: fix-agent contract.
 - `Makefile`: adds `bmad-fr-nfr-review-gate`.
@@ -40,20 +42,25 @@ second agent orchestration implementation.
    line in BMAD mode.
 7. PASS must include required scorecard markers, including `CI_GATE: PASS`.
 8. PASS triggers verification command before successful exit.
-9. FAIL triggers existing fix and verify iterations until PASS or max iteration.
+9. Failed review iterations can publish a failure status, then trigger existing
+   fix and verify iterations until PASS or max iteration.
+10. Terminal PASS/FAIL can publish a concise PR comment and final commit status.
 
 ## Configuration
 
-| Variable                      | Purpose                                                        |
-| ----------------------------- | -------------------------------------------------------------- |
-| `BMAD_REVIEW_SPEC_PATH`       | BMAD spec bundle or file; falls back to `AI_REVIEW_SPEC_PATH`. |
-| `BMAD_REVIEW_MANUAL_EVIDENCE` | Optional manual evidence file or directory.                    |
-| `BMAD_REVIEW_PR`              | Optional PR number.                                            |
-| `BMAD_REVIEW_BASE`            | Optional base ref.                                             |
-| `BMAD_REVIEW_AGENTS`          | Optional comma-separated agents.                               |
-| `BMAD_REVIEW_MAX_ITER`        | Optional max loop iterations.                                  |
-| `BMAD_REVIEW_VERIFY_CMD`      | Optional trusted verification command.                         |
-| `BMAD_REVIEW_LOG_DIR`         | Optional log directory.                                        |
+| Variable                         | Purpose                                                            |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `BMAD_REVIEW_SPEC_PATH`          | BMAD spec bundle or file; falls back to `AI_REVIEW_SPEC_PATH`.     |
+| `BMAD_REVIEW_MANUAL_EVIDENCE`    | Optional manual evidence file or directory.                        |
+| `BMAD_REVIEW_PR`                 | Optional PR number.                                                |
+| `BMAD_REVIEW_BASE`               | Optional base ref.                                                 |
+| `BMAD_REVIEW_AGENTS`             | Optional comma-separated agents.                                   |
+| `BMAD_REVIEW_MAX_ITER`           | Optional max loop iterations.                                      |
+| `BMAD_REVIEW_VERIFY_CMD`         | Optional trusted verification command.                             |
+| `BMAD_REVIEW_LOG_DIR`            | Optional log directory.                                            |
+| `BMAD_REVIEW_POST_PR_COMMENT`    | Optional PR comment publishing toggle, default `true`.             |
+| `BMAD_REVIEW_POST_GITHUB_STATUS` | Optional GitHub commit-status publishing toggle, default `true`.   |
+| `BMAD_REVIEW_STATUS_CONTEXT`     | Optional commit-status context, default `BMAD FR/NFR Review Gate`. |
 
 ## Backward Compatibility
 

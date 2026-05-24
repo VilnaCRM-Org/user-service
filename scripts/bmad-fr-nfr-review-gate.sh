@@ -20,12 +20,14 @@ Options:
   --verify-cmd COMMAND     Trusted verification command. Default: make ci.
   --log-dir PATH           Review log directory.
   --agents LIST            Comma-separated agents, e.g. codex,claude.
+  --status-context NAME    GitHub status context for published gate results.
   -h, --help               Show this help.
 
 Environment equivalents:
   BMAD_REVIEW_SPEC_PATH, BMAD_REVIEW_MANUAL_EVIDENCE, BMAD_REVIEW_PR,
   BMAD_REVIEW_BASE, BMAD_REVIEW_MAX_ITER, BMAD_REVIEW_VERIFY_CMD,
-  BMAD_REVIEW_LOG_DIR, BMAD_REVIEW_AGENTS
+  BMAD_REVIEW_LOG_DIR, BMAD_REVIEW_AGENTS, BMAD_REVIEW_POST_PR_COMMENT,
+  BMAD_REVIEW_POST_GITHUB_STATUS, BMAD_REVIEW_STATUS_CONTEXT
 USAGE
 }
 
@@ -40,6 +42,9 @@ max_iter="${BMAD_REVIEW_MAX_ITER:-}"
 verify_cmd="${BMAD_REVIEW_VERIFY_CMD:-}"
 log_dir="${BMAD_REVIEW_LOG_DIR:-}"
 agents="${BMAD_REVIEW_AGENTS:-}"
+post_pr_comment="${BMAD_REVIEW_POST_PR_COMMENT:-true}"
+post_github_status="${BMAD_REVIEW_POST_GITHUB_STATUS:-true}"
+status_context="${BMAD_REVIEW_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
 
 require_option_value() {
   local option="$1"
@@ -104,6 +109,11 @@ while [[ $# -gt 0 ]]; do
       agents="$2"
       shift 2
       ;;
+    --status-context)
+      require_option_value "$1" "${2:-}"
+      status_context="$2"
+      shift 2
+      ;;
     -h|--help)
       show_usage
       exit 0
@@ -149,6 +159,9 @@ export AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true
 # ai-review-loop prechecks and revalidates GitHub review/check state against the local HEAD.
 export AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true
 export AI_REVIEW_REQUIRED_GATE_MARKERS="$bmad_required_gate_markers"
+export AI_REVIEW_POST_PR_COMMENT="$post_pr_comment"
+export AI_REVIEW_POST_GITHUB_STATUS="$post_github_status"
+export AI_REVIEW_GITHUB_STATUS_CONTEXT="$status_context"
 export AI_REVIEW_VERIFY_ON_PASS="true"
 export AI_REVIEW_CLAUDE_USE_BUILTIN_REVIEW="false"
 

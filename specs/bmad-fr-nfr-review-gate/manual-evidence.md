@@ -3,7 +3,7 @@ workflowType: manual-evidence
 project_name: BMAD FR/NFR Review Gate
 author: Codex
 date: 2026-05-18
-revision: 20
+revision: 21
 ---
 
 # Manual Evidence: BMAD FR/NFR Review Gate
@@ -14,8 +14,8 @@ revision: 20
 - Date: 2026-05-18
 - Workspace: `codex/bmad-review-gate`; the current PR head is verified by
   GitHub gate checks before completion.
-- Related requirements: FR-01 through FR-11, NFR-01 through NFR-03, NFR-05
-  through NFR-07, NFR-09, AC-01 through AC-11
+- Related requirements: FR-01 through FR-13, NFR-01 through NFR-03, NFR-05
+  through NFR-07, NFR-09, AC-01 through AC-14
 
 ## Scenarios
 
@@ -41,6 +41,8 @@ revision: 20
 | Leading prose before status     | Run Bats fake-agent test `bmad-fr-nfr-review-gate requires STATUS on the first line`.                                  | Command exits non-zero and reports the agent did not produce a valid status line.        | AC-08, NFR-03        |
 | Verification failure after PASS | Run Bats fake-agent test `bmad-fr-nfr-review-gate fails when verification fails after PASS`.                           | Command exits non-zero with `Verification failed after AI review PASS`.                  | FR-08, NFR-03        |
 | No required CI checks fallback  | Run Bats fake-agent test `bmad-fr-nfr-review-gate falls back to visible checks when required check rollup is empty`.   | Command exits successfully after verifying every visible PR check is passing.            | AC-11, NFR-09        |
+| PR comment result publishing    | Run Bats fake-agent test `bmad-fr-nfr-review-gate publishes PR comment and success GitHub status after PASS`.          | Final PASS creates a bounded PR comment artifact and calls `gh pr comment`.              | FR-12, AC-12         |
+| GitHub status remediation flow  | Run Bats fake-agent test `bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS`.   | Status log records failure before the fix-agent output and success after verified PASS.  | FR-13, AC-13, AC-14  |
 | Empty visible CI check rollup   | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty`.             | Command exits non-zero with `Warning: GitHub PR check rollup is empty.`                  | AC-11, NFR-03        |
 | GitHub hard-gate fail-fast      | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing`.                    | Command exits before AI review with `GitHub corroboration failed before AI review.`      | AC-11, NFR-03        |
 | GitHub/CI evidence markers      | Run Bats fake-agent marker, threshold, and scorecard validation scenarios.                                             | PASS output must include thresholded min-score, approved GitHub, and passing CI markers. | FR-07, AC-05         |
@@ -71,6 +73,11 @@ env \
   -u AI_REVIEW_REQUIRED_GATE_MARKERS \
   -u AI_REVIEW_REQUIRE_SCORECARD_VALIDATION \
   -u AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION \
+  -u AI_REVIEW_POST_PR_COMMENT \
+  -u AI_REVIEW_POST_GITHUB_STATUS \
+  -u AI_REVIEW_GITHUB_STATUS_CONTEXT \
+  -u AI_REVIEW_GITHUB_STATUS_TARGET_URL \
+  -u AI_REVIEW_PR_COMMENT_MAX_LINES \
   -u AI_REVIEW_BASE_REF \
   -u AI_REVIEW_MAX_ITER \
   -u AI_REVIEW_AGENT \
@@ -88,6 +95,9 @@ env \
   -u BMAD_REVIEW_MAX_ITER \
   -u BMAD_REVIEW_LOG_DIR \
   -u BMAD_REVIEW_AGENTS \
+  -u BMAD_REVIEW_POST_PR_COMMENT \
+  -u BMAD_REVIEW_POST_GITHUB_STATUS \
+  -u BMAD_REVIEW_STATUS_CONTEXT \
   TMPDIR=/dev/shm bats tests/CLI/bats/make_ai_review_loop_tests.bats
 env TMPDIR=/dev/shm bats tests/CLI/bats/make_bmalph_tests.bats
 git diff --check

@@ -26,11 +26,16 @@ Optional inputs:
 - `BMAD_REVIEW_BASE=<base-ref>`
 - `BMAD_REVIEW_AGENTS=codex,claude`
 - `BMAD_REVIEW_VERIFY_CMD='make ci'`
+- `BMAD_REVIEW_POST_PR_COMMENT=true|false`
+- `BMAD_REVIEW_POST_GITHUB_STATUS=true|false`
+- `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
 
 The gate uses the tracked AI review loop and BMAD-specific prompts. It fails
 unless every applicable FR, NFR, pinned NonFunctionals.com category, QA
 checkpoint, manual-test requirement, GitHub completion gate, and CI gate has
 5/5 evidence or an explicit not-applicable reason with source evidence.
+For BMAD wrapper runs, PR comment and GitHub commit-status publishing default
+to on, so final results remain visible on the pull request.
 
 Read and follow `.claude/skills/bmad-fr-nfr-review-gate/SKILL.md` before
 claiming completion.

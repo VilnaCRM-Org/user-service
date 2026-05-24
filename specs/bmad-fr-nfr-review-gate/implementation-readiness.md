@@ -27,6 +27,8 @@ Ready for implementation as a repo-local Bash/Make/Markdown/Bats workflow.
 - Use fake agents in Bats for deterministic status output.
 - Keep manual evidence explicit; never infer it from code changes.
 - Require exact commands and outcomes in final reports.
+- Publish BMAD PR comments and status checks from bounded local artifacts, not
+  raw unbounded logs.
 - Run `make ci` for production code changes.
 
 ## Verification Plan
@@ -46,6 +48,7 @@ git diff --check
 | LLM reviewer gives shallow score                    | Require evidence per row and required PASS markers.                                         |
 | Manual evidence absent                              | Fail closed and report required manual action.                                              |
 | GitHub unavailable                                  | Gate cannot pass GitHub completion marker.                                                  |
+| GitHub result publishing fails                      | BMAD wrapper exits nonzero when final PASS cannot publish the configured result.            |
 | Make target is run without spec path                | Wrapper and Make target fail with a helpful message.                                        |
 | Claude built-in `/review` bypasses prompt           | BMAD wrapper disables built-in Claude review for spec mode.                                 |
 | Local tags shadow base branch names                 | Review loop resolves branch and remote refs before accepting explicit commit-ish refs.      |

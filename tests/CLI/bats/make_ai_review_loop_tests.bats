@@ -19,6 +19,16 @@ write_successful_bmad_gh_stub() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
+
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
@@ -29,6 +39,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
+  printf 'pr checks %s\n' "$*" >> "${GH_PR_CHECKS_ARGS_LOG:-/dev/null}"
   if [[ "$*" != *"--required"* ]]; then
     echo "required check query must use gh pr checks --required" >&2
     exit 2
@@ -54,6 +65,16 @@ write_failing_check_bmad_gh_stub() {
   cat > "$bin_dir/gh" <<'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
+
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
@@ -91,6 +112,16 @@ write_empty_required_passing_visible_bmad_gh_stub() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
+
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
@@ -127,6 +158,16 @@ write_empty_required_empty_visible_bmad_gh_stub() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
+
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
@@ -158,6 +199,16 @@ write_empty_required_failing_visible_bmad_gh_stub() {
   cat > "$bin_dir/gh" <<'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
+
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
@@ -195,6 +246,16 @@ write_skipped_check_bmad_gh_stub() {
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
+
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   if [[ "$*" != *"headRefOid"* || "$*" == *"statusCheckRollup"* ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
@@ -230,6 +291,16 @@ write_stale_head_bmad_gh_stub() {
   cat > "$bin_dir/gh" <<'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
+
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t0000000000000000000000000000000000000000\n'
@@ -3012,6 +3083,191 @@ SCRIPT
   assert_output --partial "AI review PASS."
 }
 
+@test "bmad-fr-nfr-review-gate publishes PR comment and success GitHub status after PASS" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local status_log="${BATS_TEST_TMPDIR}/status.log"
+  local comment_log="${BATS_TEST_TMPDIR}/comment.log"
+  local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_STATUS_LOG="$status_log" \
+    GH_PR_COMMENT_LOG="$comment_log" \
+    GH_PR_CHECKS_ARGS_LOG="$checks_args_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run grep -F "state=pending" "$status_log"
+  assert_success
+  run grep -F "state=success" "$status_log"
+  assert_success
+  run grep -F "context=BMAD FR/NFR Review Gate" "$status_log"
+  assert_success
+  run grep -F "pr comment 287 --body-file" "$comment_log"
+  assert_success
+  run grep -F 'select(.name != "BMAD FR/NFR Review Gate")' "$checks_args_log"
+  assert_success
+  run bash -c "grep -R \"BMAD FR/NFR Review Gate: PASS\" '$log_dir'/pr-comment-PASS.*.md"
+  assert_success
+}
+
+@test "bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local status_log="${BATS_TEST_TMPDIR}/status.log"
+  local comment_log="${BATS_TEST_TMPDIR}/comment.log"
+  local review_count="${BATS_TEST_TMPDIR}/review-count"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+
+  if [[ "$output_file" == *"/fix-"* ]]; then
+    echo "Applied BMAD fix." > "$output_file"
+    exit 0
+  fi
+
+  count=0
+  if [[ -f "${REVIEW_COUNT_FILE}" ]]; then
+    count="$(cat "${REVIEW_COUNT_FILE}")"
+  fi
+  count=$((count + 1))
+  printf "%s" "$count" > "${REVIEW_COUNT_FILE}"
+
+  if [[ "$count" -eq 1 ]]; then
+    cat > "$output_file" <<'STATUS'
+STATUS: FAIL
+Issues:
+1. Missing BMAD evidence.
+FR_NFR_SCORECARD: FAIL
+NFR_CATALOG_SCORECARD: FAIL
+MANUAL_TEST_EVIDENCE: FAIL
+QA_BEST_PRACTICES: FAIL
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+STATUS
+    exit 0
+  fi
+
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Performance: 5/5 PASS
+- Usability: 5/5 PASS
+- Maintainability: 5/5 PASS
+- Availability: 5/5 PASS
+- Interoperability: 5/5 PASS
+- Security: 5/5 PASS
+- Manageability: 5/5 PASS
+- Automatability: 5/5 PASS
+- Dependability: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_STATUS_LOG="$status_log" \
+    GH_PR_COMMENT_LOG="$comment_log" \
+    REVIEW_COUNT_FILE="$review_count" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=2 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run grep -F "state=failure" "$status_log"
+  assert_success
+  run grep -F "state=success" "$status_log"
+  assert_success
+  run grep -F "Applied BMAD fix." "$log_dir/fix-latest.md"
+  assert_success
+  run grep -F "pr comment 287 --body-file" "$comment_log"
+  assert_success
+
+  local failure_line success_line
+  failure_line="$(grep -n "state=failure" "$status_log" | head -n 1 | cut -d: -f1)"
+  success_line="$(grep -n "state=success" "$status_log" | tail -n 1 | cut -d: -f1)"
+  if [[ -z "$failure_line" || -z "$success_line" || "$failure_line" -ge "$success_line" ]]; then
+    fail "Expected failure status to be published before final success status."
+  fi
+}
+
 @test "bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
@@ -3196,6 +3452,16 @@ SCRIPT
   cat > "$bin_dir/gh" <<'SCRIPT'
 #!/usr/bin/env bash
 set -euo pipefail
+
+if [[ "${1:-}" == "pr" && "${2:-}" == "comment" ]]; then
+  printf 'pr comment %s\n' "$*" >> "${GH_PR_COMMENT_LOG:-/dev/null}"
+  exit 0
+fi
+
+if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
+  printf 'status %s\n' "$*" >> "${GH_STATUS_LOG:-/dev/null}"
+  exit 0
+fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
   printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"

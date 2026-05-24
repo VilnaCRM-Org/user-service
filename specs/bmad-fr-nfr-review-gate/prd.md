@@ -23,20 +23,22 @@ revision: 1
 | FR-09 | The gate reuses the existing AI reviewer/fixer loop instead of creating a parallel agent runner.                                                 | P0       |
 | FR-10 | BMAD mode forces the 5/5 threshold, pinned NFR categories, and full required marker list even when generic `AI_REVIEW_*` variables are set.      | P0       |
 | FR-11 | The workflow is discoverable through Make help and AI skill documentation.                                                                       | P1       |
+| FR-12 | BMAD mode can publish a concise final PASS/FAIL review summary as a GitHub PR comment.                                                           | P0       |
+| FR-13 | BMAD mode can publish a GitHub-visible commit status for the review gate, including failure during remediation and success after final PASS.     | P0       |
 
 ## Non-Functional Requirements
 
-| ID     | Category         | Requirement                                                                                                                        |
-| ------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-01 | Maintainability  | Keep the implementation in tracked Bash, Markdown, Make, and Bats files with no PHP runtime dependency.                            |
-| NFR-02 | Automatability   | The target must support non-interactive execution with deterministic exit code semantics from the underlying review loop.          |
-| NFR-03 | Dependability    | The gate must fail closed on missing specs, missing evidence, missing markers, failed verification, or unverified GitHub/CI state. |
-| NFR-04 | Security         | Prompts and reports must not request or print secrets, tokens, private keys, or sensitive environment values.                      |
-| NFR-05 | Manageability    | Operators can configure spec path, manual evidence, PR number, base ref, agents, log dir, max iterations, and verify command.      |
-| NFR-06 | Interoperability | The gate supports existing Codex/Claude review adapters, BMAD markdown specs, GitHub CLI context, and `make ci`.                   |
-| NFR-07 | Usability        | Skill docs include a minimal command, optional inputs, PASS markers, and manual evidence format.                                   |
-| NFR-08 | Performance      | The wrapper adds minimal local work before invoking the existing AI review loop.                                                   |
-| NFR-09 | Availability     | If remote GitHub/CI data or the applicable PR check rollup cannot be verified, the review must not pass.                           |
+| ID     | Category         | Requirement                                                                                                                                             |
+| ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NFR-01 | Maintainability  | Keep the implementation in tracked Bash, Markdown, Make, and Bats files with no PHP runtime dependency.                                                 |
+| NFR-02 | Automatability   | The target must support non-interactive execution with deterministic exit code semantics from the underlying review loop.                               |
+| NFR-03 | Dependability    | The gate must fail closed on missing specs, missing evidence, missing markers, failed verification, or unverified GitHub/CI state.                      |
+| NFR-04 | Security         | Prompts and reports must not request or print secrets, tokens, private keys, or sensitive environment values.                                           |
+| NFR-05 | Manageability    | Operators can configure spec path, manual evidence, PR number, base ref, agents, log dir, max iterations, verify command, and GitHub result publishing. |
+| NFR-06 | Interoperability | The gate supports existing Codex/Claude review adapters, BMAD markdown specs, GitHub CLI context, and `make ci`.                                        |
+| NFR-07 | Usability        | Skill docs include a minimal command, optional inputs, PASS markers, and manual evidence format.                                                        |
+| NFR-08 | Performance      | The wrapper adds minimal local work before invoking the existing AI review loop.                                                                        |
+| NFR-09 | Availability     | If remote GitHub/CI data or the applicable PR check rollup cannot be verified, the review must not pass.                                                |
 
 ## NFR Catalog
 
@@ -59,6 +61,9 @@ Security, Manageability, Automatability, and Dependability.
 | AC-09 | Documentation explains the 5/5 rule, manual evidence format, and pinned NFR catalog.                                                                                 |
 | AC-10 | The Codex and Claude skills route agents to the new Make target.                                                                                                     |
 | AC-11 | If GitHub reports no required checks for the PR branch, the CI gate verifies every visible current PR check instead of failing solely because `--required` is empty. |
+| AC-12 | A final BMAD PASS or terminal FAIL can post a PR comment containing the result, commit, status context, and bounded review/verification excerpts.                    |
+| AC-13 | BMAD review execution can publish a pending status at start, a failure status when the reviewer finds fixable issues, and a success status after verified PASS.      |
+| AC-14 | The BMAD status context is excluded from PR check corroboration so a previous failed gate status does not prevent the next remediation run from starting.            |
 
 ## Scoring Rubric
 

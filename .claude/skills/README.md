@@ -169,6 +169,8 @@ NFR catalog category before completion
 - Uses BMAD-specific AI review prompts and required PASS markers
 - Fails closed when evidence, manual testing, GitHub status, or CI cannot be
   verified
+- Publishes a bounded PR comment and `BMAD FR/NFR Review Gate` commit status
+  for PR runs unless explicitly disabled for dry runs
 
 **Key command**:
 `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`

@@ -28,6 +28,11 @@ require_gate_markers="${AI_REVIEW_REQUIRE_GATE_MARKERS:-false}"
 require_scorecard_validation="${AI_REVIEW_REQUIRE_SCORECARD_VALIDATION:-${AI_REVIEW_REQUIRE_BMAD_EVIDENCE:-false}}"
 require_github_ci_corroboration="${AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION:-false}"
 required_gate_markers_raw="${AI_REVIEW_REQUIRED_GATE_MARKERS:-FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS}"
+post_pr_comment="${AI_REVIEW_POST_PR_COMMENT:-false}"
+post_github_status="${AI_REVIEW_POST_GITHUB_STATUS:-false}"
+github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-AI Review}"
+github_status_target_url="${AI_REVIEW_GITHUB_STATUS_TARGET_URL:-}"
+pr_comment_max_lines="${AI_REVIEW_PR_COMMENT_MAX_LINES:-160}"
 
 mkdir -p "$log_dir"
 
@@ -47,6 +52,11 @@ fi
 
 if [[ ! "$score_threshold" =~ ^[1-5]$ ]]; then
   echo "AI_REVIEW_SCORE_THRESHOLD must be an integer from 1 to 5 (got: $score_threshold)" >&2
+  exit 1
+fi
+
+if [[ ! "$pr_comment_max_lines" =~ ^[1-9][0-9]*$ ]]; then
+  echo "AI_REVIEW_PR_COMMENT_MAX_LINES must be a positive integer (got: $pr_comment_max_lines)" >&2
   exit 1
 fi
 
@@ -106,6 +116,11 @@ agent_env=(
   -u AI_REVIEW_REQUIRE_BMAD_EVIDENCE
   -u AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION
   -u AI_REVIEW_REQUIRED_GATE_MARKERS
+  -u AI_REVIEW_POST_PR_COMMENT
+  -u AI_REVIEW_POST_GITHUB_STATUS
+  -u AI_REVIEW_GITHUB_STATUS_CONTEXT
+  -u AI_REVIEW_GITHUB_STATUS_TARGET_URL
+  -u AI_REVIEW_PR_COMMENT_MAX_LINES
   -u AI_REVIEW_BASE_REF
   -u AI_REVIEW_BASE
   -u AI_REVIEW_MAX_ITER
@@ -128,6 +143,9 @@ agent_env=(
   -u BMAD_REVIEW_MAX_ITER
   -u BMAD_REVIEW_LOG_DIR
   -u BMAD_REVIEW_AGENTS
+  -u BMAD_REVIEW_POST_PR_COMMENT
+  -u BMAD_REVIEW_POST_GITHUB_STATUS
+  -u BMAD_REVIEW_STATUS_CONTEXT
 )
 
 # --- Agent validation -----------------------------------------------------
@@ -253,6 +271,35 @@ escape_prompt_replacement() {
   value="${value//\\/\\\\}"
   value="${value//&/\\&}"
   printf "%s" "$value"
+}
+
+is_enabled() {
+  case "$(printf "%s" "${1:-}" | tr '[:upper:]' '[:lower:]')" in
+    true|1|yes|on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+jq_string_escape() {
+  local value="$1"
+
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf "%s" "$value"
+}
+
+github_checks_summary_jq() {
+  local escaped_context
+
+  if is_enabled "$post_github_status"; then
+    escaped_context="$(jq_string_escape "$github_status_context")"
+    printf '[([.[] | select(.name != "%s")] | length), ([.[] | select(.name != "%s" and .bucket != "pass") | .name] | join(","))] | @tsv' \
+      "$escaped_context" \
+      "$escaped_context"
+    return
+  fi
+
+  printf '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | @tsv'
 }
 
 build_review_prompt() {
@@ -507,6 +554,7 @@ review_has_github_ci_corroboration() {
   local pr_summary check_summary checks_status is_draft review_decision check_count check_blockers
   local pr_number_detected pr_url pr_head_oid local_head_oid
   local owner repo pr_path unresolved_threads query page_summary page_unresolved has_next cursor
+  local checks_summary_jq
 
   if ! command -v gh >/dev/null 2>&1; then
     echo "Warning: GitHub CI corroboration requires gh CLI." >&2
@@ -548,10 +596,12 @@ review_has_github_ci_corroboration() {
     return 1
   fi
 
+  checks_summary_jq="$(github_checks_summary_jq)"
+
   if check_summary="$("${pr_checks_cmd[@]}" \
     --required \
     --json name,bucket \
-    --jq '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | @tsv' 2>/dev/null)"; then
+    --jq "$checks_summary_jq" 2>/dev/null)"; then
     checks_status=0
   else
     checks_status=$?
@@ -571,7 +621,7 @@ review_has_github_ci_corroboration() {
     fi
   elif check_summary="$("${pr_checks_cmd[@]}" \
     --json name,bucket \
-    --jq '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | @tsv' 2>/dev/null)"; then
+    --jq "$checks_summary_jq" 2>/dev/null)"; then
     IFS=$'\t' read -r check_count check_blockers <<< "$check_summary"
     if ! [[ "$check_count" =~ ^[0-9]+$ ]] || ((check_count == 0)); then
       echo "Warning: GitHub PR check rollup is empty." >&2
@@ -650,6 +700,199 @@ run_verify() {
   bash -c "$verify_cmd" >"$output_file" 2>&1
 }
 
+# --- GitHub result publishing ---------------------------------------------
+
+github_pr_number=""
+github_pr_url=""
+github_pr_head_oid=""
+github_owner=""
+github_repo=""
+github_context_loaded=false
+
+load_github_pr_context() {
+  local pr_view_cmd=(gh pr view)
+  local pr_summary pr_path is_draft review_decision
+
+  if [[ "$github_context_loaded" == "true" ]]; then
+    return 0
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "Warning: GitHub publishing requires gh CLI." >&2
+    return 1
+  fi
+
+  if [[ -n "$pr_number" ]]; then
+    pr_view_cmd+=("$pr_number")
+  fi
+
+  if ! pr_summary="$("${pr_view_cmd[@]}" \
+    --json number,isDraft,reviewDecision,url,headRefOid \
+    --jq '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | @tsv' 2>/dev/null)"; then
+    echo "Warning: Unable to query GitHub PR context for BMAD result publishing." >&2
+    return 1
+  fi
+
+  IFS=$'\t' read -r github_pr_number is_draft review_decision github_pr_url github_pr_head_oid <<< "$pr_summary"
+  if [[ -z "$github_pr_number" || -z "$github_pr_url" || -z "$github_pr_head_oid" ]]; then
+    echo "Warning: GitHub PR context is incomplete for BMAD result publishing." >&2
+    return 1
+  fi
+
+  pr_path="${github_pr_url#*://}"
+  pr_path="${pr_path#*/}"
+  github_owner="${pr_path%%/*}"
+  pr_path="${pr_path#*/}"
+  github_repo="${pr_path%%/*}"
+  if [[ -z "$github_owner" || -z "$github_repo" || "$github_owner" == "$github_pr_url" || "$github_repo" == "$github_pr_url" ]]; then
+    echo "Warning: Unable to parse GitHub repository from PR URL: $github_pr_url" >&2
+    return 1
+  fi
+
+  github_context_loaded=true
+  return 0
+}
+
+post_github_commit_status() {
+  local state="$1"
+  local description="$2"
+  local target_url api_path
+  local status_args=()
+
+  is_enabled "$post_github_status" || return 0
+  load_github_pr_context || return 1
+
+  target_url="${github_status_target_url:-$github_pr_url}"
+  api_path="repos/${github_owner}/${github_repo}/statuses/${github_pr_head_oid}"
+  status_args=(
+    "$api_path"
+    -X POST
+    -f "state=$state"
+    -f "context=$github_status_context"
+    -f "description=$description"
+  )
+  if [[ -n "$target_url" ]]; then
+    status_args+=(-f "target_url=$target_url")
+  fi
+
+  gh api "${status_args[@]}" >/dev/null
+}
+
+append_report_excerpt() {
+  local title="$1"
+  local file="$2"
+  local line_count
+
+  [[ -n "$file" && -f "$file" ]] || return 0
+
+  line_count="$(wc -l < "$file" | tr -d '[:space:]')"
+  {
+    echo
+    echo "<details>"
+    echo "<summary>${title}</summary>"
+    echo
+    echo '```text'
+    sed -n "1,${pr_comment_max_lines}p" "$file"
+    if [[ "$line_count" =~ ^[0-9]+$ ]] && ((line_count > pr_comment_max_lines)); then
+      echo
+      echo "[truncated after ${pr_comment_max_lines} lines]"
+    fi
+    echo '```'
+    echo "</details>"
+  }
+}
+
+write_pr_comment_body() {
+  local result="$1"
+  local reason="$2"
+  local review_file="${3:-}"
+  local ci_file="${4:-}"
+  local body_file="$5"
+  local short_head
+
+  short_head="$(git rev-parse --short HEAD 2>/dev/null || printf "unknown")"
+
+  {
+    echo "## BMAD FR/NFR Review Gate: ${result}"
+    echo
+    echo "- Commit: \`${short_head}\`"
+    echo "- Status context: \`${github_status_context}\`"
+    echo "- Result: ${reason}"
+    if [[ -n "$github_pr_url" ]]; then
+      echo "- PR: ${github_pr_url}"
+    fi
+    append_report_excerpt "Review Output" "$review_file"
+    append_report_excerpt "Verification Output" "$ci_file"
+  } > "$body_file"
+}
+
+post_pr_result_comment() {
+  local result="$1"
+  local reason="$2"
+  local review_file="${3:-}"
+  local ci_file="${4:-}"
+  local body_file
+
+  is_enabled "$post_pr_comment" || return 0
+  load_github_pr_context || return 1
+
+  body_file="$(mktemp "${log_dir%/}/pr-comment-${result}.XXXXXX.md")"
+  write_pr_comment_body "$result" "$reason" "$review_file" "$ci_file" "$body_file"
+  gh pr comment "$github_pr_number" --body-file "$body_file" >/dev/null
+}
+
+publish_gate_result() {
+  local result="$1"
+  local reason="$2"
+  local review_file="${3:-}"
+  local ci_file="${4:-}"
+  local state description
+  local publish_ok=true
+
+  case "$result" in
+    PASS)
+      state="success"
+      description="BMAD FR/NFR review gate passed."
+      ;;
+    FAIL)
+      state="failure"
+      description="BMAD FR/NFR review gate failed."
+      ;;
+    PENDING)
+      state="pending"
+      description="BMAD FR/NFR review gate is running."
+      ;;
+    *)
+      echo "Warning: Unknown BMAD result for publishing: $result" >&2
+      return 1
+      ;;
+  esac
+
+  if [[ "$result" == "PASS" ]]; then
+    if ! post_pr_result_comment "$result" "$reason" "$review_file" "$ci_file"; then
+      echo "Warning: Failed to publish PR comment for BMAD result: $result" >&2
+      publish_ok=false
+    fi
+    if [[ "$publish_ok" == "true" ]] && ! post_github_commit_status "$state" "$description"; then
+      echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
+      publish_ok=false
+    fi
+  else
+    if ! post_github_commit_status "$state" "$description"; then
+      echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
+      publish_ok=false
+    fi
+    if [[ "$result" != "PENDING" ]]; then
+      if ! post_pr_result_comment "$result" "$reason" "$review_file" "$ci_file"; then
+        echo "Warning: Failed to publish PR comment for BMAD result: $result" >&2
+        publish_ok=false
+      fi
+    fi
+  fi
+
+  [[ "$publish_ok" == "true" ]]
+}
+
 # --- Agent runners --------------------------------------------------------
 
 run_review() {
@@ -720,16 +963,25 @@ run_fix() {
 iter=1
 ci_log=""
 last_verify_ok=true
+latest_review_log=""
+
+if ! publish_gate_result "PENDING" "BMAD FR/NFR review gate started." "" ""; then
+  echo "Warning: Unable to publish pending BMAD gate status; continuing with local review." >&2
+fi
 
 if [[ "$require_github_ci_corroboration" == "true" ]] \
   && ! review_has_github_ci_corroboration; then
-  echo "GitHub corroboration failed before AI review. Fix PR review/check state and rerun." >&2
+  failure_reason="GitHub corroboration failed before AI review. Fix PR review/check state and rerun."
+  publish_gate_result "FAIL" "$failure_reason" "" "" || true
+  echo "$failure_reason" >&2
   exit 1
 fi
 
 while :; do
   if [[ "$max_iter" -ne 0 && "$iter" -gt "$max_iter" ]]; then
-    echo "Reached AI_REVIEW_MAX_ITER=$max_iter without PASS." >&2
+    failure_reason="Reached AI_REVIEW_MAX_ITER=$max_iter without PASS."
+    publish_gate_result "FAIL" "$failure_reason" "$latest_review_log" "$ci_log" || true
+    echo "$failure_reason" >&2
     exit 1
   fi
 
@@ -742,6 +994,7 @@ while :; do
     gate_failure_reason=""
     run_review "$agent" "$review_log"
     cp "$review_log" "$log_dir/review-latest-${agent}.md"
+    latest_review_log="$review_log"
 
     status=$(parse_status_line "$review_log")
     if [[ "$status" == "UNKNOWN" ]]; then
@@ -778,23 +1031,36 @@ while :; do
 
   cp "${fail_log:-$log_dir/review-latest-${agents[-1]}.md}" \
     "$log_dir/review-latest.md" 2>/dev/null || true
+  latest_review_log="$log_dir/review-latest.md"
 
   if [[ "$all_pass" == true ]]; then
     if [[ "$verify_on_pass" == "true" ]]; then
       verify_ts=$(date +%Y%m%d_%H%M%S)
       ci_log="$log_dir/ci-pass-iter${iter}-${verify_ts}.log"
       if ! run_verify "$ci_log"; then
-        echo "Verification failed after AI review PASS (see $ci_log)." >&2
+        failure_reason="Verification failed after AI review PASS (see $ci_log)."
+        publish_gate_result "FAIL" "$failure_reason" "$latest_review_log" "$ci_log" || true
+        echo "$failure_reason" >&2
         exit 1
       fi
       last_verify_ok=true
     fi
     if [[ "$last_verify_ok" != true ]]; then
-      echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
+      failure_reason="AI review PASS, but last verification failed. Fix verification failures first."
+      publish_gate_result "FAIL" "$failure_reason" "$latest_review_log" "$ci_log" || true
+      echo "$failure_reason" >&2
+      exit 1
+    fi
+    if ! publish_gate_result "PASS" "AI review PASS." "$latest_review_log" "$ci_log"; then
+      echo "AI review PASS, but publishing the BMAD gate result failed." >&2
       exit 1
     fi
     echo "AI review PASS." >&2
     exit 0
+  fi
+
+  if ! post_github_commit_status "failure" "BMAD FR/NFR review gate failed."; then
+    echo "Warning: Failed to publish GitHub status for BMAD review iteration failure." >&2
   fi
 
   # --- Fix phase ---

@@ -23,6 +23,8 @@ revision: 1
   list even when generic review-loop environment variables are present.
 - Require exact first-line status parsing in BMAD mode.
 - Add optional verification after PASS.
+- Add optional GitHub PR comment and commit-status publishing for BMAD gate
+  results.
 - Preserve existing generic review behavior.
 
 ## Epic 3: Skills and Documentation
@@ -48,9 +50,11 @@ revision: 1
 | FR-03, FR-04, FR-05, FR-06 | Epic 1         |
 | FR-07, FR-08, FR-09, FR-10 | Epic 2         |
 | FR-11                      | Epic 3         |
+| FR-12, FR-13               | Epic 2         |
 | NFR-01, NFR-04             | Epic 1         |
 | NFR-02, NFR-03, NFR-05     | Epic 2         |
 | NFR-06, NFR-08, NFR-09     | Epic 2         |
 | NFR-07                     | Epic 3         |
 | AC-01 through AC-10        | Epic 4         |
 | AC-11                      | Epic 2, Epic 4 |
+| AC-12 through AC-14        | Epic 2, Epic 4 |

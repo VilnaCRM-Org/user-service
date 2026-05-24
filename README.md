@@ -163,6 +163,9 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 The gate uses the pinned NonFunctionals.com categories and fails unless every
 applicable FR/NFR, manual-test expectation, QA checkpoint, GitHub completion
 gate, and CI gate scores 5/5 or has explicit not-applicable evidence.
+For PR runs, the BMAD wrapper also publishes a concise PR comment and a
+`BMAD FR/NFR Review Gate` commit status unless disabled through
+`BMAD_REVIEW_POST_PR_COMMENT=false` or `BMAD_REVIEW_POST_GITHUB_STATUS=false`.
 
 For LLM-powered features, prompt workflows, or provider integrations, read `.claude/skills/clean-architecture-llm/SKILL.md` before implementation. It defines provider-agnostic ports/adapters, prompt construction rules, deterministic testing, and privacy review expectations.
 
