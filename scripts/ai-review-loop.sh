@@ -334,7 +334,7 @@ parse_status_line() {
   local file="$1"
   local line
 
-  if [[ "$require_gate_markers" == "true" ]]; then
+  if is_enabled "$require_gate_markers"; then
     if ! IFS= read -r line < "$file" && [[ -z "$line" ]]; then
       echo "UNKNOWN"
       return
@@ -918,10 +918,10 @@ run_review() {
       ;;
     claude)
       prompt="$(build_review_prompt)"
-      if [[ "${AI_REVIEW_CLAUDE_USE_BUILTIN_REVIEW:-true}" == "true" \
-        && "$review_prompt_file" == "scripts/ai-review-prompts/review.md" \
-        && "$require_gate_markers" != "true" \
-        && -z "$spec_path" ]]; then
+      if is_enabled "${AI_REVIEW_CLAUDE_USE_BUILTIN_REVIEW:-true}" \
+        && [[ "$review_prompt_file" == "scripts/ai-review-prompts/review.md" ]] \
+        && ! is_enabled "$require_gate_markers" \
+        && [[ -z "$spec_path" ]]; then
         "${agent_env[@]}" "$claude_cmd" -p "/review" \
           ${claude_flags[@]+"${claude_flags[@]}"} \
           --append-system-prompt "After completing the review, your FIRST line of output MUST be exactly STATUS: PASS or STATUS: FAIL. Then list any issues found." \
@@ -975,7 +975,7 @@ if ! publish_gate_result "PENDING" "BMAD FR/NFR review gate started." "" ""; the
   echo "Warning: Unable to publish pending BMAD gate status; continuing with local review." >&2
 fi
 
-if [[ "$require_github_ci_corroboration" == "true" ]] \
+if is_enabled "$require_github_ci_corroboration" \
   && ! review_has_github_ci_corroboration; then
   failure_reason="GitHub corroboration failed before AI review. Fix PR review/check state and rerun."
   publish_gate_result "FAIL" "$failure_reason" "" "" || true
@@ -1008,15 +1008,15 @@ while :; do
       status="FAIL"
     fi
 
-    if [[ "$status" == "PASS" && "$require_gate_markers" == "true" ]]; then
+    if [[ "$status" == "PASS" ]] && is_enabled "$require_gate_markers"; then
       if ! review_has_required_gate_markers "$review_log"; then
         gate_failure_reason="missing required gate markers"
         status="FAIL"
-      elif [[ "$require_scorecard_validation" == "true" ]] \
+      elif is_enabled "$require_scorecard_validation" \
         && ! review_has_scorecard_evidence "$review_log"; then
         gate_failure_reason="missing or invalid scorecard evidence"
         status="FAIL"
-      elif [[ "$require_github_ci_corroboration" == "true" ]] \
+      elif is_enabled "$require_github_ci_corroboration" \
         && ! review_has_github_ci_corroboration; then
         gate_failure_reason="GitHub corroboration failed"
         status="FAIL"
@@ -1040,7 +1040,7 @@ while :; do
   latest_review_log="$log_dir/review-latest.md"
 
   if [[ "$all_pass" == true ]]; then
-    if [[ "$verify_on_pass" == "true" ]]; then
+    if is_enabled "$verify_on_pass"; then
       verify_ts=$(date +%Y%m%d_%H%M%S)
       ci_log="$log_dir/ci-pass-iter${iter}-${verify_ts}.log"
       if ! run_verify "$ci_log"; then

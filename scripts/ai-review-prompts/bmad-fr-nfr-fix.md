@@ -20,7 +20,10 @@ Constraints:
 - Keep changes within the current PR scope and the referenced BMAD specs.
 - Do not fabricate manual evidence. If manual evidence is missing, add or
   update a checklist/template and clearly report the remaining human action.
-- Do not lower quality thresholds or add suppressions to hide failures.
+- Do not lower quality thresholds or add suppressions to hide failures, except
+  repo-approved inline suppressions for locked analyzer configs such as
+  `psalm.xml` and `infection.json5`, including specific DI-wired/static-analysis
+  edge cases.
 - Do not add unrelated refactors.
 
 Fix priorities:
