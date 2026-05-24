@@ -35,6 +35,11 @@ Parallel stage groups:
 | **Tests + OpenAPI** | unit-tests, integration-tests, behat, openapi-diff, spectral, schemathesis   | setup-test-db first   |
 | **Mutation**        | infection                                                                    | None                  |
 
+`make psalm` also runs the repository's `ArchitectureGuardPlugin`. The guard
+protects reviewed code-organization rules, including no registration
+orchestrator directory, no structured batch user payload arrays in application
+workflow signatures, and no repeated repository lookup calls inside loops.
+
 ### AI-Friendly Output
 
 Make's `--output-sync=target` flag groups each target's output together after completion, preventing interleaved output from parallel tasks.

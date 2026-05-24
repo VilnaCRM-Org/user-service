@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
-use App\User\Domain\Collection\UserCollection;
+use App\User\Application\DTO\BatchUserRegistrationInputCollection;
 
-final class RegisterUserBatchCommand implements CommandInterface
+final readonly class RegisterUserBatchCommand implements CommandInterface
 {
     public function __construct(
-        public readonly UserCollection $users,
+        public BatchUserRegistrationInputCollection $users,
     ) {
     }
 }

@@ -16,7 +16,7 @@ Feature: User GraphQL Operations
     And user with email "graphqltest@mail.com2" exists
     And creating user with email "graphqltest@mail.com2" initials "name surname" password "passWORD1"
     When graphQL request is send
-    Then graphql error message should be "email: This email address is already registered"
+    Then graphql error message should be "This email address is already registered"
 
   Scenario: Creating a user with invalid email
     Given I am authenticated as user "gql-ops-auth3@test.com"
@@ -28,28 +28,28 @@ Feature: User GraphQL Operations
   Scenario: Creating a user with password with no uppercase letters
     Given I am authenticated as user "gql-ops-auth4@test.com"
     And requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "password1"
+    And creating user with email "graphql-password-uppercase@example.com" initials "name surname" password "password1"
     When graphQL request is send
     Then graphql error message should be "password: Password must contain at least one uppercase letter"
 
   Scenario: Creating a user with password with no numbers
     Given I am authenticated as user "gql-ops-auth5@test.com"
     And requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "passWORD"
+    And creating user with email "graphql-password-number@example.com" initials "name surname" password "passWORD"
     When graphQL request is send
     Then graphql error message should be "password: Password must contain at least one number"
 
   Scenario: Creating a user with too short password
     Given I am authenticated as user "gql-ops-auth6@test.com"
     And requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials "name surname" password "WORD1"
+    And creating user with email "graphql-password-short@example.com" initials "name surname" password "WORD1"
     When graphQL request is send
     Then graphql error message should be "password: Password must be between 8 and 64 characters long"
 
   Scenario: Creating a user with initials that contains only spaces
     Given I am authenticated as user "gql-ops-auth7@test.com"
     And requesting to return user's id and email
-    And creating user with email "graphqlTest@mail.com" initials " " password "passWORD1"
+    And creating user with email "graphql-initials-spaces@example.com" initials " " password "passWORD1"
     When graphQL request is send
     Then graphql error message should be "initials: Initials cannot consist only of spaces"
 

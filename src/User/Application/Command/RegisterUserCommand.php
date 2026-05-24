@@ -6,12 +6,12 @@ namespace App\User\Application\Command;
 
 use App\Shared\Domain\Bus\Command\CommandInterface;
 
-final class RegisterUserCommand implements CommandInterface
+final readonly class RegisterUserCommand implements CommandInterface
 {
     public function __construct(
-        public readonly string $email,
-        public readonly string $initials,
-        public readonly string $password,
+        public string $email,
+        public string $initials,
+        public string $password,
     ) {
     }
 }

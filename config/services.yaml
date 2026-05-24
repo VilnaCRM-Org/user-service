@@ -319,6 +319,7 @@ services:
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Factory\AuthCookieFactoryInterface: '@App\User\Application\Factory\AuthCookieFactory'
+  App\User\Application\Query\FindUserByEmailQueryHandlerInterface: '@App\User\Application\Query\FindUserByEmailQueryHandler'
   App\OAuth\Application\Factory\OAuthProviderCollectionFactoryInterface: '@App\OAuth\Application\Factory\OAuthProviderCollectionFactory'
   App\User\Application\Validator\TwoFactorCodeValidatorInterface: '@App\User\Application\Validator\TwoFactorCodeValidator'
   App\User\Application\Factory\RecoveryCodeBatchFactoryInterface: '@App\User\Infrastructure\Factory\RecoveryCodeBatchFactory'

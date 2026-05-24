@@ -186,6 +186,13 @@ final readonly class CreateCustomerCommandHandler implements CommandHandlerInter
 }
 ```
 
+### CQRS Workflow Rules
+
+- Write workflows must be represented by `Command` plus `CommandHandler` classes. If a write operation needs to return data, return a `CommandResponseInterface` DTO from the handler and have processors/resolvers validate it with `CommandResponseTypeGuard`.
+- Processors and resolvers should create commands through existing factories and dispatch them through `CommandBusInterface`; they should not delegate write workflows to ad-hoc orchestrators.
+- Do not create `Application/Registration` workflow directories or registration orchestrator/service classes. Psalm architecture guards enforce this in `src/`.
+- Do not pass structured payload arrays through commands, handlers, factories, processors, or resolvers. Promote rows to named input objects and typed collections at the boundary.
+
 **See**: [REFERENCE.md](REFERENCE.md) for complete CQRS patterns.
 
 ---

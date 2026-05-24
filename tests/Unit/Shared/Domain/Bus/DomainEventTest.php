@@ -6,12 +6,14 @@ namespace App\Tests\Unit\Shared\Domain\Bus;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
 use App\Tests\Unit\UnitTestCase;
+use DateTimeImmutable;
+use DateTimeInterface;
 
 final class DomainEventTest extends UnitTestCase
 {
     public function testConstructWithProvidedDate(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
         $occurredOn = '2023-07-24';
 
         $event = $this->getMockForAbstractClass(
@@ -23,7 +25,7 @@ final class DomainEventTest extends UnitTestCase
 
     public function testEventIdIsAccessibleAndCorrect(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
         $occurredOn = '2023-07-24';
 
         $event = $this->getMockForAbstractClass(
@@ -41,15 +43,27 @@ final class DomainEventTest extends UnitTestCase
 
     public function testConstructWithoutProvidedDate(): void
     {
-        $eventId = 'event-id';
+        $eventId = $this->faker->uuid();
+        $beforeConstruction = new DateTimeImmutable();
+
         $event = $this->getMockForAbstractClass(
             DomainEvent::class,
             [$eventId, null]
         );
+        $afterConstruction = new DateTimeImmutable();
+        $occurredOn = new DateTimeImmutable($event->occurredOn());
 
-        $expectedDate = (new \DateTimeImmutable())->format(
-            'Y-m-d\TH:i:s+00:00'
+        $this->assertSame(
+            $occurredOn->format(DateTimeInterface::ATOM),
+            $event->occurredOn()
         );
-        $this->assertEquals($expectedDate, $event->occurredOn());
+        $this->assertGreaterThanOrEqual(
+            $beforeConstruction->getTimestamp(),
+            $occurredOn->getTimestamp()
+        );
+        $this->assertLessThanOrEqual(
+            $afterConstruction->getTimestamp(),
+            $occurredOn->getTimestamp()
+        );
     }
 }

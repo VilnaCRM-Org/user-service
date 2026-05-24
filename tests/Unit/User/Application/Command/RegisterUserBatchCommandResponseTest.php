@@ -12,7 +12,7 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 
-final class RegisterUserCommandResponseTest extends UnitTestCase
+final class RegisterUserBatchCommandResponseTest extends UnitTestCase
 {
     private const BATCH_SIZE = 2;
     private UserFactoryInterface $userFactory;

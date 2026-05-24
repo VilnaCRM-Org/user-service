@@ -133,17 +133,25 @@ final class CachedUserRepository extends UserRepositoryDecorator
     public function findByEmail(string $email): ?UserInterface
     {
         $cacheKey = $this->cacheKeyBuilder->buildUserEmailKey($email);
-        $fallback = fn () => $this->inner->findByEmail($email);
+        $cacheLoaderUsed = false;
+        $fallbackUsed = false;
+        $fallback = function () use ($email, &$fallbackUsed): ?UserInterface {
+            $fallbackUsed = true;
 
-        $user = $this->fetchUser(
+            return $this->inner->findByEmail($email);
+        };
+
+        $user = $this->fetchUserByEmail(
             $cacheKey,
-            fn (ItemInterface $item): ?UserInterface => $this->loadUserByEmail(
-                $item,
-                $email,
-                $cacheKey
-            ),
+            $email,
+            $cacheLoaderUsed,
             $fallback
         );
+
+        if ($user === null && !$cacheLoaderUsed && !$fallbackUsed) {
+            $this->cache->delete($cacheKey);
+            $user = $fallback();
+        }
 
         return $this->ensureEmailCacheHitMatches($user, $email, $cacheKey, $fallback);
     }
@@ -207,6 +215,34 @@ final class CachedUserRepository extends UserRepositoryDecorator
                 'operation' => 'cache.invalidation.error',
             ]);
         }
+    }
+
+    /**
+     * @param callable(): ?UserInterface $fallback
+     */
+    private function fetchUserByEmail(
+        string $cacheKey,
+        string $email,
+        bool &$cacheLoaderUsed,
+        callable $fallback
+    ): ?UserInterface {
+        return $this->fetchUser(
+            $cacheKey,
+            function (ItemInterface $item, &$save) use (
+                $email,
+                $cacheKey,
+                &$cacheLoaderUsed
+            ): ?UserInterface {
+                $cacheLoaderUsed = true;
+                $user = $this->loadUserByEmail($item, $email, $cacheKey);
+                if ($user === null) {
+                    $save = false;
+                }
+
+                return $user;
+            },
+            $fallback
+        );
     }
 
     /**
@@ -311,16 +347,21 @@ final class CachedUserRepository extends UserRepositoryDecorator
         string $email,
         string $cacheKey
     ): ?UserInterface {
-        $item->expiresAfter(self::TTL_BY_EMAIL);
-        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
-        $item->tag(['user', "user.email.{$emailHash}"]);
-
         $this->logger->info('Cache miss - loading user by email', [
             'cache_key' => $cacheKey,
             'operation' => 'cache.miss',
         ]);
 
-        return $this->inner->findByEmail($email);
+        $user = $this->inner->findByEmail($email);
+        if ($user === null) {
+            return null;
+        }
+
+        $item->expiresAfter(self::TTL_BY_EMAIL);
+        $emailHash = $this->cacheKeyBuilder->hashEmail($email);
+        $item->tag(['user', "user.email.{$emailHash}"]);
+
+        return $user;
     }
 
     /**

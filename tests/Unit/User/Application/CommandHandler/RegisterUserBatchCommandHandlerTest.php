@@ -10,15 +10,21 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\CommandHandler\RegisterUserBatchCommandHandler;
+use App\User\Application\DTO\BatchUserRegistrationInput;
+use App\User\Application\DTO\BatchUserRegistrationInputCollection;
 use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\Factory\BatchUserRegistrationFactory;
+use App\User\Application\Factory\UserPasswordHashFactory;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function mb_strtolower;
+use function mb_strtoupper;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -63,9 +69,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     public function testInvoke(): void
     {
         $testData = $this->createBatchRegistrationTestData();
-        $command = new RegisterUserBatchCommand(
-            new UserCollection($testData['usersData'])
-        );
+        $command = $this->createBatchCommand($testData['usersData']);
 
         $this->expectSuccessfulBatchRegistration($testData);
 
@@ -76,25 +80,11 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
     public function testInvokeReturnsEmptyResponseForEmptyBatch(): void
     {
-        $command = new RegisterUserBatchCommand(new UserCollection());
+        $this->userRepository->expects($this->never())->method('findByEmails');
 
-        $this->userRepository->expects($this->never())
-            ->method('findByEmails');
-        $this->hasherFactory->expects($this->never())
-            ->method('getPasswordHasher');
-        $this->uuidFactory->expects($this->never())
-            ->method('create');
-        $this->mockTransformer->expects($this->never())
-            ->method('transformFromSymfonyUuid');
-        $this->registeredEventFactory->expects($this->never())
-            ->method('create');
-        $this->userRepository->expects($this->never())
-            ->method('saveBatch');
-        $this->eventBus->expects($this->never())
-            ->method('publish');
-
-        $response = $this->handler->__invoke($command);
-
+        $response = $this->handler->__invoke(
+            new RegisterUserBatchCommand(new BatchUserRegistrationInputCollection())
+        );
         $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
         $this->assertCount(0, $response->users);
     }
@@ -104,7 +94,12 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $testData = $this->createExistingUserTestData();
         $existingUser = $testData['existingUser'];
         $email = $testData['email'];
-        $command = $this->createBatchCommandWithUser($testData);
+        $command = $this->createBatchCommand([[
+            'email' => $testData['email'],
+            'initials' => $testData['initials'],
+            'password' => $testData['password'],
+        ],
+        ]);
 
         $this->setupExistingUserBatchExpectations($email, $existingUser);
         $this->setupNeverCalledForBatchRegistration();
@@ -114,12 +109,37 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->assertBatchResponse($response, $existingUser);
     }
 
+    public function testInvokeRejectsAmbiguousKnownEmailVariants(): void
+    {
+        $testData = $this->createExistingUserTestData();
+        $command = $this->createBatchCommand([[
+            'email' => $testData['email'],
+            'initials' => $testData['initials'],
+            'password' => $testData['password'],
+        ],
+        ]);
+        $secondUser = $this->createUserWithCredentials(
+            mb_strtoupper($testData['email'], 'UTF-8'),
+            $this->faker->word(),
+            $this->faker->password(),
+            $this->transformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->userRepository->expects($this->once())
+            ->method('findByEmails')
+            ->with([$testData['email']])
+            ->willReturn(new UserCollection([$testData['existingUser'], $secondUser]));
+        $this->setupNeverCalledForBatchRegistration();
+
+        $this->expectException(DuplicateEmailException::class);
+
+        $this->handler->__invoke($command);
+    }
+
     public function testInvokeDeduplicatesNewUsersWithinSameBatch(): void
     {
         $testData = $this->createDuplicateBatchRegistrationTestData();
-        $command = new RegisterUserBatchCommand(
-            new UserCollection($testData['usersData'])
-        );
+        $command = $this->createBatchCommand($testData['usersData']);
 
         $this->expectDuplicateBatchRegistration($testData);
 
@@ -137,9 +157,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
             $this->faker->password(),
             $this->transformer->transformFromString($this->faker->uuid())
         );
-        $command = new RegisterUserBatchCommand(
-            new UserCollection($testData['usersData'])
-        );
+        $command = $this->createBatchCommand($testData['usersData']);
 
         $this->expectSparseKnownUserBatchRegistration($testData, $knownUser);
 
@@ -151,7 +169,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     private function setHandler(): void
     {
         $batchUserRegistrationFactory = new BatchUserRegistrationFactory(
-            $this->hasherFactory,
+            new UserPasswordHashFactory($this->hasherFactory),
             $this->uuidFactory,
             $this->userFactory,
             $this->mockTransformer,
@@ -350,10 +368,11 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
      */
     private function createDuplicateBatchRegistrationTestData(): array
     {
-        $email = $this->faker->email();
+        $email = mb_strtolower($this->faker->email(), 'UTF-8');
         $initials = $this->faker->word();
         $hashedPassword = $this->faker->password();
         $userId = $this->transformer->transformFromString($this->faker->uuid());
+        $rawEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
 
         return [
             'createdUser' => $this->createUserWithCredentials(
@@ -365,7 +384,7 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
             'event' => $this->createMock(UserRegisteredEvent::class),
             'hashedPassword' => $hashedPassword,
             'userId' => $userId,
-            'usersData' => $this->createDuplicateUsersData($email, $initials),
+            'usersData' => $this->createDuplicateUsersData($rawEmail, $email, $initials),
         ];
     }
 
@@ -472,17 +491,18 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
      * @return list<array{email: string, initials: string, password: string}>
      */
     private function createDuplicateUsersData(
-        string $email,
+        string $rawEmail,
+        string $normalizedEmail,
         string $initials
     ): array {
         return [
             [
-                'email' => $email,
+                'email' => $rawEmail,
                 'initials' => $initials,
                 'password' => $this->faker->password(),
             ],
             [
-                'email' => $email,
+                'email' => $normalizedEmail,
                 'initials' => $this->faker->word(),
                 'password' => $this->faker->password(),
             ],
@@ -525,19 +545,21 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, string|UserInterface> $testData
+     * @param list<array{email: string, initials: string, password: string}> $usersData
      */
-    private function createBatchCommandWithUser(array $testData): RegisterUserBatchCommand
+    private function createBatchCommand(array $usersData): RegisterUserBatchCommand
     {
-        return new RegisterUserBatchCommand(
-            new UserCollection([
-                [
-                    'email' => $testData['email'],
-                    'initials' => $testData['initials'],
-                    'password' => $testData['password'],
-                ],
-            ])
-        );
+        $users = new BatchUserRegistrationInputCollection();
+
+        foreach ($usersData as $userData) {
+            $users->add(new BatchUserRegistrationInput(
+                $userData['email'],
+                $userData['initials'],
+                $userData['password']
+            ));
+        }
+
+        return new RegisterUserBatchCommand($users);
     }
 
     private function setupExistingUserBatchExpectations(

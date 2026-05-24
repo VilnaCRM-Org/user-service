@@ -10,15 +10,24 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
+use function array_key_exists;
+use function count;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
 use InvalidArgumentException;
+use function mb_strtolower;
+use function mb_strtoupper;
 use PHPUnit\Framework\MockObject\MockObject;
+use function preg_quote;
+use RuntimeException;
+use function sprintf;
+use function trim;
 
 final class MongoDBUserRepositoryTest extends UnitTestCase
 {
@@ -44,54 +53,39 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->transformer = new UuidTransformer(new UuidFactory());
     }
 
-    public function testConstructorThrowsExceptionForZeroBatchSize(): void
+    public function testConstructorThrowsExceptionForInvalidBatchSizes(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
+        foreach ([0, -1] as $batchSize) {
+            $registry = $this->createMock(ManagerRegistry::class);
+            $documentManager = $this->createMock(DocumentManager::class);
 
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
+            try {
+                new MongoDBUserRepository(
+                    $documentManager,
+                    $registry,
+                    $batchSize
+                );
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame(
+                    'Batch size must be greater than zero.',
+                    $exception->getMessage()
+                );
+                continue;
+            }
 
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            0
-        );
-    }
-
-    public function testConstructorThrowsExceptionForNegativeBatchSize(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
-
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
-
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            -1
-        );
+            $this->fail('Expected invalid batch size exception.');
+        }
     }
 
     public function testFindByEmailReturnsUser(): void
     {
         $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
-
-        $expectedUser = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($this->faker->uuid())
-        );
+        $expectedUser = $this->createUserWithEmail($email);
 
         $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
 
-        $user = $this->userRepository->findByEmail($email);
-
-        $this->assertSame($expectedUser, $user);
+        $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
+        $this->assertFindByEmailCaseInsensitiveReturnsUser();
     }
 
     public function testFindByEmailsReturnsUsersForNormalizedUniqueEmails(): void
@@ -126,7 +120,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             $repository,
             $queryBuilder,
             $query,
-            [$inputEmail, mb_strtolower($email)],
+            [$inputEmail, mb_strtolower($email, 'UTF-8')],
             [$user]
         );
 
@@ -147,7 +141,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             $repository,
             $queryBuilder,
             $query,
-            [$inputEmail, $trimmedEmail, mb_strtolower($email)],
+            [$inputEmail, $trimmedEmail, mb_strtolower($email, 'UTF-8')],
             [$user]
         );
 
@@ -219,6 +213,65 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->documentManager
             ->expects($this->once())
             ->method('flush');
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveDetachesFailedUserWhenFlushFails(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException(
+            'E11000 duplicate key error index: _id_',
+            11000
+        );
+
+        $this->documentManager->expects($this->once())
+            ->method('persist')->with($user);
+        $this->documentManager->expects($this->once())
+            ->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())
+            ->method('detach')
+            ->with($user);
+
+        $this->expectExceptionObject($error);
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveConvertsDuplicateKeyFailureToDuplicateEmailException(): void
+    {
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException(sprintf(
+            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
+            $email
+        ), 11000);
+
+        $user->method('getEmail')->willReturn($email);
+        $this->documentManager->expects($this->once())->method('persist')->with($user);
+        $this->documentManager->expects($this->once())->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('detach')->with($user);
+        $this->expectException(DuplicateEmailException::class);
+        $this->expectExceptionMessage(sprintf('Email "%s" is already registered', $email));
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveRethrowsDuplicateEmailFailureForDifferentEmail(): void
+    {
+        $email = $this->faker->unique()->email();
+        $otherEmail = $this->faker->unique()->email();
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException(sprintf(
+            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
+            $otherEmail
+        ), 11000);
+
+        $user->method('getEmail')->willReturn($email);
+        $this->documentManager->expects($this->once())->method('persist')->with($user);
+        $this->documentManager->expects($this->once())->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('detach')->with($user);
+        $this->expectExceptionObject($error);
 
         $this->userRepository->save($user);
     }
@@ -322,6 +375,30 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->method('clear');
 
         $this->userRepository->deleteBatch($users);
+    }
+
+    private function assertFindByEmailCaseInsensitiveReturnsUser(): void
+    {
+        $caseInsensitiveEmail = $this->faker->unique()->email();
+        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($caseInsensitiveEmail);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [
+                '$regex' => '^' . preg_quote(trim($inputEmail), '/') . '$',
+                '$options' => 'i',
+            ],
+            [$user]
+        );
+
+        $this->assertSame(
+            [$user],
+            iterator_to_array($repository->findByEmailCaseInsensitive($inputEmail))
+        );
     }
 
     /**
@@ -432,7 +509,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param list<string> $emails
+     * @param array<string, string>|list<string> $emails
      * @param list<object> $queryResult
      */
     private function expectFindByEmailsQuery(
@@ -443,44 +520,40 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         array $queryResult
     ): void {
         $this->expectQueryBuilder($repository, $queryBuilder, $emails);
-        $this->expectQueryExecution($queryBuilder, $query, $queryResult);
-    }
-
-    /**
-     * @param list<string> $emails
-     */
-    private function expectQueryBuilder(
-        MongoDBUserRepository $repository,
-        Builder $queryBuilder,
-        array $emails
-    ): void {
-        $repository->expects($this->once())
-            ->method('createQueryBuilder')
-            ->willReturn($queryBuilder);
-        $queryBuilder->expects($this->once())
-            ->method('field')
-            ->with('email')
-            ->willReturnSelf();
-        $queryBuilder->expects($this->once())
-            ->method('in')
-            ->with($emails)
-            ->willReturnSelf();
-    }
-
-    /**
-     * @param list<object> $queryResult
-     */
-    private function expectQueryExecution(
-        Builder $queryBuilder,
-        Query $query,
-        array $queryResult
-    ): void {
         $queryBuilder->expects($this->once())
             ->method('getQuery')
             ->willReturn($query);
         $query->expects($this->once())
             ->method('execute')
             ->willReturn($queryResult);
+    }
+
+    /**
+     * @param array<string, string>|list<string> $emails
+     */
+    private function expectQueryBuilder(
+        MongoDBUserRepository $repository,
+        Builder $queryBuilder,
+        array $emails
+    ): void {
+        $repository->expects($this->once())->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+        $queryBuilder->expects($this->once())->method('field')->with('email')
+            ->willReturnSelf();
+
+        if (array_key_exists('$regex', $emails)) {
+            $queryBuilder->expects($this->once())
+                ->method('equals')
+                ->with($emails)
+                ->willReturnSelf();
+
+            return;
+        }
+
+        $queryBuilder->expects($this->once())
+            ->method('in')
+            ->with($emails)
+            ->willReturnSelf();
     }
 
     private function createUserWithEmail(string $email): User

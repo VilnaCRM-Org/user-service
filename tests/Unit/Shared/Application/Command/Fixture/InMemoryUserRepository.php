@@ -7,6 +7,9 @@ namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use function array_map;
+use function mb_strtolower;
+use function trim;
 
 final class InMemoryUserRepository implements UserRepositoryInterface
 {
@@ -45,17 +48,39 @@ final class InMemoryUserRepository implements UserRepositoryInterface
         return $this->findUserBy($matcher);
     }
 
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $requestedEmail = $this->normalizeEmail($email);
+        $users = [];
+
+        foreach ($this->users as $user) {
+            if ($this->normalizeEmail($user->getEmail()) !== $requestedEmail) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
     /**
      * @param array<int, string> $emails
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $requestedEmails = array_flip($emails);
+        $requestedEmails = array_flip($this->emailLookupCandidates($emails));
         $users = [];
 
         foreach ($this->users as $user) {
-            if (!isset($requestedEmails[$user->getEmail()])) {
+            $email = $user->getEmail();
+
+            if (
+                !isset($requestedEmails[$email])
+                && !isset($requestedEmails[$this->normalizeEmail($email)])
+            ) {
                 continue;
             }
 
@@ -111,5 +136,29 @@ final class InMemoryUserRepository implements UserRepositoryInterface
             }
         }
         return null;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email), 'UTF-8');
+    }
+
+    /**
+     * @param array<int, string> $emails
+     *
+     * @return list<string>
+     */
+    private function emailLookupCandidates(array $emails): array
+    {
+        $candidates = [];
+
+        foreach ($emails as $email) {
+            $trimmedEmail = trim($email);
+            $candidates[] = $email;
+            $candidates[] = $trimmedEmail;
+            $candidates[] = mb_strtolower($trimmedEmail, 'UTF-8');
+        }
+
+        return array_values(array_unique($candidates));
     }
 }

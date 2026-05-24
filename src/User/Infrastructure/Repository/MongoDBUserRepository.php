@@ -7,19 +7,21 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
-
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
-
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
+
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
-
 use function mb_strtolower;
+use function preg_quote;
+use function str_contains;
+use Throwable;
 use function trim;
 
 /**
@@ -28,6 +30,8 @@ use function trim;
 final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
+    private const DUPLICATE_KEY_ERROR_CODE = 11000;
+
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
@@ -42,8 +46,21 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function save(object $user): void
     {
-        $this->documentManager->persist($user);
-        $this->documentManager->flush();
+        try {
+            $this->documentManager->persist($user);
+            $this->documentManager->flush();
+        } catch (Throwable $error) {
+            $this->documentManager->detach($user);
+
+            if (
+                $user instanceof UserInterface
+                && $this->isDuplicateEmailKeyError($error, $user->getEmail())
+            ) {
+                throw new DuplicateEmailException($user->getEmail(), $error);
+            }
+
+            throw $error;
+        }
     }
 
     #[\Override]
@@ -65,8 +82,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches each email exactly, with defensive trimmed and lowercase
-     * candidates for callers that pass already-normalized user input variants.
+     * Matches exact, trimmed, and lowercase email candidates.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -81,17 +97,23 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             ->field('email')->in($uniqueEmails)
             ->getQuery()
             ->execute();
-        $users = [];
 
-        foreach ($result as $user) {
-            if (!$user instanceof UserInterface) {
-                continue;
-            }
+        return $this->userCollectionFromResult($result);
+    }
 
-            $users[] = $user;
-        }
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $result = $this->createQueryBuilder()
+            ->field('email')
+            ->equals([
+                '$regex' => '^' . preg_quote(trim($email), '/') . '$',
+                '$options' => 'i',
+            ])
+            ->getQuery()
+            ->execute();
 
-        return new UserCollection($users);
+        return $this->userCollectionFromResult($result);
     }
 
     /**
@@ -140,10 +162,41 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             $emails,
             $trimmedEmails,
             array_map(
-                static fn (string $email): string => mb_strtolower($email),
+                static fn (string $email): string => mb_strtolower($email, 'UTF-8'),
                 $trimmedEmails
             )
         )));
+    }
+
+    private function isDuplicateEmailKeyError(Throwable $error, string $email): bool
+    {
+        return $this->isDuplicateKeyError($error)
+            && str_contains($error->getMessage(), 'email')
+            && str_contains($error->getMessage(), $email);
+    }
+
+    /**
+     * @param iterable<object> $result
+     */
+    private function userCollectionFromResult(iterable $result): UserCollection
+    {
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    private function isDuplicateKeyError(Throwable $error): bool
+    {
+        return $error->getCode() === self::DUPLICATE_KEY_ERROR_CODE
+            || str_contains($error->getMessage(), 'E11000');
     }
 
     private function persistUsersInBatch(UserCollection $users): void
