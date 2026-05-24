@@ -59,10 +59,11 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
         $usersData = $this->getUsersData();
         $users = $this->getUsers();
 
-        $this->setExpectations($usersData, $users);
+        $batchDto = new UserRegisterBatchDto($usersData);
+        $this->setExpectations($batchDto, $users);
 
         $response = $this->processor->process(
-            new UserRegisterBatchDto($usersData),
+            $batchDto,
             $this->operation,
             [],
             ['operation' => $this->operation]
@@ -80,11 +81,12 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
     }
 
     /**
-     * @param list<array{email: string, initials: string, password: string}> $usersData
      * @param array<UserInterface> $users
      */
-    private function setExpectations(array $usersData, array $users): void
-    {
+    private function setExpectations(
+        UserRegisterBatchDto $batchDto,
+        array $users
+    ): void {
         $this->operation->expects($this->once())
             ->method('getNormalizationContext')
             ->willReturn(['groups' => ['output']]);
@@ -95,7 +97,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
             new RegisterUserBatchCommandResponse($userCollection);
         $this->commandFactory->expects($this->once())
             ->method('create')
-            ->with($usersData)
+            ->with($batchDto)
             ->willReturn($command);
 
         $this->commandBus->expects($this->once())

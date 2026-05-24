@@ -10,13 +10,18 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\CommandHandler\RegisterUserCommandHandler;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Factory\UserPasswordHashFactory;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
+use App\User\Domain\Exception\DuplicateEmailException;
+use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -32,6 +37,7 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     private RegisterUserCommandHandler $handler;
     private PasswordHasherFactoryInterface&MockObject $hasherFactory;
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private SignUpTransformer $transformer;
     private EventBusInterface&MockObject $eventBus;
     private UserRegisteredEventFactoryInterface&MockObject $registeredEventFactory;
@@ -46,8 +52,9 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
 
         $this->createCollaborators();
         $this->handler = $this->createHandler(
-            $this->hasherFactory,
+            new UserPasswordHashFactory($this->hasherFactory),
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->transformer,
             $this->eventBus,
             $this->registeredEventFactory
@@ -58,14 +65,18 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     {
         [$command, $normalizedEmail, $initials] =
             $this->createRegistrationFixture();
+        $createdUser = $this->createMock(UserInterface::class);
 
-        $this->expectNoEmailLookup();
+        $this->expectEmailLookups($normalizedEmail, null, $createdUser);
         $this->expectUserCreation(
             $normalizedEmail,
             $initials
         );
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
+
+        $this->assertInstanceOf(RegisterUserCommandResponse::class, $response);
+        $this->assertSame($createdUser, $response->user);
     }
 
     public function testInvokeRethrowsSaveErrorWithoutPublishingRegistrationEvent(): void
@@ -74,7 +85,7 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
             $this->createRegistrationFixture();
         $error = new RuntimeException('Persistence failed.');
 
-        $this->expectNoEmailLookup();
+        $this->expectEmailLookups($normalizedEmail, null);
         $hashedPassword = $this->expectPasswordHash();
         $this->expectSaveFailure(
             $normalizedEmail,
@@ -89,12 +100,49 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
         $this->handler->__invoke($command);
     }
 
+    public function testInvokeThrowsDuplicateEmailWithoutSaving(): void
+    {
+        [$command, $normalizedEmail] = $this->createRegistrationFixture();
+        $existingUser = $this->createMock(UserInterface::class);
+
+        $this->expectEmailLookups($normalizedEmail, $existingUser);
+        $this->userRepository->expects($this->never())
+            ->method('save');
+        $this->expectNoRegistrationEvent();
+
+        $this->expectException(DuplicateEmailException::class);
+        $this->expectExceptionMessage(
+            sprintf('Email "%s" is already registered', $normalizedEmail)
+        );
+
+        $this->handler->__invoke($command);
+    }
+
+    public function testInvokeThrowsWhenCreatedUserCannotBeLoaded(): void
+    {
+        [$command, $normalizedEmail, $initials] =
+            $this->createRegistrationFixture();
+
+        $this->expectEmailLookups($normalizedEmail, null, null);
+        $this->expectUserCreation(
+            $normalizedEmail,
+            $initials
+        );
+
+        $this->expectException(UserNotFoundException::class);
+        $this->expectExceptionMessage('User not found');
+
+        $this->handler->__invoke($command);
+    }
+
     private function createCollaborators(): void
     {
         $this->hasherFactory =
             $this->createMock(PasswordHasherFactoryInterface::class);
         $this->userRepository =
             $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->eventBus = $this->createMock(EventBusInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new IdFactory());
@@ -109,15 +157,17 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     }
 
     private function createHandler(
-        PasswordHasherFactoryInterface $hasherFactory,
+        UserPasswordHashFactory $passwordHashFactory,
         UserRepositoryInterface $userRepository,
+        FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         SignUpTransformer $transformer,
         EventBusInterface $eventBus,
         UserRegisteredEventFactoryInterface $registeredEventFactory,
     ): RegisterUserCommandHandler {
         return new RegisterUserCommandHandler(
-            $hasherFactory,
+            $passwordHashFactory,
             $userRepository,
+            $findUserByEmailQueryHandler,
             $transformer,
             $eventBus,
             new UuidFactory(),
@@ -193,12 +243,6 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
             ->method('publish');
     }
 
-    private function expectNoEmailLookup(): void
-    {
-        $this->userRepository->expects($this->never())
-            ->method('findByEmail');
-    }
-
     private function userMatches(
         UserInterface $user,
         string $email,
@@ -260,5 +304,16 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
         $email = ' ' . "\u{00C4}" . strtoupper($this->faker->safeEmail()) . ' ';
 
         return [$email, mb_strtolower(trim($email), 'UTF-8')];
+    }
+
+    private function expectEmailLookups(
+        string $email,
+        ?UserInterface ...$results
+    ): void {
+        $this->findUserByEmailQueryHandler
+            ->expects($this->exactly(count($results)))
+            ->method('find')
+            ->with($email)
+            ->willReturnOnConsecutiveCalls(...$results);
     }
 }

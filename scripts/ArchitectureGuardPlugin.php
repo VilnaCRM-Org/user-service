@@ -26,10 +26,17 @@ use App\User\Domain\Event\TwoFactorEnabledEvent;
 use App\User\Domain\Event\TwoFactorFailedEvent;
 use App\User\Domain\Event\UserSignedInEvent;
 
+use function array_key_exists;
+
 use const DIRECTORY_SEPARATOR;
+
+use function is_array;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use Psalm\CodeLocation;
 use Psalm\Issue\ForbiddenCode;
@@ -49,6 +56,7 @@ use Psalm\Type\Union;
 
 use function sprintf;
 use function str_contains;
+use function str_starts_with;
 use function strtolower;
 
 final class ArchitectureGuardPlugin implements
@@ -58,6 +66,8 @@ final class ArchitectureGuardPlugin implements
     private const SOURCE_DIRECTORY = DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
     private const FACTORY_DIRECTORY = DIRECTORY_SEPARATOR . 'Factory' . DIRECTORY_SEPARATOR;
     private const COLLECTION_DIRECTORY = DIRECTORY_SEPARATOR . 'Collection' . DIRECTORY_SEPARATOR;
+    private const REGISTRATION_DIRECTORY =
+        DIRECTORY_SEPARATOR . 'Registration' . DIRECTORY_SEPARATOR;
     private const DOCTRINE_TYPE_DIRECTORY =
         DIRECTORY_SEPARATOR . 'DoctrineType' . DIRECTORY_SEPARATOR;
     private const CONSTRAINT_DIRECTORY =
@@ -66,6 +76,21 @@ final class ArchitectureGuardPlugin implements
         'Inject dependencies instead of instantiating them in constructor defaults.';
     private const BARE_ARRAY_MESSAGE =
         'Use a typed array or collection class instead of untyped array.';
+    private const FORBIDDEN_REGISTRATION_DIRECTORY_MESSAGE =
+        'Use CQRS handlers instead of Application\\Registration orchestrators.';
+    private const REPOSITORY_LOOKUP_IN_LOOP_MESSAGE =
+        'Move repository lookup calls out of loop bodies; load data in bulk before iterating.';
+    private const BATCH_USER_PAYLOAD_ARRAY_MESSAGE =
+        'Use batch registration input objects instead of payload arrays.';
+
+    private const REPOSITORY_LOOKUP_PREFIXES = [
+        'count',
+        'exists',
+        'fetch',
+        'find',
+        'get',
+        'load',
+    ];
 
     /**
      * Maps domain object types to their required typed collection classes.
@@ -172,21 +197,169 @@ final class ArchitectureGuardPlugin implements
 
         $statement = $event->getStmt();
 
+        self::reportForbiddenRegistrationDirectory($event, $filePath, $statement);
         self::reportConstructorDefaultInstantiations($event, $statement);
+        self::reportRepositoryLookupsInLoopBodies($event, $statement);
 
         if (!self::isFactorySource($filePath) && !self::isCollectionSource($filePath)) {
             self::reportDomainObjectArrayCollections($event, $statement);
         }
 
-        if (
-            !self::isDoctrineTypeSource($filePath)
-            && !self::isCollectionSource($filePath)
-            && !self::isConstraintSource($filePath)
-        ) {
+        if (!self::isBatchPayloadBoundarySource($filePath)) {
+            self::reportBatchUserPayloadArraySignatures($event, $statement);
+        }
+
+        if (self::shouldReportBareArraySignatures($filePath)) {
             self::reportBareArraySignatures($event, $statement);
         }
 
         return null;
+    }
+
+    private static function reportForbiddenRegistrationDirectory(
+        AfterFunctionLikeAnalysisEvent $event,
+        string $filePath,
+        Node\FunctionLike $statement,
+    ): void {
+        if (!self::isRegistrationSource($filePath)) {
+            return;
+        }
+
+        self::reportFunctionLikeIssue(
+            $event,
+            $statement,
+            self::FORBIDDEN_REGISTRATION_DIRECTORY_MESSAGE
+        );
+    }
+
+    private static function reportRepositoryLookupsInLoopBodies(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        foreach ($statement->getStmts() ?? [] as $node) {
+            self::reportRepositoryLookupsInNode($event, $node, false);
+        }
+    }
+
+    private static function reportRepositoryLookupsInNode(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node $node,
+        bool $insideLoop,
+    ): void {
+        self::reportRepositoryLookupInLoop($event, $node, $insideLoop);
+
+        if (self::reportLoopBodyRepositoryLookups($event, $node)) {
+            return;
+        }
+
+        self::reportRepositoryLookupsInChildNodes($event, $node, $insideLoop);
+    }
+
+    private static function reportRepositoryLookupInLoop(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node $node,
+        bool $insideLoop,
+    ): void {
+        if ($insideLoop && $node instanceof MethodCall && self::isRepositoryLookupCall($node)) {
+            self::reportFunctionLikeIssue(
+                $event,
+                $node,
+                self::REPOSITORY_LOOKUP_IN_LOOP_MESSAGE
+            );
+        }
+    }
+
+    private static function reportLoopBodyRepositoryLookups(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node $node,
+    ): bool {
+        if (
+            $node instanceof Stmt\Foreach_
+            || $node instanceof Stmt\For_
+            || $node instanceof Stmt\While_
+            || $node instanceof Stmt\Do_
+        ) {
+            self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static function reportRepositoryLookupsInChildNodes(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node $node,
+        bool $insideLoop,
+    ): void {
+        foreach ($node->getSubNodeNames() as $subNodeName) {
+            self::reportRepositoryLookupsInValue(
+                $event,
+                $node->$subNodeName,
+                $insideLoop
+            );
+        }
+    }
+
+    /**
+     * @param list<Node> $nodes
+     */
+    private static function reportRepositoryLookupsInNodes(
+        AfterFunctionLikeAnalysisEvent $event,
+        array $nodes,
+        bool $insideLoop,
+    ): void {
+        foreach ($nodes as $node) {
+            self::reportRepositoryLookupsInNode($event, $node, $insideLoop);
+        }
+    }
+
+    private static function reportRepositoryLookupsInValue(
+        AfterFunctionLikeAnalysisEvent $event,
+        mixed $value,
+        bool $insideLoop,
+    ): void {
+        if ($value instanceof Node) {
+            self::reportRepositoryLookupsInNode($event, $value, $insideLoop);
+
+            return;
+        }
+
+        if (!is_array($value)) {
+            return;
+        }
+
+        foreach ($value as $item) {
+            self::reportRepositoryLookupsInValue($event, $item, $insideLoop);
+        }
+    }
+
+    private static function isRepositoryLookupCall(MethodCall $call): bool
+    {
+        if (!$call->name instanceof Node\Identifier) {
+            return false;
+        }
+
+        if (!$call->var instanceof PropertyFetch) {
+            return false;
+        }
+
+        if (!$call->var->name instanceof Node\Identifier) {
+            return false;
+        }
+
+        if (!str_contains(strtolower($call->var->name->name), 'repository')) {
+            return false;
+        }
+
+        $methodName = strtolower($call->name->name);
+        foreach (self::REPOSITORY_LOOKUP_PREFIXES as $prefix) {
+            if (str_starts_with($methodName, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function reportConstructorDefaultInstantiations(
@@ -257,6 +430,96 @@ final class ArchitectureGuardPlugin implements
             $returnType,
             self::returnCollectionMessage($collectionName)
         );
+    }
+
+    private static function reportBatchUserPayloadArraySignatures(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        self::reportBatchUserPayloadArrayParameters($event, $statement);
+        self::reportBatchUserPayloadArrayReturnType($event, $statement);
+    }
+
+    private static function reportBatchUserPayloadArrayParameters(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        foreach ($statement->getParams() as $index => $parameter) {
+            $storageParameter = $event->getFunctionlikeStorage()->params[$index] ?? null;
+            if ($storageParameter === null) {
+                continue;
+            }
+
+            if (!self::containsBatchUserPayloadArray($storageParameter->type)) {
+                continue;
+            }
+
+            self::reportFunctionLikeIssue(
+                $event,
+                $parameter,
+                self::BATCH_USER_PAYLOAD_ARRAY_MESSAGE
+            );
+        }
+    }
+
+    private static function reportBatchUserPayloadArrayReturnType(
+        AfterFunctionLikeAnalysisEvent $event,
+        Node\FunctionLike $statement,
+    ): void {
+        if (!self::containsBatchUserPayloadArray($event->getFunctionlikeStorage()->return_type)) {
+            return;
+        }
+
+        $returnType = $statement->getReturnType();
+        if ($returnType === null) {
+            return;
+        }
+
+        self::reportFunctionLikeIssue(
+            $event,
+            $returnType,
+            self::BATCH_USER_PAYLOAD_ARRAY_MESSAGE
+        );
+    }
+
+    private static function containsBatchUserPayloadArray(?Union $type): bool
+    {
+        if ($type === null) {
+            return false;
+        }
+
+        foreach ($type->getAtomicTypes() as $atomicType) {
+            if (self::atomicContainsBatchUserPayloadArray($atomicType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function atomicContainsBatchUserPayloadArray(Atomic $atomicType): bool
+    {
+        if ($atomicType instanceof TKeyedArray) {
+            if (self::isBatchUserPayloadShape($atomicType)) {
+                return true;
+            }
+
+            return $atomicType->fallback_params !== null
+                && self::containsBatchUserPayloadArray($atomicType->fallback_params[1]);
+        }
+
+        if ($atomicType instanceof TArray || $atomicType instanceof TIterable) {
+            return self::containsBatchUserPayloadArray($atomicType->type_params[1]);
+        }
+
+        return false;
+    }
+
+    private static function isBatchUserPayloadShape(TKeyedArray $arrayType): bool
+    {
+        return array_key_exists('email', $arrayType->properties)
+            && array_key_exists('initials', $arrayType->properties)
+            && array_key_exists('password', $arrayType->properties);
     }
 
     private static function containsDomainObjectArray(?Union $type): ?string
@@ -532,6 +795,11 @@ final class ArchitectureGuardPlugin implements
         return str_contains($filePath, self::COLLECTION_DIRECTORY);
     }
 
+    private static function isRegistrationSource(string $filePath): bool
+    {
+        return str_contains($filePath, self::REGISTRATION_DIRECTORY);
+    }
+
     private static function isDoctrineTypeSource(string $filePath): bool
     {
         return str_contains($filePath, self::DOCTRINE_TYPE_DIRECTORY);
@@ -540,6 +808,25 @@ final class ArchitectureGuardPlugin implements
     private static function isConstraintSource(string $filePath): bool
     {
         return str_contains($filePath, self::CONSTRAINT_DIRECTORY);
+    }
+
+    private static function shouldReportBareArraySignatures(string $filePath): bool
+    {
+        return !self::isDoctrineTypeSource($filePath)
+            && !self::isCollectionSource($filePath)
+            && !self::isConstraintSource($filePath);
+    }
+
+    private static function isBatchPayloadBoundarySource(string $filePath): bool
+    {
+        return self::isCollectionSource($filePath)
+            || self::isDoctrineTypeSource($filePath)
+            || self::isConstraintSource($filePath)
+            || str_contains($filePath, DIRECTORY_SEPARATOR . 'DTO' . DIRECTORY_SEPARATOR)
+            || str_contains($filePath, DIRECTORY_SEPARATOR . 'Infrastructure' . DIRECTORY_SEPARATOR)
+            || str_contains($filePath, DIRECTORY_SEPARATOR . 'MutationInput' . DIRECTORY_SEPARATOR)
+            || str_contains($filePath, DIRECTORY_SEPARATOR . 'OpenApi' . DIRECTORY_SEPARATOR)
+            || str_contains($filePath, DIRECTORY_SEPARATOR . 'Validator' . DIRECTORY_SEPARATOR);
     }
 
     private static function isProductionSource(string $filePath): bool

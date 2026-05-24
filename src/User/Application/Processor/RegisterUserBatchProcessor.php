@@ -43,7 +43,7 @@ final readonly class RegisterUserBatchProcessor implements ProcessorInterface
     ): Response {
         $normalizationGroups =
             $operation->getNormalizationContext()['groups'] ?? [];
-        $command = $this->commandFactory->create($data->users);
+        $command = $this->commandFactory->create($data);
         $commandResponse = $this->commandResponseTypeGuard->expect(
             $this->commandBus->dispatch($command),
             RegisterUserBatchCommandResponse::class

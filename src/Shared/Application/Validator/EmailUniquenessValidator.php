@@ -9,6 +9,7 @@ use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
 use function trim;
 
 final readonly class EmailUniquenessValidator
@@ -75,19 +76,19 @@ final readonly class EmailUniquenessValidator
 
     private function findExactUsersByEmail(string $email): UserCollection
     {
-        $users = [];
+        $candidates = $this->emailLookupCandidates($email);
 
-        foreach ($this->emailLookupCandidates($email) as $candidate) {
-            $user = $this->userRepository->findByEmail($candidate);
-
-            if ($user === null) {
-                continue;
-            }
-
-            $users[] = $user;
+        if (count($candidates) !== 1) {
+            return $this->userRepository->findByEmails($candidates);
         }
 
-        return new UserCollection($users);
+        $user = $this->userRepository->findByEmail($candidates[0]);
+
+        if ($user === null) {
+            return new UserCollection();
+        }
+
+        return new UserCollection([$user]);
     }
 
     private function findCaseInsensitiveUsersByEmail(string $email): UserCollection

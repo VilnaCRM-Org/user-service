@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
+use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Command\RegisterUserCommand;
+use App\User\Application\DTO\RegisterUserCommandResponse;
+use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\CreateUserMutationInput;
-use App\User\Application\Registration\RegisterUserOrchestrator;
 use App\User\Application\Resolver\RegisterUserMutationResolver;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
@@ -18,7 +22,8 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
 {
     private MutationInputValidator&MockObject $validator;
     private CreateUserMutationInputTransformer&MockObject $transformer;
-    private RegisterUserOrchestrator&MockObject $registerUserOrchestrator;
+    private SignUpCommandFactoryInterface&MockObject $commandFactory;
+    private CommandBusInterface&MockObject $commandBus;
     private RegisterUserMutationResolver $resolver;
 
     #[\Override]
@@ -29,12 +34,15 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->validator = $this->createMock(MutationInputValidator::class);
         $this->transformer =
             $this->createMock(CreateUserMutationInputTransformer::class);
-        $this->registerUserOrchestrator =
-            $this->createMock(RegisterUserOrchestrator::class);
+        $this->commandFactory =
+            $this->createMock(SignUpCommandFactoryInterface::class);
+        $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->resolver = new RegisterUserMutationResolver(
             $this->validator,
             $this->transformer,
-            $this->registerUserOrchestrator
+            $this->commandFactory,
+            $this->commandBus,
+            new CommandResponseTypeGuard()
         );
     }
 
@@ -47,16 +55,14 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $this->faker->password()
         );
         $user = $this->createMock(UserInterface::class);
+        $command = new RegisterUserCommand(
+            $transformedInput->email,
+            $transformedInput->initials,
+            $transformedInput->password
+        );
 
         $this->expectValidation($input, $transformedInput);
-        $this->registerUserOrchestrator->expects($this->once())
-            ->method('register')
-            ->with(
-                $transformedInput->email,
-                $transformedInput->initials,
-                $transformedInput->password
-            )
-            ->willReturn($user);
+        $this->expectCommandDispatch($transformedInput, $command, $user);
 
         $this->assertSame($user, $this->invokeResolver($input));
     }
@@ -71,16 +77,12 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         );
         $validationFailure = new RuntimeException('Invalid input.');
 
-        $this->transformer->expects($this->once())
-            ->method('transform')
-            ->with($input)
-            ->willReturn($transformedInput);
-        $this->validator->expects($this->once())
-            ->method('validate')
-            ->with($transformedInput)
-            ->willThrowException($validationFailure);
-        $this->registerUserOrchestrator->expects($this->never())
-            ->method('register');
+        $this->expectValidationFailure(
+            $input,
+            $transformedInput,
+            $validationFailure
+        );
+        $this->expectNoRegistrationDispatch();
 
         $this->expectExceptionObject($validationFailure);
 
@@ -125,6 +127,51 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->validator->expects($this->once())
             ->method('validate')
             ->with($transformedInput);
+    }
+
+    private function expectCommandDispatch(
+        CreateUserMutationInput $transformedInput,
+        RegisterUserCommand $command,
+        UserInterface $user,
+    ): void {
+        $this->commandFactory->expects($this->once())
+            ->method('create')
+            ->with(
+                $transformedInput->email,
+                $transformedInput->initials,
+                $transformedInput->password
+            )
+            ->willReturn($command);
+        $this->commandBus->expects($this->once())
+            ->method('dispatch')
+            ->with($command)
+            ->willReturn(new RegisterUserCommandResponse($user));
+    }
+
+    /**
+     * @param array{email?:string,initials:string,password:string} $input
+     */
+    private function expectValidationFailure(
+        array $input,
+        CreateUserMutationInput $transformedInput,
+        RuntimeException $validationFailure,
+    ): void {
+        $this->transformer->expects($this->once())
+            ->method('transform')
+            ->with($input)
+            ->willReturn($transformedInput);
+        $this->validator->expects($this->once())
+            ->method('validate')
+            ->with($transformedInput)
+            ->willThrowException($validationFailure);
+    }
+
+    private function expectNoRegistrationDispatch(): void
+    {
+        $this->commandFactory->expects($this->never())
+            ->method('create');
+        $this->commandBus->expects($this->never())
+            ->method('dispatch');
     }
 
     /**

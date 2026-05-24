@@ -9,9 +9,9 @@ date: '2026-05-10'
 
 ## Decision
 
-Use an Application-layer query handler for email lookup, keep API entry points
-delegating through a shared registration orchestrator, and keep the registration
-command handler write-only.
+Use an Application-layer query handler for email lookup inside the registration
+command handler, keep API entry points dispatching CQRS commands through the
+command bus, and return created-user data through a command response DTO.
 
 ## Component Changes
 
@@ -42,10 +42,12 @@ registration share the same trim/lowercase behavior.
 `RegisterUserCommandHandler` should:
 
 - normalize the command email with `EmailNormalizer`;
+- query by email before writing and reject duplicates;
 - transform the command into a `User`;
 - hash the password;
 - save the user;
-- publish the registration event.
+- publish the registration event;
+- reload the persisted user and return `RegisterUserCommandResponse`.
 
 If persistence fails, the repository detaches only the failed user before
 rethrowing so that failed write is not accidentally flushed later by a reused ODM
@@ -53,35 +55,37 @@ document manager, without discarding unrelated managed `User` changes.
 
 ### Processor and Resolver
 
-`RegisterUserProcessor` and `RegisterUserMutationResolver` delegate the shared
-registration workflow to `RegisterUserOrchestrator`. The orchestrator should:
+`RegisterUserProcessor` and `RegisterUserMutationResolver` use
+`SignUpCommandFactoryInterface` to create `RegisterUserCommand`, dispatch it
+through `CommandBusInterface`, and validate the returned
+`RegisterUserCommandResponse` with `CommandResponseTypeGuard`.
 
-1. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard before
-   dispatching a command, throwing `DuplicateEmailException` when an email is
-   already registered. This keeps duplicate lookup out of the write-side command
-   handler and prevents hashing, saving, and event publication when a caller has
-   already passed public API validation.
-2. Create `RegisterUserCommand` from the API input when no user exists.
-3. Dispatch the command.
-4. On duplicate-email dispatch failure caused by a race, rethrow
-   `DuplicateEmailException`.
-5. After successful dispatch, run the email query again and return the persisted
-   user, or throw `UserNotFoundException` if the user cannot be reloaded.
+The `RegisterUserCommandHandler` owns the registration write workflow:
+
+1. Normalize the email.
+2. Use `FindUserByEmailQueryHandlerInterface` as a duplicate guard before
+   hashing, saving, and publishing, throwing `DuplicateEmailException` when an
+   email is already registered.
+3. Transform the command into a `User`, hash the password, save the user, and
+   publish the registration event.
+4. After successful persistence, run the email query again and return the
+   persisted user in `RegisterUserCommandResponse`, or throw
+   `UserNotFoundException` if the user cannot be reloaded.
 
 Single-user REST create requests keep `UniqueEmail` validation, so known
 duplicate emails continue to return the existing validation error before the
-public registration endpoint reaches orchestration. GraphQL create requests use
-the orchestrator guard as the single duplicate-email enforcement point for that
-mutation. The orchestrator guard is the CQRS replacement for command-handler
-response mutation and a defense-in-depth race fallback; duplicate registration
-still fails instead of returning existing account data.
+public registration endpoint reaches command dispatch. GraphQL create requests
+use the command handler guard as the single duplicate-email enforcement point
+for that mutation. Duplicate registration still fails instead of returning
+existing account data.
 
 ## Dependency Boundaries
 
 - Application query handler depends on Domain repository interface.
-- Processor/resolver depend on `RegisterUserOrchestrator`.
-- The orchestrator depends on the Application command factory, command bus, and
-  email query handler.
+- Processor/resolver depend on the Application command factory, command bus,
+  and command-response guard.
+- The registration command handler depends on the email query handler for
+  duplicate guarding and post-save reload.
 - The query handler and registration command handler both use `EmailNormalizer`
   so direct reads and registration writes use the same email form.
 - Domain layer is unchanged.
@@ -91,16 +95,14 @@ still fails instead of returning existing account data.
 ## Testing Strategy
 
 - Command test: constructor only.
-- Command handler tests: verify normalized create/save/event path and rethrow
-  without publishing when persistence fails.
+- Command handler tests: duplicate-guard failure, normalized create/save/event
+  success, save failure without publishing, and post-save reload failure.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
-- Orchestrator tests: duplicate-guard failure without dispatch, dispatch plus
-  post-dispatch lookup, and duplicate/non-duplicate dispatch failure propagation.
-- Processor tests: delegation to the orchestrator.
-- Resolver tests: validation/transform plus delegation to the orchestrator.
+- Processor/resolver tests: command creation, dispatch, and response guarding.
+- Resolver tests: validation/transform plus command-bus dispatch.
 
 ## Documentation
 
 Update docs to state that registration reads are handled by the Application
-query handler while the registration command handler remains write-only.
+query handler and registration API entry points dispatch CQRS commands directly.

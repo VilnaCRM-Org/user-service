@@ -6,21 +6,20 @@ namespace App\User\Application\Factory;
 
 use App\Shared\Domain\Collection\DomainEventCollection;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\User\Application\DTO\BatchUserRegistrationInput;
+use App\User\Application\DTO\BatchUserRegistrationInputCollection;
 use App\User\Application\DTO\BatchUserRegistrationResult;
 use App\User\Domain\Collection\UserCollection;
-use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class BatchUserRegistrationFactory
 {
     public function __construct(
-        private PasswordHasherFactoryInterface $hasherFactory,
+        private UserPasswordHashFactory $passwordHashFactory,
         private UuidFactory $uuidFactory,
         private UserFactory $userFactory,
         private UuidTransformer $transformer,
@@ -28,16 +27,14 @@ final readonly class BatchUserRegistrationFactory
     ) {
     }
 
-    /**
-     * @param list<array{email: string, initials: string, password: string}> $users
-     */
-    public function create(array $users, UserCollection $knownUsers): BatchUserRegistrationResult
-    {
+    public function create(
+        BatchUserRegistrationInputCollection $users,
+        UserCollection $knownUsers
+    ): BatchUserRegistrationResult {
         $returnedUsers = [];
         $usersToPersist = new UserCollection();
         $events = new DomainEventCollection();
         $knownUsersByEmail = $this->knownUsersByEmail($knownUsers);
-        $hasher = null;
 
         foreach ($users as $user) {
             $returnedUsers[] = $this->registerUser(
@@ -45,8 +42,7 @@ final readonly class BatchUserRegistrationFactory
                 $knownUsers,
                 $knownUsersByEmail,
                 $usersToPersist,
-                $events,
-                $hasher
+                $events
             );
         }
 
@@ -58,28 +54,23 @@ final readonly class BatchUserRegistrationFactory
     }
 
     /**
-     * @param array{email: string, initials: string, password: string} $user
      * @param array<string, UserInterface> $knownUsersByEmail
      */
     private function registerUser(
-        array $user,
+        BatchUserRegistrationInput $user,
         UserCollection $knownUsers,
         array &$knownUsersByEmail,
         UserCollection $usersToPersist,
-        DomainEventCollection &$events,
-        ?PasswordHasherInterface &$hasher
+        DomainEventCollection &$events
     ): UserInterface {
-        $emailKey = $this->emailKey($user['email']);
+        $emailKey = $this->emailKey($user->email);
         $existingUser = $this->knownUser($emailKey, $knownUsersByEmail);
 
         if ($existingUser !== null) {
             return $existingUser;
         }
 
-        $normalizedUser = $user;
-        $normalizedUser['email'] = $emailKey;
-
-        $createdUser = $this->createUser($normalizedUser, $hasher);
+        $createdUser = $this->createUser($user->withEmail($emailKey));
         $this->rememberUser(
             $createdUser,
             $emailKey,
@@ -95,19 +86,13 @@ final readonly class BatchUserRegistrationFactory
         return $createdUser;
     }
 
-    /**
-     * @param array{email: string, initials: string, password: string} $user
-     */
     private function createUser(
-        array $user,
-        ?PasswordHasherInterface &$hasher
+        BatchUserRegistrationInput $user
     ): UserInterface {
-        $hasher ??= $this->hasherFactory->getPasswordHasher(User::class);
-
         return $this->userFactory->create(
-            $user['email'],
-            $user['initials'],
-            $hasher->hash($user['password']),
+            $user->email,
+            $user->initials,
+            $this->passwordHashFactory->create($user->password),
             $this->transformer->transformFromSymfonyUuid(
                 $this->uuidFactory->create()
             )

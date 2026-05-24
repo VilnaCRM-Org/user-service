@@ -177,6 +177,33 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
      */
     private function expectExactLookups(array $emails, array $results): void
     {
+        if (count($emails) !== 1) {
+            $this->expectBatchExactLookup($emails, $results);
+
+            return;
+        }
+
+        $this->expectSingleExactLookup($emails, $results);
+    }
+
+    /**
+     * @param list<string> $emails
+     * @param list<UserInterface|null> $results
+     */
+    private function expectBatchExactLookup(array $emails, array $results): void
+    {
+        $this->repository->expects($this->once())
+            ->method('findByEmails')
+            ->with($emails)
+            ->willReturn(new UserCollection($this->usersFromResults($results)));
+    }
+
+    /**
+     * @param list<string> $emails
+     * @param list<UserInterface|null> $results
+     */
+    private function expectSingleExactLookup(array $emails, array $results): void
+    {
         $lookups = [];
 
         $this->repository->expects($this->exactly(count($emails)))
@@ -194,6 +221,24 @@ final class EmailUniquenessValidatorTest extends UnitTestCase
                     return $results[$index];
                 }
             );
+    }
+
+    /**
+     * @param list<UserInterface|null> $results
+     *
+     * @return list<UserInterface>
+     */
+    private function usersFromResults(array $results): array
+    {
+        $users = [];
+
+        foreach ($results as $result) {
+            if ($result !== null) {
+                $users[] = $result;
+            }
+        }
+
+        return $users;
     }
 
     /**

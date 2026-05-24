@@ -12,7 +12,6 @@ use App\User\Application\DTO\RegisterUserBatchCommandResponse;
 use App\User\Application\Factory\BatchUserRegistrationFactory;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use InvalidArgumentException;
 
 final readonly class RegisterUserBatchCommandHandler implements
     CommandHandlerInterface
@@ -27,17 +26,15 @@ final readonly class RegisterUserBatchCommandHandler implements
     public function __invoke(
         RegisterUserBatchCommand $command
     ): RegisterUserBatchCommandResponse {
-        $users = $this->usersFromCommand($command);
-
-        if ($users === []) {
+        if ($command->users->isEmpty()) {
             return new RegisterUserBatchCommandResponse(new UserCollection());
         }
 
         $knownUsers = $this->userRepository->findByEmails(
-            array_column($users, 'email')
+            $command->users->emails()
         );
         $registrationResult = $this->batchUserRegistrationFactory->create(
-            $users,
+            $command->users,
             $knownUsers
         );
 
@@ -66,35 +63,5 @@ final readonly class RegisterUserBatchCommandHandler implements
         }
 
         $this->eventBus->publish(...$events);
-    }
-
-    /**
-     * @return list<array{email: string, initials: string, password: string}>
-     */
-    private function usersFromCommand(RegisterUserBatchCommand $command): array
-    {
-        $users = [];
-
-        foreach ($command->users as $user) {
-            if (
-                !is_array($user)
-                || !isset($user['email'], $user['initials'], $user['password'])
-                || !is_string($user['email'])
-                || !is_string($user['initials'])
-                || !is_string($user['password'])
-            ) {
-                throw new InvalidArgumentException(
-                    'Batch user payload must contain string email, initials, and password fields.'
-                );
-            }
-
-            $users[] = [
-                'email' => $user['email'],
-                'initials' => $user['initials'],
-                'password' => $user['password'],
-            ];
-        }
-
-        return $users;
     }
 }
