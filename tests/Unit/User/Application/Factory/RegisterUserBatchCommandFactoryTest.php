@@ -13,6 +13,9 @@ use InvalidArgumentException;
 final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
 {
     private const BATCH_SIZE = 2;
+    private const VALID_EMAIL = 'user@example.test';
+    private const VALID_INITIALS = 'User';
+    private const VALID_PASSWORD = 'password';
 
     public function testCreate(): void
     {
@@ -73,9 +76,9 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     {
         return [
             'non-array row' => [(object) [
-                'email' => 'user@example.test',
-                'initials' => 'User',
-                'password' => 'password',
+                'email' => self::VALID_EMAIL,
+                'initials' => self::VALID_INITIALS,
+                'password' => self::VALID_PASSWORD,
             ],
             ],
         ];
@@ -88,18 +91,18 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     {
         return [
             'missing email' => [[
-                'initials' => 'User',
-                'password' => 'password',
+                'initials' => self::VALID_INITIALS,
+                'password' => self::VALID_PASSWORD,
             ],
             ],
             'missing initials' => [[
-                'email' => 'user@example.test',
-                'password' => 'password',
+                'email' => self::VALID_EMAIL,
+                'password' => self::VALID_PASSWORD,
             ],
             ],
             'missing password' => [[
-                'email' => 'user@example.test',
-                'initials' => 'User',
+                'email' => self::VALID_EMAIL,
+                'initials' => self::VALID_INITIALS,
             ],
             ],
         ];
@@ -125,8 +128,8 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
         return [
             'non-string email' => [[
                 'email' => 123,
-                'initials' => 'User',
-                'password' => 'password',
+                'initials' => self::VALID_INITIALS,
+                'password' => self::VALID_PASSWORD,
             ],
             ],
         ];
@@ -139,9 +142,9 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     {
         return [
             'non-string initials' => [[
-                'email' => 'user@example.test',
+                'email' => self::VALID_EMAIL,
                 'initials' => 123,
-                'password' => 'password',
+                'password' => self::VALID_PASSWORD,
             ],
             ],
         ];
@@ -154,8 +157,8 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     {
         return [
             'non-string password' => [[
-                'email' => 'user@example.test',
-                'initials' => 'User',
+                'email' => self::VALID_EMAIL,
+                'initials' => self::VALID_INITIALS,
                 'password' => 123,
             ],
             ],
