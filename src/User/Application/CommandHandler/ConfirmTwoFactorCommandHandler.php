@@ -32,8 +32,9 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
     ) {
     }
 
-    public function __invoke(ConfirmTwoFactorCommand $command): void
-    {
+    public function __invoke(
+        ConfirmTwoFactorCommand $command
+    ): ConfirmTwoFactorCommandResponse {
         $user = $this->resolveUser($command->userEmail);
         $this->verifyTotpOrFail($user, $command->twoFactorCode);
 
@@ -43,8 +44,9 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         $codes = $this->recoveryCodeBatchFactory->create($user);
         $revokedCount = $this->revokeOtherSessions($user, $command->currentSessionId);
 
-        $command->setResponse(new ConfirmTwoFactorCommandResponse($codes));
         $this->publishEvents($user, $revokedCount);
+
+        return new ConfirmTwoFactorCommandResponse($codes);
     }
 
     private function resolveUser(string $email): User

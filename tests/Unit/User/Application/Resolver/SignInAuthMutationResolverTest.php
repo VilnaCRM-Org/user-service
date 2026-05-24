@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\DTO\AuthPayload;
@@ -12,6 +13,7 @@ use App\User\Application\DTO\SignInDto;
 use App\User\Application\Factory\SignInCommandFactoryInterface;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
 use App\User\Application\Resolver\SignInAuthMutationResolver;
+use App\User\Application\Service\SignInCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -23,6 +25,7 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
     private HttpRequestContextResolverInterface $requestContextResolver;
     private SignInAuthMutationResolver $resolver;
     private SignInCommand $command;
+    private SignInCommandResponse $commandResponse;
     private Request $request;
     private string $email;
     private string $password;
@@ -37,10 +40,13 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
         $this->setUpScenario();
         $this->resolver = new SignInAuthMutationResolver(
             $this->validator,
-            $this->commandBus,
             $this->authPayloadFactory(),
-            $this->commandFactory,
-            $this->requestContextResolver
+            new SignInCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                $this->commandFactory,
+                $this->requestContextResolver
+            )
         );
     }
 
@@ -79,7 +85,7 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
             $this->ipAddress,
             $this->userAgent
         );
-        $this->command->setResponse($this->response());
+        $this->commandResponse = $this->response();
     }
 
     private function expectValidation(): void
@@ -122,7 +128,8 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
             ->willReturn($this->command);
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->command);
+            ->with($this->command)
+            ->willReturn($this->commandResponse);
     }
 
     /**
@@ -154,13 +161,12 @@ final class SignInAuthMutationResolverTest extends AuthMutationResolverTestCase
 
     private function assertPayload(AuthPayload $payload): void
     {
-        $response = $this->command->getResponse();
         $this->assertSame('auth-sign-in', $payload->getId());
         $this->assertFalse($payload->isTwoFactorEnabled());
-        $this->assertSame($response->getAccessToken(), $payload->getAccessToken());
-        $this->assertSame($response->getRefreshToken(), $payload->getRefreshToken());
+        $this->assertSame($this->commandResponse->getAccessToken(), $payload->getAccessToken());
+        $this->assertSame($this->commandResponse->getRefreshToken(), $payload->getRefreshToken());
         $this->assertSame(
-            $response->getPendingSessionId(),
+            $this->commandResponse->getPendingSessionId(),
             $payload->getPendingSessionId()
         );
     }

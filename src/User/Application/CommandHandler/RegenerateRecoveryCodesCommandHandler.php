@@ -33,15 +33,16 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
     ) {
     }
 
-    public function __invoke(RegenerateRecoveryCodesCommand $command): void
-    {
+    public function __invoke(
+        RegenerateRecoveryCodesCommand $command
+    ): RegenerateRecoveryCodesCommandResponse {
         $user = $this->resolveUser($command->userEmail);
         $this->verifySudoMode($command->currentSessionId);
 
         $this->recoveryCodeRepository->deleteByUserId($user->getId());
         $codes = $this->recoveryCodeBatchFactory->create($user);
 
-        $command->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
+        return new RegenerateRecoveryCodesCommandResponse($codes);
     }
 
     private function resolveUser(string $email): User

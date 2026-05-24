@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Application\DTO;
 
-final class ConfirmPasswordResetCommandResponse
+use App\Shared\Domain\Bus\Command\CommandResponseInterface;
+
+final class ConfirmPasswordResetCommandResponse implements CommandResponseInterface
 {
 }

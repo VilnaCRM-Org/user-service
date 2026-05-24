@@ -6,6 +6,7 @@ namespace App\User\Infrastructure\Decorator;
 
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\CommandHandler\RequestPasswordResetHandlerInterface;
+use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Domain\Exception\PasswordResetRateLimitExceededException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 
@@ -19,10 +20,11 @@ final readonly class RateLimitedRequestPasswordResetHandlerDecorator implements
     }
 
     #[\Override]
-    public function __invoke(RequestPasswordResetCommand $command): void
-    {
+    public function __invoke(
+        RequestPasswordResetCommand $command
+    ): RequestPasswordResetCommandResponse {
         $this->checkRateLimit($command->email);
-        $this->inner->__invoke($command);
+        return $this->inner->__invoke($command);
     }
 
     private function checkRateLimit(string $key): void

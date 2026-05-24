@@ -69,9 +69,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
         $this->expectSuccessfulBatchRegistration($testData);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertCreatedUsersResponse($command, $testData['users']);
+        $this->assertCreatedUsersResponse($response, $testData['users']);
     }
 
     public function testInvokeReturnsEmptyResponseForEmptyBatch(): void
@@ -93,9 +93,8 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->eventBus->expects($this->never())
             ->method('publish');
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $response = $command->getResponse();
         $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
         $this->assertCount(0, $response->users);
     }
@@ -110,9 +109,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
         $this->setupExistingUserBatchExpectations($email, $existingUser);
         $this->setupNeverCalledForBatchRegistration();
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertBatchResponse($command, $existingUser);
+        $this->assertBatchResponse($response, $existingUser);
     }
 
     public function testInvokeDeduplicatesNewUsersWithinSameBatch(): void
@@ -124,9 +123,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
         $this->expectDuplicateBatchRegistration($testData);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertDuplicateBatchResponse($command);
+        $this->assertDuplicateBatchResponse($response);
     }
 
     public function testInvokeDeduplicatesNewUsersWithSparseKnownUserKeys(): void
@@ -144,9 +143,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
 
         $this->expectSparseKnownUserBatchRegistration($testData, $knownUser);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
-        $this->assertDuplicateBatchResponse($command);
+        $this->assertDuplicateBatchResponse($response);
     }
 
     private function setHandler(): void
@@ -253,10 +252,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
      * @param list<UserInterface> $users
      */
     private function assertCreatedUsersResponse(
-        RegisterUserBatchCommand $command,
+        RegisterUserBatchCommandResponse $response,
         array $users
     ): void {
-        $response = $command->getResponse();
         $this->assertInstanceOf(
             RegisterUserBatchCommandResponse::class,
             $response
@@ -462,9 +460,8 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     }
 
     private function assertDuplicateBatchResponse(
-        RegisterUserBatchCommand $command
+        RegisterUserBatchCommandResponse $response
     ): void {
-        $response = $command->getResponse();
         $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
         $users = iterator_to_array($response->users);
         $this->assertCount(2, $users);
@@ -570,10 +567,9 @@ final class RegisterUserBatchCommandHandlerTest extends UnitTestCase
     }
 
     private function assertBatchResponse(
-        RegisterUserBatchCommand $command,
+        RegisterUserBatchCommandResponse $response,
         UserInterface $existingUser
     ): void {
-        $response = $command->getResponse();
         $this->assertInstanceOf(RegisterUserBatchCommandResponse::class, $response);
         $users = iterator_to_array($response->users);
         $this->assertCount(1, $users);

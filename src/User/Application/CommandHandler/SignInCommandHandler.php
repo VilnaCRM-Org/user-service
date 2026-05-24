@@ -37,7 +37,7 @@ final class SignInCommandHandler implements CommandHandlerInterface
     ) {
     }
 
-    public function __invoke(SignInCommand $command): void
+    public function __invoke(SignInCommand $command): SignInCommandResponse
     {
         $authenticated = $this->credentialValidator->validate(
             $command->email,
@@ -49,32 +49,28 @@ final class SignInCommandHandler implements CommandHandlerInterface
         $now = new DateTimeImmutable();
 
         if ($authenticated->isTwoFactorEnabled()) {
-            $this->handleTwoFactorPath($authenticated, $command, $now);
-
-            return;
+            return $this->handleTwoFactorPath($authenticated, $command, $now);
         }
 
-        $this->handleDirectSignIn($authenticated, $command, $now);
+        return $this->handleDirectSignIn($authenticated, $command, $now);
     }
 
     private function handleTwoFactorPath(
         User $user,
         SignInCommand $command,
         DateTimeImmutable $now
-    ): void {
+    ): SignInCommandResponse {
         $pending = $this->createPendingTwoFactor($user->getId(), $now, $command->rememberMe);
         $this->pendingTwoFactorRepository->save($pending);
 
-        $command->setResponse(
-            new SignInCommandResponse(true, null, null, $pending->getId())
-        );
+        return new SignInCommandResponse(true, null, null, $pending->getId());
     }
 
     private function handleDirectSignIn(
         User $user,
         SignInCommand $command,
         DateTimeImmutable $now
-    ): void {
+    ): SignInCommandResponse {
         $issued = $this->issuedSessionFactory->create(
             $user,
             $command->ipAddress,
@@ -83,12 +79,6 @@ final class SignInCommandHandler implements CommandHandlerInterface
             $now
         );
 
-        $command->setResponse(new SignInCommandResponse(
-            false,
-            $issued->accessToken,
-            $issued->refreshToken
-        ));
-
         $this->signInPublisher->publishSignedIn(
             $user->getId(),
             $user->getEmail(),
@@ -96,6 +86,12 @@ final class SignInCommandHandler implements CommandHandlerInterface
             $command->ipAddress,
             $command->userAgent,
             false
+        );
+
+        return new SignInCommandResponse(
+            false,
+            $issued->accessToken,
+            $issued->refreshToken
         );
     }
 

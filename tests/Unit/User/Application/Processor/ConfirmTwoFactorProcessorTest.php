@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Post;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
@@ -13,6 +14,7 @@ use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactory;
 use App\User\Application\Processor\ConfirmTwoFactorProcessor;
 use App\User\Application\Resolver\CurrentUserIdentityResolver;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -93,9 +95,12 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
     private function createProcessor(): ConfirmTwoFactorProcessor
     {
         return new ConfirmTwoFactorProcessor(
-            $this->commandBus,
-            new CurrentUserIdentityResolver($this->security),
-            new ConfirmTwoFactorCommandFactory(),
+            new ConfirmTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                new CurrentUserIdentityResolver($this->security),
+                new ConfirmTwoFactorCommandFactory()
+            ),
         );
     }
 
@@ -161,14 +166,11 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
                     $email,
                     $code,
                     $recoveryCodes
-                ): void {
+                ): ConfirmTwoFactorCommandResponse {
                     $this->assertSame($email, $cmd->userEmail);
                     $this->assertSame($code, $cmd->twoFactorCode);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse(
-                            $recoveryCodes
-                        )
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse($recoveryCodes);
                 }
             );
     }
@@ -208,14 +210,13 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
             ->willReturnCallback(
                 function (ConfirmTwoFactorCommand $cmd) use (
                     $sessionId
-                ): void {
+                ): ConfirmTwoFactorCommandResponse {
                     $this->assertSame(
                         $sessionId,
                         $cmd->currentSessionId
                     );
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse([]);
                 }
             );
     }
@@ -226,11 +227,10 @@ final class ConfirmTwoFactorProcessorTest extends UnitTestCase
             ->expects($this->once())
             ->method('dispatch')
             ->willReturnCallback(
-                function (ConfirmTwoFactorCommand $cmd): void {
+                function (ConfirmTwoFactorCommand $cmd): ConfirmTwoFactorCommandResponse {
                     $this->assertSame('', $cmd->currentSessionId);
-                    $cmd->setResponse(
-                        new ConfirmTwoFactorCommandResponse([])
-                    );
+
+                    return new ConfirmTwoFactorCommandResponse([]);
                 }
             );
     }

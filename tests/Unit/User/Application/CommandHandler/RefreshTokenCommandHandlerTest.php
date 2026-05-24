@@ -21,13 +21,12 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($oldToken, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
+        $accessToken = $this->faker->sha256();
         $capturedPayload = [];
-        $this->expectSuccessfulRotation($session, $user, 'new-access-token', $capturedPayload);
-        $command = $this->invokeHandler($plainToken);
-        $response = $command->getResponse();
-        $this->assertSame('new-access-token', $response->getAccessToken());
-        $expectedRefresh = 'test-opaque-token-1234567890-abcdefghijklmn';
-        $this->assertSame($expectedRefresh, $response->getRefreshToken());
+        $this->expectSuccessfulRotation($session, $user, $accessToken, $capturedPayload);
+        $response = $this->invokeHandler($plainToken);
+        $this->assertSame($accessToken, $response->getAccessToken());
+        $this->assertSame($this->generatedRefreshToken, $response->getRefreshToken());
         $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isRotated());
         $this->assertJwtPayloadContents($capturedPayload, $user->getId(), $session->getId());
@@ -37,7 +36,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
     {
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
+            ->method('findByPlainToken')
             ->willReturn(null);
 
         $this->authSessionRepository
@@ -96,10 +95,11 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectTokenLookup($token, $plainToken);
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
-        $this->expectSuccessfulGraceReuse($session, $user, 'grace-access-token');
-        $command = $this->invokeHandler($plainToken);
-        $this->assertSame('grace-access-token', $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $accessToken = $this->faker->sha256();
+        $this->expectSuccessfulGraceReuse($session, $user, $accessToken);
+        $response = $this->invokeHandler($plainToken);
+        $this->assertSame($accessToken, $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($token->isGraceUsed());
     }
 
@@ -115,10 +115,11 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
         $this->expectFailedAtomicRotation();
         $this->expectSessionLookup($session);
         $this->expectUserLookup($user);
-        $this->expectSuccessfulGraceReuse($session, $user, 'concurrent-access-token');
-        $command = $this->invokeHandler($plainToken);
-        $this->assertSame('concurrent-access-token', $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $accessToken = $this->faker->sha256();
+        $this->expectSuccessfulGraceReuse($session, $user, $accessToken);
+        $response = $this->invokeHandler($plainToken);
+        $this->assertSame($accessToken, $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($latestToken->isGraceUsed());
     }
 
@@ -202,7 +203,7 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
 
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
+            ->method('findByPlainToken')
             ->willReturn($token);
 
         $this->authSessionRepository
@@ -296,10 +297,10 @@ final class RefreshTokenCommandHandlerTest extends RefreshTokenCommandHandlerTes
             ->willReturn($candidateTokens);
         $this->expectSuccessfulGraceReuse($session, $user, $expectedAccessToken);
 
-        $command = $this->invokeHandler($plainToken);
+        $response = $this->invokeHandler($plainToken);
 
-        $this->assertSame($expectedAccessToken, $command->getResponse()->getAccessToken());
-        $this->assertOpaqueTokenFormat($command->getResponse()->getRefreshToken());
+        $this->assertSame($expectedAccessToken, $response->getAccessToken());
+        $this->assertOpaqueTokenFormat($response->getRefreshToken());
         $this->assertTrue($oldToken->isGraceUsed());
     }
 

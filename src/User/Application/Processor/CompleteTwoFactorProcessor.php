@@ -6,12 +6,10 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
-use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
-use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,9 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
 {
     public function __construct(
-        private CommandBusInterface $commandBus,
-        private CompleteTwoFactorCommandFactoryInterface $completeTwoFactorCommandFactory,
-        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private CompleteTwoFactorCommandDispatcher $commandDispatcher,
         private AuthCookieFactoryInterface $authCookieFactory,
     ) {
     }
@@ -42,17 +38,7 @@ final readonly class CompleteTwoFactorProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
-
-        $command = $this->completeTwoFactorCommandFactory->create(
-            $data->pendingSessionIdValue(),
-            $data->twoFactorCodeValue(),
-            $this->httpRequestContextResolver->resolveIpAddress($request),
-            $this->httpRequestContextResolver->resolveUserAgent($request)
-        );
-
-        $this->commandBus->dispatch($command);
-        $commandResponse = $command->getResponse();
+        $commandResponse = $this->commandDispatcher->dispatch($data, $context);
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
         $accessToken = $commandResponse->getAccessToken();

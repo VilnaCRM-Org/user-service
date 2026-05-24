@@ -9,8 +9,12 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\CommandHandler\RefreshTokenCommandHandler;
+use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\Factory\AccessTokenFactoryInterface;
 use App\User\Application\Factory\AuthTokenFactoryInterface;
+use App\User\Application\Service\RefreshTokenContextResolver;
+use App\User\Application\Service\RefreshTokenIssuer;
+use App\User\Application\Service\RefreshTokenTheftDetector;
 use App\User\Domain\Entity\AuthRefreshToken;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
@@ -34,6 +38,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     protected AuthTokenFactoryInterface&MockObject $authTokenFactory;
     protected UserFactory $userFactory;
     protected UuidTransformer $uuidTransformer;
+    protected string $generatedRefreshToken;
 
     #[\Override]
     protected function setUp(): void
@@ -49,6 +54,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
         $this->authTokenFactory = $this->createMock(AuthTokenFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new SharedUuidFactory());
+        $this->generatedRefreshToken = $this->faker->regexify('[A-Za-z0-9_-]{43}');
     }
 
     protected function expectTokenLookup(
@@ -57,8 +63,8 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): void {
         $this->refreshTokenRepository
             ->expects($this->once())
-            ->method('findByTokenHash')
-            ->with(hash('sha256', $plainToken))
+            ->method('findByPlainToken')
+            ->with($plainToken)
             ->willReturn($token);
     }
 
@@ -69,8 +75,8 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): void {
         $this->refreshTokenRepository
             ->expects($this->exactly(2))
-            ->method('findByTokenHash')
-            ->with(hash('sha256', $plainToken))
+            ->method('findByPlainToken')
+            ->with($plainToken)
             ->willReturnOnConsecutiveCalls($first, $second);
     }
 
@@ -191,9 +197,7 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     {
         $this->authTokenFactory
             ->method('generateOpaqueToken')
-            ->willReturn(
-                'test-opaque-token-1234567890-abcdefghijklmn'
-            );
+            ->willReturn($this->generatedRefreshToken);
         $this->configureCreateRefreshTokenCallback();
         $this->configureJwtPayloadFactory();
     }
@@ -243,11 +247,11 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
 
     protected function invokeHandler(
         string $plainToken
-    ): RefreshTokenCommand {
+    ): RefreshTokenCommandResponse {
         $handler = $this->createHandler();
         $command = new RefreshTokenCommand($plainToken);
-        $handler->__invoke($command);
-        return $command;
+
+        return $handler->__invoke($command);
     }
 
     /**
@@ -295,11 +299,13 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
     ): RefreshTokenCommandHandler {
         return new RefreshTokenCommandHandler(
             $this->refreshTokenRepository,
-            $this->authSessionRepository,
-            $this->userRepository,
-            $this->accessTokenFactory,
-            $this->authTokenFactory,
-            $this->publisher,
+            new RefreshTokenContextResolver(
+                $this->refreshTokenRepository,
+                $this->authSessionRepository,
+                $this->userRepository,
+            ),
+            $this->createTokenIssuer(),
+            $this->createTheftDetector(),
             $refreshTokenGraceWindowSeconds,
         );
     }
@@ -362,6 +368,25 @@ abstract class RefreshTokenCommandHandlerTestCase extends UnitTestCase
             $this->uuidTransformer->transformFromString(
                 $this->faker->uuid()
             )
+        );
+    }
+
+    private function createTokenIssuer(): RefreshTokenIssuer
+    {
+        return new RefreshTokenIssuer(
+            $this->refreshTokenRepository,
+            $this->accessTokenFactory,
+            $this->authTokenFactory,
+            $this->publisher,
+        );
+    }
+
+    private function createTheftDetector(): RefreshTokenTheftDetector
+    {
+        return new RefreshTokenTheftDetector(
+            $this->refreshTokenRepository,
+            $this->authSessionRepository,
+            $this->publisher,
         );
     }
 }

@@ -30,15 +30,13 @@ final readonly class RequestPasswordResetCommandHandler implements
     }
 
     #[\Override]
-    public function __invoke(RequestPasswordResetCommand $command): void
-    {
+    public function __invoke(
+        RequestPasswordResetCommand $command
+    ): RequestPasswordResetCommandResponse {
         $user = $this->userRepository->findByEmail($command->email);
 
         if (!$user instanceof UserInterface) {
-            $command->setResponse(
-                new RequestPasswordResetCommandResponse()
-            );
-            return;
+            return new RequestPasswordResetCommandResponse();
         }
 
         $token = $this->tokenFactory->create($user->getId());
@@ -52,8 +50,6 @@ final readonly class RequestPasswordResetCommandHandler implements
             )
         );
 
-        $command->setResponse(
-            new RequestPasswordResetCommandResponse()
-        );
+        return new RequestPasswordResetCommandResponse();
     }
 }

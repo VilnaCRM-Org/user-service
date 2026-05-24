@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -45,6 +46,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
             $this->createMock(CreateUserMutationInputTransformer::class);
         $this->resolver = new RegisterUserMutationResolver(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             $this->validator,
             $this->transformer,
             $this->mockSignUpCommandFactory
@@ -85,7 +87,6 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         );
         $command =
             $this->signUpCommandFactory->create($email, $initials, $password);
-        $command->setResponse(new RegisterUserCommandResponse($user));
 
         $this->transformer->expects($this->once())
             ->method('transform');
@@ -100,6 +101,7 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
 
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn(new RegisterUserCommandResponse($user));
     }
 }

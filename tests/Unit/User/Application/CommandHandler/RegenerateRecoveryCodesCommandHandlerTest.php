@@ -77,8 +77,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             ->willReturn($generatedCodes);
 
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
-        $this->createHandler()->__invoke($command);
-        $codes = $command->getResponse()->getRecoveryCodes();
+        $response = $this->createHandler()->__invoke($command);
+        $codes = $response->getRecoveryCodes();
         $this->assertCount(RecoveryCode::COUNT, $codes);
     }
 
@@ -254,10 +254,10 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
             ->willReturn($this->generatedCodes());
 
         $command = new RegenerateRecoveryCodesCommand($user->getEmail(), $sessionId);
-        $this->createHandler()->__invoke($command);
+        $response = $this->createHandler()->__invoke($command);
         $this->assertCount(
             RecoveryCode::COUNT,
-            $command->getResponse()->getRecoveryCodes()
+            $response->getRecoveryCodes()
         );
     }
 

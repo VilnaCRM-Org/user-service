@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
+use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
@@ -15,6 +17,7 @@ final readonly class RegisterUserMutationResolver implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private MutationInputValidator $validator,
         private CreateUserMutationInputTransformer $transformer,
         private SignUpCommandFactoryInterface $signUpCommandFactory
@@ -38,8 +41,11 @@ final readonly class RegisterUserMutationResolver implements
             $args['initials'],
             $args['password']
         );
-        $this->commandBus->dispatch($command);
+        $commandResponse = $this->commandResponseTypeGuard->expect(
+            $this->commandBus->dispatch($command),
+            RegisterUserCommandResponse::class
+        );
 
-        return $command->getResponse()->createdUser;
+        return $commandResponse->createdUser;
     }
 }
