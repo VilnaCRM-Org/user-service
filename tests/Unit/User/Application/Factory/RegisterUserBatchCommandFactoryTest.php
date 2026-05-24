@@ -36,7 +36,12 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
         );
     }
 
-    public function testCreateRejectsInvalidPayload(): void
+    /**
+     * @dataProvider invalidPayloadProvider
+     *
+     * @param object|array<string, int|string> $payload
+     */
+    public function testCreateRejectsInvalidPayload(object|array $payload): void
     {
         $factory = new RegisterUserBatchCommandFactory();
 
@@ -46,11 +51,114 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
         );
 
         /** @psalm-suppress InvalidArgument */
-        $factory->create(new UserRegisterBatchDto([(object) [
-            'email' => $this->faker->email(),
-            'initials' => $this->faker->word(),
-            'password' => $this->faker->password(),
-        ],
-        ]));
+        $factory->create(new UserRegisterBatchDto([$payload]));
+    }
+
+    /**
+     * @return array<string, array{object|array<string, int|string>}>
+     */
+    public static function invalidPayloadProvider(): array
+    {
+        return array_merge(
+            self::nonArrayPayloads(),
+            self::missingFieldPayloads(),
+            self::invalidScalarPayloads()
+        );
+    }
+
+    /**
+     * @return array<string, array{object|array<string, int|string>}>
+     */
+    private static function nonArrayPayloads(): array
+    {
+        return [
+            'non-array row' => [(object) [
+                'email' => 'user@example.test',
+                'initials' => 'User',
+                'password' => 'password',
+            ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    private static function missingFieldPayloads(): array
+    {
+        return [
+            'missing email' => [[
+                'initials' => 'User',
+                'password' => 'password',
+            ],
+            ],
+            'missing initials' => [[
+                'email' => 'user@example.test',
+                'password' => 'password',
+            ],
+            ],
+            'missing password' => [[
+                'email' => 'user@example.test',
+                'initials' => 'User',
+            ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    private static function invalidScalarPayloads(): array
+    {
+        return array_merge(
+            self::invalidEmailPayloads(),
+            self::invalidInitialsPayloads(),
+            self::invalidPasswordPayloads()
+        );
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    private static function invalidEmailPayloads(): array
+    {
+        return [
+            'non-string email' => [[
+                'email' => 123,
+                'initials' => 'User',
+                'password' => 'password',
+            ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    private static function invalidInitialsPayloads(): array
+    {
+        return [
+            'non-string initials' => [[
+                'email' => 'user@example.test',
+                'initials' => 123,
+                'password' => 'password',
+            ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, array{array<string, int|string>}>
+     */
+    private static function invalidPasswordPayloads(): array
+    {
+        return [
+            'non-string password' => [[
+                'email' => 'user@example.test',
+                'initials' => 'User',
+                'password' => 123,
+            ],
+            ],
+        ];
     }
 }
