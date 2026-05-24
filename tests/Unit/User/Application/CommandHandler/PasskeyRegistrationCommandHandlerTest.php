@@ -113,10 +113,7 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
         self::assertSame($this->objects->token('challengeId'), $result->getChallenge()->getId());
         self::assertSame($normalizedEmail, $result->getChallenge()->getEmail());
-        self::assertSame(
-            $normalizedEmail,
-            $result->getPublicKeyOptions()['user']['name']
-        );
+        self::assertSame($normalizedEmail, $result->getPublicKeyOptions()['user']['name']);
     }
 
     public function testStartRegistrationReturnsOptionsForAuthenticatedUser(): void
