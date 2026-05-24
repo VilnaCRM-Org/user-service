@@ -255,11 +255,13 @@ fi
 
 apply_prompt_placeholders() {
   local template="$1"
-  local spec_value manual_value pr_value
+  local spec_value manual_value pr_value status_context_value status_excluded_value
 
   spec_value="${spec_path:-NOT_PROVIDED}"
   manual_value="${manual_evidence:-NOT_PROVIDED}"
   pr_value="${pr_number:-AUTO_DETECT}"
+  status_context_value="${github_status_context:-NOT_CONFIGURED}"
+  status_excluded_value="${github_status_excluded_context:-NOT_CONFIGURED}"
 
   template="${template//\{BASE_REF\}/$(escape_prompt_replacement "$review_base")}"
   template="${template//\{SPEC_PATH\}/$(escape_prompt_replacement "$spec_value")}"
@@ -267,6 +269,8 @@ apply_prompt_placeholders() {
   template="${template//\{PR_NUMBER\}/$(escape_prompt_replacement "$pr_value")}"
   template="${template//\{SCORE_THRESHOLD\}/$(escape_prompt_replacement "$score_threshold")}"
   template="${template//\{NFR_CATEGORIES\}/$(escape_prompt_replacement "$nfr_categories")}"
+  template="${template//\{STATUS_CONTEXT\}/$(escape_prompt_replacement "$status_context_value")}"
+  template="${template//\{STATUS_EXCLUDED_CONTEXT\}/$(escape_prompt_replacement "$status_excluded_value")}"
   printf "%s\n" "$template"
 }
 

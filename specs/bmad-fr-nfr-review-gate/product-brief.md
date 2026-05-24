@@ -51,4 +51,13 @@ The MVP is a tracked skill plus Bash wrapper around the existing AI review loop:
 - Auto-merging PRs.
 - Rewriting BMAD or generated `_bmad/` workflows.
 - Generating fake manual evidence.
-- Adding PHP runtime dependencies.
+- Adding PHP runtime dependencies for the BMAD gate.
+
+## Traceability Boundary
+
+The BMAD gate implementation remains Bash, Markdown, Make, and Bats. A PR
+completion run can still include adjacent remediation when external AI review
+or CI finds a blocker in the same PR. Those changes must be explicitly traced
+to their source, scope, and verification evidence; lockfile-only security
+updates within existing `composer.json` constraints do not count as adding a
+BMAD gate runtime dependency.

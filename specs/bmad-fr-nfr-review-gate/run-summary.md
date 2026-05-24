@@ -40,11 +40,35 @@ revision: 2
   for BMAD PASS decisions.
 - Publish bounded PR comments and a GitHub commit status for BMAD PR runs so
   the gate result is visible on the pull request.
+- Treat the BMAD status context as the gate's own in-flight check during review
+  and exclude only that context from GitHub check corroboration.
 
 ## Validation Rounds
 
 One draft round was used for each artifact, with cross-checks against local
 code, existing skills, BMALPH setup behavior, and the pinned NFR catalog source.
+
+## PR Completion Remediation
+
+External AI review and CI found issues outside the initial BMAD gate files that
+had to be fixed before the PR could be considered review-ready:
+
+- Halley found BMAD publishing issues: self-status filtering when status
+  publishing is disabled, PASS status/comment ordering, and a generic
+  hardcoded result label. These were fixed in the shared review loop and
+  wrapper tests.
+- CodeRabbit found boolean-toggle parsing and fix-prompt suppression clarity
+  issues. These were fixed with `is_enabled` handling and prompt wording.
+- cubic found custom status-context self-filter drift after wrapper argument
+  parsing. The wrapper now derives the excluded context after CLI parsing, with
+  Bats coverage.
+- CodeRabbit/cubic review also drove the recovery-code remediation in
+  `RecoveryCodeBatchFactory`: partially rejected random byte chunks are not
+  discarded, empty custom entropy fixtures fail explicitly, and only rejected
+  bytes fail through a bounded exception path.
+- The `symfony-checks` CI job later failed on dependency advisories. The fix was
+  a lockfile-only Composer update within existing `composer.json` constraints,
+  verified by `make check-security`.
 
 ## Open Questions
 

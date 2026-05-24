@@ -25,12 +25,13 @@ revision: 1
 | FR-11 | The workflow is discoverable through Make help and AI skill documentation.                                                                       | P1       |
 | FR-12 | BMAD mode can publish a concise final PASS/FAIL review summary as a GitHub PR comment.                                                           | P0       |
 | FR-13 | BMAD mode can publish a GitHub-visible commit status for the review gate, including failure during remediation and success after final PASS.     | P0       |
+| FR-14 | A PR completion run records scoped external AI review fixes and CI/security remediation that were required to make the PR review-ready.          | P0       |
 
 ## Non-Functional Requirements
 
 | ID     | Category         | Requirement                                                                                                                                             |
 | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-01 | Maintainability  | Keep the implementation in tracked Bash, Markdown, Make, and Bats files with no PHP runtime dependency.                                                 |
+| NFR-01 | Maintainability  | Keep the BMAD gate implementation in tracked Bash, Markdown, Make, and Bats files with no PHP runtime dependency added for the gate.                    |
 | NFR-02 | Automatability   | The target must support non-interactive execution with deterministic exit code semantics from the underlying review loop.                               |
 | NFR-03 | Dependability    | The gate must fail closed on missing specs, missing evidence, missing markers, failed verification, or unverified GitHub/CI state.                      |
 | NFR-04 | Security         | Prompts and reports must not request or print secrets, tokens, private keys, or sensitive environment values.                                           |
@@ -64,6 +65,7 @@ Security, Manageability, Automatability, and Dependability.
 | AC-12 | A final BMAD PASS or terminal FAIL can post a PR comment containing the result, commit, status context, and bounded review/verification excerpts.                    |
 | AC-13 | BMAD review execution can publish a pending status at start, a failure status when the reviewer finds fixable issues, and a success status after verified PASS.      |
 | AC-14 | The BMAD status context is excluded from PR check corroboration so a previous failed gate status does not prevent the next remediation run from starting.            |
+| AC-15 | Any adjacent application-code or dependency-lock remediation in the PR has explicit source, reason, verification, and scope evidence in manual evidence.             |
 
 ## Scoring Rubric
 

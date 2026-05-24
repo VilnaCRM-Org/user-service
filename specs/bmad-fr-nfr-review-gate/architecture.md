@@ -69,7 +69,10 @@ second agent orchestration implementation.
 - Claude still uses built-in `/review` for the generic prompt.
 - BMAD mode disables built-in Claude review so the spec prompt is used.
 - No generated `_bmad/` file is required at runtime.
-- No PHP dependencies are added.
+- No PHP dependencies are added for the BMAD gate. Adjacent PR completion
+  remediation, such as a lockfile-only security update within existing
+  `composer.json` constraints, must be traced in manual evidence instead of
+  being treated as gate implementation.
 
 ## Security
 

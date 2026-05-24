@@ -1181,6 +1181,8 @@ SCRIPT
     AI_REVIEW_SPEC_PATH="$spec_dir" \
     AI_REVIEW_MANUAL_EVIDENCE="$evidence_file" \
     AI_REVIEW_PR_NUMBER=123 \
+    AI_REVIEW_GITHUB_STATUS_CONTEXT="Custom & Status" \
+    AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT="Custom & Excluded" \
     AI_REVIEW_BASE=HEAD \
     AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     AI_REVIEW_REQUIRE_GATE_MARKERS=true \
@@ -1199,6 +1201,10 @@ SCRIPT
   run grep -F "Use PR \`123\`" "$prompt_capture"
   assert_success
   run grep -F "Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability" "$prompt_capture"
+  assert_success
+  run grep -F "publishes its own GitHub status as \`Custom & Status\`" "$prompt_capture"
+  assert_success
+  run grep -F "excludes check context \`Custom & Excluded\`" "$prompt_capture"
   assert_success
 }
 
