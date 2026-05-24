@@ -310,9 +310,9 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
     {
         self::assertSame($failure, $context['exception']);
         self::assertSame($this->objects->user('ipAddress'), $context['ip_address']);
-        self::assertSame($this->objects->token('sessionId'), $context['session_id']);
         self::assertSame($this->objects->user('userAgent'), $context['user_agent']);
-        self::assertSame($this->objects->user('signupUserId'), $context['user_id']);
+        self::assertArrayNotHasKey('session_id', $context);
+        self::assertArrayNotHasKey('user_id', $context);
 
         return true;
     }

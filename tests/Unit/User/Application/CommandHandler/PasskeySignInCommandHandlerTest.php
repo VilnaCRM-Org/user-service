@@ -412,6 +412,6 @@ final class PasskeySignInCommandHandlerTest extends UnitTestCase
             ));
         $this->signInPublisher->expects($this->once())
             ->method('publishSignedIn')
-            ->with($user->getId(), $user->getEmail(), $sessionId, $ipAddress, $userAgent, false);
+            ->with($user->getId(), $user->getEmail(), $sessionId, $ipAddress, $userAgent, true);
     }
 }

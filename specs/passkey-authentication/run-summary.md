@@ -103,11 +103,12 @@ The BMAD stages were executed in the main session:
 ## Manual Test Evidence Checklist
 
 Status: completed for manual code-trace review plus targeted automated
-verification on 2026-05-25. A browser/hardware authenticator ceremony was not
-executed in this sandbox; no browser result is claimed below.
+verification on 2026-05-24 UTC. The verification ran after midnight in the
+Europe/Sofia workspace; a browser/hardware authenticator ceremony was not
+executed in this sandbox, and no browser result is claimed below.
 
 Manual tester: Codex.
-Execution date: 2026-05-25.
+Execution date: 2026-05-24 UTC.
 Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree based on
 commit `36bac4ef10d278d1e78762e6d6044dde5d74ed7e`, isolated Docker Compose
 project `user-service-pr286-bmad`, PHP 8.4.5, API Platform OpenAPI export.
@@ -197,7 +198,7 @@ Artifacts: same targeted PHPUnit run above.
 
 ## Verification Evidence
 
-Remediation note for 2026-05-25: targeted validation was rerun in an isolated
+Remediation note for 2026-05-24 UTC: targeted validation was rerun in an isolated
 Docker Compose project because local PHP is not installed and another checkout
 owns the default development ports. Local `mongo:8.0` exited with code 139 after
 initial health checks, so full local integration/Behat CI was not rerun in this
@@ -259,10 +260,10 @@ For Behat, the local `mongo:8.0` container repeatedly exited with code 139 after
 
 ## GitHub Required Check Configuration Evidence
 
-Status: verified from this workspace with GitHub CLI on 2026-05-25.
+Status: verified from this workspace with GitHub CLI on 2026-05-24 UTC.
 
 Verifier: Codex.
-Date: 2026-05-25.
+Date: 2026-05-24 UTC.
 Observed required checks: GitHub branch protection for `main` has strict status
 checks enabled but currently lists no required status check contexts/checks.
 Conversation resolution is required, code owner review is required,
