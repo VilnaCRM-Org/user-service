@@ -42,6 +42,7 @@ revision: 21
 | Verification failure after PASS | Run Bats fake-agent test `bmad-fr-nfr-review-gate fails when verification fails after PASS`.                           | Command exits non-zero with `Verification failed after AI review PASS`.                  | FR-08, NFR-03        |
 | No required CI checks fallback  | Run Bats fake-agent test `bmad-fr-nfr-review-gate falls back to visible checks when required check rollup is empty`.   | Command exits successfully after verifying every visible PR check is passing.            | AC-11, NFR-09        |
 | PR comment result publishing    | Run Bats fake-agent test `bmad-fr-nfr-review-gate publishes PR comment and success GitHub status after PASS`.          | Final PASS creates a bounded PR comment artifact and calls `gh pr comment`.              | FR-12, AC-12         |
+| Disabled status self-filter     | Run Bats fake-agent test `bmad-fr-nfr-review-gate excludes BMAD status check when status publishing is disabled`.      | PR-check corroboration still excludes the BMAD status context during dry runs.           | AC-14, NFR-03        |
 | GitHub status remediation flow  | Run Bats fake-agent test `bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS`.   | Status log records failure before the fix-agent output and success after verified PASS.  | FR-13, AC-13, AC-14  |
 | Empty visible CI check rollup   | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty`.             | Command exits non-zero with `Warning: GitHub PR check rollup is empty.`                  | AC-11, NFR-03        |
 | GitHub hard-gate fail-fast      | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing`.                    | Command exits before AI review with `GitHub corroboration failed before AI review.`      | AC-11, NFR-03        |
@@ -75,7 +76,9 @@ env \
   -u AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION \
   -u AI_REVIEW_POST_PR_COMMENT \
   -u AI_REVIEW_POST_GITHUB_STATUS \
+  -u AI_REVIEW_RESULT_LABEL \
   -u AI_REVIEW_GITHUB_STATUS_CONTEXT \
+  -u AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT \
   -u AI_REVIEW_GITHUB_STATUS_TARGET_URL \
   -u AI_REVIEW_PR_COMMENT_MAX_LINES \
   -u AI_REVIEW_BASE_REF \
@@ -98,6 +101,7 @@ env \
   -u BMAD_REVIEW_POST_PR_COMMENT \
   -u BMAD_REVIEW_POST_GITHUB_STATUS \
   -u BMAD_REVIEW_STATUS_CONTEXT \
+  -u BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT \
   TMPDIR=/dev/shm bats tests/CLI/bats/make_ai_review_loop_tests.bats
 env TMPDIR=/dev/shm bats tests/CLI/bats/make_bmalph_tests.bats
 git diff --check

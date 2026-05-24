@@ -30,7 +30,9 @@ require_github_ci_corroboration="${AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION:-fa
 required_gate_markers_raw="${AI_REVIEW_REQUIRED_GATE_MARKERS:-FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS}"
 post_pr_comment="${AI_REVIEW_POST_PR_COMMENT:-false}"
 post_github_status="${AI_REVIEW_POST_GITHUB_STATUS:-false}"
-github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-AI Review}"
+review_result_label="${AI_REVIEW_RESULT_LABEL:-AI Review}"
+github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-$review_result_label}"
+github_status_excluded_context="${AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT:-}"
 github_status_target_url="${AI_REVIEW_GITHUB_STATUS_TARGET_URL:-}"
 pr_comment_max_lines="${AI_REVIEW_PR_COMMENT_MAX_LINES:-160}"
 
@@ -118,7 +120,9 @@ agent_env=(
   -u AI_REVIEW_REQUIRED_GATE_MARKERS
   -u AI_REVIEW_POST_PR_COMMENT
   -u AI_REVIEW_POST_GITHUB_STATUS
+  -u AI_REVIEW_RESULT_LABEL
   -u AI_REVIEW_GITHUB_STATUS_CONTEXT
+  -u AI_REVIEW_GITHUB_STATUS_EXCLUDED_CONTEXT
   -u AI_REVIEW_GITHUB_STATUS_TARGET_URL
   -u AI_REVIEW_PR_COMMENT_MAX_LINES
   -u AI_REVIEW_BASE_REF
@@ -146,6 +150,7 @@ agent_env=(
   -u BMAD_REVIEW_POST_PR_COMMENT
   -u BMAD_REVIEW_POST_GITHUB_STATUS
   -u BMAD_REVIEW_STATUS_CONTEXT
+  -u BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT
 )
 
 # --- Agent validation -----------------------------------------------------
@@ -291,8 +296,8 @@ jq_string_escape() {
 github_checks_summary_jq() {
   local escaped_context
 
-  if is_enabled "$post_github_status"; then
-    escaped_context="$(jq_string_escape "$github_status_context")"
+  if [[ -n "$github_status_excluded_context" ]]; then
+    escaped_context="$(jq_string_escape "$github_status_excluded_context")"
     printf '[([.[] | select(.name != "%s")] | length), ([.[] | select(.name != "%s" and .bucket != "pass") | .name] | join(","))] | @tsv' \
       "$escaped_context" \
       "$escaped_context"
@@ -813,7 +818,7 @@ write_pr_comment_body() {
   short_head="$(git rev-parse --short HEAD 2>/dev/null || printf "unknown")"
 
   {
-    echo "## BMAD FR/NFR Review Gate: ${result}"
+    echo "## ${review_result_label}: ${result}"
     echo
     echo "- Commit: \`${short_head}\`"
     echo "- Status context: \`${github_status_context}\`"
@@ -852,15 +857,15 @@ publish_gate_result() {
   case "$result" in
     PASS)
       state="success"
-      description="BMAD FR/NFR review gate passed."
+      description="${review_result_label} passed."
       ;;
     FAIL)
       state="failure"
-      description="BMAD FR/NFR review gate failed."
+      description="${review_result_label} failed."
       ;;
     PENDING)
       state="pending"
-      description="BMAD FR/NFR review gate is running."
+      description="${review_result_label} is running."
       ;;
     *)
       echo "Warning: Unknown BMAD result for publishing: $result" >&2
@@ -869,12 +874,13 @@ publish_gate_result() {
   esac
 
   if [[ "$result" == "PASS" ]]; then
-    if ! post_pr_result_comment "$result" "$reason" "$review_file" "$ci_file"; then
-      echo "Warning: Failed to publish PR comment for BMAD result: $result" >&2
+    if ! post_github_commit_status "$state" "$description"; then
+      echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
       publish_ok=false
     fi
-    if [[ "$publish_ok" == "true" ]] && ! post_github_commit_status "$state" "$description"; then
-      echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
+    if [[ "$publish_ok" == "true" ]] && ! post_pr_result_comment "$result" "$reason" "$review_file" "$ci_file"; then
+      echo "Warning: Failed to publish PR comment for BMAD result: $result" >&2
+      post_github_commit_status "failure" "${review_result_label} result publishing failed." || true
       publish_ok=false
     fi
   else
@@ -1059,7 +1065,7 @@ while :; do
     exit 0
   fi
 
-  if ! post_github_commit_status "failure" "BMAD FR/NFR review gate failed."; then
+  if ! post_github_commit_status "failure" "${review_result_label} failed."; then
     echo "Warning: Failed to publish GitHub status for BMAD review iteration failure." >&2
   fi
 

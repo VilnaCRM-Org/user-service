@@ -20,6 +20,8 @@ completion until all applicable rows score 5/5.
   `BMAD_REVIEW_POST_GITHUB_STATUS=true|false` (BMAD wrapper defaults both to
   `true`)
 - Optional status context: `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
+- Optional status self-filter override:
+  `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT='BMAD FR/NFR Review Gate'`
 
 ## Pinned NFR Catalog
 

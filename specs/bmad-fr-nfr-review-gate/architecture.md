@@ -48,19 +48,20 @@ second agent orchestration implementation.
 
 ## Configuration
 
-| Variable                         | Purpose                                                            |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `BMAD_REVIEW_SPEC_PATH`          | BMAD spec bundle or file; falls back to `AI_REVIEW_SPEC_PATH`.     |
-| `BMAD_REVIEW_MANUAL_EVIDENCE`    | Optional manual evidence file or directory.                        |
-| `BMAD_REVIEW_PR`                 | Optional PR number.                                                |
-| `BMAD_REVIEW_BASE`               | Optional base ref.                                                 |
-| `BMAD_REVIEW_AGENTS`             | Optional comma-separated agents.                                   |
-| `BMAD_REVIEW_MAX_ITER`           | Optional max loop iterations.                                      |
-| `BMAD_REVIEW_VERIFY_CMD`         | Optional trusted verification command.                             |
-| `BMAD_REVIEW_LOG_DIR`            | Optional log directory.                                            |
-| `BMAD_REVIEW_POST_PR_COMMENT`    | Optional PR comment publishing toggle, default `true`.             |
-| `BMAD_REVIEW_POST_GITHUB_STATUS` | Optional GitHub commit-status publishing toggle, default `true`.   |
-| `BMAD_REVIEW_STATUS_CONTEXT`     | Optional commit-status context, default `BMAD FR/NFR Review Gate`. |
+| Variable                              | Purpose                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| `BMAD_REVIEW_SPEC_PATH`               | BMAD spec bundle or file; falls back to `AI_REVIEW_SPEC_PATH`.                       |
+| `BMAD_REVIEW_MANUAL_EVIDENCE`         | Optional manual evidence file or directory.                                          |
+| `BMAD_REVIEW_PR`                      | Optional PR number.                                                                  |
+| `BMAD_REVIEW_BASE`                    | Optional base ref.                                                                   |
+| `BMAD_REVIEW_AGENTS`                  | Optional comma-separated agents.                                                     |
+| `BMAD_REVIEW_MAX_ITER`                | Optional max loop iterations.                                                        |
+| `BMAD_REVIEW_VERIFY_CMD`              | Optional trusted verification command.                                               |
+| `BMAD_REVIEW_LOG_DIR`                 | Optional log directory.                                                              |
+| `BMAD_REVIEW_POST_PR_COMMENT`         | Optional PR comment publishing toggle, default `true`.                               |
+| `BMAD_REVIEW_POST_GITHUB_STATUS`      | Optional GitHub commit-status publishing toggle, default `true`.                     |
+| `BMAD_REVIEW_STATUS_CONTEXT`          | Optional commit-status context, default `BMAD FR/NFR Review Gate`.                   |
+| `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT` | Optional PR-check context excluded during corroboration; defaults to status context. |
 
 ## Backward Compatibility
 

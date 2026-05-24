@@ -29,6 +29,7 @@ Optional inputs:
 - `BMAD_REVIEW_POST_PR_COMMENT=true|false`
 - `BMAD_REVIEW_POST_GITHUB_STATUS=true|false`
 - `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
+- `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT='BMAD FR/NFR Review Gate'`
 
 The gate uses the tracked AI review loop and BMAD-specific prompts. It fails
 unless every applicable FR, NFR, pinned NonFunctionals.com category, QA
