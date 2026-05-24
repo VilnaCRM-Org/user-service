@@ -21,8 +21,8 @@
 
 - [x] 01-task-intake
 - [x] 02-specification
-- [ ] 03-impact-analysis
-- [ ] 04-implementation-plan
+- [x] 03-impact-analysis
+- [x] 04-implementation-plan
 - [ ] 05-implementation
 - [ ] 06-local-validation
 - [ ] 07-ci-investigation
