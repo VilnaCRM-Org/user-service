@@ -53,34 +53,28 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->transformer = new UuidTransformer(new UuidFactory());
     }
 
-    public function testConstructorThrowsExceptionForZeroBatchSize(): void
+    public function testConstructorThrowsExceptionForInvalidBatchSizes(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
+        foreach ([0, -1] as $batchSize) {
+            $registry = $this->createMock(ManagerRegistry::class);
+            $documentManager = $this->createMock(DocumentManager::class);
 
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
+            try {
+                new MongoDBUserRepository(
+                    $documentManager,
+                    $registry,
+                    $batchSize
+                );
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame(
+                    'Batch size must be greater than zero.',
+                    $exception->getMessage()
+                );
+                continue;
+            }
 
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            0
-        );
-    }
-
-    public function testConstructorThrowsExceptionForNegativeBatchSize(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
-
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
-
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            -1
-        );
+            $this->fail('Expected invalid batch size exception.');
+        }
     }
 
     public function testFindByEmailReturnsUser(): void
