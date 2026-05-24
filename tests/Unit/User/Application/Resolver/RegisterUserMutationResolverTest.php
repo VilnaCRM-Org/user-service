@@ -12,6 +12,7 @@ use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\MutationInput\CreateUserMutationInput;
 use App\User\Application\Resolver\RegisterUserMutationResolver;
+use App\User\Application\Service\RegisterUserCommandDispatcher;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
 use App\User\Domain\Entity\UserInterface;
@@ -40,9 +41,11 @@ final class RegisterUserMutationResolverTest extends UnitTestCase
         $this->resolver = new RegisterUserMutationResolver(
             $this->validator,
             $this->transformer,
-            $this->commandFactory,
-            $this->commandBus,
-            new CommandResponseTypeGuard()
+            new RegisterUserCommandDispatcher(
+                $this->commandFactory,
+                $this->commandBus,
+                new CommandResponseTypeGuard()
+            )
         );
     }
 

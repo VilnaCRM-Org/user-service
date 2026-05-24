@@ -38,7 +38,7 @@ Parallel stage groups:
 `make psalm` also runs the repository's `ArchitectureGuardPlugin`. The guard
 protects reviewed code-organization rules, including no registration
 orchestrator directory, no structured batch user payload arrays in application
-workflow signatures, and no repeated repository lookup calls inside loop bodies.
+workflow signatures, and no repeated repository lookup calls inside loops.
 
 ### AI-Friendly Output
 

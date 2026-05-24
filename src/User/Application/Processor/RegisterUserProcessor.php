@@ -6,11 +6,8 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
-use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Service\RegisterUserCommandDispatcher;
 use App\User\Domain\Entity\UserInterface;
 
 /**
@@ -19,9 +16,7 @@ use App\User\Domain\Entity\UserInterface;
 final readonly class RegisterUserProcessor implements ProcessorInterface
 {
     public function __construct(
-        private SignUpCommandFactoryInterface $commandFactory,
-        private CommandBusInterface $commandBus,
-        private CommandResponseTypeGuard $commandResponseTypeGuard
+        private RegisterUserCommandDispatcher $commandDispatcher
     ) {
     }
 
@@ -37,16 +32,10 @@ final readonly class RegisterUserProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): UserInterface {
-        $command = $this->commandFactory->create(
+        return $this->commandDispatcher->dispatch(
             $data->email,
             $data->initials,
             $data->password
         );
-        $response = $this->commandResponseTypeGuard->expect(
-            $this->commandBus->dispatch($command),
-            RegisterUserCommandResponse::class
-        );
-
-        return $response->user;
     }
 }

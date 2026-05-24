@@ -167,7 +167,7 @@ When creating or reviewing a class, verify:
   - `DomainEvent` → `DomainEventCollection`
   - Internal storage inside collection classes may still use `array`.
 - ❌ **Structured batch payload arrays in application workflow code** - Convert payload rows such as `array{email, initials, password}` into named input objects and typed collections before they reach commands, command handlers, factories, processors, or resolvers. Psalm architecture guards enforce this for production workflow code.
-- ❌ **Repository lookups inside loop bodies** - Load data in bulk or perform a single repository query before iterating. Psalm architecture guards flag repeated repository lookup calls inside loop bodies in `src/`.
+- ❌ **Repository lookups inside loops** - Load data in bulk or perform a single repository query before iterating. Psalm architecture guards flag repeated repository lookup calls in loop bodies and `for`/`while`/`do` loop expressions in `src/`.
 - ❌ **Registration orchestrator directories/classes** - Registration writes must use CQRS commands, command handlers, command responses, processors, and resolvers that dispatch through the command bus. Do not create `Application/Registration` orchestrators or service-style workflow classes.
 
 ## Factory Pattern (Maintainability & Flexibility)

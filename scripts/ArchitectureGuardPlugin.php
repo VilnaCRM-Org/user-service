@@ -79,7 +79,7 @@ final class ArchitectureGuardPlugin implements
     private const FORBIDDEN_REGISTRATION_DIRECTORY_MESSAGE =
         'Use CQRS handlers instead of Application\\Registration orchestrators.';
     private const REPOSITORY_LOOKUP_IN_LOOP_MESSAGE =
-        'Move repository lookup calls out of loop bodies; load data in bulk before iterating.';
+        'Move repository lookup calls out of loops; load data in bulk before iterating.';
     private const BATCH_USER_PAYLOAD_ARRAY_MESSAGE =
         'Use batch registration input objects instead of payload arrays.';
 
@@ -199,7 +199,7 @@ final class ArchitectureGuardPlugin implements
 
         self::reportForbiddenRegistrationDirectory($event, $filePath, $statement);
         self::reportConstructorDefaultInstantiations($event, $statement);
-        self::reportRepositoryLookupsInLoopBodies($event, $statement);
+        self::reportRepositoryLookupsInLoops($event, $statement);
 
         if (!self::isFactorySource($filePath) && !self::isCollectionSource($filePath)) {
             self::reportDomainObjectArrayCollections($event, $statement);
@@ -232,7 +232,7 @@ final class ArchitectureGuardPlugin implements
         );
     }
 
-    private static function reportRepositoryLookupsInLoopBodies(
+    private static function reportRepositoryLookupsInLoops(
         AfterFunctionLikeAnalysisEvent $event,
         Node\FunctionLike $statement,
     ): void {
@@ -248,7 +248,7 @@ final class ArchitectureGuardPlugin implements
     ): void {
         self::reportRepositoryLookupInLoop($event, $node, $insideLoop);
 
-        if (self::reportLoopBodyRepositoryLookups($event, $node)) {
+        if (self::reportLoopRepositoryLookups($event, $node)) {
             return;
         }
 
@@ -269,22 +269,68 @@ final class ArchitectureGuardPlugin implements
         }
     }
 
-    private static function reportLoopBodyRepositoryLookups(
+    private static function reportLoopRepositoryLookups(
         AfterFunctionLikeAnalysisEvent $event,
         Node $node,
     ): bool {
-        if (
-            $node instanceof Stmt\Foreach_
-            || $node instanceof Stmt\For_
-            || $node instanceof Stmt\While_
-            || $node instanceof Stmt\Do_
-        ) {
-            self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+        if ($node instanceof Stmt\Foreach_) {
+            return self::reportForeachRepositoryLookups($event, $node);
+        }
 
-            return true;
+        if ($node instanceof Stmt\For_) {
+            return self::reportForRepositoryLookups($event, $node);
+        }
+
+        if ($node instanceof Stmt\While_) {
+            return self::reportWhileRepositoryLookups($event, $node);
+        }
+
+        if ($node instanceof Stmt\Do_) {
+            return self::reportDoRepositoryLookups($event, $node);
         }
 
         return false;
+    }
+
+    private static function reportForeachRepositoryLookups(
+        AfterFunctionLikeAnalysisEvent $event,
+        Stmt\Foreach_ $node,
+    ): bool {
+        self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+
+        return true;
+    }
+
+    private static function reportForRepositoryLookups(
+        AfterFunctionLikeAnalysisEvent $event,
+        Stmt\For_ $node,
+    ): bool {
+        self::reportRepositoryLookupsInValue($event, $node->init, true);
+        self::reportRepositoryLookupsInValue($event, $node->cond, true);
+        self::reportRepositoryLookupsInValue($event, $node->loop, true);
+        self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+
+        return true;
+    }
+
+    private static function reportWhileRepositoryLookups(
+        AfterFunctionLikeAnalysisEvent $event,
+        Stmt\While_ $node,
+    ): bool {
+        self::reportRepositoryLookupsInValue($event, $node->cond, true);
+        self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+
+        return true;
+    }
+
+    private static function reportDoRepositoryLookups(
+        AfterFunctionLikeAnalysisEvent $event,
+        Stmt\Do_ $node,
+    ): bool {
+        self::reportRepositoryLookupsInNodes($event, $node->stmts, true);
+        self::reportRepositoryLookupsInValue($event, $node->cond, true);
+
+        return true;
     }
 
     private static function reportRepositoryLookupsInChildNodes(
@@ -340,15 +386,8 @@ final class ArchitectureGuardPlugin implements
             return false;
         }
 
-        if (!$call->var instanceof PropertyFetch) {
-            return false;
-        }
-
-        if (!$call->var->name instanceof Node\Identifier) {
-            return false;
-        }
-
-        if (!str_contains(strtolower($call->var->name->name), 'repository')) {
+        $receiverName = self::repositoryReceiverName($call);
+        if ($receiverName === null) {
             return false;
         }
 
@@ -360,6 +399,29 @@ final class ArchitectureGuardPlugin implements
         }
 
         return false;
+    }
+
+    private static function repositoryReceiverName(MethodCall $call): ?string
+    {
+        if (
+            $call->var instanceof PropertyFetch
+            && $call->var->name instanceof Node\Identifier
+        ) {
+            return str_contains(
+                strtolower($call->var->name->name),
+                'repository'
+            )
+                ? $call->var->name->name
+                : null;
+        }
+
+        if ($call->var instanceof Expr\Variable && is_string($call->var->name)) {
+            return str_contains(strtolower($call->var->name), 'repository')
+                ? $call->var->name
+                : null;
+        }
+
+        return null;
     }
 
     private static function reportConstructorDefaultInstantiations(

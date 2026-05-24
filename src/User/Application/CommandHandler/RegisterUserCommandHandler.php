@@ -13,7 +13,6 @@ use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Exception\DuplicateEmailException;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
@@ -56,12 +55,7 @@ final readonly class RegisterUserCommandHandler implements
             )
         );
 
-        $createdUser = $this->findUserByEmailQueryHandler->find($command->email);
-        if ($createdUser === null) {
-            throw new UserNotFoundException();
-        }
-
-        return new RegisterUserCommandResponse($createdUser);
+        return new RegisterUserCommandResponse($user);
     }
 
     private function normalizeCommandEmail(

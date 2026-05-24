@@ -13,6 +13,7 @@ use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Processor\RegisterUserProcessor;
+use App\User\Application\Service\RegisterUserCommandDispatcher;
 use App\User\Domain\Entity\UserInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -33,9 +34,11 @@ final class RegisterUserProcessorTest extends UnitTestCase
             $this->createMock(SignUpCommandFactoryInterface::class);
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->processor = new RegisterUserProcessor(
-            $this->commandFactory,
-            $this->commandBus,
-            new CommandResponseTypeGuard()
+            new RegisterUserCommandDispatcher(
+                $this->commandFactory,
+                $this->commandBus,
+                new CommandResponseTypeGuard()
+            )
         );
     }
 

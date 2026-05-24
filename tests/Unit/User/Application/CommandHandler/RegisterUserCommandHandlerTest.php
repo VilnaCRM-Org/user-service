@@ -21,7 +21,6 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\UserRegisteredEvent;
 use App\User\Domain\Exception\DuplicateEmailException;
-use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -65,10 +64,9 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     {
         [$command, $normalizedEmail, $initials] =
             $this->createRegistrationFixture();
-        $createdUser = $this->createMock(UserInterface::class);
 
-        $this->expectEmailLookups($normalizedEmail, null, $createdUser);
-        $this->expectUserCreation(
+        $this->expectEmailLookups($normalizedEmail, null);
+        $hashedPassword = $this->expectUserCreation(
             $normalizedEmail,
             $initials
         );
@@ -76,7 +74,12 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
         $response = $this->handler->__invoke($command);
 
         $this->assertInstanceOf(RegisterUserCommandResponse::class, $response);
-        $this->assertSame($createdUser, $response->user);
+        $this->assertTrue($this->userMatches(
+            $response->user,
+            $normalizedEmail,
+            $initials,
+            $hashedPassword
+        ));
     }
 
     public function testInvokeRethrowsSaveErrorWithoutPublishingRegistrationEvent(): void
@@ -114,23 +117,6 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
         $this->expectExceptionMessage(
             sprintf('Email "%s" is already registered', $normalizedEmail)
         );
-
-        $this->handler->__invoke($command);
-    }
-
-    public function testInvokeThrowsWhenCreatedUserCannotBeLoaded(): void
-    {
-        [$command, $normalizedEmail, $initials] =
-            $this->createRegistrationFixture();
-
-        $this->expectEmailLookups($normalizedEmail, null, null);
-        $this->expectUserCreation(
-            $normalizedEmail,
-            $initials
-        );
-
-        $this->expectException(UserNotFoundException::class);
-        $this->expectExceptionMessage('User not found');
 
         $this->handler->__invoke($command);
     }
@@ -179,10 +165,12 @@ final class RegisterUserCommandHandlerTest extends UnitTestCase
     private function expectUserCreation(
         string $email,
         string $initials,
-    ): void {
+    ): string {
         $hashedPassword = $this->expectPasswordHash();
         $this->expectUserSave($email, $initials, $hashedPassword);
         $this->expectRegistrationEvent($email, $initials, $hashedPassword);
+
+        return $hashedPassword;
     }
 
     private function expectRegistrationEvent(

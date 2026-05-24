@@ -47,7 +47,7 @@ registration share the same trim/lowercase behavior.
 - hash the password;
 - save the user;
 - publish the registration event;
-- reload the persisted user and return `RegisterUserCommandResponse`.
+- return the created user in `RegisterUserCommandResponse`.
 
 If persistence fails, the repository detaches only the failed user before
 rethrowing so that failed write is not accidentally flushed later by a reused ODM
@@ -56,9 +56,9 @@ document manager, without discarding unrelated managed `User` changes.
 ### Processor and Resolver
 
 `RegisterUserProcessor` and `RegisterUserMutationResolver` use
-`SignUpCommandFactoryInterface` to create `RegisterUserCommand`, dispatch it
-through `CommandBusInterface`, and validate the returned
-`RegisterUserCommandResponse` with `CommandResponseTypeGuard`.
+`RegisterUserCommandDispatcher` to share `RegisterUserCommand` creation,
+`CommandBusInterface` dispatch, and `RegisterUserCommandResponse` validation
+with `CommandResponseTypeGuard`.
 
 The `RegisterUserCommandHandler` owns the registration write workflow:
 
@@ -68,9 +68,9 @@ The `RegisterUserCommandHandler` owns the registration write workflow:
    email is already registered.
 3. Transform the command into a `User`, hash the password, save the user, and
    publish the registration event.
-4. After successful persistence, run the email query again and return the
-   persisted user in `RegisterUserCommandResponse`, or throw
-   `UserNotFoundException` if the user cannot be reloaded.
+4. After successful persistence, return the created user in
+   `RegisterUserCommandResponse`; do not fail the command based on a post-save
+   read after write-side effects have already completed.
 
 Single-user REST create requests keep `UniqueEmail` validation, so known
 duplicate emails continue to return the existing validation error before the
