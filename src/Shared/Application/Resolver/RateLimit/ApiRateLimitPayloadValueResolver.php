@@ -35,6 +35,24 @@ final readonly class ApiRateLimitPayloadValueResolver
      */
     private function resolveJsonPayloadValue(string $rawPayload, array $keys): ?string
     {
+        $jsonPayload = $this->decodeJsonPayload($rawPayload);
+        if ($jsonPayload === null) {
+            return null;
+        }
+
+        $resolved = $this->findStringValue($jsonPayload, $keys);
+        if ($resolved !== null) {
+            return $resolved;
+        }
+
+        return $this->resolveGraphQlQueryValue($jsonPayload, $keys);
+    }
+
+    /**
+     * @return array<array-key, array|string|int|float|bool|null>|null
+     */
+    private function decodeJsonPayload(string $rawPayload): ?array
+    {
         try {
             $jsonPayload = $this->serializer->decode(
                 $rawPayload,
@@ -45,15 +63,15 @@ final readonly class ApiRateLimitPayloadValueResolver
             return null;
         }
 
-        if (!is_array($jsonPayload)) {
-            return null;
-        }
+        return is_array($jsonPayload) ? $jsonPayload : null;
+    }
 
-        $resolved = $this->findStringValue($jsonPayload, $keys);
-        if ($resolved !== null) {
-            return $resolved;
-        }
-
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $jsonPayload
+     * @param list<string> $keys
+     */
+    private function resolveGraphQlQueryValue(array $jsonPayload, array $keys): ?string
+    {
         $query = $jsonPayload['query'] ?? null;
         if (is_string($query)) {
             return $this->findGraphQlArgumentStringValue($query, $keys);
@@ -73,25 +91,45 @@ final readonly class ApiRateLimitPayloadValueResolver
     }
 
     /**
-     * @param array<array-key, mixed> $payload
+     * @param array<array-key, array|string|int|float|bool|null> $payload
      * @param list<string> $keys
      */
     private function findStringValue(array $payload, array $keys): ?string
     {
         foreach ($payload as $key => $value) {
-            if (is_string($key) && in_array($key, $keys, true) && is_string($value) && $value !== '') {
-                return $value;
-            }
-
-            if (is_array($value)) {
-                $resolved = $this->findStringValue($value, $keys);
-                if ($resolved !== null) {
-                    return $resolved;
-                }
+            $resolved = $this->resolvePayloadEntry($key, $value, $keys);
+            if ($resolved !== null) {
+                return $resolved;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function resolvePayloadEntry(
+        int|string $key,
+        array|string|int|float|bool|null $value,
+        array $keys
+    ): ?string {
+        if (is_string($key) && $this->isMatchingStringValue($key, $value, $keys)) {
+            return $value;
+        }
+
+        return is_array($value) ? $this->findStringValue($value, $keys) : null;
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function isMatchingStringValue(
+        string $key,
+        array|string|int|float|bool|null $value,
+        array $keys
+    ): bool {
+        return in_array($key, $keys, true) && is_string($value) && $value !== '';
     }
 
     /**

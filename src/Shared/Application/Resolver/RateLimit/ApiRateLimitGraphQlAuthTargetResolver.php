@@ -30,7 +30,10 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     public function resolve(Request $request): array
     {
-        if (strtoupper($request->getMethod()) !== 'POST' || $request->getPathInfo() !== self::GRAPHQL_PATH) {
+        if (
+            strtoupper($request->getMethod()) !== 'POST'
+            || $request->getPathInfo() !== self::GRAPHQL_PATH
+        ) {
             return [];
         }
 
