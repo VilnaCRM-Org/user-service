@@ -81,7 +81,7 @@ Observed result: after waiting past TTL,
 
 ## Focused Verification
 
-- `AuthEndpointsIntegrationTest::testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson`
+- `PasskeyAuthEndpointsIntegrationTest::testSignupOptionsReturnsBrowserSafeWebauthnJson`
   plus refresh-token integration coverage passed: 2 tests, 37 assertions.
 - `PasskeyJsonTransformerTest` and `PasskeyOptionsFactoryTest` passed: 13 tests,
   73 assertions.

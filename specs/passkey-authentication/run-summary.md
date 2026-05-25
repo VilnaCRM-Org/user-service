@@ -125,7 +125,7 @@ Sanitized browser evidence:
   `01KSECHK4BX8HYP4Z2ZE66SXP2` completed after expiry returned `401`,
   detail `Invalid or expired passkey challenge.`, and no access token.
 - Focused verification passed:
-  `AuthEndpointsIntegrationTest::testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson`
+  `PasskeyAuthEndpointsIntegrationTest::testSignupOptionsReturnsBrowserSafeWebauthnJson`
   plus refresh-token integration coverage: 2 tests / 37 assertions.
 - Focused unit verification passed:
   `PasskeyJsonTransformerTest` and `PasskeyOptionsFactoryTest`: 13 tests / 73
@@ -274,7 +274,7 @@ earlier remediation commits. Full post-push CI is expected to be provided by
 GitHub Actions for the final pushed commit.
 
 - Current focused integration verification:
-  `./vendor/bin/phpunit tests/Integration/Auth/AuthEndpointsIntegrationTest.php --filter "testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson|testRefreshTokenEndpointRotatesTokenAndIssuesNewTokens"`
+  `./vendor/bin/phpunit tests/Integration/Auth/PasskeyAuthEndpointsIntegrationTest.php tests/Integration/Auth/AuthEndpointsIntegrationTest.php --filter "testSignupOptionsReturnsBrowserSafeWebauthnJson|testRefreshTokenEndpointRotatesTokenAndIssuesNewTokens"`
   passed: 2 tests, 37 assertions.
 - Current focused unit verification:
   `./vendor/bin/phpunit tests/Unit/User/Application/Transformer/PasskeyJsonTransformerTest.php tests/Unit/User/Application/Factory/PasskeyOptionsFactoryTest.php`

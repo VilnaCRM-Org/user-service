@@ -83,31 +83,6 @@ final class AuthEndpointsIntegrationTest extends AuthIntegrationTestCase
         );
     }
 
-    public function testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson(): void
-    {
-        $response = $this->requestJson(
-            '/api/passkeys/signup/options',
-            [
-                'email' => $this->faker->safeEmail(),
-                'initials' => 'PK',
-                'displayName' => 'Passkey Integration',
-            ]
-        );
-
-        $this->assertSame(Response::HTTP_OK, $response['response']->getStatusCode());
-        $challengeId = $this->requireStringKey($response['body'], 'challenge_id');
-        $this->assertNotSame('', $challengeId);
-
-        $publicKey = $response['body']['public_key'] ?? null;
-        $this->assertIsArray($publicKey);
-        $this->assertMatchesRegularExpression(
-            '/^[A-Za-z0-9_-]+$/',
-            $this->requireStringKey($publicKey, 'challenge')
-        );
-        $this->assertSame('localhost', $publicKey['rp']['id'] ?? null);
-        $this->assertSame('required', $publicKey['authenticatorSelection']['userVerification'] ?? null);
-    }
-
     public function testTwoFactorEndpointsCoverFullLifecycle(): void
     {
         [$user, $password] = $this->createUserWithPassword();
