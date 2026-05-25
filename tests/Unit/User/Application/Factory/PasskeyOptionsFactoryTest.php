@@ -16,12 +16,18 @@ use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
+
 use function array_column;
+
 use Cose\Algorithms;
 use DateTimeImmutable;
+
 use const JSON_THROW_ON_ERROR;
+
 use PHPUnit\Framework\MockObject\MockObject;
+
 use function strlen;
+
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -156,6 +162,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
             AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             $publicKey['authenticatorSelection']['userVerification']
         );
+        self::assertDiscoverableCredentialRequired($publicKey);
         self::assertSame($this->timeoutSeconds * 1000, $publicKey['timeout']);
         self::assertNotEmpty($publicKey['challenge']);
         self::assertSame(
@@ -195,6 +202,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
             AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             $result->getPublicKeyOptions()['authenticatorSelection']['userVerification']
         );
+        self::assertDiscoverableCredentialRequired($result->getPublicKeyOptions());
     }
 
     private function expectSignupChallengeSaved(): void
@@ -264,6 +272,18 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
         self::assertTrue($result->getChallenge()->isRememberMe());
         self::assertSame($credentialId, $publicKey['allowCredentials'][0]['id']);
         self::assertSame('public-key', $publicKey['allowCredentials'][0]['type']);
+    }
+
+    /**
+     * @param array<string, scalar|array> $publicKey
+     */
+    private static function assertDiscoverableCredentialRequired(array $publicKey): void
+    {
+        self::assertSame(
+            AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
+            $publicKey['authenticatorSelection']['residentKey']
+        );
+        self::assertTrue($publicKey['authenticatorSelection']['requireResidentKey']);
     }
 
     private function createFactory(): PasskeyOptionsFactory

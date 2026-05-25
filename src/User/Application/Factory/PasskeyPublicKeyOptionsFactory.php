@@ -14,7 +14,7 @@ final readonly class PasskeyPublicKeyOptionsFactory
     private const COSE_ALGORITHM_ES256 = -7;
     private const COSE_ALGORITHM_RS256 = -257;
     private const CREDENTIAL_TYPE_PUBLIC_KEY = 'public-key';
-    private const RESIDENT_KEY_PREFERRED = 'preferred';
+    private const RESIDENT_KEY_REQUIRED = 'required';
     private const USER_VERIFICATION_REQUIRED = 'required';
 
     public function __construct(
@@ -102,7 +102,7 @@ final readonly class PasskeyPublicKeyOptionsFactory
         return new $selectionClass(
             null,
             self::USER_VERIFICATION_REQUIRED,
-            self::RESIDENT_KEY_PREFERRED
+            self::RESIDENT_KEY_REQUIRED
         );
     }
 

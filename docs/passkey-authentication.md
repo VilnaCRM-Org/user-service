@@ -39,6 +39,10 @@ registered, matching the existing registration behavior. The completion
 endpoint re-checks the email and returns a conflict if it was registered after
 options were issued.
 
+Registration options require discoverable credentials. This keeps later
+email-first passkey sign-in from exposing stored credential descriptors while
+still allowing the browser to select the user's credential.
+
 ## Authenticated Enrollment
 
 1. Authenticated client calls `POST /api/passkeys/register/options` with an empty
@@ -52,6 +56,10 @@ options were issued.
 
 Existing passkey credential IDs are excluded from the registration options so
 authenticators can reject duplicate enrollment when supported.
+
+Registration options require discoverable credentials for the same privacy
+reason as sign-up: sign-in options do not reveal user-specific credential
+descriptors.
 
 ## Sign-In Flow
 
@@ -68,6 +76,9 @@ authenticators can reject duplicate enrollment when supported.
 Users without a passkey should keep using the existing password sign-in and
 password reset flows. A failed passkey challenge does not remove password-based
 fallback.
+
+Passkey sign-in options intentionally omit `allowCredentials` for both known and
+unknown emails. Registered passkeys therefore must be discoverable credentials.
 
 ## Frontend Notes
 

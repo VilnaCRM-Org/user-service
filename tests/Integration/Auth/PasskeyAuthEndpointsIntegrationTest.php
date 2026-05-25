@@ -63,6 +63,11 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
             'required',
             $publicKey['authenticatorSelection']['userVerification'] ?? null
         );
+        $this->assertSame(
+            'required',
+            $publicKey['authenticatorSelection']['residentKey'] ?? null
+        );
+        $this->assertTrue($publicKey['authenticatorSelection']['requireResidentKey'] ?? false);
     }
 
     /**

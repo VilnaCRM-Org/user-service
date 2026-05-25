@@ -96,6 +96,28 @@ resources:
           responses:
             200:
               description: 'Passkey creation options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYSIGNUP'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rp: { name: 'VilnaCRM', id: 'localhost' }
+                      user: { id: 'base64url-user-id', name: 'user@example.test', displayName: 'Example User' }
+                      pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
+                      authenticatorSelection:
+                        userVerification: 'required'
+                        residentKey: 'required'
+                        requireResidentKey: true
+                      timeout: 60000
             409:
               description: 'Email is already registered'
             422:
@@ -116,6 +138,19 @@ resources:
           responses:
             200:
               description: 'Passkey sign-up completed'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [2fa_enabled, access_token, refresh_token]
+                    properties:
+                      2fa_enabled: { type: boolean, enum: [false] }
+                      access_token: { type: string }
+                      refresh_token: { type: string }
+                  example:
+                    2fa_enabled: false
+                    access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                    refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
             401:
               description: 'Invalid or expired passkey challenge'
             409:
@@ -139,6 +174,29 @@ resources:
           responses:
             200:
               description: 'Passkey creation options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYREGISTER'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rp: { name: 'VilnaCRM', id: 'localhost' }
+                      user: { id: 'base64url-user-id', name: 'user@example.test', displayName: 'Example User' }
+                      pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
+                      excludeCredentials: []
+                      authenticatorSelection:
+                        userVerification: 'required'
+                        residentKey: 'required'
+                        requireResidentKey: true
+                      timeout: 60000
             401:
               description: 'Authentication required'
       passkey_register_complete_http:
@@ -158,6 +216,15 @@ resources:
           responses:
             200:
               description: 'Passkey registered'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [credential_id]
+                    properties:
+                      credential_id: { type: string }
+                  example:
+                    credential_id: 'base64url-credential-id'
             401:
               description: 'Authentication required or invalid passkey challenge'
             409:
@@ -180,6 +247,24 @@ resources:
           responses:
             200:
               description: 'Passkey request options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYSIGNIN'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rpId: 'localhost'
+                      allowCredentials: []
+                      userVerification: 'required'
+                      timeout: 60000
             422:
               description: 'Validation error'
       passkey_signin_complete_http:
@@ -198,6 +283,25 @@ resources:
           responses:
             200:
               description: 'Passkey sign-in completed'
+              content:
+                application/json:
+                  schema:
+                    oneOf:
+                      - type: object
+                        required: [2fa_enabled, access_token, refresh_token]
+                        properties:
+                          2fa_enabled: { type: boolean, enum: [false] }
+                          access_token: { type: string }
+                          refresh_token: { type: string }
+                      - type: object
+                        required: [2fa_enabled, pending_session_id]
+                        properties:
+                          2fa_enabled: { type: boolean, enum: [true] }
+                          pending_session_id: { type: string }
+                  example:
+                    2fa_enabled: false
+                    access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                    refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
             401:
               description: 'Invalid passkey credential or challenge'
             422:
