@@ -76,6 +76,64 @@ The BMAD stages were executed in the main session:
 - Current Cubic review findings were addressed: `none` attestation support is registered, authentication result creation no longer publishes side effects from the factory, sign-in options no longer expose credential descriptors, unknown-email passkey completion follows the generic invalid-credential path, sign-in observes existing 2FA policy, and signup completion rolls back persisted user/credential state on downstream failures.
 - GraphQL passkey mutations were added for sign-up, sign-in, and authenticated registration using the existing `AuthPayload` mutation surface.
 - BMAD FR/NFR remediation updated sign-up options so existing emails are rejected before challenge creation, documented the `409` signup-options response in API Platform/OpenAPI, aligned frontend documentation with that behavior, and added manual/required-check evidence without fabricating browser authenticator results.
+- Current-head browser evidence found a live WebAuthn serialization wiring bug:
+  the application container autowired Symfony's default serializer into
+  `PasskeyJsonTransformer`, causing passkey options to fail on random binary
+  challenges with `Malformed UTF-8 characters`. The transformer service now
+  explicitly keeps the optional serializer dependencies `null`, so it builds the
+  WebAuthn serializer from `PasskeyWebauthnFactory`; an integration test covers
+  browser-safe passkey options JSON.
+
+## Current-Head Remediation Evidence
+
+Status: source fix plus current browser/authenticator evidence.
+
+Verifier: Codex.
+Date: 2026-05-25 UTC.
+Base workspace HEAD before this fix:
+`58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
+Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
+Sanitized browser evidence:
+`specs/passkey-authentication/manual-browser-evidence.md`.
+
+- Local workspace identity: `git rev-parse HEAD` returned
+  `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
+- Local `_bmad` workflow was restored from the identical PR #284 BMALPH bundle
+  into ignored path `_bmad/`; `_bmad/core/skills/bmad-review-adversarial-general/workflow.md`
+  is present locally.
+- GitHub check corroboration before this source fix: `gh pr checks 286 --json`
+  reported all 25 non-BMAD checks `SUCCESS` on
+  `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`; BMAD was the only failing status.
+- Review corroboration before this source fix: `gh pr view 286 --json` reported
+  `reviewDecision=APPROVED`; latest CodeRabbit, cubic, and Kravalg reviews were
+  approved on `58a46bd8`; GraphQL review-thread pagination reported 897 total
+  review threads and 0 unresolved.
+- Manual browser evidence used Google Chrome/HeadlessChrome 148 with Chrome
+  DevTools virtual authenticators against
+  `https://localhost:65443`, RP ID `localhost`, origin
+  `https://localhost:65443`, isolated Docker Compose project
+  `user-service-pr286-manual`, MongoDB 7.0, Redis 8, `APP_ENV=test`.
+- Browser run id `1779672967201-kekp2o` verified existing-email signup rejection
+  returned `409` without a challenge, new-email signup completed with issued
+  access/refresh tokens, challenge reuse returned `401` without tokens,
+  authenticated registration completed using a second virtual authenticator,
+  passkey sign-in worked with zero `allowCredentials`, TOTP setup/confirm
+  returned 8 recovery codes, and passkey sign-in after 2FA returned a pending
+  session without access/refresh tokens. Sanitized durable evidence is recorded
+  in `specs/passkey-authentication/manual-browser-evidence.md`.
+- Expiration run with `PASSKEY_CHALLENGE_TTL_SECONDS=1` verified challenge
+  `01KSECHK4BX8HYP4Z2ZE66SXP2` completed after expiry returned `401`,
+  detail `Invalid or expired passkey challenge.`, and no access token.
+- Focused verification passed:
+  `AuthEndpointsIntegrationTest::testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson`
+  plus refresh-token integration coverage: 2 tests / 37 assertions.
+- Focused unit verification passed:
+  `PasskeyJsonTransformerTest` and `PasskeyOptionsFactoryTest`: 13 tests / 73
+  assertions.
+- Configuration verification passed: `bin/console lint:yaml --parse-tags
+  config/services.yaml`, `bin/console lint:container`,
+  `./scripts/validate-configuration.sh` with only the existing container git
+  worktree warning, and host `git diff --check`.
 
 ## Mandatory Skill Gate
 
@@ -102,17 +160,22 @@ The BMAD stages were executed in the main session:
 
 ## Manual Test Evidence Checklist
 
-Status: completed for manual code-trace review plus targeted automated
-verification on 2026-05-24 UTC. The verification ran after midnight in the
-Europe/Sofia workspace; a browser/hardware authenticator ceremony was not
-executed in this sandbox, and no browser result is claimed below.
+Status: completed with Chrome DevTools virtual authenticators on
+2026-05-25 UTC. Sanitized details are captured in
+`specs/passkey-authentication/manual-test-checklist.md`.
+Durable sanitized browser evidence is recorded in
+`specs/passkey-authentication/manual-browser-evidence.md`.
 
-Manual tester: Codex.
-Execution date: 2026-05-24 UTC.
+Tester: Codex.
+Execution date: 2026-05-25 UTC.
 Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree based on
-commit `36bac4ef10d278d1e78762e6d6044dde5d74ed7e`, isolated Docker Compose
-project `user-service-pr286-bmad`, PHP 8.4.5, API Platform OpenAPI export.
-Browser/authenticator: not available in this sandbox.
+commit `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4` plus the current passkey
+serializer wiring fix, isolated Docker Compose project
+`user-service-pr286-manual`, `https://localhost:65443`, PHP 8.4.5, MongoDB 7.0,
+Redis 8.
+Browser/authenticator: Google Chrome/HeadlessChrome 148 with Chrome DevTools
+virtual CTAP2 authenticators, resident keys enabled, user verification enabled,
+automatic presence simulation enabled.
 
 ### Scenario 1: Passkey Sign-Up Rejects Existing Email
 
@@ -124,15 +187,11 @@ Steps:
 3. Confirm the API returns the documented conflict response and no WebAuthn
    challenge is created.
 
-Observed result: targeted test
-`PasskeyRegistrationCommandHandlerTest::testStartSignupRejectsExistingEmail`
-passes. The handler looks up the normalized email, throws
-`ConflictHttpException` with `Email is already registered.`, does not allocate a
-challenge id, and does not save a challenge. API Platform and generated OpenAPI
-now document the `409` response for `/api/passkeys/signup/options`.
-Artifacts: `docker compose ... phpunit ... PasskeyRegistrationCommandHandlerTest.php`
-passed as part of 24 targeted tests / 244 assertions, and the broader passkey
-unit slice passed 136 tests / 769 assertions.
+Observed result: browser run id `1779672967201-kekp2o` created a baseline user,
+then `POST /api/passkeys/signup/options` for that email returned `409` and did
+not return a `challenge_id`.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
+scenario 1.
 
 ### Scenario 2: Passkey Sign-Up Creates Options for New Email
 
@@ -147,13 +206,12 @@ Steps:
 4. Confirm a user session is issued and the credential can be used for a later
    passkey sign-in.
 
-Observed result: targeted tests
-`testStartSignupReturnsCreationOptionsForAvailableEmail` and
-`testCompleteSignupCreatesUserStoresCredentialAndIssuesSession` pass. They verify
-available-email lookup, challenge creation, normalized user identity in creation
-options, user and credential persistence on completion, and session issuance.
-Artifacts: same targeted PHPUnit run above; generated OpenAPI contains the
-signup options and completion endpoints.
+Observed result: browser run id `1779672967201-kekp2o` created a credential via
+`navigator.credentials.create()`, submitted `credential.toJSON()` to
+`/api/passkeys/signup/complete`, and received access and refresh tokens with
+`2fa_enabled=false`.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
+scenario 2.
 
 ### Scenario 3: Authenticated Passkey Enrollment
 
@@ -167,14 +225,12 @@ Steps:
    `challengeId` and browser credential JSON.
 5. Confirm the account can sign in with the newly enrolled passkey.
 
-Observed result: targeted tests
-`testStartRegistrationReturnsOptionsForAuthenticatedUser`,
-`testCompleteRegistrationStoresCredentialForCurrentUser`, and
-`PasskeyAuthMutationResolverTest` pass. They verify authenticated identity use,
-credential exclusion/options generation, current-user challenge ownership, stored
-credential response, and matching GraphQL resolver dispatch.
-Artifacts: same targeted PHPUnit run above plus all passkey-related unit tests
-passing 136 tests / 769 assertions.
+Observed result: browser run id `1779672967201-kekp2o` used the issued bearer
+token, requested registration options, created a second credential on a second
+virtual authenticator, and `/api/passkeys/register/complete` returned a
+credential id.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
+scenario 3.
 
 ### Scenario 4: Passkey Sign-In With 2FA Parity
 
@@ -187,16 +243,46 @@ Steps:
 5. Confirm the response follows the existing 2FA pending-session behavior
    instead of issuing final tokens immediately.
 
-Observed result: targeted tests
-`PasskeySignInTwoFactorCommandHandlerTest::testCompleteCreatesPendingTwoFactorForUserWithTwoFactorEnabled`
-and
-`PasskeySignInCompleteProcessorTwoFactorTest::testSignInCompleteProcessorReturnsPendingTwoFactorWithoutCookie`
-pass. They verify passkey sign-in enters the existing pending 2FA flow, stores a
-pending session, returns the pending-session response, and does not set the final
-auth cookie at this stage.
-Artifacts: same targeted PHPUnit run above.
+Observed result: browser run id `1779672967201-kekp2o` enabled TOTP through the
+existing `/api/2fa/setup` and `/api/2fa/confirm` flow, then completed passkey
+sign-in. The response returned `2fa_enabled=true` and a `pending_session_id`, and
+did not return access or refresh tokens.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
+scenario 4.
+
+### Scenario 5: Challenge Reuse And Expiration
+
+Steps:
+
+1. Complete one passkey challenge successfully.
+2. Resubmit the same `challengeId` and credential JSON.
+3. Start a separate signup challenge with a one-second TTL, wait past expiry,
+   and submit the browser credential JSON.
+
+Observed result: browser run id `1779672967201-kekp2o` retried the completed
+signup challenge and received `401` without access or refresh tokens. Expiration
+run `manual-expired-1779673120988@example.test` used challenge
+`01KSECHK4BX8HYP4Z2ZE66SXP2`; completion after expiry returned `401`, detail
+`Invalid or expired passkey challenge.`, and no access token.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
+scenario 5.
 
 ## Verification Evidence
+
+Status: current focused verification plus historical automated evidence for
+earlier remediation commits. Full post-push CI is expected to be provided by
+GitHub Actions for the final pushed commit.
+
+- Current focused integration verification:
+  `./vendor/bin/phpunit tests/Integration/Auth/AuthEndpointsIntegrationTest.php --filter "testPasskeySignupOptionsReturnsBrowserSafeWebauthnJson|testRefreshTokenEndpointRotatesTokenAndIssuesNewTokens"`
+  passed: 2 tests, 37 assertions.
+- Current focused unit verification:
+  `./vendor/bin/phpunit tests/Unit/User/Application/Transformer/PasskeyJsonTransformerTest.php tests/Unit/User/Application/Factory/PasskeyOptionsFactoryTest.php`
+  passed: 13 tests, 73 assertions.
+- Current configuration verification: `bin/console lint:yaml --parse-tags
+  config/services.yaml` passed; `bin/console lint:container` passed;
+  `./scripts/validate-configuration.sh` passed with the existing container
+  worktree git warning; host `git diff --check` passed.
 
 Remediation note for 2026-05-24 UTC: targeted validation was rerun in an isolated
 Docker Compose project because local PHP is not installed and another checkout
@@ -260,7 +346,8 @@ For Behat, the local `mongo:8.0` container repeatedly exited with code 139 after
 
 ## GitHub Required Check Configuration Evidence
 
-Status: verified from this workspace with GitHub CLI on 2026-05-24 UTC.
+Status: historical required-check configuration evidence plus current-head
+pre-fix PR check/review corroboration in `Current-Head Remediation Evidence`.
 
 Verifier: Codex.
 Date: 2026-05-24 UTC.
@@ -283,9 +370,14 @@ Artifacts:
   Inspector, Infection, K6, Memory leak tests, Openapi-diff, PHP Insights,
   PHPUnit, Psalm, Schemathesis, Spectral Lint, CodeRabbit, cubic, codecov, qlty,
   Snyk, symfony-checks, eslint, lint, openapi-diff, and test-and-report.
+- `gh pr checks 286 --json` later reported all 25 non-BMAD checks passing on
+  `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`; `BMAD FR/NFR Review Gate` was
+  the only failing status before the serializer wiring fix.
 - Thread-aware GraphQL export for PR #286 reported 288 conversation comments,
   450 reviews, 894 review threads, 0 unresolved threads, and 0 active unresolved
   threads.
+- Thread-aware GraphQL pagination later reported 897 total review threads and 0
+  unresolved threads on `58a46bd8`.
 
 ## Open Questions
 
