@@ -112,23 +112,12 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $resolver = $this->createResolver();
+        $content = json_encode(['variables' => ['input' => compact('email')]], JSON_THROW_ON_ERROR);
         $request = Request::create(
             '/api/graphql',
             'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode(
-                [
-                    'variables' => [
-                        'input' => [
-                            'email' => $email,
-                        ],
-                    ],
-                ],
-                JSON_THROW_ON_ERROR
-            )
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $content
         );
 
         self::assertSame($email, $resolver->resolve($request, ['email']));
@@ -161,24 +150,20 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
 
     public function testResolveInlineGraphQlArgumentRequiresExactKeyBoundary(): void
     {
+        $ignoredEmail = $this->faker->email();
         $email = $this->faker->email();
         $resolver = $this->createResolver();
+        $query = sprintf(
+            'mutation { m(input: { notemail: "%s", email: "%s" }) { id } }',
+            $ignoredEmail,
+            $email
+        );
+        $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
         $request = Request::create(
             '/api/graphql',
             'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode(
-                [
-                    'query' => sprintf(
-                        'mutation { passkeySignInOptions(input: { notemail: "wrong@example.com", email: "%s" }) { challengeId } }',
-                        $email
-                    ),
-                ],
-                JSON_THROW_ON_ERROR
-            )
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $content
         );
 
         self::assertSame($email, $resolver->resolve($request, ['email']));
@@ -188,22 +173,16 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
     {
         $value = $this->faker->word();
         $resolver = $this->createResolver();
+        $query = sprintf(
+            'mutation { m(input: { clientXid: "wrong", client.id: "%s" }) { ok } }',
+            $value
+        );
+        $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
         $request = Request::create(
             '/api/graphql',
             'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode(
-                [
-                    'query' => sprintf(
-                        'mutation { example(input: { clientXid: "wrong", client.id: "%s" }) { ok } }',
-                        $value
-                    ),
-                ],
-                JSON_THROW_ON_ERROR
-            )
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $content
         );
 
         self::assertSame($value, $resolver->resolve($request, ['client.id']));

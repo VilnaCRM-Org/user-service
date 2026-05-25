@@ -1,6 +1,14 @@
 import { check } from 'k6';
 import http from 'k6/http';
 
+export function parseJson(response) {
+  try {
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
 export default class Utils {
   constructor() {
     const config = this.getConfig();
@@ -20,7 +28,7 @@ export default class Utils {
       try {
         return JSON.parse(open('/loadTests/config.json.dist'));
       } catch (error) {
-        console.log('Error occurred while trying to open config');
+        return undefined;
       }
     }
   }
@@ -114,6 +122,7 @@ export default class Utils {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const initials = `${firstName}${lastName}`;
+    const displayName = `${firstName} ${lastName}`;
 
     const password = this.generateValidPassword();
 
@@ -121,6 +130,7 @@ export default class Utils {
       email,
       password,
       initials,
+      displayName,
     };
   }
 

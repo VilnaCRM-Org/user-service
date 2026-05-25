@@ -4,7 +4,7 @@ import counter from 'k6/x/counter';
 import InsertUsersUtils from '../../utils/insertUsersUtils.js';
 import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import Utils, { parseJson } from '../../utils/utils.js';
 
 const scenarioName = 'passkeyRegistrationOptions';
 
@@ -50,12 +50,4 @@ export default function passkeyRegistrationOptions() {
 
 export function teardown() {
   mailCatcherUtils.clearMessages();
-}
-
-function parseJson(response) {
-  try {
-    return response.json();
-  } catch {
-    return null;
-  }
 }

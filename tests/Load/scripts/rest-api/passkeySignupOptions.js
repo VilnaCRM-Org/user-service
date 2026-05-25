@@ -1,7 +1,7 @@
 import http from 'k6/http';
 
 import ScenarioUtils from '../../utils/scenarioUtils.js';
-import Utils from '../../utils/utils.js';
+import Utils, { parseJson } from '../../utils/utils.js';
 
 const scenarioName = 'passkeySignupOptions';
 
@@ -11,10 +11,11 @@ const scenarioUtils = new ScenarioUtils(utils, scenarioName);
 export const options = scenarioUtils.getOptions();
 
 export default function passkeySignupOptions() {
+  const generatedUser = utils.generateUser();
   const payload = JSON.stringify({
-    email: utils.generateUniqueEmail(),
-    initials: 'PasskeyLoad',
-    displayName: 'Passkey Load',
+    email: generatedUser.email,
+    initials: generatedUser.initials,
+    displayName: generatedUser.displayName,
   });
 
   const response = http.post(
@@ -38,12 +39,4 @@ export default function passkeySignupOptions() {
       body.public_key.authenticatorSelection?.userVerification === 'required' &&
       body.public_key.authenticatorSelection?.residentKey === 'required'
   );
-}
-
-function parseJson(response) {
-  try {
-    return response.json();
-  } catch {
-    return null;
-  }
 }

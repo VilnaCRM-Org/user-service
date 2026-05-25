@@ -22,10 +22,9 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     public function testResolveEndpointLimitersForGraphQlCreateUser(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = $this->createGraphQlRequest(
-            'mutation { createUser(input: { email: "user@example.com" }) { user { id } } }',
-            $clientIp,
-        );
+        $email = $this->faker->safeEmail();
+        $query = sprintf('mutation { createUser(input: { email: "%s" }) { user { id } } }', $email);
+        $request = $this->createGraphQlRequest($query, $clientIp);
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
 
@@ -40,10 +39,12 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     public function testResolveEndpointLimitersForGraphQlPasskeySignupOptions(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = $this->createGraphQlRequest(
-            'mutation { passkeySignUpOptions(input: { email: "user@example.com" }) { challengeId } }',
-            $clientIp,
+        $email = $this->faker->safeEmail();
+        $query = sprintf(
+            'mutation { passkeySignUpOptions(input: { email: "%s" }) { challengeId } }',
+            $email
         );
+        $request = $this->createGraphQlRequest($query, $clientIp);
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
 
@@ -58,8 +59,12 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     public function testResolveEndpointLimitersForGraphQlPasskeySignupComplete(): void
     {
         $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
         $request = $this->createGraphQlRequest(
-            'mutation { passkeySignUpComplete(input: { challengeId: "challenge-id" }) { accessToken } }',
+            sprintf(
+                'mutation { passkeySignUpComplete(input: { challengeId: "%s" }) { accessToken } }',
+                $challengeId
+            ),
             $clientIp,
         );
 
@@ -98,10 +103,11 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     {
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->email();
-        $request = $this->createGraphQlRequest(
-            'mutation { passkeySignInOptions(input: { email: "' . $email . '" }) { challengeId } }',
-            $clientIp,
+        $query = sprintf(
+            'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }',
+            $email
         );
+        $request = $this->createGraphQlRequest($query, $clientIp);
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
 
@@ -117,8 +123,12 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     public function testResolveEndpointLimitersForGraphQlPasskeySigninComplete(): void
     {
         $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
         $request = $this->createGraphQlRequest(
-            'mutation { passkeySignInComplete(input: { challengeId: "challenge-id" }) { accessToken } }',
+            sprintf(
+                'mutation { passkeySignInComplete(input: { challengeId: "%s" }) { accessToken } }',
+                $challengeId
+            ),
             $clientIp,
         );
 
@@ -134,8 +144,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
 
     public function testResolveEndpointLimitersSkipsGraphQlAuthLimitersForGetRequest(): void
     {
+        $email = $this->faker->safeEmail();
+        $query = sprintf(
+            'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }',
+            $email
+        );
         $request = $this->createGraphQlRequest(
-            'mutation { passkeySignInOptions(input: { email: "user@example.com" }) { challengeId } }',
+            $query,
             $this->faker->ipv4(),
             method: 'GET'
         );
@@ -145,8 +160,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
 
     public function testResolveEndpointLimitersSkipsGraphQlAuthLimitersForNonGraphQlPath(): void
     {
+        $email = $this->faker->safeEmail();
+        $query = sprintf(
+            'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }',
+            $email
+        );
         $request = $this->createGraphQlRequest(
-            'mutation { passkeySignInOptions(input: { email: "user@example.com" }) { challengeId } }',
+            $query,
             $this->faker->ipv4(),
             path: '/api/health'
         );
@@ -156,16 +176,18 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
 
     public function testResolveEndpointLimitersSkipsUnrelatedGraphQlMutation(): void
     {
-        $request = $this->createGraphQlRequest(
-            'mutation { updateProject(input: { id: "project-id" }) { project { id } } }',
-            $this->faker->ipv4(),
+        $projectId = $this->faker->uuid();
+        $query = sprintf(
+            'mutation { updateProject(input: { id: "%s" }) { project { id } } }',
+            $projectId
         );
+        $request = $this->createGraphQlRequest($query, $this->faker->ipv4());
 
         self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
     }
 
     /**
-     * @param array<string, mixed> $variables
+     * @param array<string, array<string, string>|string> $variables
      */
     private function createGraphQlRequest(
         string $query,
