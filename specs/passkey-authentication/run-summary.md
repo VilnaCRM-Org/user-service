@@ -131,7 +131,7 @@ Sanitized browser evidence:
   `PasskeyJsonTransformerTest` and `PasskeyOptionsFactoryTest`: 13 tests / 73
   assertions.
 - Configuration verification passed: `bin/console lint:yaml --parse-tags
-  config/services.yaml`, `bin/console lint:container`,
+config/services.yaml`, `bin/console lint:container`,
   `./scripts/validate-configuration.sh` with only the existing container git
   worktree warning, and host `git diff --check`.
 
@@ -280,7 +280,7 @@ GitHub Actions for the final pushed commit.
   `./vendor/bin/phpunit tests/Unit/User/Application/Transformer/PasskeyJsonTransformerTest.php tests/Unit/User/Application/Factory/PasskeyOptionsFactoryTest.php`
   passed: 13 tests, 73 assertions.
 - Current configuration verification: `bin/console lint:yaml --parse-tags
-  config/services.yaml` passed; `bin/console lint:container` passed;
+config/services.yaml` passed; `bin/console lint:container` passed;
   `./scripts/validate-configuration.sh` passed with the existing container
   worktree git warning; host `git diff --check` passed.
 
