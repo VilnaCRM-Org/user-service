@@ -108,6 +108,107 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($fallback, $resolver->resolve($request, ['key_a', 'key_b', 'key_c']));
     }
 
+    public function testResolveReturnsValueFromNestedJsonBody(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                [
+                    'variables' => [
+                        'input' => [
+                            'email' => $email,
+                        ],
+                    ],
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveReturnsValueFromInlineGraphQlArgument(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                [
+                    'query' => sprintf(
+                        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }',
+                        $email
+                    ),
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveInlineGraphQlArgumentRequiresExactKeyBoundary(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                [
+                    'query' => sprintf(
+                        'mutation { passkeySignInOptions(input: { notemail: "wrong@example.com", email: "%s" }) { challengeId } }',
+                        $email
+                    ),
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveInlineGraphQlArgumentEscapesRegexCharactersInKey(): void
+    {
+        $value = $this->faker->word();
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                [
+                    'query' => sprintf(
+                        'mutation { example(input: { clientXid: "wrong", client.id: "%s" }) { ok } }',
+                        $value
+                    ),
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($value, $resolver->resolve($request, ['client.id']));
+    }
+
     private function createResolver(): ApiRateLimitPayloadValueResolver
     {
         return new ApiRateLimitPayloadValueResolver($this->createJsonSerializer());
