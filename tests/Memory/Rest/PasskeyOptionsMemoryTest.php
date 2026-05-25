@@ -6,6 +6,8 @@ namespace App\Tests\Memory\Rest;
 
 use Symfony\Component\HttpFoundation\Response;
 
+#[\PHPUnit\Framework\Attributes\Group('memory')]
+#[\PHPUnit\Framework\Attributes\Group('memory-rest')]
 final class PasskeyOptionsMemoryTest extends RestMemoryWebTestCase
 {
     public function testPasskeySignupOptionsScenarioReusesSameKernelAcrossRepeatedRequests(): void
