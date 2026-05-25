@@ -1,14 +1,14 @@
 # Passkey Authentication Epics
 
+Canonical source: `specs/passkey-authentication/epics.md`.
+
 ## Epic 1: Planning And Configuration
 
 ### Story 1.1: Create BMAD Planning Artifacts
 
-- Add BMAD planning artifacts.
-- Add a transition-readable planning mirror for the current `bmalph implement`
-  artifact discovery paths.
-- Add WebAuthn dependency.
-- Add environment parameters and container wiring.
+Add the passkey BMAD planning bundle, WebAuthn dependency, environment
+parameters, container wiring, and a transition-readable planning mirror for the
+current `bmalph implement` discovery paths.
 
 Acceptance Criteria:
 
@@ -28,9 +28,9 @@ Acceptance Criteria:
 
 ### Story 2.1: Persist Passkey Credentials And Challenges
 
-- Add `PasskeyCredential` domain entity and repository.
-- Add `PasskeyChallenge` domain entity and repository.
-- Add MongoDB XML mappings and indexes.
+Add `PasskeyCredential` and `PasskeyChallenge` domain entities, repository
+interfaces, MongoDB repository implementations, XML mappings, credential lookup
+indexes, and challenge TTL cleanup.
 
 Acceptance Criteria:
 
@@ -46,9 +46,10 @@ Acceptance Criteria:
 
 ### Story 3.1: Support Passkey Sign-Up And Enrollment
 
-- Implement sign-up options and completion.
-- Implement authenticated registration options and completion.
-- Persist verified credential records.
+Implement public sign-up options/completion and authenticated registration
+options/completion, including attestation verification, discoverable credential
+requirements, rollback on downstream sign-up failures, and duplicate
+credential-id rejection.
 
 Acceptance Criteria:
 
@@ -64,9 +65,9 @@ Acceptance Criteria:
 
 ### Story 4.1: Support Passkey Sign-In
 
-- Implement sign-in options and completion.
-- Verify assertions and update credential counters.
-- Issue tokens and auth cookies using existing session factories.
+Implement sign-in options/completion, assertion verification, credential counter
+updates, privacy-safe unknown-user behavior, 2FA parity, and existing session
+token issuance.
 
 Acceptance Criteria:
 
@@ -81,10 +82,9 @@ Acceptance Criteria:
 
 ### Story 5.1: Verify And Document Passkeys
 
-- Add unit coverage for command handlers, processors, entities, and
-  repositories.
-- Add documentation for frontend integration and migration.
-- Run CI and review gates before opening the PR.
+Add automated coverage, update OpenAPI/GraphQL contracts and passkey
+documentation, maintain the NonFunctionals.com evidence matrix, and record
+manual browser authenticator evidence without fabricating results.
 
 Acceptance Criteria:
 

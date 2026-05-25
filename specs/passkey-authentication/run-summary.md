@@ -11,6 +11,10 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
 - `bmalph upgrade --force` restored `_bmad`, `.ralph`, and BMAD command assets.
 - `bmalph doctor` then passed all checks.
 - `_bmad/COMMANDS.md` was used to map the planning sequence.
+- Current remediation adds a transition-readable mirror under `docs/planning`
+  because the installed `bmalph implement` release discovers BMAD transition
+  artifacts only from fixed paths such as `docs/planning` and
+  `_bmad-output/planning-artifacts`, not from `_bmad/config.yaml`.
 
 ## Planning Artifacts
 
@@ -20,6 +24,13 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
 - `specs/passkey-authentication/architecture.md`
 - `specs/passkey-authentication/epics.md`
 - `specs/passkey-authentication/implementation-readiness.md`
+
+Transition mirror for `bmalph implement`:
+
+- `docs/planning/prd.md`
+- `docs/planning/architecture.md`
+- `docs/planning/epics.md`
+- `docs/planning/implementation-readiness.md`
 
 ## Implementation Summary
 
