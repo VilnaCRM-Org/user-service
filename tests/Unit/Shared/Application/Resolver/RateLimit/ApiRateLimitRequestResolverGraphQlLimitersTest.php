@@ -66,7 +66,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
             $query,
             $clientIp,
             $this->signInLimiters($clientIp, $email),
-            ['input' => ['email' => $email]]
+            ['variables' => ['input' => ['email' => $email]]]
         );
     }
 
@@ -105,7 +105,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
             $email
         );
 
-        $this->assertGraphQlLimiters($query, $this->faker->ipv4(), [], method: 'GET');
+        $this->assertGraphQlLimiters($query, $this->faker->ipv4(), [], ['method' => 'GET']);
     }
 
     public function testResolveEndpointLimitersSkipsGraphQlAuthLimitersForNonGraphQlPath(): void
@@ -116,7 +116,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
             $email
         );
 
-        $this->assertGraphQlLimiters($query, $this->faker->ipv4(), [], path: '/api/health');
+        $this->assertGraphQlLimiters($query, $this->faker->ipv4(), [], ['path' => '/api/health']);
     }
 
     public function testResolveEndpointLimitersSkipsUnrelatedGraphQlMutation(): void
@@ -159,16 +159,21 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
 
     /**
      * @param list<array{name: string, key: string}> $expectedLimiters
-     * @param array<string, array<string, string>|string> $variables
+     * @param array{
+     *     method?: string,
+     *     path?: string,
+     *     variables?: array<string, array<string, string>|string>
+     * } $options
      */
     private function assertGraphQlLimiters(
         string $query,
         string $clientIp,
         array $expectedLimiters,
-        array $variables = [],
-        string $method = 'POST',
-        string $path = self::GRAPHQL_PATH
+        array $options = []
     ): void {
+        $variables = $options['variables'] ?? [];
+        $method = $options['method'] ?? 'POST';
+        $path = $options['path'] ?? self::GRAPHQL_PATH;
         $request = $this->createGraphQlRequest($query, $clientIp, $variables, $method, $path);
 
         self::assertSame($expectedLimiters, $this->resolver->resolveEndpointLimiters($request));
