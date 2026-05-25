@@ -7,6 +7,8 @@ namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -78,6 +80,8 @@ abstract class RateLimitClientTestCase extends UnitTestCase
                 $pendingTwoFactorRepository,
                 $clientIdentityResolver,
             ),
+            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            new ApiRateLimitOAuthSocialTargetResolver(),
         );
     }
 }

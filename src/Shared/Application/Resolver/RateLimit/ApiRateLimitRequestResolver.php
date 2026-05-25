@@ -8,27 +8,16 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitRequestResolver
 {
-    private const GRAPHQL_PATH = '/api/graphql';
     private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
     private const RECOVERY_CODES_PATH = '/api/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
     private const SIGNOUT_ALL_PATH = '/api/signout/all';
-    private const OAUTH_SOCIAL_INITIATE_PATTERN = '#^/api/auth/social/[^/]+$#';
-    private const OAUTH_SOCIAL_CALLBACK_PATTERN = '#^/api/auth/social/[^/]+/callback$#';
-    private const GRAPHQL_REGISTRATION_MUTATIONS = [
-        'createUser',
-        'passkeySignUpOptions',
-        'passkeySignUpComplete',
-    ];
-    private const GRAPHQL_SIGNIN_MUTATIONS = [
-        'signIn',
-        'passkeySignInOptions',
-        'passkeySignInComplete',
-    ];
 
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
         private ApiRateLimitAuthTargetResolver $authTargetResolver,
+        private ApiRateLimitGraphQlAuthTargetResolver $graphQlAuthTargetResolver,
+        private ApiRateLimitOAuthSocialTargetResolver $oauthSocialTargetResolver,
     ) {
     }
 
@@ -70,7 +59,7 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveAuthenticatedSecurityLimiters($request, $path, $method)
         );
         $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
-        $this->appendTargets($targets, $this->resolveGraphQlAuthLimiters($request, $path, $method));
+        $this->appendTargets($targets, $this->graphQlAuthTargetResolver->resolve($request));
 
         return $targets;
     }
@@ -89,7 +78,7 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
             $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
-            $this->resolveOAuthSocialLimiter($request, $path, $method),
+            $this->oauthSocialTargetResolver->resolve($request),
         ]));
     }
 
@@ -291,81 +280,6 @@ final readonly class ApiRateLimitRequestResolver
         }
 
         return [['name' => $limiter, 'key' => $this->buildUserKey($subject)]];
-    }
-
-    /**
-     * @return array<string>|null
-     *
-     * @psalm-return array{name: 'oauth_social_callback'|'oauth_social_initiate', key: string}|null
-     */
-    private function resolveOAuthSocialLimiter(
-        Request $request,
-        string $path,
-        string $method
-    ): ?array {
-        if ($method !== 'GET') {
-            return null;
-        }
-
-        if (preg_match(self::OAUTH_SOCIAL_CALLBACK_PATTERN, $path) === 1) {
-            return [
-                'name' => 'oauth_social_callback',
-                'key' => $this->buildIpKey($request),
-            ];
-        }
-
-        if (preg_match(self::OAUTH_SOCIAL_INITIATE_PATTERN, $path) === 1) {
-            return [
-                'name' => 'oauth_social_initiate',
-                'key' => $this->buildIpKey($request),
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * @return list<array{name: 'registration'|'signin_email'|'signin_ip', key: string}>
-     */
-    private function resolveGraphQlAuthLimiters(
-        Request $request,
-        string $path,
-        string $method
-    ): array {
-        if ($method !== 'POST' || $path !== self::GRAPHQL_PATH) {
-            return [];
-        }
-
-        $targets = [];
-        if ($this->containsGraphQlMutation($request, self::GRAPHQL_REGISTRATION_MUTATIONS)) {
-            $targets[] = ['name' => 'registration', 'key' => $this->buildIpKey($request)];
-        }
-
-        if ($this->containsGraphQlMutation($request, self::GRAPHQL_SIGNIN_MUTATIONS)) {
-            $targets[] = ['name' => 'signin_ip', 'key' => $this->buildIpKey($request)];
-
-            $email = $this->clientIdentityResolver->resolveSignInEmail($request);
-            if ($email !== null) {
-                $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
-            }
-        }
-
-        return $targets;
-    }
-
-    /**
-     * @param list<string> $mutationNames
-     */
-    private function containsGraphQlMutation(Request $request, array $mutationNames): bool
-    {
-        $payload = $request->getContent();
-        foreach ($mutationNames as $mutationName) {
-            if (preg_match('/\b' . preg_quote($mutationName, '/') . '\b/', $payload) === 1) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function resolveUserIdFromItemRoute(string $path): ?string

@@ -8,6 +8,8 @@ use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -307,6 +309,8 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         return new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver),
+            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            new ApiRateLimitOAuthSocialTargetResolver(),
         );
     }
 
@@ -335,7 +339,9 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         );
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
-            $authTargetResolver
+            $authTargetResolver,
+            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            new ApiRateLimitOAuthSocialTargetResolver()
         );
 
         return $this->createListener($limiterFactories, $requestMatcher);
