@@ -101,3 +101,21 @@ Acceptance:
 - Compatibility: options and credential responses must use browser WebAuthn JSON payload shapes.
 - Observability: successful passkey sign-ins reuse the existing sign-in publisher path.
 - Maintainability: WebAuthn library details stay behind application/infrastructure adapters.
+
+### NonFunctionals.com Catalog Standards
+
+The passkey feature is scored against the full catalog model, not only the
+category names. Detailed traceability is maintained in
+`specs/passkey-authentication/nfr-catalog-evidence.md`.
+
+| Category | Passkey standard |
+| --- | --- |
+| Performance | `passkeySignupOptions`, `passkeySigninOptions`, and `passkeyRegistrationOptions` K6 scenarios must keep `checks` above `99%`, p99 under `1500ms` for smoke/average, under `3000ms` for stress, and under `5000ms` for spike. Completion endpoints require browser WebAuthn attestation/assertion and are covered by integration tests plus manual browser evidence until a browser-based load harness exists. Bottleneck review focuses on MongoDB challenge writes, credential lookup indexes, and WebAuthn serializer/validator cost. |
+| Usability | REST and GraphQL clients must receive stable browser JSON shapes, API Platform validation errors, and problem responses that support recovery without exposing credential existence. Developer/operator usability is evidenced by OpenAPI/GraphQL contracts, frontend parsing notes, and the operational runbook in `docs/passkey-authentication.md`. |
+| Maintainability | Passkey code must preserve DDD boundaries, YAML/XML framework config, adapter isolation for `web-auth/webauthn-lib`, low-complexity collaborators, static analysis, deptrac, mutation tests, and docs synchronized with the implementation. |
+| Availability | Passkey endpoints share the authentication API availability target. Challenge state is retryable and expires by TTL; password/OAuth/TOTP flows remain available as graceful fallback. MTTD target is `15m`; MTTR target is `30m` for configuration, TTL-index, or passkey-only endpoint incidents. No separate passkey RPO applies to ephemeral challenges; credential records inherit the service MongoDB backup/restore policy. |
+| Interoperability | Contracts must remain additive and backward compatible, use W3C WebAuthn browser JSON payloads, support configured RP/origin values, keep GraphQL payloads on API Platform `Iterable`, and preserve consistent RFC 7807-style error handling. |
+| Security | Challenges must be random, single-use, replay-resistant, short-lived, origin/RP verified, rate limited, and privacy preserving. Passkey sign-in must respect existing authentication, authorization, 2FA, audit/event, dependency scanning, and incident-response paths. |
+| Manageability | Operators must monitor passkey endpoint invocations, latency, 4xx/5xx rates, challenge backlog, expired challenge cleanup, TTL/index health, and capacity against `challenge_ttl_seconds * options_rps`. Alerts and runbook actions are documented in `docs/passkey-authentication.md`. |
+| Automatability | Repeatable checks include unit, integration, Behat/API access, OpenAPI/Spectral/Schemathesis, mutation, K6 option-ceremony scenarios, and CI. Browser WebAuthn completion remains a human/browser-controlled step with sanitized immutable evidence under this spec directory. |
+| Dependability | Atomic challenge claim, rollback on downstream persistence failure, duplicate credential rejection, credential counter update, replay/expiry tests, and manual browser evidence must stay traceable to each passkey ceremony. |

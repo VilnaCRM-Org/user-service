@@ -49,7 +49,17 @@ final readonly class ApiRateLimitPayloadValueResolver
             return null;
         }
 
-        return $this->findStringValue($jsonPayload, $keys);
+        $resolved = $this->findStringValue($jsonPayload, $keys);
+        if ($resolved !== null) {
+            return $resolved;
+        }
+
+        $query = $jsonPayload['query'] ?? null;
+        if (is_string($query)) {
+            return $this->findGraphQlArgumentStringValue($query, $keys);
+        }
+
+        return null;
     }
 
     /**
@@ -63,15 +73,36 @@ final readonly class ApiRateLimitPayloadValueResolver
     }
 
     /**
-     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     * @param array<array-key, mixed> $payload
      * @param list<string> $keys
      */
     private function findStringValue(array $payload, array $keys): ?string
     {
-        foreach ($keys as $key) {
-            $value = $payload[$key] ?? null;
-            if (is_string($value) && $value !== '') {
+        foreach ($payload as $key => $value) {
+            if (is_string($key) && in_array($key, $keys, true) && is_string($value) && $value !== '') {
                 return $value;
+            }
+
+            if (is_array($value)) {
+                $resolved = $this->findStringValue($value, $keys);
+                if ($resolved !== null) {
+                    return $resolved;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function findGraphQlArgumentStringValue(string $query, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $pattern = '/\b' . preg_quote($key, '/') . '\s*:\s*"([^"]+)"/';
+            if (preg_match($pattern, $query, $matches) === 1) {
+                return $matches[1];
             }
         }
 

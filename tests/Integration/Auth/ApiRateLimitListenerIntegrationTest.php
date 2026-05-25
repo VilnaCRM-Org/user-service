@@ -92,6 +92,51 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
         $this->assertRateLimitResponse($response);
     }
 
+    public function testGraphQlPasskeySignupUsesRegistrationLimiter(): void
+    {
+        $this->exhaustLimiter(
+            'registration',
+            'ip:127.0.0.1',
+            $this->resolveLimit('REGISTRATION_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => <<<'GRAPHQL'
+mutation {
+  passkeySignUpOptions(input: { email: "passkey-signup-limit@test.com", initials: "PL" }) {
+    user { id }
+  }
+}
+GRAPHQL,
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testGraphQlPasskeySigninUsesSignInEmailLimiter(): void
+    {
+        $email = 'passkey-signin-limit@test.com';
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => <<<'GRAPHQL'
+mutation {
+  passkeySignInOptions(input: { email: "passkey-signin-limit@test.com" }) {
+    user { id }
+  }
+}
+GRAPHQL,
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
     public function testTwoFactorSetupLimiterUsesJwtSubjectAndReturns429(): void
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';

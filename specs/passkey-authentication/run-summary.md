@@ -165,6 +165,18 @@ Durable sanitized browser transcript:
 config/services.yaml`, `bin/console lint:container`,
   `./scripts/validate-configuration.sh` with only the existing container git
   worktree warning, and host `git diff --check`.
+- NFR catalog remediation added measurable passkey option-ceremony load
+  standards, passkey K6 scripts, operational monitoring/runbook guidance, and a
+  detailed catalog evidence matrix in
+  `specs/passkey-authentication/nfr-catalog-evidence.md`.
+- Current PR passkey option-ceremony smoke evidence collected on 2026-05-25 UTC
+  passed the configured thresholds: `passkeySignupOptions` checks `100%`, p99
+  `1.17s`; `passkeySigninOptions` checks `100%`, p99 `44.92ms`;
+  `passkeyRegistrationOptions` checks `100%`, p99 `65.03ms`.
+- NFR follow-up closed the passkey GraphQL rate-limit gap by mapping passkey
+  GraphQL sign-up mutations to the registration limiter and passkey GraphQL
+  sign-in mutations to the sign-in IP/email limiters. Focused verification:
+  `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
 
 ## Mandatory Skill Gate
 
@@ -181,8 +193,8 @@ config/services.yaml`, `bin/console lint:container`,
 - `documentation-creation`: Applicable. Added `docs/passkey-authentication.md`.
 - `documentation-sync`: Applicable. Updated `docs/main.md` and `docs/advanced-configuration.md`.
 - `implementing-ddd-architecture`: Applicable. Domain entities remain framework-free; validation stays in YAML/Application layer.
-- `load-testing`: Not applicable for this PR. No load test scenario was added because the feature is a new authentication ceremony and current CI load suites are broader smoke checks.
-- `observability-instrumentation`: Not applicable for this PR. The ceremonies reuse existing authentication/session error handling and do not introduce a new metrics contract.
+- `load-testing`: Applicable. Added K6 coverage for passkey signup, signin, and authenticated registration options; browser WebAuthn completion remains manual/browser evidence because k6 cannot operate an authenticator.
+- `observability-instrumentation`: Applicable. Passkey endpoints are covered by existing `EndpointInvocations` EMF metrics; passkey monitoring, alerting, capacity, and TTL-index runbook requirements are documented.
 - `openapi-development`: Applicable. OpenAPI spec was regenerated and validated.
 - `quality-standards`: Applicable. PHP Insights, PHPMD, Psalm, taint analysis, and whitespace checks were run.
 - `query-performance-analysis`: Applicable. Passkey lookup/cleanup indexes were added as listed in Performance Changes.
