@@ -7,8 +7,8 @@ evidence required for BMAD FR/NFR sign-off.
 
 - Tester: Codex
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
-- Commit SHA: based on `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4` plus the
-  current passkey serializer wiring fix
+- Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
+- Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
 - Environment URL: `https://localhost:65443`
 - Browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace

@@ -8,8 +8,8 @@ credential private material, TOTP secrets, and recovery-code values.
 
 - Tester: Codex
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
-- Workspace HEAD before serializer fix:
-  `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
+- Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
+- Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
 - Application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Origin: `https://localhost:65443`

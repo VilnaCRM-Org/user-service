@@ -90,8 +90,10 @@ Status: source fix plus current browser/authenticator evidence.
 
 Verifier: Codex.
 Date: 2026-05-25 UTC.
-Base workspace HEAD before this fix:
+Repro SHA before this fix:
 `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
+Post-fix tested SHA:
+`c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
@@ -168,9 +170,9 @@ Durable sanitized browser evidence is recorded in
 
 Tester: Codex.
 Execution date: 2026-05-25 UTC.
-Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree based on
-commit `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4` plus the current passkey
-serializer wiring fix, isolated Docker Compose project
+Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree tested at
+`c0e6fe896143ecbeb26e0e54796c5eb38f3746e6` with repro SHA
+`58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`, isolated Docker Compose project
 `user-service-pr286-manual`, `https://localhost:65443`, PHP 8.4.5, MongoDB 7.0,
 Redis 8.
 Browser/authenticator: Google Chrome/HeadlessChrome 148 with Chrome DevTools
