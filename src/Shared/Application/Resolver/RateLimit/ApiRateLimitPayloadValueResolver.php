@@ -107,6 +107,7 @@ final readonly class ApiRateLimitPayloadValueResolver
     }
 
     /**
+     * @param array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null $value
      * @param list<string> $keys
      */
     private function resolvePayloadEntry(
@@ -122,6 +123,7 @@ final readonly class ApiRateLimitPayloadValueResolver
     }
 
     /**
+     * @param array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null $value
      * @param list<string> $keys
      */
     private function isMatchingStringValue(

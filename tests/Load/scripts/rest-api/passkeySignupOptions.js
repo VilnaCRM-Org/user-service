@@ -12,10 +12,11 @@ export const options = scenarioUtils.getOptions();
 
 export default function passkeySignupOptions() {
   const generatedUser = utils.generateUser();
+  const generatedProfile = utils.generateUserProfile();
   const payload = JSON.stringify({
     email: generatedUser.email,
-    initials: generatedUser.initials,
-    displayName: generatedUser.displayName,
+    initials: generatedProfile.initials,
+    displayName: generatedProfile.displayName,
   });
 
   const response = http.post(

@@ -107,7 +107,17 @@ export default class Utils {
 
   generateUser() {
     const email = this.generateUniqueEmail();
+    const password = this.generateValidPassword();
+    const { initials } = this.generateUserProfile();
 
+    return {
+      email,
+      password,
+      initials,
+    };
+  }
+
+  generateUserProfile() {
     const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Lisa', 'Robert', 'Emily'];
     const lastNames = [
       'Smith',
@@ -124,11 +134,7 @@ export default class Utils {
     const initials = `${firstName}${lastName}`;
     const displayName = `${firstName} ${lastName}`;
 
-    const password = this.generateValidPassword();
-
     return {
-      email,
-      password,
       initials,
       displayName,
     };

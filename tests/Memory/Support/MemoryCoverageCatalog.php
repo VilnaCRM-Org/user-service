@@ -81,6 +81,20 @@ final class MemoryCoverageCatalog
             ],
         ],
         [
+            'id' => 'passkey_options_lifecycle',
+            'loadScripts' => [
+                'passkeyRegistrationOptions',
+                'passkeySigninOptions',
+                'passkeySignupOptions',
+            ],
+            'features' => [
+                'rate_limiting',
+                'session_lifecycle',
+                'signin',
+                'user_operations',
+            ],
+        ],
+        [
             'id' => 'two_factor_lifecycle',
             'loadScripts' => [
                 'confirmTwoFactor',

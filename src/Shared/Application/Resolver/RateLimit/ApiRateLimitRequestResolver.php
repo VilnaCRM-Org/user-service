@@ -328,11 +328,6 @@ final readonly class ApiRateLimitRequestResolver
         return sprintf('user:%s', $userId);
     }
 
-    private function buildEmailKey(string $email): string
-    {
-        return sprintf('email:%s', $email);
-    }
-
     private function buildClientKey(string $clientId): string
     {
         return sprintf('client:%s', $clientId);

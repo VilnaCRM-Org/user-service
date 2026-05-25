@@ -323,12 +323,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         string $token,
         array $payload
     ): ApiRateLimitListener {
-        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
-        $jwtConverter->method('decode')->willReturnCallback(
-            static function (string $candidateToken) use ($token, $payload): ?array {
-                return $candidateToken === $token ? $payload : null;
-            }
-        );
+        $jwtConverter = $this->createJwtConverter($token, $payload);
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
             new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
             $jwtConverter,
@@ -345,6 +340,21 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         );
 
         return $this->createListener($limiterFactories, $requestMatcher);
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function createJwtConverter(string $token, array $payload): JwtTokenConverterInterface
+    {
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturnCallback(
+            static fn (string $candidateToken): ?array => $candidateToken === $token
+                ? $payload
+                : null
+        );
+
+        return $jwtConverter;
     }
 
     /**
