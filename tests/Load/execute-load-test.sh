@@ -69,7 +69,7 @@ done
 
 scenario_requires_seeded_users() {
     case "$1" in
-        createUser|graphQLCreateUser|createUserBatch|health|oauth|oauthAuthorize|oauthSocialCallback|oauthSocialInitiate)
+        createUser|graphQLCreateUser|createUserBatch|health|oauth|oauthAuthorize|oauthSocialCallback|oauthSocialInitiate|passkeySignupOptions)
             return 1
             ;;
     esac

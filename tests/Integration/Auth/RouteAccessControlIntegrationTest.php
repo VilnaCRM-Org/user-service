@@ -38,14 +38,15 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
      */
     public function testProtectedRouteReturns401WithoutAuth(
         string $path,
-        string $method
+        string $method,
+        string $body
     ): void {
         $kernel = $this->getHttpKernel();
 
         $request = Request::create($path, $method, [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
             'CONTENT_TYPE' => 'application/json',
-        ]);
+        ], $body);
 
         $response = $kernel->handle($request);
 
@@ -61,14 +62,15 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
      */
     public function testPublicRouteDoesNotReturn401(
         string $path,
-        string $method
+        string $method,
+        string $body
     ): void {
         $kernel = $this->getHttpKernel();
 
         $request = Request::create($path, $method, [], [], [], [
             'HTTP_ACCEPT' => 'application/json',
             'CONTENT_TYPE' => 'application/json',
-        ], '{}');
+        ], $body);
 
         $response = $kernel->handle($request);
 
@@ -140,7 +142,7 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
     }
 
     /**
-     * @psalm-return \Generator<string, list{string, string}, void, void>
+     * @psalm-return \Generator<string, list{string, string, string}, void, void>
      */
     public static function protectedRouteProvider(): \Generator
     {
@@ -149,54 +151,147 @@ final class RouteAccessControlIntegrationTest extends AuthIntegrationTestCase
     }
 
     /**
-     * @psalm-return \Generator<string, list{string, 'GET'|'PATCH'|'POST'}, void, void>
+     * @psalm-return \Generator<string, list{string, 'GET'|'PATCH'|'POST', string}, void, void>
      */
     public static function publicRouteProvider(): \Generator
     {
-        yield 'POST /api/users (registration)' => ['/api/users', 'POST'];
-        yield 'PATCH /api/users/confirm' => ['/api/users/confirm', 'PATCH'];
-        yield 'POST /api/reset-password' => ['/api/reset-password', 'POST'];
-        yield 'POST /api/reset-password/confirm' => [
-            '/api/reset-password/confirm',
-            'POST',
-        ];
-        yield 'POST /api/signin' => ['/api/signin', 'POST'];
-        yield 'POST /api/signin/2fa' => ['/api/signin/2fa', 'POST'];
-        yield 'POST /api/token' => ['/api/token', 'POST'];
-        yield 'POST /api/oauth/token' => ['/api/oauth/token', 'POST'];
-        yield 'GET /api/docs' => ['/api/docs', 'GET'];
-        yield 'GET /api/health' => ['/api/health', 'GET'];
-        yield 'POST /api/graphql' => ['/api/graphql', 'POST'];
+        yield from self::publicUserRoutes();
+        yield from self::publicAuthRoutes();
+        yield from self::publicPasskeyRoutes();
     }
 
     /**
-     * @psalm-return \Generator<string, list{string, string}, void, void>
+     * @psalm-return \Generator<string, list{string, 'PATCH'|'POST', string}, void, void>
+     */
+    private static function publicUserRoutes(): \Generator
+    {
+        yield 'POST /api/users (registration)' => ['/api/users', 'POST', '{}'];
+        yield 'PATCH /api/users/confirm' => ['/api/users/confirm', 'PATCH', '{}'];
+        yield 'POST /api/reset-password' => ['/api/reset-password', 'POST', '{}'];
+        yield 'POST /api/reset-password/confirm' => [
+            '/api/reset-password/confirm',
+            'POST',
+            '{}',
+        ];
+    }
+
+    /**
+     * @psalm-return \Generator<string, list{string, 'GET'|'POST', string}, void, void>
+     */
+    private static function publicAuthRoutes(): \Generator
+    {
+        yield 'POST /api/signin' => ['/api/signin', 'POST', '{}'];
+        yield 'POST /api/signin/2fa' => ['/api/signin/2fa', 'POST', '{}'];
+        yield 'POST /api/token' => ['/api/token', 'POST', '{}'];
+        yield 'POST /api/oauth/token' => ['/api/oauth/token', 'POST', '{}'];
+        yield 'GET /api/docs' => ['/api/docs', 'GET', '{}'];
+        yield 'GET /api/health' => ['/api/health', 'GET', '{}'];
+        yield 'POST /api/graphql' => ['/api/graphql', 'POST', '{}'];
+    }
+
+    /**
+     * @psalm-return \Generator<string, list{string, 'POST', string}, void, void>
+     */
+    private static function publicPasskeyRoutes(): \Generator
+    {
+        yield 'POST /api/passkeys/signup/options' => [
+            '/api/passkeys/signup/options',
+            'POST',
+            self::passkeySignupOptionsJson(),
+        ];
+        yield 'POST /api/passkeys/signup/complete' => [
+            '/api/passkeys/signup/complete',
+            'POST',
+            self::invalidPasskeyCompleteJson(),
+        ];
+        yield 'POST /api/passkeys/signin/options' => [
+            '/api/passkeys/signin/options',
+            'POST',
+            self::passkeySignInOptionsJson(),
+        ];
+        yield 'POST /api/passkeys/signin/complete' => [
+            '/api/passkeys/signin/complete',
+            'POST',
+            self::invalidPasskeyCompleteJson(),
+        ];
+    }
+
+    /**
+     * @psalm-return \Generator<string, list{string, string, string}, void, void>
      */
     private static function protectedUserRoutes(): \Generator
     {
         $uuid = '8be90127-9840-4235-a6da-39b8debfb999';
-        yield 'GET /api/users (collection)' => ['/api/users', 'GET'];
-        yield 'GET /api/users/{id}' => ["/api/users/{$uuid}", 'GET'];
-        yield 'PATCH /api/users/{id}' => ["/api/users/{$uuid}", 'PATCH'];
-        yield 'PUT /api/users/{id}' => ["/api/users/{$uuid}", 'PUT'];
-        yield 'DELETE /api/users/{id}' => ["/api/users/{$uuid}", 'DELETE'];
+        yield 'GET /api/users (collection)' => ['/api/users', 'GET', '{}'];
+        yield 'GET /api/users/{id}' => ["/api/users/{$uuid}", 'GET', '{}'];
+        yield 'PATCH /api/users/{id}' => ["/api/users/{$uuid}", 'PATCH', '{}'];
+        yield 'PUT /api/users/{id}' => ["/api/users/{$uuid}", 'PUT', '{}'];
+        yield 'DELETE /api/users/{id}' => ["/api/users/{$uuid}", 'DELETE', '{}'];
         yield 'POST /api/users/{id}/resend-confirmation-email' => [
             "/api/users/{$uuid}/resend-confirmation-email",
             'POST',
+            '{}',
         ];
-        yield 'POST /api/users/batch' => ['/api/users/batch', 'POST'];
+        yield 'POST /api/users/batch' => ['/api/users/batch', 'POST', '{}'];
     }
 
     /**
-     * @psalm-return \Generator<string, list{string, string}, void, void>
+     * @psalm-return \Generator<string, list{string, string, string}, void, void>
      */
     private static function protectedOtherRoutes(): \Generator
     {
-        yield 'GET /api/oauth/authorize' => ['/api/oauth/authorize', 'GET'];
-        yield 'POST /api/2fa/setup' => ['/api/2fa/setup', 'POST'];
-        yield 'POST /api/2fa/confirm' => ['/api/2fa/confirm', 'POST'];
-        yield 'POST /api/2fa/disable' => ['/api/2fa/disable', 'POST'];
-        yield 'POST /api/2fa/recovery-codes' => ['/api/2fa/recovery-codes', 'POST'];
+        yield 'GET /api/oauth/authorize' => ['/api/oauth/authorize', 'GET', '{}'];
+        yield 'POST /api/2fa/setup' => ['/api/2fa/setup', 'POST', '{}'];
+        yield 'POST /api/2fa/confirm' => ['/api/2fa/confirm', 'POST', '{}'];
+        yield 'POST /api/2fa/disable' => ['/api/2fa/disable', 'POST', '{}'];
+        yield 'POST /api/2fa/recovery-codes' => [
+            '/api/2fa/recovery-codes',
+            'POST',
+            '{}',
+        ];
+        yield 'POST /api/passkeys/register/options' => [
+            '/api/passkeys/register/options',
+            'POST',
+            '{}',
+        ];
+        yield 'POST /api/passkeys/register/complete' => [
+            '/api/passkeys/register/complete',
+            'POST',
+            self::invalidPasskeyCompleteJson(),
+        ];
+    }
+
+    private static function passkeySignupOptionsJson(): string
+    {
+        return self::json([
+            'email' => '',
+            'initials' => '',
+            'displayName' => 'Route Passkey',
+        ]);
+    }
+
+    private static function passkeySignInOptionsJson(): string
+    {
+        return self::json([
+            'email' => '',
+            'rememberMe' => false,
+        ]);
+    }
+
+    private static function invalidPasskeyCompleteJson(): string
+    {
+        return self::json([
+            'challengeId' => 'challenge-id',
+            'credential' => [],
+        ]);
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $payload
+     */
+    private static function json(array $payload): string
+    {
+        return json_encode($payload, JSON_THROW_ON_ERROR);
     }
 
     private function getHttpKernel(): HttpKernelInterface

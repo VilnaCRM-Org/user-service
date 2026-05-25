@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
 {
+    private const GRAPHQL_PATH = '/api/graphql';
+    private const PASSKEY_SIGNIN_OPTIONS_MUTATION =
+        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }';
+
     public function testResolveReturnsNullForEmptyBody(): void
     {
         $resolver = $this->createResolver();
@@ -108,8 +112,72 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($fallback, $resolver->resolve($request, ['key_a', 'key_b', 'key_c']));
     }
 
+    public function testResolveReturnsValueFromNestedJsonBody(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $content = json_encode(['variables' => ['input' => compact('email')]], JSON_THROW_ON_ERROR);
+        $request = $this->createGraphQlRequest($content);
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveReturnsValueFromInlineGraphQlArgument(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                ['query' => sprintf(self::PASSKEY_SIGNIN_OPTIONS_MUTATION, $email)],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveInlineGraphQlArgumentRequiresExactKeyBoundary(): void
+    {
+        $ignoredEmail = $this->faker->email();
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $query = sprintf(
+            'mutation { m(input: { notemail: "%s", email: "%s" }) { id } }',
+            $ignoredEmail,
+            $email
+        );
+        $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
+        $request = $this->createGraphQlRequest($content);
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveInlineGraphQlArgumentEscapesRegexCharactersInKey(): void
+    {
+        $value = $this->faker->word();
+        $resolver = $this->createResolver();
+        $query = sprintf(
+            'mutation { m(input: { clientXid: "wrong", client.id: "%s" }) { ok } }',
+            $value
+        );
+        $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
+        $request = $this->createGraphQlRequest($content);
+
+        self::assertSame($value, $resolver->resolve($request, ['client.id']));
+    }
+
     private function createResolver(): ApiRateLimitPayloadValueResolver
     {
         return new ApiRateLimitPayloadValueResolver($this->createJsonSerializer());
+    }
+
+    private function createGraphQlRequest(string $content): Request
+    {
+        return Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $content
+        );
     }
 }

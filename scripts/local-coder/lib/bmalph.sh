@@ -10,6 +10,8 @@ cs_bmalph_load_defaults() {
     : "${BMALPH_DEFAULT_PROJECT_NAME:=user-service}"
     : "${BMALPH_DEFAULT_PROJECT_DESCRIPTION:=VilnaCRM User Service}"
     : "${BMALPH_PLANNING_ARTIFACTS:=specs}"
+    : "${BMALPH_TRANSITION_ARTIFACTS:=_bmad-output/planning-artifacts}"
+    : "${BMALPH_ACTIVE_SPEC_BUNDLE:=}"
     : "${CS_USER_NPM_GLOBAL_BIN:=${HOME}/.npm-global/bin}"
 }
 
@@ -152,4 +154,92 @@ cs_bmalph_configure_planning_artifacts() {
             mkdir -p "${target_dir}/${planning_artifacts}"
             ;;
     esac
+}
+
+cs_bmalph_resolve_project_path() {
+    local target_dir="${1:?Missing project directory}"
+    local path="${2:?Missing path}"
+
+    case "${path}" in
+        /*)
+            printf '%s\n' "${path}"
+            ;;
+        *)
+            printf '%s/%s\n' "${target_dir}" "${path}"
+            ;;
+    esac
+}
+
+cs_bmalph_normalize_path() {
+    local path="${1:?Missing path}"
+
+    if command -v realpath >/dev/null 2>&1; then
+        realpath -m -- "${path}"
+    else
+        printf '%s\n' "${path%/}"
+    fi
+}
+
+cs_bmalph_source_has_required_transition_artifacts() {
+    local source_dir="${1:?Missing source directory}"
+    local prd_matches
+    local architecture_matches
+    local story_matches
+    local readiness_matches
+    local nullglob_was_enabled=false
+
+    if shopt -q nullglob; then
+        nullglob_was_enabled=true
+    fi
+    shopt -s nullglob
+    prd_matches=("${source_dir}"/*prd*.md)
+    architecture_matches=("${source_dir}"/*architect*.md)
+    story_matches=("${source_dir}"/*epic*.md "${source_dir}"/*story*.md "${source_dir}"/*stories*.md)
+    readiness_matches=("${source_dir}"/*readiness*.md)
+    if [ "${nullglob_was_enabled}" != true ]; then
+        shopt -u nullglob
+    fi
+
+    [ "${#prd_matches[@]}" -gt 0 ] \
+        && [ "${#architecture_matches[@]}" -gt 0 ] \
+        && [ "${#story_matches[@]}" -gt 0 ] \
+        && [ "${#readiness_matches[@]}" -gt 0 ]
+}
+
+cs_bmalph_prepare_transition_artifacts() {
+    local target_dir="${1:?Missing project directory}"
+    local planning_artifacts="${2:-${BMALPH_PLANNING_ARTIFACTS:-specs}}"
+    local transition_artifacts="${3:-${BMALPH_TRANSITION_ARTIFACTS:-_bmad-output/planning-artifacts}}"
+    local active_bundle="${4:-${BMALPH_ACTIVE_SPEC_BUNDLE:-}}"
+    local source_path
+    local source_dir
+    local transition_dir
+
+    cs_bmalph_load_defaults
+
+    if [ -n "${active_bundle}" ]; then
+        source_path="${planning_artifacts%/}/${active_bundle#/}"
+    else
+        source_path="${planning_artifacts%/}"
+    fi
+
+    source_dir="$(cs_bmalph_resolve_project_path "${target_dir}" "${source_path}")"
+    transition_dir="$(cs_bmalph_resolve_project_path "${target_dir}" "${transition_artifacts}")"
+    source_dir="$(cs_bmalph_normalize_path "${source_dir}")"
+    transition_dir="$(cs_bmalph_normalize_path "${transition_dir}")"
+
+    if [ ! -d "${source_dir}" ] || [ "${source_dir}" = "${transition_dir}" ]; then
+        return 0
+    fi
+
+    if ! cs_bmalph_source_has_required_transition_artifacts "${source_dir}"; then
+        return 0
+    fi
+
+    rm -rf "${transition_dir}"
+    mkdir -p "${transition_dir}"
+    find "${source_dir}" -maxdepth 1 -type f \( -name '*.md' -o -name '*.yaml' -o -name '*.yml' \) \
+        -exec cp {} "${transition_dir}/" \;
+
+    printf '%s\n' "${transition_artifacts}"
 }

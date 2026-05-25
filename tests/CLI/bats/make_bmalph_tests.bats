@@ -104,7 +104,7 @@ assert_bmalph_dry_run_output() {
   [ "${before_status}" = "${after_status}" ]
 }
 
-@test "BMALPH setup rewrites planning artifacts to specs" {
+@test "BMALPH setup rewrites planning artifacts and prepares active transition mirror" {
   run bash -lc '
     set -euo pipefail
     tmpdir="$(mktemp -d)"
@@ -120,14 +120,106 @@ platform: codex
 planning_artifacts: _bmad-output/planning-artifacts
 implementation_artifacts: _bmad-output/implementation-artifacts
 EOF
+    mkdir -p "$tmpdir/specs/passkey-authentication"
+    touch \
+      "$tmpdir/specs/passkey-authentication/prd.md" \
+      "$tmpdir/specs/passkey-authentication/architecture.md" \
+      "$tmpdir/specs/passkey-authentication/epics.md" \
+      "$tmpdir/specs/passkey-authentication/implementation-readiness.md"
 
     . scripts/local-coder/lib/github-auth.sh
     . scripts/local-coder/lib/bmalph.sh
 
+    export BMALPH_ACTIVE_SPEC_BUNDLE=passkey-authentication
     cs_bmalph_configure_planning_artifacts "$tmpdir"
+    transition_artifacts="$(cs_bmalph_prepare_transition_artifacts "$tmpdir")"
 
     grep -Fx "planning_artifacts: specs" "$tmpdir/_bmad/config.yaml"
     [ -d "$tmpdir/specs" ]
+    [ "$transition_artifacts" = "_bmad-output/planning-artifacts" ]
+    [ -f "$tmpdir/_bmad-output/planning-artifacts/prd.md" ]
+    [ -f "$tmpdir/_bmad-output/planning-artifacts/architecture.md" ]
+    [ -f "$tmpdir/_bmad-output/planning-artifacts/epics.md" ]
+    [ -f "$tmpdir/_bmad-output/planning-artifacts/implementation-readiness.md" ]
+  '
+  assert_success
+}
+
+@test "BMALPH transition artifact detection preserves nullglob state" {
+  run bash -lc '
+    set -euo pipefail
+    tmpdir="$(mktemp -d)"
+    cleanup() {
+      rm -rf "$tmpdir"
+    }
+    trap cleanup EXIT
+
+    mkdir -p "$tmpdir/specs/passkey-authentication"
+    touch \
+      "$tmpdir/specs/passkey-authentication/prd.md" \
+      "$tmpdir/specs/passkey-authentication/architecture.md" \
+      "$tmpdir/specs/passkey-authentication/epics.md" \
+      "$tmpdir/specs/passkey-authentication/implementation-readiness.md"
+
+    . scripts/local-coder/lib/bmalph.sh
+
+    shopt -s nullglob
+    cs_bmalph_source_has_required_transition_artifacts "$tmpdir/specs/passkey-authentication"
+    shopt -q nullglob
+
+    shopt -u nullglob
+    cs_bmalph_source_has_required_transition_artifacts "$tmpdir/specs/passkey-authentication"
+    ! shopt -q nullglob
+  '
+  assert_success
+}
+
+@test "BMALPH transition mirror refuses equivalent source and target paths" {
+  run bash -lc '
+    set -euo pipefail
+    tmpdir="$(mktemp -d)"
+    cleanup() {
+      rm -rf "$tmpdir"
+    }
+    trap cleanup EXIT
+
+    mkdir -p "$tmpdir/specs/passkey-authentication"
+    touch \
+      "$tmpdir/specs/passkey-authentication/prd.md" \
+      "$tmpdir/specs/passkey-authentication/architecture.md" \
+      "$tmpdir/specs/passkey-authentication/epics.md" \
+      "$tmpdir/specs/passkey-authentication/implementation-readiness.md"
+
+    . scripts/local-coder/lib/bmalph.sh
+
+    transition_artifacts="$(
+      cs_bmalph_prepare_transition_artifacts \
+        "$tmpdir" \
+        specs \
+        "specs/passkey-authentication/" \
+        passkey-authentication
+    )"
+
+    [ -z "$transition_artifacts" ]
+    [ -f "$tmpdir/specs/passkey-authentication/prd.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/architecture.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/epics.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/implementation-readiness.md" ]
+  '
+  assert_success
+}
+
+@test "passkey BMAD transition mirror is discoverable by current bmalph release" {
+  run bash -lc '
+    set -euo pipefail
+    test -f docs/planning/prd.md
+    test -f docs/planning/architecture.md
+    test -f docs/planning/epics.md
+    test -f docs/planning/implementation-readiness.md
+    grep -F "# Passkey Authentication PRD" docs/planning/prd.md
+    grep -F "# Passkey Authentication Architecture" docs/planning/architecture.md
+    grep -F "# Passkey Authentication Epics" docs/planning/epics.md
+    grep -F "# Passkey Authentication Implementation Readiness" docs/planning/implementation-readiness.md
   '
   assert_success
 }
@@ -170,7 +262,7 @@ EOF
 }
 
 @test "BMALPH generated paths stay ignored for local installs" {
-  run bash -lc 'grep -Fx "/.ralph/" .gitignore && grep -Fx "/.ralph/logs/" .gitignore && grep -Fx "/_bmad/" .gitignore && grep -Fx "/_bmad-output/" .gitignore'
+  run bash -lc 'grep -Fx "/.ralph/" .gitignore && grep -Fx "/.ralph/logs/" .gitignore && grep -Fx "/_bmad/" .gitignore && grep -Fx "/_bmad-output/" .gitignore && grep -Fx "/bmalph/state/" .gitignore'
   assert_success
 }
 
@@ -252,6 +344,7 @@ EOF
     set -euo pipefail
     grep -F "bmalph --version" README.md
     grep -F "BMALPH_PLANNING_ARTIFACTS" .devcontainer/workspace-settings.env
+    grep -F "BMALPH_TRANSITION_ARTIFACTS" .devcontainer/workspace-settings.env
     grep -F "make bmalph-codex" README.md
     grep -F "bmad-autonomous-planning" README.md
     grep -F "make bmalph-codex" docs/getting-started.md

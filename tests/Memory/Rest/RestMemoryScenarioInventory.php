@@ -79,6 +79,18 @@ final class RestMemoryScenarioInventory
             'class' => PublicApiSurfaceMemoryTest::class,
             'method' => 'testApiPlatformSurfaceScenariosStayStableAcrossRepeatedSameKernelRequests',
         ],
+        'passkeyRegistrationOptions' => [
+            'class' => PasskeyOptionsMemoryTest::class,
+            'method' => 'testPasskeyRegisterOptionsScenarioReusesSameKernelAcrossRepeatedRequests',
+        ],
+        'passkeySigninOptions' => [
+            'class' => PasskeyOptionsMemoryTest::class,
+            'method' => 'testPasskeySigninOptionsScenarioReusesSameKernelAcrossRepeatedRequests',
+        ],
+        'passkeySignupOptions' => [
+            'class' => PasskeyOptionsMemoryTest::class,
+            'method' => 'testPasskeySignupOptionsScenarioReusesSameKernelAcrossRepeatedRequests',
+        ],
         'refreshToken' => [
             'class' => AuthTokenMemoryTest::class,
             'method' => 'testRefreshTokenScenarioReusesSameKernelAcrossRepeatedRequests',

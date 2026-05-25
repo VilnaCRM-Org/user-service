@@ -80,6 +80,242 @@ resources:
               description: 'Invalid or expired 2FA session/code'
             422:
               description: 'Validation error'
+      passkey_signup_options_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/signup/options'
+        input: 'App\User\Application\DTO\PasskeySignUpOptionsDto'
+        processor: 'App\User\Application\Processor\PasskeySignUpOptionsProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Start passkey sign-up'
+          description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey creation options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYSIGNUP'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rp: { name: 'VilnaCRM', id: 'localhost' }
+                      user:
+                        {
+                          id: 'base64url-user-id',
+                          name: 'user@example.test',
+                          displayName: 'Example User',
+                        }
+                      pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
+                      authenticatorSelection:
+                        userVerification: 'required'
+                        residentKey: 'required'
+                        requireResidentKey: true
+                      timeout: 60000
+            409:
+              description: 'Email is already registered'
+            422:
+              description: 'Validation error'
+      passkey_signup_complete_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/signup/complete'
+        input: 'App\User\Application\DTO\PasskeySignUpCompleteDto'
+        processor: 'App\User\Application\Processor\PasskeySignUpCompleteProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Complete passkey sign-up'
+          description: 'Verifies WebAuthn attestation, creates the account, stores the passkey, and issues tokens.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey sign-up completed'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [2fa_enabled, access_token, refresh_token]
+                    properties:
+                      2fa_enabled: { type: boolean, enum: [false] }
+                      access_token: { type: string }
+                      refresh_token: { type: string }
+                  example:
+                    2fa_enabled: false
+                    access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                    refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+            401:
+              description: 'Invalid or expired passkey challenge'
+            409:
+              description: 'Email or passkey credential is already registered'
+            422:
+              description: 'Validation error'
+      passkey_register_options_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/register/options'
+        input: 'App\User\Application\DTO\PasskeyRegistrationOptionsDto'
+        processor: 'App\User\Application\Processor\PasskeyRegistrationOptionsProcessor'
+        security: "is_granted('ROLE_USER')"
+        read: false
+        output: false
+        openapi:
+          summary: 'Start authenticated passkey registration'
+          description: 'Creates WebAuthn public key creation options for the authenticated user.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey creation options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYREGISTER'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rp: { name: 'VilnaCRM', id: 'localhost' }
+                      user:
+                        {
+                          id: 'base64url-user-id',
+                          name: 'user@example.test',
+                          displayName: 'Example User',
+                        }
+                      pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
+                      excludeCredentials: []
+                      authenticatorSelection:
+                        userVerification: 'required'
+                        residentKey: 'required'
+                        requireResidentKey: true
+                      timeout: 60000
+            401:
+              description: 'Authentication required'
+      passkey_register_complete_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/register/complete'
+        input: 'App\User\Application\DTO\PasskeyRegistrationCompleteDto'
+        processor: 'App\User\Application\Processor\PasskeyRegistrationCompleteProcessor'
+        security: "is_granted('ROLE_USER')"
+        read: false
+        output: false
+        openapi:
+          summary: 'Complete authenticated passkey registration'
+          description: 'Verifies WebAuthn attestation and stores the passkey for the authenticated user.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey registered'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [credential_id]
+                    properties:
+                      credential_id: { type: string }
+                  example:
+                    credential_id: 'base64url-credential-id'
+            401:
+              description: 'Authentication required or invalid passkey challenge'
+            409:
+              description: 'Passkey credential is already registered'
+            422:
+              description: 'Validation error'
+      passkey_signin_options_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/signin/options'
+        input: 'App\User\Application\DTO\PasskeySignInOptionsDto'
+        processor: 'App\User\Application\Processor\PasskeySignInOptionsProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Start passkey sign in'
+          description: 'Creates WebAuthn public key request options for username-first passkey sign in.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey request options generated'
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    required: [challenge_id, public_key]
+                    properties:
+                      challenge_id: { type: string }
+                      public_key:
+                        type: object
+                        additionalProperties: true
+                  example:
+                    challenge_id: '01KSEPASSKEYSIGNIN'
+                    public_key:
+                      challenge: 'base64url-challenge'
+                      rpId: 'localhost'
+                      allowCredentials: []
+                      userVerification: 'required'
+                      timeout: 60000
+            422:
+              description: 'Validation error'
+      passkey_signin_complete_http:
+        class: ApiPlatform\Metadata\Post
+        method: POST
+        uriTemplate: '/passkeys/signin/complete'
+        input: 'App\User\Application\DTO\PasskeySignInCompleteDto'
+        processor: 'App\User\Application\Processor\PasskeySignInCompleteProcessor'
+        read: false
+        output: false
+        openapi:
+          summary: 'Complete passkey sign in'
+          description: 'Verifies WebAuthn assertion, updates the stored credential counter, and issues tokens.'
+          tags:
+            - 'Authentication'
+          responses:
+            200:
+              description: 'Passkey sign-in completed'
+              content:
+                application/json:
+                  schema:
+                    oneOf:
+                      - type: object
+                        required: [2fa_enabled, access_token, refresh_token]
+                        properties:
+                          2fa_enabled: { type: boolean, enum: [false] }
+                          access_token: { type: string }
+                          refresh_token: { type: string }
+                      - type: object
+                        required: [2fa_enabled, pending_session_id]
+                        properties:
+                          2fa_enabled: { type: boolean, enum: [true] }
+                          pending_session_id: { type: string }
+                  example:
+                    2fa_enabled: false
+                    access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                    refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+            401:
+              description: 'Invalid passkey credential or challenge'
+            422:
+              description: 'Validation error'
       confirm_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST

@@ -15,5 +15,14 @@ final class AuthPayloadTest extends UnitTestCase
 
         $this->assertSame('auth-success', $payload->getId());
         $this->assertTrue($payload->isSuccess());
+        $this->assertNull($payload->getPublicKey());
+    }
+
+    public function testPublicKeyCanBeSetForPasskeyPayloads(): void
+    {
+        $publicKey = ['rpId' => $this->faker->domainName()];
+        $payload = (new AuthPayload())->setPublicKey($publicKey);
+
+        self::assertSame($publicKey, $payload->getPublicKey());
     }
 }

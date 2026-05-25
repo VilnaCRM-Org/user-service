@@ -8,6 +8,8 @@ use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -307,6 +309,8 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         return new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver),
+            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            new ApiRateLimitOAuthSocialTargetResolver(),
         );
     }
 
@@ -319,12 +323,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         string $token,
         array $payload
     ): ApiRateLimitListener {
-        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
-        $jwtConverter->method('decode')->willReturnCallback(
-            static function (string $candidateToken) use ($token, $payload): ?array {
-                return $candidateToken === $token ? $payload : null;
-            }
-        );
+        $jwtConverter = $this->createJwtConverter($token, $payload);
         $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
             new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
             $jwtConverter,
@@ -335,10 +334,27 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         );
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
-            $authTargetResolver
+            $authTargetResolver,
+            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            new ApiRateLimitOAuthSocialTargetResolver()
         );
 
         return $this->createListener($limiterFactories, $requestMatcher);
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $payload
+     */
+    private function createJwtConverter(string $token, array $payload): JwtTokenConverterInterface
+    {
+        $jwtConverter = $this->createMock(JwtTokenConverterInterface::class);
+        $jwtConverter->method('decode')->willReturnCallback(
+            static fn (string $candidateToken): ?array => $candidateToken === $token
+                ? $payload
+                : null
+        );
+
+        return $jwtConverter;
     }
 
     /**

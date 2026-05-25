@@ -62,6 +62,7 @@ coverage-html/
 /_bmad/
 /_bmad-output/
 _bmad-output/
+/bmalph/state/
 ###> league/oauth2-server-bundle ###
 /config/jwt/*.pem
 /config/reference.php

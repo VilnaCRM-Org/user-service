@@ -150,7 +150,13 @@ make bmalph-setup
 make bmalph-setup BMALPH_PLATFORM=claude-code
 ```
 
-This repository keeps BMAD planning artifacts under `specs/` instead of the upstream `_bmad-output/planning-artifacts` default. `make bmalph-setup` rewrites the local `_bmad/config.yaml` so future planning runs land in `specs/`; rerun it after any direct `bmalph upgrade --force` if you need to restore the repo defaults.
+This repository keeps canonical BMAD planning artifacts under `specs/`. The
+current `bmalph implement` release still discovers transition artifacts from
+fixed paths, so the active implementation bundle is mirrored under
+`docs/planning` or, for local generated state,
+`_bmad-output/planning-artifacts`. Set `BMALPH_ACTIVE_SPEC_BUNDLE=<bundle-dir>`
+when running `make bmalph-setup` to prepare the ignored local transition mirror
+from a specific `specs/<bundle-dir>` bundle.
 
 For specs-only planning from a short feature description, use the `bmad-autonomous-planning` skill from your current AI agent session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
 

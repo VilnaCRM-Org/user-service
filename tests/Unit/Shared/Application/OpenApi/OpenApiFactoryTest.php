@@ -15,6 +15,7 @@ use App\Shared\Application\OpenApi\Factory\Endpoint\EndpointFactoryInterface;
 use App\Shared\Application\OpenApi\Factory\OpenApiFactory;
 use App\Shared\Application\OpenApi\Transformer\NoContentResponseTransformer;
 use App\Shared\Application\OpenApi\Transformer\PaginationQueryParametersTransformer;
+use App\Shared\Application\OpenApi\Transformer\PasskeyCredentialRequestSchemaTransformer;
 use App\Shared\Application\OpenApi\Transformer\PathParametersTransformer;
 use App\Shared\Application\OpenApi\Transformer\ServerErrorResponseTransformer;
 use App\Tests\Unit\UnitTestCase;
@@ -30,6 +31,7 @@ final class OpenApiFactoryTest extends UnitTestCase
     private MockObject $errorResponseTransformer;
     private MockObject $paginationQueryParametersTransformer;
     private MockObject $noContentResponseTransformer;
+    private MockObject $passkeyCredentialRequestSchemaTransformer;
 
     #[\Override]
     protected function setUp(): void
@@ -50,6 +52,8 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->createMock(PaginationQueryParametersTransformer::class);
         $this->noContentResponseTransformer =
             $this->createMock(NoContentResponseTransformer::class);
+        $this->passkeyCredentialRequestSchemaTransformer =
+            $this->createMock(PasskeyCredentialRequestSchemaTransformer::class);
     }
 
     public function testInvokeDecoratesOpenApiDocument(): void
@@ -120,6 +124,10 @@ final class OpenApiFactoryTest extends UnitTestCase
             ->method('transform')
             ->with($this->isInstanceOf(OpenApi::class))
             ->willReturnCallback(static fn (OpenApi $document) => $document);
+        $this->passkeyCredentialRequestSchemaTransformer->expects($this->once())
+            ->method('transform')
+            ->with($this->isInstanceOf(OpenApi::class))
+            ->willReturnCallback(static fn (OpenApi $document) => $document);
     }
 
     private function assertSecuritySchemesPresent(OpenApi $result): void
@@ -146,7 +154,8 @@ final class OpenApiFactoryTest extends UnitTestCase
             $this->pathParametersTransformer,
             $this->errorResponseTransformer,
             $this->paginationQueryParametersTransformer,
-            $this->noContentResponseTransformer
+            $this->noContentResponseTransformer,
+            $this->passkeyCredentialRequestSchemaTransformer
         );
     }
 

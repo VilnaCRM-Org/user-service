@@ -18,6 +18,15 @@ final class AuthPayload
 
     private ?string $pendingSessionId = null;
 
+    private ?string $challengeId = null;
+
+    /**
+     * @var array<string, scalar|array|null>|null
+     */
+    private ?array $publicKey = null;
+
+    private ?string $credentialId = null;
+
     private ?string $otpauthUri = null;
 
     private ?string $secret = null;
@@ -67,6 +76,30 @@ final class AuthPayload
     public function setPendingSessionId(?string $pendingSessionId): self
     {
         $this->pendingSessionId = $pendingSessionId;
+
+        return $this;
+    }
+
+    public function setChallengeId(?string $challengeId): self
+    {
+        $this->challengeId = $challengeId;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $publicKey
+     */
+    public function setPublicKey(array $publicKey): self
+    {
+        $this->publicKey = $publicKey;
+
+        return $this;
+    }
+
+    public function setCredentialId(?string $credentialId): self
+    {
+        $this->credentialId = $credentialId;
 
         return $this;
     }
@@ -137,6 +170,24 @@ final class AuthPayload
     public function getPendingSessionId(): ?string
     {
         return $this->pendingSessionId;
+    }
+
+    public function getChallengeId(): ?string
+    {
+        return $this->challengeId;
+    }
+
+    /**
+     * @return array<string, scalar|array|null>|null
+     */
+    public function getPublicKey(): ?array
+    {
+        return $this->publicKey;
+    }
+
+    public function getCredentialId(): ?string
+    {
+        return $this->credentialId;
     }
 
     public function getOtpauthUri(): ?string

@@ -48,8 +48,14 @@ Also, please install the [Coderabbit AI Plugin](https://www.coderabbit.ai/blog/w
 
 - For local BMALPH setup, run `make bmalph-codex` or `make bmalph-claude` from the repository root.
 - Use `make bmalph-init BMALPH_PLATFORM=codex BMALPH_DRY_RUN=true` to preview BMALPH initialization without changing tracked files.
-- Run `make bmalph-setup` after previewing to write the BMALPH assets locally and configure planning artifacts under `specs/`.
-- If you run `bmalph upgrade --force` directly later, rerun `make bmalph-setup` to restore this repository's BMAD planning path defaults.
+- Run `make bmalph-setup` after previewing to write the BMALPH assets locally
+  and configure canonical planning artifacts under `specs/`.
+- The current `bmalph implement` release discovers transition artifacts from
+  fixed paths. Use `docs/planning` for the active committed transition mirror,
+  or run `BMALPH_ACTIVE_SPEC_BUNDLE=<bundle-dir> make bmalph-setup` to prepare
+  `_bmad-output/planning-artifacts` from `specs/<bundle-dir>`.
+- If you run `bmalph upgrade --force` directly later, rerun `make bmalph-setup`
+  to restore this repository's BMAD planning path defaults.
 - When you want a specs-first planning bundle from a short feature prompt, use the `bmad-autonomous-planning` skill after BMALPH assets are initialized locally.
 - For LLM-powered modules, prompt workflows, or provider integrations, read `.claude/skills/clean-architecture-llm/SKILL.md` before implementation so ports, adapters, prompts, and tests stay provider-agnostic.
 

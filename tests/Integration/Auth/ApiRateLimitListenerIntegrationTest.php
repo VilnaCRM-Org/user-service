@@ -78,7 +78,7 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
 
     public function testSignInEmailLimiterReturns429WithRetryAfterAndProblemJson(): void
     {
-        $email = 'signin-email-limit@test.com';
+        $email = $this->faker->safeEmail();
         $this->exhaustLimiter(
             'signin_email',
             sprintf('email:%s', $email),
@@ -89,6 +89,53 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
             'password' => 'passWORD1',
         ], JSON_THROW_ON_ERROR);
         $response = $this->handleJsonRequest('/api/signin', Request::METHOD_POST, $content);
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testGraphQlPasskeySignupUsesRegistrationLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $initials = strtoupper($this->faker->lexify('??'));
+        $this->exhaustLimiter(
+            'registration',
+            'ip:127.0.0.1',
+            $this->resolveLimit('REGISTRATION_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation {
+  passkeySignUpOptions(input: { email: "%s", initials: "%s" }) {
+    user { id }
+  }
+}
+GRAPHQL, $email, $initials),
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testGraphQlPasskeySigninUsesSignInEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation {
+  passkeySignInOptions(input: { email: "%s" }) {
+    user { id }
+  }
+}
+GRAPHQL, $email),
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
         $this->assertRateLimitResponse($response);
     }
 

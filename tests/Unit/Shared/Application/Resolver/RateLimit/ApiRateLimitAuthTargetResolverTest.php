@@ -61,6 +61,50 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         self::assertSame('email:' . strtolower(trim($email)), $result[1]['key']);
     }
 
+    public function testResolvePasskeySignInOptionsUsesSignInLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $resolver = $this->createAuthTargetResolver();
+        $request = Request::create(
+            '/api/passkeys/signin/options',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode(['email' => $email], JSON_THROW_ON_ERROR)
+        );
+
+        $result = $resolver->resolve($request);
+
+        self::assertCount(2, $result);
+        self::assertSame('signin_ip', $result[0]['name']);
+        self::assertSame('ip:' . $clientIp, $result[0]['key']);
+        self::assertSame('signin_email', $result[1]['name']);
+        self::assertSame('email:' . strtolower(trim($email)), $result[1]['key']);
+    }
+
+    public function testResolvePasskeySignInCompleteUsesIpSignInLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $resolver = $this->createAuthTargetResolver();
+        $request = Request::create(
+            '/api/passkeys/signin/complete',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $result = $resolver->resolve($request);
+
+        self::assertCount(1, $result);
+        self::assertSame('signin_ip', $result[0]['name']);
+        self::assertSame('ip:' . $clientIp, $result[0]['key']);
+    }
+
     public function testResolveSignInLimitersUsesDefaultIpWhenClientIpIsNull(): void
     {
         $resolver = $this->createAuthTargetResolver();

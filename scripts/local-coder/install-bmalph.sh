@@ -240,9 +240,16 @@ EOM
     fi
 
     if [ "${dry_run}" != true ]; then
+        transition_artifacts_prepared=""
+
         cs_bmalph_configure_planning_artifacts "${project_dir}"
+        transition_artifacts_prepared="$(cs_bmalph_prepare_transition_artifacts "${project_dir}")"
+
         echo "BMALPH planning artifacts configured:"
         echo "  - planning_artifacts: ${BMALPH_PLANNING_ARTIFACTS:-specs}"
+        if [ -n "${transition_artifacts_prepared}" ]; then
+            echo "  - transition_artifacts: ${transition_artifacts_prepared}"
+        fi
         restore_new_tracked_changes "${project_dir}" "${tracked_dirty_before}"
     fi
 else

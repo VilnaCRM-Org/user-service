@@ -131,3 +131,98 @@ resources:
           groups: ['auth:output']
         denormalizationContext:
           groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver'
+        name: 'passkeySignUpOptions'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+          initials:
+            type: 'String!'
+          displayName:
+            type: 'String'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver'
+        name: 'passkeySignUpComplete'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+          label:
+            type: 'String'
+          rememberMe:
+            type: 'Boolean'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver'
+        name: 'passkeySignInOptions'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+          rememberMe:
+            type: 'Boolean'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignInCompleteAuthMutationResolver'
+        name: 'passkeySignInComplete'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeyRegistrationOptionsAuthMutationResolver'
+        name: 'passkeyRegistrationOptions'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeyRegistrationCompleteAuthMutationResolver'
+        name: 'passkeyRegistrationComplete'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+          label:
+            type: 'String'

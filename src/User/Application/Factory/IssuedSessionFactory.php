@@ -11,6 +11,7 @@ use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
+use Throwable;
 
 /**
  * @psalm-api
@@ -40,20 +41,15 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
         $session = $this->createSession($user, $ipAddress, $userAgent, $rememberMe, $issuedAt);
         $this->authSessionRepository->save($session);
 
-        $refreshToken = $this->authTokenFactory->generateOpaqueToken();
-        $this->authRefreshTokenRepository->save(
-            $this->authTokenFactory->createRefreshToken(
-                $session->getId(),
-                $refreshToken,
-                $issuedAt
-            )
-        );
-
-        $accessToken = $this->accessTokenFactory->create(
-            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
-        );
-
-        return new IssuedSession($session->getId(), $accessToken, $refreshToken);
+        try {
+            return $this->issueTokens($session, $user, $issuedAt);
+        } catch (Throwable $exception) {
+            try {
+                $this->rollbackSession($session);
+            } finally {
+                throw $exception;
+            }
+        }
     }
 
     private function createSession(
@@ -76,5 +72,36 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
             $issuedAt->modify(sprintf('+%d seconds', $ttlSeconds)),
             $rememberMe
         );
+    }
+
+    private function issueTokens(
+        AuthSession $session,
+        User $user,
+        DateTimeImmutable $issuedAt
+    ): IssuedSession {
+        $refreshToken = $this->authTokenFactory->generateOpaqueToken();
+        $this->authRefreshTokenRepository->save($this->authTokenFactory->createRefreshToken(
+            $session->getId(),
+            $refreshToken,
+            $issuedAt
+        ));
+        $accessToken = $this->accessTokenFactory->create(
+            $this->authTokenFactory->buildJwtPayload($user, $session->getId(), $issuedAt)
+        );
+
+        return new IssuedSession($session->getId(), $accessToken, $refreshToken);
+    }
+
+    private function rollbackSession(AuthSession $session): void
+    {
+        try {
+            $tokens = $this->authRefreshTokenRepository->findBySessionId($session->getId());
+
+            foreach ($tokens as $token) {
+                $this->authRefreshTokenRepository->delete($token);
+            }
+        } finally {
+            $this->authSessionRepository->delete($session);
+        }
     }
 }

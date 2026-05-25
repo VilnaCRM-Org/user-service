@@ -26,6 +26,22 @@ To ensure our User Service is optimized for high performance, we conducted exten
 - `POST /api/users/batch` now preloads existing users with a single bulk email lookup instead of performing one duplicate-email query per incoming user.
 - Batch registration assembly now lives in a dedicated factory, which keeps the hot path explicit and makes the bulk-lookup behavior easier to validate with repository and cache tests.
 
+## Passkey Load Coverage
+
+Passkey authentication adds K6 coverage for the repeatable server-side
+start-ceremony paths: `passkeySignupOptions`, `passkeySigninOptions`, and
+`passkeyRegistrationOptions`. These scenarios require `checks` above `99%`,
+p99 under `1500ms` for smoke/average, p99 under `3000ms` for stress, and p99
+under `5000ms` for spike. Browser-created attestation/assertion completion is
+covered by integration tests and manual browser evidence because k6 does not
+provide a WebAuthn authenticator.
+
+Current PR smoke evidence from 2026-05-25 UTC, using the isolated
+`user-service-passkey-nfr-load` stack, passed the smoke thresholds:
+`passkeySignupOptions` checks `100%` and p99 `1.17s`,
+`passkeySigninOptions` checks `100%` and p99 `44.92ms`, and
+`passkeyRegistrationOptions` checks `100%` and p99 `65.03ms`.
+
 ## PR 278 Performance Report
 
 This pull request focused on the hot paths that were still visible under load:
