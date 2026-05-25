@@ -170,19 +170,35 @@ cs_bmalph_resolve_project_path() {
     esac
 }
 
+cs_bmalph_normalize_path() {
+    local path="${1:?Missing path}"
+
+    if command -v realpath >/dev/null 2>&1; then
+        realpath -m -- "${path}"
+    else
+        printf '%s\n' "${path%/}"
+    fi
+}
+
 cs_bmalph_source_has_required_transition_artifacts() {
     local source_dir="${1:?Missing source directory}"
     local prd_matches
     local architecture_matches
     local story_matches
     local readiness_matches
+    local nullglob_was_enabled=false
 
+    if shopt -q nullglob; then
+        nullglob_was_enabled=true
+    fi
     shopt -s nullglob
     prd_matches=("${source_dir}"/*prd*.md)
     architecture_matches=("${source_dir}"/*architect*.md)
     story_matches=("${source_dir}"/*epic*.md "${source_dir}"/*story*.md "${source_dir}"/*stories*.md)
     readiness_matches=("${source_dir}"/*readiness*.md)
-    shopt -u nullglob
+    if [ "${nullglob_was_enabled}" != true ]; then
+        shopt -u nullglob
+    fi
 
     [ "${#prd_matches[@]}" -gt 0 ] \
         && [ "${#architecture_matches[@]}" -gt 0 ] \
@@ -209,6 +225,8 @@ cs_bmalph_prepare_transition_artifacts() {
 
     source_dir="$(cs_bmalph_resolve_project_path "${target_dir}" "${source_path}")"
     transition_dir="$(cs_bmalph_resolve_project_path "${target_dir}" "${transition_artifacts}")"
+    source_dir="$(cs_bmalph_normalize_path "${source_dir}")"
+    transition_dir="$(cs_bmalph_normalize_path "${transition_dir}")"
 
     if [ ! -d "${source_dir}" ] || [ "${source_dir}" = "${transition_dir}" ]; then
         return 0

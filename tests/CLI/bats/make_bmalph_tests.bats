@@ -145,6 +145,70 @@ EOF
   assert_success
 }
 
+@test "BMALPH transition artifact detection preserves nullglob state" {
+  run bash -lc '
+    set -euo pipefail
+    tmpdir="$(mktemp -d)"
+    cleanup() {
+      rm -rf "$tmpdir"
+    }
+    trap cleanup EXIT
+
+    mkdir -p "$tmpdir/specs/passkey-authentication"
+    touch \
+      "$tmpdir/specs/passkey-authentication/prd.md" \
+      "$tmpdir/specs/passkey-authentication/architecture.md" \
+      "$tmpdir/specs/passkey-authentication/epics.md" \
+      "$tmpdir/specs/passkey-authentication/implementation-readiness.md"
+
+    . scripts/local-coder/lib/bmalph.sh
+
+    shopt -s nullglob
+    cs_bmalph_source_has_required_transition_artifacts "$tmpdir/specs/passkey-authentication"
+    shopt -q nullglob
+
+    shopt -u nullglob
+    cs_bmalph_source_has_required_transition_artifacts "$tmpdir/specs/passkey-authentication"
+    ! shopt -q nullglob
+  '
+  assert_success
+}
+
+@test "BMALPH transition mirror refuses equivalent source and target paths" {
+  run bash -lc '
+    set -euo pipefail
+    tmpdir="$(mktemp -d)"
+    cleanup() {
+      rm -rf "$tmpdir"
+    }
+    trap cleanup EXIT
+
+    mkdir -p "$tmpdir/specs/passkey-authentication"
+    touch \
+      "$tmpdir/specs/passkey-authentication/prd.md" \
+      "$tmpdir/specs/passkey-authentication/architecture.md" \
+      "$tmpdir/specs/passkey-authentication/epics.md" \
+      "$tmpdir/specs/passkey-authentication/implementation-readiness.md"
+
+    . scripts/local-coder/lib/bmalph.sh
+
+    transition_artifacts="$(
+      cs_bmalph_prepare_transition_artifacts \
+        "$tmpdir" \
+        specs \
+        "specs/passkey-authentication/" \
+        passkey-authentication
+    )"
+
+    [ -z "$transition_artifacts" ]
+    [ -f "$tmpdir/specs/passkey-authentication/prd.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/architecture.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/epics.md" ]
+    [ -f "$tmpdir/specs/passkey-authentication/implementation-readiness.md" ]
+  '
+  assert_success
+}
+
 @test "passkey BMAD transition mirror is discoverable by current bmalph release" {
   run bash -lc '
     set -euo pipefail
