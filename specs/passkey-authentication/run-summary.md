@@ -199,7 +199,7 @@ Durable sanitized browser evidence is recorded in
 
 Tester: Codex.
 Execution date: 2026-05-25 UTC.
-Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree tested at
+Environment: local PR #286 worktree (`user-service-pr286`), tested at
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6` with repro SHA
 `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`; current
 discoverable-credential/OpenAPI source-tested SHA
