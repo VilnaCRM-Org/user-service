@@ -11,7 +11,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /**
  * @phpstan-type JsonScalar bool|float|int|string|null
- * @phpstan-type JsonBody array<string, array<string, mixed>|JsonScalar>
+ * @phpstan-type JsonObject array<string, JsonScalar|array<string, JsonScalar>>
+ * @phpstan-type JsonBody array<string, JsonObject|JsonScalar>
  * @phpstan-type JsonResponse array{response: Response, body: JsonBody}
  */
 final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
@@ -45,12 +46,23 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
 
         $publicKey = $response['body']['public_key'] ?? null;
         $this->assertIsArray($publicKey);
+        $this->assertBrowserSafePublicKey($publicKey);
+    }
+
+    /**
+     * @param JsonObject $publicKey
+     */
+    private function assertBrowserSafePublicKey(array $publicKey): void
+    {
         $this->assertMatchesRegularExpression(
             '/^[A-Za-z0-9_-]+$/',
             $this->requireStringKey($publicKey, 'challenge')
         );
         $this->assertSame('localhost', $publicKey['rp']['id'] ?? null);
-        $this->assertSame('required', $publicKey['authenticatorSelection']['userVerification'] ?? null);
+        $this->assertSame(
+            'required',
+            $publicKey['authenticatorSelection']['userVerification'] ?? null
+        );
     }
 
     /**
