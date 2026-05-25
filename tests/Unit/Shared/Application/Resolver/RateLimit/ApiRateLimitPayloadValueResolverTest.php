@@ -10,6 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
 {
+    private const GRAPHQL_PATH = '/api/graphql';
+    private const PASSKEY_SIGNIN_OPTIONS_MUTATION =
+        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }';
+
     public function testResolveReturnsNullForEmptyBody(): void
     {
         $resolver = $this->createResolver();
@@ -113,12 +117,7 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         $email = $this->faker->email();
         $resolver = $this->createResolver();
         $content = json_encode(['variables' => ['input' => compact('email')]], JSON_THROW_ON_ERROR);
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            server: ['CONTENT_TYPE' => 'application/json'],
-            content: $content
-        );
+        $request = $this->createGraphQlRequest($content);
 
         self::assertSame($email, $resolver->resolve($request, ['email']));
     }
@@ -127,20 +126,9 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
     {
         $email = $this->faker->email();
         $resolver = $this->createResolver();
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
+        $request = $this->createGraphQlRequest(
             json_encode(
-                [
-                    'query' => sprintf(
-                        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }',
-                        $email
-                    ),
-                ],
+                ['query' => sprintf(self::PASSKEY_SIGNIN_OPTIONS_MUTATION, $email)],
                 JSON_THROW_ON_ERROR
             )
         );
@@ -159,12 +147,7 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
             $email
         );
         $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            server: ['CONTENT_TYPE' => 'application/json'],
-            content: $content
-        );
+        $request = $this->createGraphQlRequest($content);
 
         self::assertSame($email, $resolver->resolve($request, ['email']));
     }
@@ -178,12 +161,7 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
             $value
         );
         $content = json_encode(['query' => $query], JSON_THROW_ON_ERROR);
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            server: ['CONTENT_TYPE' => 'application/json'],
-            content: $content
-        );
+        $request = $this->createGraphQlRequest($content);
 
         self::assertSame($value, $resolver->resolve($request, ['client.id']));
     }
@@ -191,5 +169,15 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
     private function createResolver(): ApiRateLimitPayloadValueResolver
     {
         return new ApiRateLimitPayloadValueResolver($this->createJsonSerializer());
+    }
+
+    private function createGraphQlRequest(string $content): Request
+    {
+        return Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $content
+        );
     }
 }

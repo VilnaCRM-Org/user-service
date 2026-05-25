@@ -21,21 +21,20 @@ final readonly class ApiRateLimitOAuthSocialTargetResolver
         }
 
         $path = $request->getPathInfo();
-        if (preg_match(self::CALLBACK_PATTERN, $path) === 1) {
-            return [
-                'name' => 'oauth_social_callback',
-                'key' => $this->buildIpKey($request),
-            ];
+        $targetName = match (true) {
+            preg_match(self::CALLBACK_PATTERN, $path) === 1 => 'oauth_social_callback',
+            preg_match(self::INITIATE_PATTERN, $path) === 1 => 'oauth_social_initiate',
+            default => null,
+        };
+
+        if ($targetName === null) {
+            return null;
         }
 
-        if (preg_match(self::INITIATE_PATTERN, $path) === 1) {
-            return [
-                'name' => 'oauth_social_initiate',
-                'key' => $this->buildIpKey($request),
-            ];
-        }
-
-        return null;
+        return [
+            'name' => $targetName,
+            'key' => $this->buildIpKey($request),
+        ];
     }
 
     private function buildIpKey(Request $request): string
