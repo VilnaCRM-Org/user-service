@@ -9,6 +9,8 @@ evidence required for BMAD FR/NFR sign-off.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
+- Current source bridge SHA:
+  `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`
 - Environment URL: `https://localhost:65443`
 - Browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -18,9 +20,11 @@ evidence required for BMAD FR/NFR sign-off.
 - Origin: `https://localhost:65443`
 - Supporting artifacts: sanitized browser run id `1779672967201-kekp2o`;
   durable sanitized evidence in
-  `specs/passkey-authentication/manual-browser-evidence.md`; expiration run
-  challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`; focused PHPUnit and configuration
-  commands listed in `run-summary.md`
+  `specs/passkey-authentication/manual-browser-evidence.md`; durable sanitized
+  transcript in
+  `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+  expiration run challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`; focused PHPUnit and
+  configuration commands listed in `run-summary.md`
 - Overall result: Pass
 
 ## Preconditions
@@ -46,15 +50,17 @@ Steps:
 4. Confirm no browser WebAuthn creation ceremony starts.
 5. Confirm no passkey challenge is persisted for the rejected request.
 
-Expected result: the endpoint returns `409`, no `challengeId` is returned, and no
+Expected result: the endpoint returns `409`, no `challenge_id` is returned, and no
 passkey challenge is created.
 
 Observed result: browser run id `1779672967201-kekp2o` created baseline account
 `manual-existing-1779672967201-kekp2o@example.test`, then signup options for the
-same email returned `409` and did not return a `challenge_id`.
+same email returned `409` and did not return a `challenge_id`. Automated
+coverage in `PasskeyRegistrationCommandHandlerTest::testStartSignupRejectsExistingEmail`
+asserts no challenge id is generated and no challenge is saved for this path.
 
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`, sanitized
-Chrome virtual-authenticator run output.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
 Result: Pass
 
@@ -82,8 +88,8 @@ for `manual-signup-1779672967201-kekp2o@example.test`, created a credential with
 `/api/passkeys/signup/complete`, and received access and refresh tokens with
 `2fa_enabled=false`.
 
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`, sanitized
-Chrome virtual-authenticator run output.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
 Result: Pass
 
@@ -107,8 +113,8 @@ token, requested authenticated registration options, created a second credential
 on a second virtual authenticator, and `/api/passkeys/register/complete` returned
 a credential id.
 
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`, sanitized
-Chrome virtual-authenticator run output.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
 Result: Pass
 
@@ -133,8 +139,8 @@ Observed result: browser run id `1779672967201-kekp2o` enabled TOTP with
 passkey sign-in returned `2fa_enabled=true` and a `pending_session_id`, and did
 not return access or refresh tokens.
 
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`, sanitized
-Chrome virtual-authenticator run output.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
 Result: Pass
 
@@ -156,10 +162,13 @@ Observed result: browser run id `1779672967201-kekp2o` resubmitted the completed
 signup challenge and received `401` without access or refresh tokens. A separate
 expiration run used `PASSKEY_CHALLENGE_TTL_SECONDS=1`, waited past expiry for
 challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`, and completion returned `401` with
-detail `Invalid or expired passkey challenge.` and no access token.
+detail `Invalid or expired passkey challenge.` and no access token. Automated
+repository coverage verifies atomic challenge claim returns no challenge when no
+record is updated, and rollback coverage verifies failed signup completion does
+not keep additional credential state.
 
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`, sanitized
-Chrome virtual-authenticator run output.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
 Result: Pass
 

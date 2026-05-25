@@ -83,22 +83,34 @@ The BMAD stages were executed in the main session:
   explicitly keeps the optional serializer dependencies `null`, so it builds the
   WebAuthn serializer from `PasskeyWebauthnFactory`; an integration test covers
   browser-safe passkey options JSON.
+- Current-head FR/NFR risk review found that username-first sign-in intentionally
+  returns zero `allowCredentials`, so registration must require discoverable
+  credentials. Registration options now set resident-key `required` and expose
+  `requireResidentKey=true`; focused unit/integration coverage asserts that
+  browser JSON contract. Passkey REST `200` responses now include OpenAPI
+  success body schemas/examples for options, token responses, and registration
+  completion.
 
 ## Current-Head Remediation Evidence
 
-Status: source fix plus current browser/authenticator evidence.
+Status: source fixes plus browser/authenticator evidence bridged to the current
+source-tested SHA.
 
 Verifier: Codex.
 Date: 2026-05-25 UTC.
-Repro SHA before this fix:
+Serializer repro SHA before the browser-safe JSON fix:
 `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
-Post-fix tested SHA:
+Browser ceremony tested SHA:
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`.
+Discoverable-credential/OpenAPI source-tested SHA:
+`b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
+Durable sanitized browser transcript:
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
 
-- Local workspace identity: `git rev-parse HEAD` returned
+- Serializer repro workspace identity: `git rev-parse HEAD` returned
   `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
 - Local `_bmad` workflow was restored from the identical PR #284 BMALPH bundle
   into ignored path `_bmad/`; `_bmad/core/skills/bmad-review-adversarial-general/workflow.md`
@@ -116,7 +128,7 @@ Sanitized browser evidence:
   `https://localhost:65443`, isolated Docker Compose project
   `user-service-pr286-manual`, MongoDB 7.0, Redis 8, `APP_ENV=test`.
 - Browser run id `1779672967201-kekp2o` verified existing-email signup rejection
-  returned `409` without a challenge, new-email signup completed with issued
+  returned `409` without a `challenge_id`, new-email signup completed with issued
   access/refresh tokens, challenge reuse returned `401` without tokens,
   authenticated registration completed using a second virtual authenticator,
   passkey sign-in worked with zero `allowCredentials`, TOTP setup/confirm
@@ -132,6 +144,23 @@ Sanitized browser evidence:
 - Focused unit verification passed:
   `PasskeyJsonTransformerTest` and `PasskeyOptionsFactoryTest`: 13 tests / 73
   assertions.
+- Discoverable-credential/OpenAPI verification at
+  `b6ced150d8eacd4e2d59e099e6c72f043c8c875b` passed:
+  `PasskeyOptionsFactoryTest`, `PasskeyAuthEndpointsIntegrationTest`, and
+  `PasskeyCredentialRequestSchemaTransformerTest`: 8 tests / 99 assertions.
+  `PasskeyOptionsFactoryTest` and `PasskeyAuthEndpointsIntegrationTest` assert
+  registration options include `residentKey=required` and
+  `requireResidentKey=true`.
+- OpenAPI verification passed after adding explicit passkey success response
+  schemas: `bin/console api:openapi:export --yaml
+  --output=.github/openapi-spec/spec.yaml`, YAML lint for
+  `config/api_platform/resources/EmptyResponse.yaml` and
+  `.github/openapi-spec/spec.yaml`, and `./scripts/validate-openapi-spec.sh`
+  with no hint-or-higher results.
+- Focused quality verification passed for the discoverable-credential/OpenAPI
+  changes: `phpmd` on the changed source/test files, PHP-CS-Fixer dry run on the
+  changed PHP files, PHP Insights on the changed PHP files, and host
+  `git diff --check`.
 - Configuration verification passed: `bin/console lint:yaml --parse-tags
 config/services.yaml`, `bin/console lint:container`,
   `./scripts/validate-configuration.sh` with only the existing container git
@@ -172,7 +201,9 @@ Tester: Codex.
 Execution date: 2026-05-25 UTC.
 Environment: `/home/kravtsov/tmp/user-service-pr286`, PR #286 worktree tested at
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6` with repro SHA
-`58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`, isolated Docker Compose project
+`58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`; current
+discoverable-credential/OpenAPI source-tested SHA
+`b6ced150d8eacd4e2d59e099e6c72f043c8c875b`, isolated Docker Compose project
 `user-service-pr286-manual`, `https://localhost:65443`, PHP 8.4.5, MongoDB 7.0,
 Redis 8.
 Browser/authenticator: Google Chrome/HeadlessChrome 148 with Chrome DevTools
@@ -192,8 +223,9 @@ Steps:
 Observed result: browser run id `1779672967201-kekp2o` created a baseline user,
 then `POST /api/passkeys/signup/options` for that email returned `409` and did
 not return a `challenge_id`.
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
-scenario 1.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+checklist scenario 1.
 
 ### Scenario 2: Passkey Sign-Up Creates Options for New Email
 
@@ -212,8 +244,9 @@ Observed result: browser run id `1779672967201-kekp2o` created a credential via
 `navigator.credentials.create()`, submitted `credential.toJSON()` to
 `/api/passkeys/signup/complete`, and received access and refresh tokens with
 `2fa_enabled=false`.
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
-scenario 2.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+checklist scenario 2.
 
 ### Scenario 3: Authenticated Passkey Enrollment
 
@@ -231,8 +264,9 @@ Observed result: browser run id `1779672967201-kekp2o` used the issued bearer
 token, requested registration options, created a second credential on a second
 virtual authenticator, and `/api/passkeys/register/complete` returned a
 credential id.
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
-scenario 3.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+checklist scenario 3.
 
 ### Scenario 4: Passkey Sign-In With 2FA Parity
 
@@ -249,8 +283,9 @@ Observed result: browser run id `1779672967201-kekp2o` enabled TOTP through the
 existing `/api/2fa/setup` and `/api/2fa/confirm` flow, then completed passkey
 sign-in. The response returned `2fa_enabled=true` and a `pending_session_id`, and
 did not return access or refresh tokens.
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
-scenario 4.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+checklist scenario 4.
 
 ### Scenario 5: Challenge Reuse And Expiration
 
@@ -266,14 +301,15 @@ signup challenge and received `401` without access or refresh tokens. Expiration
 run `manual-expired-1779673120988@example.test` used challenge
 `01KSECHK4BX8HYP4Z2ZE66SXP2`; completion after expiry returned `401`, detail
 `Invalid or expired passkey challenge.`, and no access token.
-Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`; checklist
-scenario 5.
+Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
+checklist scenario 5.
 
 ## Verification Evidence
 
 Status: current focused verification plus historical automated evidence for
-earlier remediation commits. Full post-push CI is expected to be provided by
-GitHub Actions for the final pushed commit.
+earlier remediation commits. Full post-push CI is provided by GitHub Actions for
+each pushed PR head.
 
 - Current focused integration verification:
   `./vendor/bin/phpunit tests/Integration/Auth/PasskeyAuthEndpointsIntegrationTest.php tests/Integration/Auth/AuthEndpointsIntegrationTest.php --filter "testSignupOptionsReturnsBrowserSafeWebauthnJson|testRefreshTokenEndpointRotatesTokenAndIssuesNewTokens"`

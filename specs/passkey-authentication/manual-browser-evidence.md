@@ -10,6 +10,8 @@ credential private material, TOTP secrets, and recovery-code values.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
+- Current source bridge SHA:
+  `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`
 - Application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Origin: `https://localhost:65443`
@@ -40,6 +42,9 @@ Post-fix proof: the same endpoint returned HTTP 200 with non-empty
 
 Sanitized run id: `1779672967201-kekp2o`.
 
+Durable sanitized transcript:
+`specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
+
 Observed scenarios:
 
 1. Existing-email signup rejection:
@@ -68,6 +73,17 @@ Observed scenarios:
    returned 8 recovery codes. A later passkey sign-in returned
    `2fa_enabled=true`, included a `pending_session_id`, and omitted access and
    refresh token fields.
+
+## Current Source Bridge
+
+The full browser ceremony above was executed at
+`c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`. Current source fix
+`b6ced150d8eacd4e2d59e099e6c72f043c8c875b` changes the registration options
+contract from resident-key `preferred` to resident-key `required`, and adds
+OpenAPI success response schemas. No passkey completion handler behavior changed
+in that commit. Focused unit and integration verification at the bridge SHA
+asserted that browser-safe signup options now include `residentKey=required` and
+`requireResidentKey=true`.
 
 ## Expiration Run
 
