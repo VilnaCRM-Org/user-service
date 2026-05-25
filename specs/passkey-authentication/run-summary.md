@@ -153,7 +153,7 @@ Durable sanitized browser transcript:
   `requireResidentKey=true`.
 - OpenAPI verification passed after adding explicit passkey success response
   schemas: `bin/console api:openapi:export --yaml
-  --output=.github/openapi-spec/spec.yaml`, YAML lint for
+--output=.github/openapi-spec/spec.yaml`, YAML lint for
   `config/api_platform/resources/EmptyResponse.yaml` and
   `.github/openapi-spec/spec.yaml`, and `./scripts/validate-openapi-spec.sh`
   with no hint-or-higher results.

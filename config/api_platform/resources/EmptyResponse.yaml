@@ -111,7 +111,12 @@ resources:
                     public_key:
                       challenge: 'base64url-challenge'
                       rp: { name: 'VilnaCRM', id: 'localhost' }
-                      user: { id: 'base64url-user-id', name: 'user@example.test', displayName: 'Example User' }
+                      user:
+                        {
+                          id: 'base64url-user-id',
+                          name: 'user@example.test',
+                          displayName: 'Example User',
+                        }
                       pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
                       authenticatorSelection:
                         userVerification: 'required'
@@ -189,7 +194,12 @@ resources:
                     public_key:
                       challenge: 'base64url-challenge'
                       rp: { name: 'VilnaCRM', id: 'localhost' }
-                      user: { id: 'base64url-user-id', name: 'user@example.test', displayName: 'Example User' }
+                      user:
+                        {
+                          id: 'base64url-user-id',
+                          name: 'user@example.test',
+                          displayName: 'Example User',
+                        }
                       pubKeyCredParams: [{ type: 'public-key', alg: -7 }]
                       excludeCredentials: []
                       authenticatorSelection:

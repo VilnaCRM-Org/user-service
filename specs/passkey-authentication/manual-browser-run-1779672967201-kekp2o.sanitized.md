@@ -24,16 +24,16 @@ values.
 
 ## Sanitized Observations
 
-| Scenario | Sanitized request/result |
-| --- | --- |
-| Existing-email signup options | Baseline account `manual-existing-1779672967201-kekp2o@example.test` was created. A later `POST /api/passkeys/signup/options` for the same email returned HTTP 409 and no `challenge_id`. |
-| New-email signup options | `POST /api/passkeys/signup/options` for `manual-signup-1779672967201-kekp2o@example.test` returned HTTP 200 with non-empty `challenge_id`, base64url `public_key.challenge`, RP ID `localhost`, and required user verification. |
-| New-email signup complete | `navigator.credentials.create()` completed with the returned `public_key`; `credential.toJSON()` submitted to `/api/passkeys/signup/complete` returned `2fa_enabled=false` with access and refresh token fields present but redacted here. |
-| Challenge replay | Reusing the completed signup `challengeId` returned HTTP 401 and no access or refresh token fields. |
-| Sign-in before 2FA | `POST /api/passkeys/signin/options` returned an empty `allowCredentials` collection. `navigator.credentials.get()` completed and `/api/passkeys/signin/complete` returned `2fa_enabled=false` with token fields present but redacted here. |
-| Authenticated registration | The redacted bearer token from signup was used for `/api/passkeys/register/options`; a second virtual authenticator created a second credential; `/api/passkeys/register/complete` returned a `credential_id`. |
-| 2FA parity | `/api/2fa/setup` and `/api/2fa/confirm` enabled TOTP and returned 8 recovery codes, all redacted here. A later passkey sign-in returned `2fa_enabled=true`, included `pending_session_id`, and omitted access and refresh token fields. |
-| Expiration | With `PASSKEY_CHALLENGE_TTL_SECONDS=1`, challenge `01KSECHK4BX8HYP4Z2ZE66SXP2` submitted after expiry returned HTTP 401 with detail `Invalid or expired passkey challenge.` and no access token field. |
+| Scenario                      | Sanitized request/result                                                                                                                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Existing-email signup options | Baseline account `manual-existing-1779672967201-kekp2o@example.test` was created. A later `POST /api/passkeys/signup/options` for the same email returned HTTP 409 and no `challenge_id`.                                                  |
+| New-email signup options      | `POST /api/passkeys/signup/options` for `manual-signup-1779672967201-kekp2o@example.test` returned HTTP 200 with non-empty `challenge_id`, base64url `public_key.challenge`, RP ID `localhost`, and required user verification.            |
+| New-email signup complete     | `navigator.credentials.create()` completed with the returned `public_key`; `credential.toJSON()` submitted to `/api/passkeys/signup/complete` returned `2fa_enabled=false` with access and refresh token fields present but redacted here. |
+| Challenge replay              | Reusing the completed signup `challengeId` returned HTTP 401 and no access or refresh token fields.                                                                                                                                        |
+| Sign-in before 2FA            | `POST /api/passkeys/signin/options` returned an empty `allowCredentials` collection. `navigator.credentials.get()` completed and `/api/passkeys/signin/complete` returned `2fa_enabled=false` with token fields present but redacted here. |
+| Authenticated registration    | The redacted bearer token from signup was used for `/api/passkeys/register/options`; a second virtual authenticator created a second credential; `/api/passkeys/register/complete` returned a `credential_id`.                             |
+| 2FA parity                    | `/api/2fa/setup` and `/api/2fa/confirm` enabled TOTP and returned 8 recovery codes, all redacted here. A later passkey sign-in returned `2fa_enabled=true`, included `pending_session_id`, and omitted access and refresh token fields.    |
+| Expiration                    | With `PASSKEY_CHALLENGE_TTL_SECONDS=1`, challenge `01KSECHK4BX8HYP4Z2ZE66SXP2` submitted after expiry returned HTTP 401 with detail `Invalid or expired passkey challenge.` and no access token field.                                     |
 
 ## Current Source Bridge
 
