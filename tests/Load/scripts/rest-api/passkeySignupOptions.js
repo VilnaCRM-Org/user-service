@@ -4,7 +4,6 @@ import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
 
 const scenarioName = 'passkeySignupOptions';
-const runId = Date.now();
 
 const utils = new Utils();
 const scenarioUtils = new ScenarioUtils(utils, scenarioName);
@@ -13,7 +12,7 @@ export const options = scenarioUtils.getOptions();
 
 export default function passkeySignupOptions() {
   const payload = JSON.stringify({
-    email: `passkey-signup-${runId}-${iterationId()}@example.test`,
+    email: utils.generateUniqueEmail(),
     initials: 'PasskeyLoad',
     displayName: 'Passkey Load',
   });
@@ -47,11 +46,4 @@ function parseJson(response) {
   } catch {
     return null;
   }
-}
-
-function iterationId() {
-  const vuId = typeof globalThis.__VU === 'number' ? globalThis.__VU : 1;
-  const iteration = typeof globalThis.__ITER === 'number' ? globalThis.__ITER : 0;
-
-  return `${vuId}-${iteration}`;
 }
