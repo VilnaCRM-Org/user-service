@@ -8,12 +8,9 @@ jobs:
   infection:
     name: Infection
     runs-on: ubuntu-latest
-    env:
-      COMPOSE_PROJECT_NAME: user-service-infection
-      COMPOSE_FILE: docker-compose.yml:docker-compose.memory-tests.yml
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start application
         run: make start

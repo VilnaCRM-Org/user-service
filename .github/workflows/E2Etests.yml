@@ -11,10 +11,13 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start Application
         run: make start
+
+      - name: Setup Test Database
+        run: make setup-test-db
 
       - name: Run Behat Tests
         run: make behat

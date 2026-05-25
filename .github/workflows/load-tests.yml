@@ -8,21 +8,15 @@ jobs:
   load-tests:
     name: K6
     runs-on: ubuntu-latest
-
-    env:
-      COMPOSE_PROJECT_NAME: user-service-load-tests
-      COMPOSE_FILE: docker-compose.yml:docker-compose.override.yml:docker-compose.load-tests.yml
-      LOAD_TEST_COMPOSE_PROJECT: user-service-load-tests
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Start application
-        run: make start
-
-      - name: Setup test db
-        run: make setup-load-test-db
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Run load tests
+        env:
+          API_HOST: localhost
+          API_PORT: 8081
         run: make smoke-load-tests
