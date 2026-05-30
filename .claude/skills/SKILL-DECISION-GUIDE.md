@@ -74,6 +74,7 @@ What are you trying to do?
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
+│   ├─ Implemented BMAD specs → bmad-fr-nfr-review-gate
 │   ├─ LLM architecture review → clean-architecture-llm
 │   ├─ Quality thresholds → quality-standards
 │   └─ Query performance → query-performance-analysis
@@ -213,6 +214,19 @@ This skill detects N+1 queries, analyzes slow queries with EXPLAIN, and identifi
 This skill systematically handles review feedback.
 
 **NOT**: ci-workflow (that's for running checks)
+
+---
+
+### "I implemented BMAD specs and need to verify FR/NFR coverage"
+
+**Use**: [bmad-fr-nfr-review-gate](bmad-fr-nfr-review-gate/SKILL.md)
+
+This skill checks implemented work against every BMAD FR/NFR, the pinned
+NonFunctionals.com categories, manual test evidence, GitHub review status, and
+CI status. It requires 5/5 for every applicable row before completion.
+
+**ALSO**: Use [code-review](code-review/SKILL.md) for PR comments and
+[ci-workflow](ci-workflow/SKILL.md) for local CI failures.
 
 ---
 
