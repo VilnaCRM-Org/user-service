@@ -75,6 +75,17 @@ if [[ -n "$manual_evidence" && ! -e "$manual_evidence" ]]; then
   exit 1
 fi
 
+if [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]]; then
+  if [[ -z "$impact_context" ]]; then
+    echo "AI_REVIEW_IMPACT_CONTEXT is required when GRAPH_IMPACT_CONTEXT: PASS is required." >&2
+    exit 1
+  fi
+  if [[ ! -r "$impact_context" ]]; then
+    echo "AI_REVIEW_IMPACT_CONTEXT is not readable: $impact_context" >&2
+    exit 1
+  fi
+fi
+
 # --- Parse agents ---------------------------------------------------------
 
 agents_raw="${AI_REVIEW_AGENTS:-${AI_REVIEW_AGENT:-codex}}"
@@ -516,6 +527,28 @@ review_has_graph_impact_context_evidence() {
   return 0
 }
 
+review_has_whole_codebase_graph_evidence() {
+  local file="$1"
+  local section impact_context_name
+
+  section="$(review_section_content "$file" "Whole-Codebase Impact Analysis")"
+  impact_context_name="$(basename "$impact_context")"
+
+  if grep -Fq -- "$impact_context" <<< "$section"; then
+    return 0
+  fi
+  if [[ -n "$impact_context_name" && "$impact_context_name" != "." ]] \
+    && grep -Fq -- "$impact_context_name" <<< "$section"; then
+    return 0
+  fi
+  if grep -Eiq -- 'Graphify|codebase-memory|Deptrac|CodeQL|SCIP|local relationship|relationship graph|wrapper-generated|graph artifact|graph context|relationship edge|direct symbol|caller|callee|reference edge' <<< "$section"; then
+    return 0
+  fi
+
+  echo "Warning: BMAD PASS output does not use graph or relationship evidence in Whole-Codebase Impact Analysis." >&2
+  return 1
+}
+
 score_at_or_above_threshold_regex() {
   local scores=() score joined
 
@@ -638,6 +671,10 @@ review_has_scorecard_evidence() {
 
   if [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] \
     && ! review_has_graph_impact_context_evidence "$file"; then
+    return 1
+  fi
+  if [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] \
+    && ! review_has_whole_codebase_graph_evidence "$file"; then
     return 1
   fi
 

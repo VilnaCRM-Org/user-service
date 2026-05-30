@@ -400,7 +400,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -801,7 +801,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -1255,7 +1255,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -1587,7 +1587,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -1730,7 +1730,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -1891,7 +1891,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2042,7 +2042,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2181,7 +2181,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2473,7 +2473,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2608,7 +2608,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2752,7 +2752,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2874,7 +2874,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -2981,7 +2981,7 @@ Expanded Quality Scorecard:
 - Functional Suitability: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3075,7 +3075,7 @@ Expanded Quality Scorecard:
 - Functional Suitability: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3117,7 +3117,9 @@ SCRIPT
 
 @test "ai-review-loop rejects PASS without graph impact context evidence" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local impact_context="${BATS_TEST_TMPDIR}/graph-context.md"
   mkdir -p "$bin_dir"
+  printf '%s\n' "wrapper-generated local relationship graph" > "$impact_context"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
 #!/usr/bin/env bash
@@ -3169,7 +3171,7 @@ Expanded Quality Scorecard:
 - Functional Suitability: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 
 Graph Impact Context:
 - Required graph impact context reviewed: 5/5 PASS
@@ -3206,11 +3208,140 @@ SCRIPT
     AI_REVIEW_NFR_CATEGORIES="Security" \
     AI_REVIEW_QUALITY_DIMENSIONS="Functional Suitability" \
     AI_REVIEW_IMPACT_SURFACES="Runtime paths" \
+    AI_REVIEW_IMPACT_CONTEXT="$impact_context" \
     AI_REVIEW_MAX_ITER=1 \
     bash -c "./scripts/ai-review-loop.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: BMAD PASS output lacks graph provider or graph artifact evidence."
+}
+
+@test "ai-review-loop requires impact context when graph marker is required" {
+  run env \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="GRAPH_IMPACT_CONTEXT: PASS" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "AI_REVIEW_IMPACT_CONTEXT is required when GRAPH_IMPACT_CONTEXT: PASS is required."
+}
+
+@test "ai-review-loop requires readable impact context when graph marker is required" {
+  run env \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="GRAPH_IMPACT_CONTEXT: PASS" \
+    AI_REVIEW_IMPACT_CONTEXT="${BATS_TEST_TMPDIR}/missing-graph-context.md" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "AI_REVIEW_IMPACT_CONTEXT is not readable: ${BATS_TEST_TMPDIR}/missing-graph-context.md"
+}
+
+@test "ai-review-loop rejects PASS when whole-codebase impact omits graph evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local impact_context="${BATS_TEST_TMPDIR}/graph-context.md"
+  mkdir -p "$bin_dir"
+  printf '%s\n' "wrapper-generated local relationship graph" > "$impact_context"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Security: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: changed files inspected: 5/5 PASS
+
+Graph Impact Context:
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,GRAPH_IMPACT_CONTEXT: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS" \
+    AI_REVIEW_NFR_CATEGORIES="Security" \
+    AI_REVIEW_QUALITY_DIMENSIONS="Functional Suitability" \
+    AI_REVIEW_IMPACT_SURFACES="Runtime paths" \
+    AI_REVIEW_IMPACT_CONTEXT="$impact_context" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output does not use graph or relationship evidence in Whole-Codebase Impact Analysis."
 }
 
 @test "ai-review-loop accepts bold markdown scorecard headings" {
@@ -3378,7 +3509,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -3512,7 +3643,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -3646,7 +3777,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -3780,7 +3911,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -3917,7 +4048,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -4055,7 +4186,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -4193,7 +4324,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -4490,7 +4621,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -4743,7 +4874,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -4921,7 +5052,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
@@ -5060,7 +5191,7 @@ Expanded Quality Scorecard:
 - AI Automation Governance: 5/5 PASS
 
 Whole-Codebase Impact Analysis:
-- Runtime paths: 5/5 PASS
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
 - Architecture and layer boundaries: 5/5 PASS
 - Domain model: 5/5 PASS
 - Persistence and database: 5/5 PASS
