@@ -170,10 +170,32 @@ if [[ -n "$impact_context" ]]; then
   fi
 fi
 
+resolve_default_base_ref() {
+  local detected_base=""
+  local pr_view_cmd=(gh pr view)
+
+  if [[ -n "$base_ref" ]]; then
+    return
+  fi
+
+  if command -v gh >/dev/null 2>&1; then
+    if [[ -n "$pr_number" ]]; then
+      pr_view_cmd+=("$pr_number")
+    fi
+    detected_base="$("${pr_view_cmd[@]}" --json baseRefName --jq .baseRefName 2>/dev/null || true)"
+  fi
+
+  if [[ -n "$detected_base" && "$detected_base" != "null" ]]; then
+    base_ref="origin/$detected_base"
+  else
+    base_ref="origin/main"
+  fi
+}
+
 ensure_impact_base_ref() {
   local impact_base remote branch
 
-  impact_base="${base_ref:-origin/main}"
+  impact_base="$base_ref"
   if git -C "$repo_root" rev-parse --verify "${impact_base}^{commit}" >/dev/null 2>&1; then
     printf "%s\n" "$impact_base"
     return
@@ -294,6 +316,8 @@ generate_impact_context() {
 
   printf "%s\n" "$output_file"
 }
+
+resolve_default_base_ref
 
 if [[ -z "$impact_context" ]]; then
   impact_context="$(generate_impact_context)"

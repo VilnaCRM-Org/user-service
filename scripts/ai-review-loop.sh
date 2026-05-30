@@ -491,6 +491,31 @@ review_section_has_text_with_score() {
     '
 }
 
+review_has_graph_impact_context_evidence() {
+  local file="$1"
+  local section
+
+  section="$(review_section_content "$file" "Graph Impact Context")"
+  if ! grep -Eiq -- 'Graphify|codebase-memory|Deptrac|CodeQL|SCIP|local relationship|relationship graph|wrapper-generated' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks graph provider or graph artifact evidence." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'artifact|path|context|graph\.json|codebase-graph-impact-context|BMAD_REVIEW_IMPACT_CONTEXT' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks graph artifact path evidence." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'edge|relationship|caller|callee|reference|direct symbol' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks changed-file relationship edge evidence." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'validated|inspected|source file|source files|source validation' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks source-file validation evidence for graph impact context." >&2
+    return 1
+  fi
+
+  return 0
+}
+
 score_at_or_above_threshold_regex() {
   local scores=() score joined
 
@@ -609,6 +634,11 @@ review_has_scorecard_evidence() {
         return 1
       fi
     done
+  fi
+
+  if [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] \
+    && ! review_has_graph_impact_context_evidence "$file"; then
+    return 1
   fi
 
   return 0

@@ -416,7 +416,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -817,7 +817,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1271,7 +1271,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1603,7 +1603,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1746,7 +1746,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1907,7 +1907,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2058,7 +2058,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2197,7 +2197,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2233,7 +2233,6 @@ SCRIPT
     AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS" \
     BMAD_REVIEW_SPEC_PATH="$spec_dir" \
     BMAD_REVIEW_PR=123 \
-    BMAD_REVIEW_BASE=HEAD \
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
@@ -2243,6 +2242,10 @@ SCRIPT
   assert_output --partial "AI review PASS."
 
   run grep -F "Use PR \`123\`" "$prompt_capture"
+  assert_success
+  run grep -F "against base ref \`refs/remotes/origin/main\`" "$prompt_capture"
+  assert_success
+  run grep -F "Base ref: origin/main" "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
   assert_success
   run grep -F "Passing threshold: every applicable FR, NFR, catalog category, expanded quality" "$prompt_capture"
   assert_success
@@ -2486,7 +2489,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2621,7 +2624,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2765,7 +2768,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Evidence exists but is not scored.
@@ -2887,7 +2890,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3112,6 +3115,104 @@ SCRIPT
   assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for impact surface: Documentation."
 }
 
+@test "ai-review-loop rejects PASS without graph impact context evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Security: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,GRAPH_IMPACT_CONTEXT: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS" \
+    AI_REVIEW_NFR_CATEGORIES="Security" \
+    AI_REVIEW_QUALITY_DIMENSIONS="Functional Suitability" \
+    AI_REVIEW_IMPACT_SURFACES="Runtime paths" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks graph provider or graph artifact evidence."
+}
+
 @test "ai-review-loop accepts bold markdown scorecard headings" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   mkdir -p "$bin_dir"
@@ -3293,7 +3394,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3427,7 +3528,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3561,7 +3662,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3695,7 +3796,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3832,7 +3933,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3970,7 +4071,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4108,7 +4209,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4405,7 +4506,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4658,7 +4759,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4836,7 +4937,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4975,7 +5076,7 @@ Whole-Codebase Impact Analysis:
 - Backward compatibility: 5/5 PASS
 
 Graph Impact Context:
-- Required graph impact context reviewed: 5/5 PASS
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
