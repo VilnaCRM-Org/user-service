@@ -452,11 +452,12 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 ```
 
 The gate requires every applicable FR/NFR, pinned NonFunctionals.com category,
-expanded quality dimension, whole-codebase impact surface, manual-test
-expectation, QA checkpoint, GitHub review gate, and CI gate to score 5/5 or
-have an explicit not-applicable reason with evidence.
+expanded quality dimension, graph-backed whole-codebase impact surface,
+manual-test expectation, QA checkpoint, GitHub review gate, and CI gate to
+score 5/5 or have an explicit not-applicable reason with evidence.
 Pass Graphify, codebase-memory, Deptrac, or manual relationship context with
-`BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md` when available.
+`BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md`, or let the wrapper generate a
+bounded local graph/relationship context.
 For PR runs, it publishes a bounded PR result comment and a
 `BMAD FR/NFR Review Gate` commit status by default; disable those only for dry
 runs with `BMAD_REVIEW_POST_PR_COMMENT=false` or

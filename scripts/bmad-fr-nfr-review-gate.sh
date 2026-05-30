@@ -20,7 +20,7 @@ Options:
   --verify-cmd COMMAND     Trusted verification command. Default: make ci.
   --log-dir PATH           Review log directory.
   --agents LIST            Comma-separated agents, e.g. codex,claude.
-  --impact-context PATH    Optional Graphify/codebase-memory/Deptrac impact context.
+  --impact-context PATH    Graphify/codebase-memory/Deptrac/manual graph impact context.
   --status-context NAME    GitHub status context for published gate results.
   -h, --help               Show this help.
 
@@ -37,7 +37,7 @@ USAGE
 bmad_nfr_categories="Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability"
 bmad_quality_dimensions="Functional Suitability, Performance Resource Sustainability, Compatibility Coexistence, Interaction Capability Accessibility, Reliability Resilience, Security Privacy Accountability, Maintainability Testability, Flexibility Portability, Safety Harm Prevention, Data Quality Integrity, Operational Excellence Releaseability, Observability Diagnosability, Supply-Chain Integrity, Compliance Governance, Sustainability Resource Impact, AI Automation Governance"
 bmad_impact_surfaces="Runtime paths, Architecture and layer boundaries, Domain model, Persistence and database, Public API and schema, Async events and queues, Configuration and environment, Dependencies and lockfiles, CI and workflows, Tests and fixtures, Documentation, Operations and observability, Security and privacy, Backward compatibility"
-bmad_required_gate_markers="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS"
+bmad_required_gate_markers="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,GRAPH_IMPACT_CONTEXT: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS"
 
 spec_path="${BMAD_REVIEW_SPEC_PATH:-${AI_REVIEW_SPEC_PATH:-}}"
 manual_evidence="${BMAD_REVIEW_MANUAL_EVIDENCE:-}"
@@ -170,37 +170,96 @@ if [[ -n "$impact_context" ]]; then
   fi
 fi
 
+ensure_impact_base_ref() {
+  local impact_base remote branch
+
+  impact_base="${base_ref:-origin/main}"
+  if git -C "$repo_root" rev-parse --verify "${impact_base}^{commit}" >/dev/null 2>&1; then
+    printf "%s\n" "$impact_base"
+    return
+  fi
+
+  if [[ "$impact_base" == */* ]] && git -C "$repo_root" remote get-url "${impact_base%%/*}" >/dev/null 2>&1; then
+    remote="${impact_base%%/*}"
+    branch="${impact_base#*/}"
+    git -C "$repo_root" fetch "$remote" "+refs/heads/$branch:refs/remotes/$remote/$branch" >/dev/null 2>&1 || true
+  elif [[ "$impact_base" != refs/* && ! "$impact_base" =~ ^HEAD([~^][0-9]*)*$ && ! "$impact_base" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+    git -C "$repo_root" fetch origin "+refs/heads/$impact_base:refs/remotes/origin/$impact_base" >/dev/null 2>&1 || true
+    if git -C "$repo_root" rev-parse --verify "origin/${impact_base}^{commit}" >/dev/null 2>&1; then
+      impact_base="origin/$impact_base"
+    fi
+  fi
+
+  if ! git -C "$repo_root" rev-parse --verify "${impact_base}^{commit}" >/dev/null 2>&1; then
+    echo "Error: Graph impact context requires a locally resolvable base ref: $impact_base" >&2
+    exit 1
+  fi
+
+  printf "%s\n" "$impact_base"
+}
+
+write_symbol_relationships() {
+  local changed_file="$1"
+  local basename_without_ext symbol
+
+  basename_without_ext="$(basename "$changed_file")"
+  basename_without_ext="${basename_without_ext%.*}"
+  symbol="$basename_without_ext"
+
+  if [[ "$changed_file" == *.php && -f "$repo_root/$changed_file" ]]; then
+    symbol="$(sed -nE 's/^[[:space:]]*(final[[:space:]]+|abstract[[:space:]]+)?(class|interface|trait|enum)[[:space:]]+([A-Za-z_][A-Za-z0-9_]*).*/\3/p' "$repo_root/$changed_file" | head -n 1)"
+    symbol="${symbol:-$basename_without_ext}"
+  fi
+
+  echo "### $changed_file"
+  echo
+  echo "- Symbol/query: \`$symbol\`"
+  echo "- Direct references (bounded):"
+  if [[ -n "$symbol" ]]; then
+    {
+      rg -n --fixed-strings "$symbol" "$repo_root" \
+        --glob '!vendor/**' \
+        --glob '!var/**' \
+        --glob '!node_modules/**' \
+        --glob '!graphify-out/**' \
+        --glob "!$changed_file" \
+        | sed "s#^$repo_root/##" \
+        | head -n 20
+    } || true
+  fi
+  echo
+}
+
 generate_impact_context() {
-  local output_dir output_file impact_base graph_report graph_json
+  local output_dir output_file impact_base graph_report graph_json changed_files_file
 
   output_dir="${log_dir:-$repo_root/var/ai-review}"
   mkdir -p "$output_dir"
-  output_file="$output_dir/codebase-impact-context.md"
-  impact_base="${base_ref:-origin/main}"
+  output_file="$output_dir/codebase-graph-impact-context.md"
+  impact_base="$(ensure_impact_base_ref)"
   graph_report="$repo_root/graphify-out/GRAPH_REPORT.md"
   graph_json="$repo_root/graphify-out/graph.json"
+  changed_files_file="$output_dir/codebase-graph-impact-changed-files.txt"
+  git -C "$repo_root" diff --name-only "$impact_base"...HEAD > "$changed_files_file"
 
   {
-    echo "# BMAD Whole-Codebase Impact Context"
+    echo "# BMAD Required Graph Impact Context"
     echo
     echo "- Base ref: $impact_base"
-    echo "- Head ref: $(git rev-parse HEAD 2>/dev/null || echo UNKNOWN)"
+    echo "- Head ref: $(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo UNKNOWN)"
     echo "- Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "- Requirement: BMAD review must use graph or relationship evidence before scoring whole-codebase impact."
     echo
     echo "## Changed Files"
     echo
-    if git rev-parse --verify "${impact_base}^{commit}" >/dev/null 2>&1; then
-      git diff --name-status "$impact_base"...HEAD || true
-    else
-      echo "Base ref was not locally available during wrapper context generation."
-    fi
+    git -C "$repo_root" diff --name-status "$impact_base"...HEAD || true
     echo
-    echo "## Knowledge Graph Context"
+    echo "## Knowledge Graph Artifacts"
     echo
     if [[ -f "$graph_report" ]]; then
       echo "- Graphify report: $graph_report"
     else
-      echo "- Graphify report: not present. Optional generation: graphify extract . --force"
+      echo "- Graphify report: not present. Additional generation command: graphify extract . --force"
     fi
     if [[ -f "$graph_json" ]]; then
       echo "- Graphify graph JSON: $graph_json"
@@ -211,11 +270,20 @@ generate_impact_context() {
       echo "- Deptrac architecture config: $repo_root/deptrac.yaml"
       echo "- Suggested architecture graph command: make deptrac or vendor deptrac graphviz formatter in CI/container context."
     fi
-    echo "- codebase-memory-mcp can be used as an optional local MCP/CLI graph for caller/callee and impact queries when installed."
+    echo "- codebase-memory-mcp can be used as a local MCP/CLI graph for caller/callee and impact queries when installed."
+    echo
+    echo "## Required Local Relationship Graph"
+    echo
+    echo "The wrapper generated this bounded relationship graph from changed files and direct symbol references. Reviewers must validate these edges against source before scoring."
+    echo
+    while IFS= read -r changed_file || [[ -n "$changed_file" ]]; do
+      [[ -z "$changed_file" ]] && continue
+      write_symbol_relationships "$changed_file"
+    done < "$changed_files_file"
     echo
     echo "## Reviewer Instruction"
     echo
-    echo "Use this file as starting context only. The BMAD reviewer must still inspect related files through git, rg, tests, specs, docs, dependency metadata, and any available graph artifacts before scoring whole-codebase impact."
+    echo "Use this graph context as required starting evidence. The BMAD reviewer must still inspect related files through git, rg, tests, specs, docs, dependency metadata, and graph artifacts before scoring whole-codebase impact."
     if [[ -f "$graph_report" ]]; then
       echo
       echo "## Graphify Report Excerpt"

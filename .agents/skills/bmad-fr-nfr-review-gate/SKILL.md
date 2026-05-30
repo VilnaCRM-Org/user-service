@@ -39,9 +39,10 @@ unless every applicable FR, NFR, pinned NonFunctionals.com category, expanded
 quality dimension, whole-codebase impact surface, QA checkpoint, manual-test
 requirement, GitHub completion gate, and CI gate has 5/5 evidence or an
 explicit not-applicable reason with source evidence.
+Graph/relationship evidence is mandatory for whole-codebase impact scoring.
 Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or similar
 tools can be supplied through `BMAD_REVIEW_IMPACT_CONTEXT`; otherwise the
-wrapper creates a lightweight changed-file impact context.
+wrapper creates a bounded local graph/relationship impact context.
 For BMAD wrapper runs, PR comment and GitHub commit-status publishing default
 to on, so final results remain visible on the pull request.
 

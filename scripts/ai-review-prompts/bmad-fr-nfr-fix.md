@@ -12,12 +12,13 @@ Review context:
 - NFR catalog categories: `{NFR_CATEGORIES}`
 - Expanded quality dimensions: `{QUALITY_DIMENSIONS}`
 - Whole-codebase impact surfaces: `{IMPACT_SURFACES}`
-- Whole-codebase impact context: `{IMPACT_CONTEXT}`
+- Required graph-backed impact context: `{IMPACT_CONTEXT}`
 
 The reviewer now checks more than the changed diff. It requires evidence for
 the pinned NonFunctionals.com catalog, expanded ISO/wider quality dimensions,
-and related whole-codebase impact surfaces. Treat missing impact evidence as a
-blocker when the latest review marks it below `{SCORE_THRESHOLD}/5`.
+graph/relationship context, and related whole-codebase impact surfaces. Treat
+missing graph or impact evidence as a blocker when the latest review marks it
+below `{SCORE_THRESHOLD}/5`.
 
 Constraints:
 

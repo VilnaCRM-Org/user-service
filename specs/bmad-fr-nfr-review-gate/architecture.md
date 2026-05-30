@@ -63,7 +63,7 @@ second agent orchestration implementation.
 | `BMAD_REVIEW_MAX_ITER`                | Optional max loop iterations.                                                        |
 | `BMAD_REVIEW_VERIFY_CMD`              | Optional trusted verification command.                                               |
 | `BMAD_REVIEW_LOG_DIR`                 | Optional log directory.                                                              |
-| `BMAD_REVIEW_IMPACT_CONTEXT`          | Optional Graphify/codebase-memory/Deptrac or manual impact context file.             |
+| `BMAD_REVIEW_IMPACT_CONTEXT`          | Graphify/codebase-memory/Deptrac or manual graph impact context file.                |
 | `BMAD_REVIEW_POST_PR_COMMENT`         | Optional PR comment publishing toggle, default `true`.                               |
 | `BMAD_REVIEW_POST_GITHUB_STATUS`      | Optional GitHub commit-status publishing toggle, default `true`.                     |
 | `BMAD_REVIEW_STATUS_CONTEXT`          | Optional commit-status context, default `BMAD FR/NFR Review Gate`.                   |
@@ -80,9 +80,10 @@ second agent orchestration implementation.
   `composer.json` constraints, must be traced in manual evidence instead of
   being treated as gate implementation.
 - Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, and
-  similar graph/index tools are optional context providers. The wrapper creates
-  a lightweight changed-file impact context when no graph artifact is supplied,
-  so the gate remains usable in minimal local and CI environments.
+  similar graph/index tools are context providers. The wrapper creates a
+  bounded local graph/relationship impact context when no graph artifact is
+  supplied, so graph-backed impact analysis remains usable in minimal local and
+  CI environments.
 
 ## Security
 

@@ -64,21 +64,20 @@ Primary references:
 
 ## Knowledge Graph and Impact Context
 
-The gate should not depend on one graph product to pass, but it should be able
-to consume graph context when present.
+The gate should require graph/relationship evidence for impact scoring without
+depending on one external graph product to pass.
 
-- Graphify is a practical optional choice for multimodal codebase graphs. Its
+- Graphify is a practical choice for multimodal codebase graphs. Its
   current public docs describe a graph builder for code, docs, PDFs, screenshots,
   diagrams, and transcripts, with exportable `graph.html`, `graph.json`, and
   `GRAPH_REPORT.md` artifacts. The same docs describe AST edges, imports, calls,
   classes, docstrings, rationale comments, community clustering, god-node
   detection, and surprise paths. Source: https://graphify.homes/en
-- Graphify should remain optional for this gate because the hosted quick start
-  uses ZIP upload, packaging/integration details are moving quickly, and BMAD
-  review must work in local and CI environments that cannot send private code to
-  a third-party service. When a locally generated Graphify report is available,
-  `BMAD_REVIEW_IMPACT_CONTEXT` can pass it to the reviewer as supporting
-  relationship evidence.
+- Graphify should remain one provider, not the only required provider, because
+  BMAD review must work in local and CI environments that cannot send private
+  code to a third-party service. When a locally generated Graphify report is
+  available, `BMAD_REVIEW_IMPACT_CONTEXT` can pass it to the reviewer as
+  supporting relationship evidence.
 - codebase-memory MCP is a strong local alternative for impact queries. Its
   current README describes a local tree-sitter and hybrid-LSP knowledge graph
   with PHP support, call chains, HTTP routes, cross-service links, 14 MCP tools,
@@ -92,20 +91,22 @@ to consume graph context when present.
   adding a new dependency to the BMAD gate.
 
 The implemented wrapper therefore accepts `BMAD_REVIEW_IMPACT_CONTEXT` and
-otherwise creates a lightweight `codebase-impact-context.md` containing the
-base/head, changed files, and available graph artifact pointers. The reviewer
+otherwise creates a required `codebase-graph-impact-context.md` containing the
+base/head, changed files, graph artifact pointers, and a bounded local
+relationship graph from changed files to direct symbol references. The reviewer
 must still inspect related runtime paths, architecture boundaries, contracts,
 data paths, config, dependencies, tests, docs, operations, security/privacy, and
 backward-compatibility surfaces before scoring impact.
 
 Recommended adoption order:
 
-1. Keep the current built-in impact handoff as the mandatory baseline.
+1. Keep the built-in graph/relationship impact handoff as the mandatory
+   baseline.
 2. Prefer deterministic repo-native evidence first: `git diff`, `rg`, Deptrac,
    tests, specs, docs, CI workflows, dependency metadata, and architecture
    rules.
-3. Add optional Graphify or codebase-memory artifacts when they are available
-   and locally safe to generate.
+3. Add Graphify or codebase-memory artifacts when they are available and
+   locally safe to generate.
 4. Fail the gate only when related codebase surfaces are not inspected or
    explicitly ruled out, not because one named graph tool is unavailable.
 

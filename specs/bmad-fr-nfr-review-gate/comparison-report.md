@@ -82,11 +82,12 @@ It explicitly reviewed and scored:
   dependencies, CI/workflows, tests, docs, operations, security/privacy, and
   backward compatibility.
 
-The expanded reviewer used the generated impact context plus manual repository
-relationship checks because Graphify/codebase-memory/CodeQL/SCIP artifacts were
-not present. It inspected related passkey runtime paths, rate-limit resolver
-changes, public contracts, docs, CI workflows, dependency/lockfile scope, and
-operations evidence instead of limiting the review to changed-file names.
+The expanded reviewer used the generated graph/relationship context plus manual
+repository relationship checks because Graphify/codebase-memory/CodeQL/SCIP
+artifacts were not present. It inspected related passkey runtime paths,
+rate-limit resolver changes, public contracts, docs, CI workflows,
+dependency/lockfile scope, and operations evidence instead of limiting the
+review to changed-file names.
 
 ## Gate Robustness Finding
 
@@ -104,17 +105,21 @@ The saved expanded report validates successfully after that parser fix.
 
 ## Knowledge Graph Investigation
 
-Graphify is useful as optional context but should not be a hard PASS/FAIL
-dependency yet. Recommended layering:
+Graph/relationship evidence is now a required part of BMAD impact review, but
+Graphify itself should remain one provider rather than a hard external
+dependency. Recommended layering:
 
 1. Use deterministic repo-native context first: changed files, `rg`, specs,
    tests, docs, CI workflows, dependency metadata, and Deptrac architecture
    rules.
-2. Accept optional graph output through `BMAD_REVIEW_IMPACT_CONTEXT`.
-3. Use Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or
+2. Accept supplied graph output through `BMAD_REVIEW_IMPACT_CONTEXT`.
+3. Generate a bounded local graph/relationship context when no external graph
+   artifact is supplied.
+4. Use Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or
    comparable tools as supporting relationship evidence when available.
-4. Fail only when the reviewer cannot inspect or explicitly rule out affected
-   codebase surfaces, not when a specific graph tool is absent.
+5. Fail only when graph/relationship evidence is missing or the reviewer cannot
+   inspect or explicitly rule out affected codebase surfaces, not when a
+   specific graph tool is absent.
 
 Current source recheck on 2026-05-30:
 
@@ -130,8 +135,8 @@ Current source recheck on 2026-05-30:
   https://arxiv.org/abs/2603.27277
 - The BMAD gate therefore uses `BMAD_REVIEW_IMPACT_CONTEXT` as the integration
   boundary. A Graphify, codebase-memory, Deptrac, CodeQL, SCIP, or manual graph
-  artifact can improve evidence, while the gate remains deterministic when no
-  optional graph tool is installed.
+  artifact can improve evidence, while the wrapper-generated local relationship
+  graph keeps the gate deterministic when no external graph tool is installed.
 
 ## Conclusion
 

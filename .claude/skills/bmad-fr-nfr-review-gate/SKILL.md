@@ -17,7 +17,7 @@ completion until all applicable rows score 5/5.
 - Optional manual evidence: `BMAD_REVIEW_MANUAL_EVIDENCE=<path>`
 - Optional PR number: `BMAD_REVIEW_PR=<number>`
 - Optional base ref: `BMAD_REVIEW_BASE=<base-ref>`
-- Optional impact context from Graphify/codebase-memory/Deptrac/manual notes:
+- Graph impact context from Graphify/codebase-memory/Deptrac/manual notes:
   `BMAD_REVIEW_IMPACT_CONTEXT=<path>`
 - Optional publishing toggles: `BMAD_REVIEW_POST_PR_COMMENT=true|false` and
   `BMAD_REVIEW_POST_GITHUB_STATUS=true|false` (BMAD wrapper defaults both to
@@ -71,10 +71,12 @@ public API/schema, async events/queues, config/env, dependencies/lockfiles,
 CI/workflows, tests/fixtures, docs, operations/observability,
 security/privacy, and backward compatibility.
 
+Graph/relationship evidence is required for whole-codebase impact scoring.
 Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or similar
 tools can be supplied as impact context. If no context is supplied, the wrapper
-generates a lightweight changed-file context file; the reviewer still has to
-inspect related code rather than relying only on changed files.
+generates a bounded local graph/relationship context from changed files and
+direct symbol references; the reviewer still has to inspect related code rather
+than relying only on changed files.
 
 ## Scoring Contract
 
@@ -132,6 +134,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS

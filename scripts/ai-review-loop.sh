@@ -403,7 +403,7 @@ review_section_content() {
       sub(/\*\*[[:space:]]*$/, "", heading)
     }
     heading ~ "^(#+[[:space:]]*)?" section ":" { in_section = 1; print; next }
-    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|Whole-Codebase Impact Analysis|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
+    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|Whole-Codebase Impact Analysis|Graph Impact Context|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
     in_section { print }
   ' "$file"
 }
@@ -520,6 +520,7 @@ review_has_scorecard_evidence() {
 
   [[ -n "$quality_dimensions" ]] && score_sections+=("Expanded Quality Scorecard")
   [[ -n "$impact_surfaces" ]] && score_sections+=("Whole-Codebase Impact Analysis")
+  [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] && score_sections+=("Graph Impact Context")
 
   local evidence_markers=(
     "FR_NFR_MIN_SCORE: ${score_threshold}/5" \
@@ -549,6 +550,7 @@ review_has_scorecard_evidence() {
 
   [[ -n "$quality_dimensions" ]] && required_sections+=("Expanded Quality Scorecard:")
   [[ -n "$impact_surfaces" ]] && required_sections+=("Whole-Codebase Impact Analysis:")
+  [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] && required_sections+=("Graph Impact Context:")
 
   for section in "${required_sections[@]}"; do
     if ! grep -Fq -- "$section" "$file"; then

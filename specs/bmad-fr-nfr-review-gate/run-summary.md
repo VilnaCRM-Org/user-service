@@ -39,9 +39,9 @@ revision: 2
   architecture layers, domain/persistence surfaces, API/schema contracts,
   config, dependencies, CI, tests, docs, operations, security/privacy, and
   backward compatibility instead of reviewing only changed files.
-- Allow optional Graphify, codebase-memory MCP, Deptrac, or equivalent graph
-  context through `BMAD_REVIEW_IMPACT_CONTEXT`, with a generated changed-file
-  impact handoff when no graph artifact is supplied.
+- Require graph/relationship impact evidence through
+  `BMAD_REVIEW_IMPACT_CONTEXT` or the wrapper-generated local relationship
+  graph when no graph artifact is supplied.
 - Require 5/5 for all applicable FR/NFR rows and fail closed on missing
   evidence.
 - Force BMAD mode to ignore generic review-loop downgrades for threshold,

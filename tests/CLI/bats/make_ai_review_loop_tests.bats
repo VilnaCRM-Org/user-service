@@ -354,6 +354,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -413,6 +414,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -751,6 +755,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -810,6 +815,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1201,6 +1209,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -1260,6 +1269,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1529,6 +1541,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -1588,6 +1601,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1668,6 +1684,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -1727,6 +1744,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1825,6 +1845,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -1884,6 +1905,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1972,6 +1996,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2031,6 +2056,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2107,6 +2135,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2167,6 +2196,9 @@ Whole-Codebase Impact Analysis:
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
 
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
+
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
 - Not applicable for shell validation fixture.
@@ -2222,7 +2254,15 @@ SCRIPT
   assert_success
   run grep -F "Runtime paths, Architecture and layer boundaries" "$prompt_capture"
   assert_success
-  run grep -F "Whole-codebase impact context is at" "$prompt_capture"
+  run grep -F "Required graph-backed whole-codebase impact context is at" "$prompt_capture"
+  assert_success
+  run grep -F "GRAPH_IMPACT_CONTEXT: PASS" "$prompt_capture"
+  assert_success
+  run test -f "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
+  assert_success
+  run grep -F "BMAD Required Graph Impact Context" "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
+  assert_success
+  run grep -F "Required Local Relationship Graph" "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
   assert_success
 }
 
@@ -2319,6 +2359,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2383,6 +2424,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2442,6 +2484,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2516,6 +2561,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2573,6 +2619,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2655,6 +2704,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2713,6 +2763,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Evidence exists but is not scored.
@@ -2781,6 +2834,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2831,6 +2885,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2899,6 +2956,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2992,6 +3050,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3169,6 +3228,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3231,6 +3291,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3299,6 +3362,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3361,6 +3425,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3429,6 +3496,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3491,6 +3559,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3559,6 +3630,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3621,6 +3693,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3692,6 +3767,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3754,6 +3830,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3829,6 +3908,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -3888,6 +3968,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3963,6 +4046,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -4022,6 +4106,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4257,6 +4344,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -4315,6 +4403,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4505,6 +4596,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -4564,6 +4656,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4679,6 +4774,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -4738,6 +4834,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -4814,6 +4913,7 @@ FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -4873,6 +4973,9 @@ Whole-Codebase Impact Analysis:
 - Operations and observability: 5/5 PASS
 - Security and privacy: 5/5 PASS
 - Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Required graph impact context reviewed: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
