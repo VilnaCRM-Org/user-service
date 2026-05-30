@@ -2,8 +2,8 @@
 workflowType: research
 project_name: BMAD FR/NFR Review Gate
 author: Codex
-date: 2026-05-17
-revision: 1
+date: 2026-05-30
+revision: 2
 ---
 
 # Research: BMAD FR/NFR Review Gate
@@ -67,14 +67,26 @@ Primary references:
 The gate should not depend on one graph product to pass, but it should be able
 to consume graph context when present.
 
-- Graphify is a practical optional choice for multimodal codebase graphs. It
-  can build `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, and an
-  interactive graph from code, docs, PDFs, images, and diagrams. It supports
-  Codex instructions and query commands, but its LLM-backed document extraction
-  and fast-moving packaging make it better as optional review context than a
-  hard PASS/FAIL dependency.
-- codebase-memory MCP is a strong future fit for local tree-sitter/MCP impact
-  queries such as callers, callees, communities, and changed-symbol impact.
+- Graphify is a practical optional choice for multimodal codebase graphs. Its
+  current public docs describe a graph builder for code, docs, PDFs, screenshots,
+  diagrams, and transcripts, with exportable `graph.html`, `graph.json`, and
+  `GRAPH_REPORT.md` artifacts. The same docs describe AST edges, imports, calls,
+  classes, docstrings, rationale comments, community clustering, god-node
+  detection, and surprise paths. Source: https://graphify.homes/en
+- Graphify should remain optional for this gate because the hosted quick start
+  uses ZIP upload, packaging/integration details are moving quickly, and BMAD
+  review must work in local and CI environments that cannot send private code to
+  a third-party service. When a locally generated Graphify report is available,
+  `BMAD_REVIEW_IMPACT_CONTEXT` can pass it to the reviewer as supporting
+  relationship evidence.
+- codebase-memory MCP is a strong local alternative for impact queries. Its
+  current README describes a local tree-sitter and hybrid-LSP knowledge graph
+  with PHP support, call chains, HTTP routes, cross-service links, 14 MCP tools,
+  and `detect_changes` impact mapping. The accompanying 2026 arXiv preprint
+  describes a persistent tree-sitter graph via MCP, call-graph traversal, impact
+  analysis, and community discovery. Sources:
+  https://github.com/DeusData/codebase-memory-mcp and
+  https://arxiv.org/abs/2603.27277
 - Deptrac is the deterministic baseline already aligned with this repository's
   architecture rules. Its graph output can explain DDD layer impact without
   adding a new dependency to the BMAD gate.
@@ -85,6 +97,17 @@ base/head, changed files, and available graph artifact pointers. The reviewer
 must still inspect related runtime paths, architecture boundaries, contracts,
 data paths, config, dependencies, tests, docs, operations, security/privacy, and
 backward-compatibility surfaces before scoring impact.
+
+Recommended adoption order:
+
+1. Keep the current built-in impact handoff as the mandatory baseline.
+2. Prefer deterministic repo-native evidence first: `git diff`, `rg`, Deptrac,
+   tests, specs, docs, CI workflows, dependency metadata, and architecture
+   rules.
+3. Add optional Graphify or codebase-memory artifacts when they are available
+   and locally safe to generate.
+4. Fail the gate only when related codebase surfaces are not inspected or
+   explicitly ruled out, not because one named graph tool is unavailable.
 
 ## Integration Points
 

@@ -3,7 +3,7 @@ workflowType: comparison-report
 project_name: BMAD FR/NFR Review Gate
 author: Codex
 date: 2026-05-30
-revision: 1
+revision: 2
 ---
 
 # Comparison Report: Expanded BMAD Reviewer
@@ -115,6 +115,23 @@ dependency yet. Recommended layering:
    comparable tools as supporting relationship evidence when available.
 4. Fail only when the reviewer cannot inspect or explicitly rule out affected
    codebase surfaces, not when a specific graph tool is absent.
+
+Current source recheck on 2026-05-30:
+
+- Graphify's public docs describe an open-source knowledge graph skill for code,
+  docs, PDFs, screenshots, diagrams, and transcripts, with exportable
+  `graph.html`, `graph.json`, and `GRAPH_REPORT.md` artifacts plus AST/import/
+  call/class/docstring/rationale edges. Source: https://graphify.homes/en
+- codebase-memory MCP is the stronger local-first alternative for CI-safe code
+  impact review because its README describes local tree-sitter and hybrid-LSP
+  indexing, PHP support, call chains, HTTP routes, cross-service links, and a
+  `detect_changes` impact tool. Sources:
+  https://github.com/DeusData/codebase-memory-mcp and
+  https://arxiv.org/abs/2603.27277
+- The BMAD gate therefore uses `BMAD_REVIEW_IMPACT_CONTEXT` as the integration
+  boundary. A Graphify, codebase-memory, Deptrac, CodeQL, SCIP, or manual graph
+  artifact can improve evidence, while the gate remains deterministic when no
+  optional graph tool is installed.
 
 ## Conclusion
 
