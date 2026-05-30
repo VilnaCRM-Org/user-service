@@ -317,6 +317,13 @@ generate_impact_context() {
   printf "%s\n" "$output_file"
 }
 
+write_fenced_block() {
+  local language="$1"
+  local content="$2"
+
+  printf "\`\`\`%s\n%s\n\`\`\`\n" "$language" "$content"
+}
+
 write_github_corroboration_context() {
   local output_dir output_file
   local pr_view_cmd=(gh pr view)
@@ -352,7 +359,7 @@ write_github_corroboration_context() {
       echo
       if pr_summary="$("${pr_view_cmd[@]}" \
         --json number,isDraft,reviewDecision,url,headRefName,headRefOid,baseRefName,mergeStateStatus \
-        --jq '[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | @tsv' 2>&1)"; then
+        --jq "[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | @tsv" 2>&1)"; then
         IFS=$'\t' read -r pr_number_detected is_draft review_decision pr_url head_ref pr_head_oid base_ref_name merge_state <<< "$pr_summary"
         local_head_oid="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo UNKNOWN)"
         echo "- PR number: ${pr_number_detected:-UNKNOWN}"
@@ -367,7 +374,7 @@ write_github_corroboration_context() {
         echo "- Merge state: ${merge_state:-UNKNOWN}"
       else
         echo "- PR state query failed:"
-        printf '```text\n%s\n```\n' "$pr_summary"
+        write_fenced_block "text" "$pr_summary"
       fi
       echo
 
@@ -376,11 +383,11 @@ write_github_corroboration_context() {
       if required_checks="$("${pr_checks_cmd[@]}" \
         --required \
         --json name,state,bucket,workflow,link \
-        --jq '.' 2>&1)"; then
-        printf '```json\n%s\n```\n' "$required_checks"
+        --jq "." 2>&1)"; then
+        write_fenced_block "json" "$required_checks"
       else
         echo "- Required-check query failed:"
-        printf '```text\n%s\n```\n' "$required_checks"
+        write_fenced_block "text" "$required_checks"
       fi
       echo
 
@@ -388,11 +395,11 @@ write_github_corroboration_context() {
       echo
       if all_checks="$("${pr_checks_cmd[@]}" \
         --json name,state,bucket,workflow,link \
-        --jq '.' 2>&1)"; then
-        printf '```json\n%s\n```\n' "$all_checks"
+        --jq "." 2>&1)"; then
+        write_fenced_block "json" "$all_checks"
       else
         echo "- Visible-check query failed:"
-        printf '```text\n%s\n```\n' "$all_checks"
+        write_fenced_block "text" "$all_checks"
       fi
       echo
 
@@ -404,18 +411,18 @@ write_github_corroboration_context() {
         owner="${pr_path%%/*}"
         pr_path="${pr_path#*/}"
         repo="${pr_path%%/*}"
-        query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { reviewThreads(first:100) { nodes { isResolved isOutdated } } } } }'
+        query="query(\$owner:String!, \$repo:String!, \$number:Int!) { repository(owner:\$owner, name:\$repo) { pullRequest(number:\$number) { reviewThreads(first:100) { nodes { isResolved isOutdated } } } } }"
         if thread_summary="$(gh api graphql \
           -f query="$query" \
           -f owner="$owner" \
           -f repo="$repo" \
           -F number="$pr_number_detected" \
-          --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), ([.data.repository.pullRequest.reviewThreads.nodes[]?] | length)] | @tsv' 2>&1)"; then
+          --jq "[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), ([.data.repository.pullRequest.reviewThreads.nodes[]?] | length)] | @tsv" 2>&1)"; then
           echo "- Active unresolved threads / total first page:"
-          printf '```text\n%s\n```\n' "$thread_summary"
+          write_fenced_block "text" "$thread_summary"
         else
           echo "- Review-thread query failed:"
-          printf '```text\n%s\n```\n' "$thread_summary"
+          write_fenced_block "text" "$thread_summary"
         fi
       else
         echo "- Review-thread query skipped because PR URL or number was unavailable."
