@@ -317,11 +317,148 @@ generate_impact_context() {
   printf "%s\n" "$output_file"
 }
 
+write_github_corroboration_context() {
+  local output_dir output_file
+  local pr_view_cmd=(gh pr view)
+  local pr_checks_cmd=(gh pr checks)
+  local pr_summary pr_number_detected is_draft review_decision pr_url pr_head_oid
+  local head_ref base_ref_name merge_state local_head_oid
+  local required_checks all_checks pr_path owner repo query thread_summary
+
+  output_dir="${log_dir:-$repo_root/var/ai-review}"
+  mkdir -p "$output_dir"
+  output_file="$output_dir/github-corroboration-context.md"
+
+  {
+    echo "# BMAD GitHub/CI Corroboration Context"
+    echo
+    echo "- Generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "- Source: parent BMAD wrapper process before launching the AI reviewer."
+    echo "- Purpose: give the reviewer durable GitHub completion and CI evidence when the child agent sandbox cannot access the local gh keyring."
+    echo "- Status context excluded from CI checks: \`$status_excluded_context\`"
+    echo
+
+    if ! command -v gh >/dev/null 2>&1; then
+      echo "## GitHub CLI"
+      echo
+      echo "- gh CLI unavailable in the parent wrapper environment."
+    else
+      if [[ -n "$pr_number" ]]; then
+        pr_view_cmd+=("$pr_number")
+        pr_checks_cmd+=("$pr_number")
+      fi
+
+      echo "## PR State"
+      echo
+      if pr_summary="$("${pr_view_cmd[@]}" \
+        --json number,isDraft,reviewDecision,url,headRefName,headRefOid,baseRefName,mergeStateStatus \
+        --jq '[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | @tsv' 2>&1)"; then
+        IFS=$'\t' read -r pr_number_detected is_draft review_decision pr_url head_ref pr_head_oid base_ref_name merge_state <<< "$pr_summary"
+        local_head_oid="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo UNKNOWN)"
+        echo "- PR number: ${pr_number_detected:-UNKNOWN}"
+        echo "- URL: ${pr_url:-UNKNOWN}"
+        echo "- Draft: ${is_draft:-UNKNOWN}"
+        echo "- Review decision: ${review_decision:-UNKNOWN}"
+        echo "- Head ref: ${head_ref:-UNKNOWN}"
+        echo "- Head SHA: ${pr_head_oid:-UNKNOWN}"
+        echo "- Local HEAD: $local_head_oid"
+        echo "- Head matches local: $([[ "$local_head_oid" == "$pr_head_oid" ]] && echo yes || echo no)"
+        echo "- Base ref: ${base_ref_name:-UNKNOWN}"
+        echo "- Merge state: ${merge_state:-UNKNOWN}"
+      else
+        echo "- PR state query failed:"
+        printf '```text\n%s\n```\n' "$pr_summary"
+      fi
+      echo
+
+      echo "## Required Check Rollup"
+      echo
+      if required_checks="$("${pr_checks_cmd[@]}" \
+        --required \
+        --json name,state,bucket,workflow,link \
+        --jq '.' 2>&1)"; then
+        printf '```json\n%s\n```\n' "$required_checks"
+      else
+        echo "- Required-check query failed:"
+        printf '```text\n%s\n```\n' "$required_checks"
+      fi
+      echo
+
+      echo "## Full Visible Check Rollup"
+      echo
+      if all_checks="$("${pr_checks_cmd[@]}" \
+        --json name,state,bucket,workflow,link \
+        --jq '.' 2>&1)"; then
+        printf '```json\n%s\n```\n' "$all_checks"
+      else
+        echo "- Visible-check query failed:"
+        printf '```text\n%s\n```\n' "$all_checks"
+      fi
+      echo
+
+      echo "## Review Threads"
+      echo
+      if [[ -n "${pr_url:-}" && -n "${pr_number_detected:-}" ]]; then
+        pr_path="${pr_url#*://}"
+        pr_path="${pr_path#*/}"
+        owner="${pr_path%%/*}"
+        pr_path="${pr_path#*/}"
+        repo="${pr_path%%/*}"
+        query='query($owner:String!, $repo:String!, $number:Int!) { repository(owner:$owner, name:$repo) { pullRequest(number:$number) { reviewThreads(first:100) { nodes { isResolved isOutdated } } } } }'
+        if thread_summary="$(gh api graphql \
+          -f query="$query" \
+          -f owner="$owner" \
+          -f repo="$repo" \
+          -F number="$pr_number_detected" \
+          --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), ([.data.repository.pullRequest.reviewThreads.nodes[]?] | length)] | @tsv' 2>&1)"; then
+          echo "- Active unresolved threads / total first page:"
+          printf '```text\n%s\n```\n' "$thread_summary"
+        else
+          echo "- Review-thread query failed:"
+          printf '```text\n%s\n```\n' "$thread_summary"
+        fi
+      else
+        echo "- Review-thread query skipped because PR URL or number was unavailable."
+      fi
+    fi
+  } > "$output_file"
+
+  printf "%s\n" "$output_file"
+}
+
+augment_impact_context_with_github_corroboration() {
+  local output_dir combined_context github_context original_context
+
+  original_context="$impact_context"
+  output_dir="${log_dir:-$repo_root/var/ai-review}"
+  mkdir -p "$output_dir"
+  github_context="$(write_github_corroboration_context)"
+  combined_context="$output_dir/bmad-required-impact-and-github-context.md"
+
+  {
+    echo "# BMAD Required Impact And GitHub Context"
+    echo
+    echo "- Original graph/impact context: $original_context"
+    echo "- GitHub/CI corroboration context: $github_context"
+    echo
+    echo "## Graph/Impact Context"
+    echo
+    sed -n '1,20000p' "$original_context"
+    echo
+    echo "## GitHub/CI Corroboration Context"
+    echo
+    sed -n '1,20000p' "$github_context"
+  } > "$combined_context"
+
+  impact_context="$combined_context"
+}
+
 resolve_default_base_ref
 
 if [[ -z "$impact_context" ]]; then
   impact_context="$(generate_impact_context)"
 fi
+augment_impact_context_with_github_corroboration
 
 export AI_REVIEW_REVIEW_PROMPT="$script_dir/ai-review-prompts/bmad-fr-nfr-review.md"
 export AI_REVIEW_FIX_PROMPT="$script_dir/ai-review-prompts/bmad-fr-nfr-fix.md"

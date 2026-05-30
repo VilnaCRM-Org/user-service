@@ -7,6 +7,12 @@ Required graph-backed whole-codebase impact context is at `{IMPACT_CONTEXT}`.
 The review loop publishes its own GitHub status as `{STATUS_CONTEXT}` and
 excludes check context `{STATUS_EXCLUDED_CONTEXT}` from PR check
 corroboration.
+The impact context may also include wrapper-generated GitHub/CI corroboration
+captured by the parent BMAD process before launching the AI reviewer. Prefer
+direct GitHub queries when available, but if the child agent sandbox cannot
+access `gh` authentication, use that wrapper-generated PR state, review-thread,
+and check-rollup evidence instead. The wrapper still independently validates
+GitHub review/check state before and after AI review.
 
 The NonFunctionals.com catalog categories are pinned for this repository as:
 {NFR_CATEGORIES}

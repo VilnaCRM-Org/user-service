@@ -2259,13 +2259,19 @@ SCRIPT
   assert_success
   run grep -F "Required graph-backed whole-codebase impact context is at" "$prompt_capture"
   assert_success
+  run grep -F "wrapper-generated GitHub/CI corroboration" "$prompt_capture"
+  assert_success
   run grep -F "GRAPH_IMPACT_CONTEXT: PASS" "$prompt_capture"
   assert_success
   run test -f "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
   assert_success
+  run test -f "${BATS_TEST_TMPDIR}/ai-review/bmad-required-impact-and-github-context.md"
+  assert_success
   run grep -F "BMAD Required Graph Impact Context" "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
   assert_success
   run grep -F "Required Local Relationship Graph" "${BATS_TEST_TMPDIR}/ai-review/codebase-graph-impact-context.md"
+  assert_success
+  run grep -F "BMAD GitHub/CI Corroboration Context" "${BATS_TEST_TMPDIR}/ai-review/bmad-required-impact-and-github-context.md"
   assert_success
 }
 
