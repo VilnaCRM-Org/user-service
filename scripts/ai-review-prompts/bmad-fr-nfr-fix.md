@@ -10,6 +10,14 @@ Review context:
 - GitHub PR: `{PR_NUMBER}`
 - Required score threshold: `{SCORE_THRESHOLD}/5`
 - NFR catalog categories: `{NFR_CATEGORIES}`
+- Expanded quality dimensions: `{QUALITY_DIMENSIONS}`
+- Whole-codebase impact surfaces: `{IMPACT_SURFACES}`
+- Whole-codebase impact context: `{IMPACT_CONTEXT}`
+
+The reviewer now checks more than the changed diff. It requires evidence for
+the pinned NonFunctionals.com catalog, expanded ISO/wider quality dimensions,
+and related whole-codebase impact surfaces. Treat missing impact evidence as a
+blocker when the latest review marks it below `{SCORE_THRESHOLD}/5`.
 
 Constraints:
 
@@ -32,8 +40,13 @@ Fix priorities:
 1. Missing or incorrect implementation for FR/NFR requirements.
 2. Missing automated tests or QA evidence for repeatable checks.
 3. Security, data-loss, privacy, availability, and dependability risks.
-4. Missing manual-test checklist/evidence structure.
-5. Documentation and traceability gaps.
+4. Missing detailed NFR/expanded-quality evidence, tests, monitoring,
+   operational docs, or concrete not-applicable reasoning.
+5. Missing whole-codebase impact evidence across related runtime paths,
+   architecture layers, data/persistence, public contracts, config, dependency,
+   CI, docs, tests, operations, security/privacy, and compatibility surfaces.
+6. Missing manual-test checklist/evidence structure.
+7. Documentation and traceability gaps.
 
 Output format (MUST follow exactly):
 

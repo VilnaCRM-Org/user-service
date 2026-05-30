@@ -18,12 +18,14 @@ second agent orchestration implementation.
 
 - `scripts/bmad-fr-nfr-review-gate.sh`: validates inputs, selects BMAD review
   and fix prompts, enables required PASS markers, enables verification after
-  PASS, forces the 5/5 threshold and pinned NFR catalog, then delegates to
-  `scripts/ai-review-loop.sh`.
+  PASS, forces the 5/5 threshold, pinned NFR catalog, expanded quality
+  dimensions, and whole-codebase impact surfaces, creates or passes impact
+  context, then delegates to `scripts/ai-review-loop.sh`.
 - `scripts/ai-review-loop.sh`: adds generic placeholder substitution, optional
-  spec/manual/PR values, required marker validation, and verification-on-PASS.
-  In BMAD mode it can also publish bounded PR comments and a GitHub commit
-  status for pending, failed, and passed gate outcomes.
+  spec/manual/PR/impact values, required marker validation, scorecard
+  validation for NFR, expanded-quality, and impact sections, and
+  verification-on-PASS. In BMAD mode it can also publish bounded PR comments
+  and a GitHub commit status for pending, failed, and passed gate outcomes.
 - `scripts/ai-review-prompts/bmad-fr-nfr-review.md`: strict reviewer contract.
 - `scripts/ai-review-prompts/bmad-fr-nfr-fix.md`: fix-agent contract.
 - `Makefile`: adds `bmad-fr-nfr-review-gate`.
@@ -36,11 +38,14 @@ second agent orchestration implementation.
 1. User sets `BMAD_REVIEW_SPEC_PATH`.
 2. Make invokes `scripts/bmad-fr-nfr-review-gate.sh`.
 3. Wrapper validates spec/manual evidence paths.
-4. Wrapper exports BMAD-specific `AI_REVIEW_*` variables.
+4. Wrapper exports BMAD-specific `AI_REVIEW_*` variables, including expanded
+   quality dimensions and whole-codebase impact surfaces.
 5. `scripts/ai-review-loop.sh` runs configured reviewer agents.
 6. Review output must use `STATUS: PASS` or `STATUS: FAIL` as the exact first
    line in BMAD mode.
-7. PASS must include required scorecard markers, including `CI_GATE: PASS`.
+7. PASS must include required scorecard markers, including
+   `EXPANDED_QUALITY_SCORECARD: PASS`, `WHOLE_CODEBASE_IMPACT: PASS`, and
+   `CI_GATE: PASS`.
 8. PASS triggers verification command before successful exit.
 9. Failed review iterations can publish a failure status, then trigger existing
    fix and verify iterations until PASS or max iteration.
@@ -58,6 +63,7 @@ second agent orchestration implementation.
 | `BMAD_REVIEW_MAX_ITER`                | Optional max loop iterations.                                                        |
 | `BMAD_REVIEW_VERIFY_CMD`              | Optional trusted verification command.                                               |
 | `BMAD_REVIEW_LOG_DIR`                 | Optional log directory.                                                              |
+| `BMAD_REVIEW_IMPACT_CONTEXT`          | Optional Graphify/codebase-memory/Deptrac or manual impact context file.             |
 | `BMAD_REVIEW_POST_PR_COMMENT`         | Optional PR comment publishing toggle, default `true`.                               |
 | `BMAD_REVIEW_POST_GITHUB_STATUS`      | Optional GitHub commit-status publishing toggle, default `true`.                     |
 | `BMAD_REVIEW_STATUS_CONTEXT`          | Optional commit-status context, default `BMAD FR/NFR Review Gate`.                   |
@@ -73,6 +79,10 @@ second agent orchestration implementation.
   remediation, such as a lockfile-only security update within existing
   `composer.json` constraints, must be traced in manual evidence instead of
   being treated as gate implementation.
+- Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, and
+  similar graph/index tools are optional context providers. The wrapper creates
+  a lightweight changed-file impact context when no graph artifact is supplied,
+  so the gate remains usable in minimal local and CI environments.
 
 ## Security
 

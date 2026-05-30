@@ -14,8 +14,8 @@ revision: 21
 - Date: 2026-05-18
 - Workspace: `codex/bmad-review-gate`; the current PR head is verified by
   GitHub gate checks before completion.
-- Related requirements: FR-01 through FR-14, NFR-01 through NFR-03, NFR-05
-  through NFR-07, NFR-09, AC-01 through AC-15
+- Related requirements: FR-01 through FR-17, NFR-01 through NFR-11, AC-01
+  through AC-18
 
 ## Scenarios
 
@@ -46,6 +46,10 @@ revision: 21
 | Custom status self-filter       | Run Bats fake-agent test `bmad-fr-nfr-review-gate excludes custom status context after argument parsing`.              | Custom status contexts are excluded after CLI argument parsing.                                                                                | AC-14, NFR-03        |
 | GitHub status remediation flow  | Run Bats fake-agent test `bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS`.   | Status log records failure before the fix-agent output and success after verified PASS.                                                        | FR-13, AC-13, AC-14  |
 | Self-status prompt evidence     | Run Bats fake-agent test `ai-review-loop substitutes BMAD review gate placeholders`.                                   | Prompt includes the configured status context and excluded context for CI review.                                                              | AC-14, NFR-09        |
+| Expanded quality markers        | Run Bats fake-agent tests for BMAD wrapper PASS markers and scorecard validation.                                      | PASS requires `EXPANDED_QUALITY_SCORECARD: PASS`, `EXPANDED_QUALITY_MIN_SCORE: 5/5`, and evidence for every pinned expanded quality dimension. | FR-16, AC-16         |
+| Whole-codebase impact markers   | Run Bats fake-agent tests for BMAD wrapper impact markers and scorecard validation.                                    | PASS requires `WHOLE_CODEBASE_IMPACT: PASS`, `IMPACT_ANALYSIS_MIN_SCORE: 5/5`, and evidence for every pinned impact surface.                   | FR-15, AC-17         |
+| Generated impact context        | Run BMAD wrapper without `BMAD_REVIEW_IMPACT_CONTEXT`.                                                                 | Wrapper writes `codebase-impact-context.md` with base/head, changed files, graph artifact pointers, and reviewer instructions.                 | FR-15, FR-17, AC-18  |
+| Optional graph context          | Review Graphify/codebase-memory/Deptrac options and wire `BMAD_REVIEW_IMPACT_CONTEXT`.                                 | Existing graph output can be passed as impact context without making Graphify or MCP tooling a hard runtime dependency.                        | FR-17, NFR-11        |
 | External AI review remediation  | Review CodeRabbit/cubic feedback and apply scoped fixes for the recovery-code random byte loop.                        | Recovery code generation now keeps usable bytes from partially rejected chunks and fails boundedly on unusable entropy fixtures.               | FR-14, AC-15, NFR-01 |
 | Dependency security remediation | After `symfony-checks` reported advisories, run a scoped Composer update inside existing constraints.                  | `composer.lock` updates Symfony/Twig-related packages without `composer.json` changes; `make check-security` reports no known vulnerabilities. | FR-14, AC-15, NFR-04 |
 | Empty visible CI check rollup   | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty`.             | Command exits non-zero with `Warning: GitHub PR check rollup is empty.`                                                                        | AC-11, NFR-03        |

@@ -154,8 +154,9 @@ Conditional gate:
 
 ### 3b. BMAD FR/NFR Review Gate (`bmad-fr-nfr-review-gate/`)
 
-**Purpose**: Verify implemented BMAD-scoped work against every FR/NFR and
-NFR catalog category before completion
+**Purpose**: Verify implemented BMAD-scoped work against every FR/NFR, NFR
+catalog category, expanded quality dimension, and whole-codebase impact surface
+before completion
 
 **When activated**:
 

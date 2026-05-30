@@ -183,7 +183,11 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 ```
 
 This gate requires 5/5 evidence for every applicable FR/NFR, pinned NFR catalog
-category, manual-test expectation, GitHub review gate, and CI gate.
+category, expanded quality dimension, whole-codebase impact surface,
+manual-test expectation, GitHub review gate, and CI gate. You can pass
+Graphify, codebase-memory, Deptrac, or manual impact context with
+`BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md`; otherwise the wrapper creates a
+bounded changed-file impact context.
 
 `bmalph init` writes local `_bmad/` and `.ralph/` assets into the workspace. Those directories are ignored in git here, so prefer the dry-run preview before enabling the local workflow files.
 

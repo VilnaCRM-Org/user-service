@@ -161,8 +161,12 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 ```
 
 The gate uses the pinned NonFunctionals.com categories and fails unless every
-applicable FR/NFR, manual-test expectation, QA checkpoint, GitHub completion
-gate, and CI gate scores 5/5 or has explicit not-applicable evidence.
+applicable FR/NFR, expanded quality dimension, whole-codebase impact surface,
+manual-test expectation, QA checkpoint, GitHub completion gate, and CI gate
+scores 5/5 or has explicit not-applicable evidence.
+Supply optional Graphify, codebase-memory, Deptrac, or manual relationship
+context with `BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md`; otherwise the
+wrapper creates a changed-file impact context for the reviewer.
 For PR runs, the BMAD wrapper also publishes a concise PR comment and a
 `BMAD FR/NFR Review Gate` commit status unless disabled through
 `BMAD_REVIEW_POST_PR_COMMENT=false` or `BMAD_REVIEW_POST_GITHUB_STATUS=false`.

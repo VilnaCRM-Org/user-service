@@ -143,6 +143,7 @@ bmad-fr-nfr-review-gate: ## Run BMAD spec-driven FR/NFR review gate; set BMAD_RE
 		$${BMAD_REVIEW_MAX_ITER:+--max-iter "$${BMAD_REVIEW_MAX_ITER}"} \
 		$${BMAD_REVIEW_VERIFY_CMD:+--verify-cmd "$${BMAD_REVIEW_VERIFY_CMD}"} \
 		$${BMAD_REVIEW_LOG_DIR:+--log-dir "$${BMAD_REVIEW_LOG_DIR}"} \
+		$${BMAD_REVIEW_IMPACT_CONTEXT:+--impact-context "$${BMAD_REVIEW_IMPACT_CONTEXT}"} \
 		$${BMAD_REVIEW_AGENTS:+--agents "$${BMAD_REVIEW_AGENTS}"}
 
 bats: ## Run tests for bash commands

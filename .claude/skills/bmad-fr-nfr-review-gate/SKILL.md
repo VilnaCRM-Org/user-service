@@ -1,13 +1,14 @@
 ---
 name: bmad-fr-nfr-review-gate
-description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, manual test expectation, QA best practice, GitHub review comment, approval, and CI check before completion.
+description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, expanded quality dimension, whole-codebase impact surface, manual test expectation, QA best practice, GitHub review comment, approval, and CI check before completion.
 ---
 
 # BMAD FR/NFR Review Gate
 
 Use this skill after implementation when a PR, feature, bugfix, or task has
 BMAD specs under `specs/`. The gate checks whether the implementation
-corresponds to every functional and non-functional requirement, then blocks
+corresponds to every functional and non-functional requirement, verifies
+expanded quality dimensions and related whole-codebase impact, then blocks
 completion until all applicable rows score 5/5.
 
 ## Inputs
@@ -16,6 +17,8 @@ completion until all applicable rows score 5/5.
 - Optional manual evidence: `BMAD_REVIEW_MANUAL_EVIDENCE=<path>`
 - Optional PR number: `BMAD_REVIEW_PR=<number>`
 - Optional base ref: `BMAD_REVIEW_BASE=<base-ref>`
+- Optional impact context from Graphify/codebase-memory/Deptrac/manual notes:
+  `BMAD_REVIEW_IMPACT_CONTEXT=<path>`
 - Optional publishing toggles: `BMAD_REVIEW_POST_PR_COMMENT=true|false` and
   `BMAD_REVIEW_POST_GITHUB_STATUS=true|false` (BMAD wrapper defaults both to
   `true`)
@@ -41,6 +44,38 @@ The gate uses these NonFunctionals.com catalog categories:
 Do not add, remove, or rename categories during a review unless the skill is
 being intentionally updated.
 
+## Expanded Quality And Impact
+
+The gate also requires an Expanded Quality Scorecard covering:
+
+- Functional Suitability
+- Performance Resource Sustainability
+- Compatibility Coexistence
+- Interaction Capability Accessibility
+- Reliability Resilience
+- Security Privacy Accountability
+- Maintainability Testability
+- Flexibility Portability
+- Safety Harm Prevention
+- Data Quality Integrity
+- Operational Excellence Releaseability
+- Observability Diagnosability
+- Supply-Chain Integrity
+- Compliance Governance
+- Sustainability Resource Impact
+- AI Automation Governance
+
+The Whole-Codebase Impact Analysis must cover changed and related surfaces:
+runtime paths, architecture/layer boundaries, domain model, persistence,
+public API/schema, async events/queues, config/env, dependencies/lockfiles,
+CI/workflows, tests/fixtures, docs, operations/observability,
+security/privacy, and backward compatibility.
+
+Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or similar
+tools can be supplied as impact context. If no context is supplied, the wrapper
+generates a lightweight changed-file context file; the reviewer still has to
+inspect related code rather than relying only on changed files.
+
 ## Scoring Contract
 
 | Score | Meaning                                                          |
@@ -51,10 +86,11 @@ being intentionally updated.
 | 4/5   | Implemented and mostly verified with minor unresolved risk       |
 | 5/5   | Fully implemented, verified, traceable, and review-ready         |
 
-PASS requires all applicable FRs, NFRs, NFR catalog categories, manual-test
-requirements, QA checkpoints, GitHub completion checks, and CI checks to score
-5/5. A not-applicable row is allowed only with a concrete reason and source
-evidence. Missing evidence fails closed.
+PASS requires all applicable FRs, NFRs, NFR catalog categories, expanded
+quality dimensions, whole-codebase impact surfaces, manual-test requirements,
+QA checkpoints, GitHub completion checks, and CI checks to score 5/5. A
+not-applicable row is allowed only with a concrete reason and source evidence.
+Missing evidence fails closed.
 
 ## Workflow
 
@@ -94,6 +130,8 @@ The review output must include:
 ```text
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -102,7 +140,8 @@ CI_GATE: PASS
 
 The wrapper treats a `STATUS: PASS` without these markers as failure. In BMAD
 mode, `STATUS: PASS` or `STATUS: FAIL` must also be the exact first line of the
-review output.
+review output. PASS also requires `EXPANDED_QUALITY_MIN_SCORE: 5/5` and
+`IMPACT_ANALYSIS_MIN_SCORE: 5/5` evidence markers.
 
 ## GitHub Publishing
 

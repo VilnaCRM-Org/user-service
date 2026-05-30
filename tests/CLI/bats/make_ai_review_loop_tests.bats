@@ -352,12 +352,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -375,6 +379,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 Performance: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -711,12 +749,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -734,6 +776,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1123,12 +1199,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1146,6 +1226,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1413,12 +1527,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1436,6 +1554,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1514,12 +1666,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1537,6 +1693,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1633,12 +1823,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1656,6 +1850,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1742,12 +1970,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1765,6 +1997,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1839,12 +2105,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -1862,6 +2132,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -1908,11 +2212,17 @@ SCRIPT
 
   run grep -F "Use PR \`123\`" "$prompt_capture"
   assert_success
-  run grep -F "Passing threshold: every applicable FR, NFR, catalog category, QA checkpoint," "$prompt_capture"
+  run grep -F "Passing threshold: every applicable FR, NFR, catalog category, expanded quality" "$prompt_capture"
   assert_success
   run grep -F "\`5/5\`" "$prompt_capture"
   assert_success
   run grep -F "Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability" "$prompt_capture"
+  assert_success
+  run grep -F "Functional Suitability, Performance Resource Sustainability" "$prompt_capture"
+  assert_success
+  run grep -F "Runtime paths, Architecture and layer boundaries" "$prompt_capture"
+  assert_success
+  run grep -F "Whole-codebase impact context is at" "$prompt_capture"
   assert_success
 }
 
@@ -2007,6 +2317,8 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2069,12 +2381,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2092,6 +2408,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 Performance: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2164,6 +2514,8 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2187,6 +2539,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2267,12 +2653,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2289,6 +2679,40 @@ NFR Catalog Scorecard:
 - Manageability: 5/5 PASS
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Evidence exists but is not scored.
@@ -2355,12 +2779,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2369,6 +2797,40 @@ Requirement Scorecard:
 
 NFR Catalog Scorecard:
 - Performance: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2405,7 +2867,193 @@ SCRIPT
   assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for NFR category: Usability."
 }
 
-@test "ai-review-loop accepts pinned NFR category coverage in markdown table rows" {
+@test "ai-review-loop rejects PASS without expanded quality dimension coverage" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Security: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_NFR_CATEGORIES="Security" \
+    AI_REVIEW_QUALITY_DIMENSIONS="Functional Suitability, Safety Harm Prevention" \
+    AI_REVIEW_IMPACT_SURFACES="Runtime paths" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for expanded quality dimension: Safety Harm Prevention."
+}
+
+@test "ai-review-loop rejects PASS without whole-codebase impact surface coverage" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Security: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_NFR_CATEGORIES="Security" \
+    AI_REVIEW_QUALITY_DIMENSIONS="Functional Suitability" \
+    AI_REVIEW_IMPACT_SURFACES="Runtime paths, Documentation" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for impact surface: Documentation."
+}
+
+@test "ai-review-loop accepts bold markdown scorecard headings" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   mkdir -p "$bin_dir"
 
@@ -2444,6 +3092,94 @@ NFR_CATALOG_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
+**Requirement Scorecard:**
+- FR-01 evidence: 5/5 PASS
+
+**NFR Catalog Scorecard:**
+- Security: 5/5 PASS
+
+**Manual Test Evidence:**
+- Manual evidence reviewed: 5/5 PASS
+
+**QA Verification:**
+- QA verification completed: 5/5 PASS
+
+**GitHub Completion Gate:**
+- GitHub completion verified: 5/5 PASS
+
+**CI Gate:**
+- Required CI checks verified: 5/5 PASS
+
+**Required Fixes:**
+None.
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_NFR_CATEGORIES="Security" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+}
+
+@test "ai-review-loop accepts pinned NFR category coverage in markdown table rows" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
 Requirement Scorecard:
 | Source | Evidence | Score | Status |
 | --- | --- | --- | --- |
@@ -2461,6 +3197,40 @@ NFR Catalog Scorecard:
 | Manageability | Inputs are configurable through BMAD env. | 5/5 | PASS |
 | Automatability | Non-interactive Make target. | 5/5 | PASS |
 | Dependability | Invalid markers and scores fail closed. | 5/5 | PASS |
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2527,12 +3297,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2553,6 +3327,40 @@ Security | Review control env is sanitized. | 5/5 | PASS
 Manageability | Inputs are configurable through BMAD env. | 5/5 | PASS
 Automatability | Non-interactive Make target. | 5/5 | PASS
 Dependability | Invalid markers and scores fail closed. | 5/5 | PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2619,12 +3427,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2645,6 +3457,40 @@ NFR Catalog Scorecard:
 | Manageability | Inputs are configurable through BMAD env. | 5/5 | PASS |
 | Automatability | Non-interactive Make target. | 5/5 | PASS |
 | Dependability | Invalid markers and scores fail closed. | 5/5 | PASS |
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2711,12 +3557,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2737,6 +3587,40 @@ NFR Catalog Scorecard:
 | Manageability | Inputs are configurable through BMAD env. | 5/5 | PASS |
 | Automatability | Non-interactive Make target. | 5/5 | PASS |
 | Dependability | Invalid markers and scores fail closed. | 5/5 | PASS |
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2806,12 +3690,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2832,6 +3720,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -2905,12 +3827,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -2928,6 +3854,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 Performance: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3001,12 +3961,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -3024,6 +3988,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3257,12 +4255,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -3279,6 +4281,40 @@ NFR Catalog Scorecard:
 - Manageability: 5/5 PASS
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3467,12 +4503,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -3490,6 +4530,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3603,12 +4677,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -3626,6 +4704,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS
@@ -3700,12 +4812,16 @@ STATUS: PASS
 0 issues.
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -3723,6 +4839,40 @@ NFR Catalog Scorecard:
 - Automatability: 5/5 PASS
 - Dependability: 5/5 PASS
 - Maintainability evidence: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
 
 Manual Test Evidence:
 - Manual evidence reviewed: 5/5 PASS

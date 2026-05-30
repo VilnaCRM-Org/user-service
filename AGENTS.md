@@ -277,7 +277,7 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 - **code-review**: Retrieve and address PR comments
 - **testing-workflow**: Manage tests (unit, integration, E2E, mutation)
 - **bmad-autonomous-planning**: Generate BMALPH planning artifacts autonomously from a short task description
-- **bmad-fr-nfr-review-gate**: Score implemented BMAD-scoped work against every FR/NFR, pinned NFR catalog category, manual-test expectation, GitHub review gate, and CI check
+- **bmad-fr-nfr-review-gate**: Score implemented BMAD-scoped work against every FR/NFR, pinned NFR catalog category, expanded quality dimension, whole-codebase impact surface, manual-test expectation, GitHub review gate, and CI check
 - **implementing-ddd-architecture**: Design DDD patterns (entities, value objects, aggregates, CQRS)
 - **deptrac-fixer**: Diagnose and fix Deptrac violations
 - **quality-standards**: Protected thresholds overview
@@ -452,8 +452,11 @@ BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
 ```
 
 The gate requires every applicable FR/NFR, pinned NonFunctionals.com category,
-manual-test expectation, QA checkpoint, GitHub review gate, and CI gate to
-score 5/5 or have an explicit not-applicable reason with evidence.
+expanded quality dimension, whole-codebase impact surface, manual-test
+expectation, QA checkpoint, GitHub review gate, and CI gate to score 5/5 or
+have an explicit not-applicable reason with evidence.
+Pass Graphify, codebase-memory, Deptrac, or manual relationship context with
+`BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md` when available.
 For PR runs, it publishes a bounded PR result comment and a
 `BMAD FR/NFR Review Gate` commit status by default; disable those only for dry
 runs with `BMAD_REVIEW_POST_PR_COMMENT=false` or

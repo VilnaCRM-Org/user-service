@@ -32,12 +32,24 @@ revision: 2
 - Pin the NonFunctionals.com categories to Performance, Usability,
   Maintainability, Availability, Interoperability, Security, Manageability,
   Automatability, and Dependability.
+- Add expanded quality dimensions from ISO 25010, data quality, privacy,
+  accessibility, operational excellence, supply-chain integrity,
+  sustainability, compliance, and AI automation governance.
+- Require a whole-codebase impact analysis that covers related runtime paths,
+  architecture layers, domain/persistence surfaces, API/schema contracts,
+  config, dependencies, CI, tests, docs, operations, security/privacy, and
+  backward compatibility instead of reviewing only changed files.
+- Allow optional Graphify, codebase-memory MCP, Deptrac, or equivalent graph
+  context through `BMAD_REVIEW_IMPACT_CONTEXT`, with a generated changed-file
+  impact handoff when no graph artifact is supplied.
 - Require 5/5 for all applicable FR/NFR rows and fail closed on missing
   evidence.
 - Force BMAD mode to ignore generic review-loop downgrades for threshold,
   category list, and required PASS markers.
 - Include a separate `CI_GATE: PASS` marker and exact first-line status parsing
   for BMAD PASS decisions.
+- Include `EXPANDED_QUALITY_SCORECARD: PASS` and `WHOLE_CODEBASE_IMPACT: PASS`
+  markers so broad quality and related-codebase review cannot be skipped.
 - Publish bounded PR comments and a GitHub commit status for BMAD PR runs so
   the gate result is visible on the pull request.
 - Treat the BMAD status context as the gate's own in-flight check during review

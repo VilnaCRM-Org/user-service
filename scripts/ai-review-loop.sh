@@ -24,6 +24,9 @@ manual_evidence="${AI_REVIEW_MANUAL_EVIDENCE:-}"
 pr_number="${AI_REVIEW_PR_NUMBER:-}"
 score_threshold="${AI_REVIEW_SCORE_THRESHOLD:-5}"
 nfr_categories="${AI_REVIEW_NFR_CATEGORIES:-Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability}"
+quality_dimensions="${AI_REVIEW_QUALITY_DIMENSIONS:-}"
+impact_surfaces="${AI_REVIEW_IMPACT_SURFACES:-}"
+impact_context="${AI_REVIEW_IMPACT_CONTEXT:-}"
 require_gate_markers="${AI_REVIEW_REQUIRE_GATE_MARKERS:-false}"
 require_scorecard_validation="${AI_REVIEW_REQUIRE_SCORECARD_VALIDATION:-${AI_REVIEW_REQUIRE_BMAD_EVIDENCE:-false}}"
 require_github_ci_corroboration="${AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION:-false}"
@@ -113,6 +116,9 @@ agent_env=(
   -u AI_REVIEW_PR_NUMBER
   -u AI_REVIEW_SCORE_THRESHOLD
   -u AI_REVIEW_NFR_CATEGORIES
+  -u AI_REVIEW_QUALITY_DIMENSIONS
+  -u AI_REVIEW_IMPACT_SURFACES
+  -u AI_REVIEW_IMPACT_CONTEXT
   -u AI_REVIEW_REQUIRE_GATE_MARKERS
   -u AI_REVIEW_REQUIRE_SCORECARD_VALIDATION
   -u AI_REVIEW_REQUIRE_BMAD_EVIDENCE
@@ -147,6 +153,7 @@ agent_env=(
   -u BMAD_REVIEW_MAX_ITER
   -u BMAD_REVIEW_LOG_DIR
   -u BMAD_REVIEW_AGENTS
+  -u BMAD_REVIEW_IMPACT_CONTEXT
   -u BMAD_REVIEW_POST_PR_COMMENT
   -u BMAD_REVIEW_POST_GITHUB_STATUS
   -u BMAD_REVIEW_STATUS_CONTEXT
@@ -255,11 +262,12 @@ fi
 
 apply_prompt_placeholders() {
   local template="$1"
-  local spec_value manual_value pr_value status_context_value status_excluded_value
+  local spec_value manual_value pr_value impact_value status_context_value status_excluded_value
 
   spec_value="${spec_path:-NOT_PROVIDED}"
   manual_value="${manual_evidence:-NOT_PROVIDED}"
   pr_value="${pr_number:-AUTO_DETECT}"
+  impact_value="${impact_context:-NOT_PROVIDED}"
   status_context_value="${github_status_context:-NOT_CONFIGURED}"
   status_excluded_value="${github_status_excluded_context:-NOT_CONFIGURED}"
 
@@ -269,6 +277,9 @@ apply_prompt_placeholders() {
   template="${template//\{PR_NUMBER\}/$(escape_prompt_replacement "$pr_value")}"
   template="${template//\{SCORE_THRESHOLD\}/$(escape_prompt_replacement "$score_threshold")}"
   template="${template//\{NFR_CATEGORIES\}/$(escape_prompt_replacement "$nfr_categories")}"
+  template="${template//\{QUALITY_DIMENSIONS\}/$(escape_prompt_replacement "$quality_dimensions")}"
+  template="${template//\{IMPACT_SURFACES\}/$(escape_prompt_replacement "$impact_surfaces")}"
+  template="${template//\{IMPACT_CONTEXT\}/$(escape_prompt_replacement "$impact_value")}"
   template="${template//\{STATUS_CONTEXT\}/$(escape_prompt_replacement "$status_context_value")}"
   template="${template//\{STATUS_EXCLUDED_CONTEXT\}/$(escape_prompt_replacement "$status_excluded_value")}"
   printf "%s\n" "$template"
@@ -387,9 +398,12 @@ review_section_content() {
     {
       line = $0
       sub(/\r$/, "", line)
+      heading = line
+      sub(/^[[:space:]]*\*\*/, "", heading)
+      sub(/\*\*[[:space:]]*$/, "", heading)
     }
-    line ~ "^(#+[[:space:]]*)?" section ":" { in_section = 1; print; next }
-    in_section && line ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
+    heading ~ "^(#+[[:space:]]*)?" section ":" { in_section = 1; print; next }
+    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|Whole-Codebase Impact Analysis|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
     in_section { print }
   ' "$file"
 }
@@ -491,7 +505,7 @@ score_at_or_above_threshold_regex() {
 
 review_has_scorecard_evidence() {
   local file="$1"
-  local evidence_marker section score below_threshold_regex threshold_regex nfr_category
+  local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension impact_surface
   local score_sections=(
     "Requirement Scorecard"
     "NFR Catalog Scorecard"
@@ -501,25 +515,42 @@ review_has_scorecard_evidence() {
     "CI Gate"
   )
   local nfr_category_arr=()
+  local quality_dimension_arr=()
+  local impact_surface_arr=()
 
-  for evidence_marker in \
+  [[ -n "$quality_dimensions" ]] && score_sections+=("Expanded Quality Scorecard")
+  [[ -n "$impact_surfaces" ]] && score_sections+=("Whole-Codebase Impact Analysis")
+
+  local evidence_markers=(
     "FR_NFR_MIN_SCORE: ${score_threshold}/5" \
     "NFR_CATALOG_MIN_SCORE: ${score_threshold}/5" \
     "GITHUB_COMPLETION_STATE: APPROVED" \
-    "CI_CHECK_ROLLUP: PASSING"; do
+    "CI_CHECK_ROLLUP: PASSING"
+  )
+
+  [[ -n "$quality_dimensions" ]] && evidence_markers+=("EXPANDED_QUALITY_MIN_SCORE: ${score_threshold}/5")
+  [[ -n "$impact_surfaces" ]] && evidence_markers+=("IMPACT_ANALYSIS_MIN_SCORE: ${score_threshold}/5")
+
+  for evidence_marker in "${evidence_markers[@]}"; do
     if ! grep -Fxq -- "$evidence_marker" < <(tr -d '\r' < "$file"); then
       echo "Warning: BMAD PASS output is missing required evidence marker: $evidence_marker" >&2
       return 1
     fi
   done
 
-  for section in \
+  local required_sections=(
     "Requirement Scorecard:" \
     "NFR Catalog Scorecard:" \
     "Manual Test Evidence:" \
     "QA Verification:" \
     "GitHub Completion Gate:" \
-    "CI Gate:"; do
+    "CI Gate:"
+  )
+
+  [[ -n "$quality_dimensions" ]] && required_sections+=("Expanded Quality Scorecard:")
+  [[ -n "$impact_surfaces" ]] && required_sections+=("Whole-Codebase Impact Analysis:")
+
+  for section in "${required_sections[@]}"; do
     if ! grep -Fq -- "$section" "$file"; then
       echo "Warning: BMAD PASS output is missing required section: $section" >&2
       return 1
@@ -553,6 +584,30 @@ review_has_scorecard_evidence() {
       return 1
     fi
   done
+
+  if [[ -n "$quality_dimensions" ]]; then
+    IFS=',' read -r -a quality_dimension_arr <<< "$quality_dimensions"
+    for quality_dimension in "${quality_dimension_arr[@]}"; do
+      quality_dimension="$(echo "$quality_dimension" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+      [[ -z "$quality_dimension" ]] && continue
+      if ! review_section_has_text_with_score "$file" "Expanded Quality Scorecard" "$quality_dimension" "$threshold_regex"; then
+        echo "Warning: BMAD PASS output lacks ${score_threshold}/5 evidence for expanded quality dimension: $quality_dimension." >&2
+        return 1
+      fi
+    done
+  fi
+
+  if [[ -n "$impact_surfaces" ]]; then
+    IFS=',' read -r -a impact_surface_arr <<< "$impact_surfaces"
+    for impact_surface in "${impact_surface_arr[@]}"; do
+      impact_surface="$(echo "$impact_surface" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+      [[ -z "$impact_surface" ]] && continue
+      if ! review_section_has_text_with_score "$file" "Whole-Codebase Impact Analysis" "$impact_surface" "$threshold_regex"; then
+        echo "Warning: BMAD PASS output lacks ${score_threshold}/5 evidence for impact surface: $impact_surface." >&2
+        return 1
+      fi
+    done
+  fi
 
   return 0
 }

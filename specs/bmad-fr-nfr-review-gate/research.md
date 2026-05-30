@@ -41,6 +41,51 @@ The review gate pins the NonFunctionals.com catalog categories visible on
 
 Source: https://nonfunctionals.com/catalog.html
 
+The expanded quality review cross-checks the base catalog against ISO/IEC
+25010:2023 product quality, ISO/IEC 25012 data quality, privacy, accessibility,
+secure supply-chain, operational-excellence, observability, sustainability, and
+automation-governance sources. The goal is to catch PR risks that fit poorly
+into the original nine labels, such as unsafe account states, PII retention,
+dependency provenance, deploy/rollback readiness, accessibility, and
+whole-codebase data consistency.
+
+Primary references:
+
+- https://www.iso.org/standard/78176.html
+- https://iso25000.com/index.php/en/iso-25000-standards/iso-25010
+- https://www.iso.org/standard/35736.html
+- https://www.nist.gov/privacy-framework
+- https://csrc.nist.gov/pubs/sp/800/218/final
+- https://owasp.org/www-project-application-security-verification-standard/
+- https://owasp.org/www-project-software-component-verification-standard/
+- https://www.w3.org/WAI/standards-guidelines/wcag/
+- https://opentelemetry.io/docs/concepts/signals/
+- https://sre.google/sre-book/monitoring-distributed-systems/
+
+## Knowledge Graph and Impact Context
+
+The gate should not depend on one graph product to pass, but it should be able
+to consume graph context when present.
+
+- Graphify is a practical optional choice for multimodal codebase graphs. It
+  can build `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, and an
+  interactive graph from code, docs, PDFs, images, and diagrams. It supports
+  Codex instructions and query commands, but its LLM-backed document extraction
+  and fast-moving packaging make it better as optional review context than a
+  hard PASS/FAIL dependency.
+- codebase-memory MCP is a strong future fit for local tree-sitter/MCP impact
+  queries such as callers, callees, communities, and changed-symbol impact.
+- Deptrac is the deterministic baseline already aligned with this repository's
+  architecture rules. Its graph output can explain DDD layer impact without
+  adding a new dependency to the BMAD gate.
+
+The implemented wrapper therefore accepts `BMAD_REVIEW_IMPACT_CONTEXT` and
+otherwise creates a lightweight `codebase-impact-context.md` containing the
+base/head, changed files, and available graph artifact pointers. The reviewer
+must still inspect related runtime paths, architecture boundaries, contracts,
+data paths, config, dependencies, tests, docs, operations, security/privacy, and
+backward-compatibility surfaces before scoring impact.
+
 ## Integration Points
 
 - `Makefile`: add a discoverable post-implementation gate target.

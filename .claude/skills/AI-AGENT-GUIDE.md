@@ -141,12 +141,12 @@ Preferred Codex trigger for this skill:
 
 ### 🔧 Workflow Skills
 
-| Skill                       | File                               | When to Use                                                                                                                    |
-| --------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **CI Workflow**             | `ci-workflow/SKILL.md`             | Run all quality checks before committing                                                                                       |
-| **Code Review**             | `code-review/SKILL.md`             | Address PR review comments systematically                                                                                      |
-| **BMAD FR/NFR Review Gate** | `bmad-fr-nfr-review-gate/SKILL.md` | Verify implemented BMAD-scoped work against every FR/NFR, pinned NFR category, manual evidence item, GitHub gate, and CI check |
-| **Testing Workflow**        | `testing-workflow/SKILL.md`        | Run/debug unit, integration, E2E, mutation tests                                                                               |
+| Skill                       | File                               | When to Use                                                                                                                                                                               |
+| --------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CI Workflow**             | `ci-workflow/SKILL.md`             | Run all quality checks before committing                                                                                                                                                  |
+| **Code Review**             | `code-review/SKILL.md`             | Address PR review comments systematically                                                                                                                                                 |
+| **BMAD FR/NFR Review Gate** | `bmad-fr-nfr-review-gate/SKILL.md` | Verify implemented BMAD-scoped work against every FR/NFR, pinned NFR category, expanded quality dimension, whole-codebase impact surface, manual evidence item, GitHub gate, and CI check |
+| **Testing Workflow**        | `testing-workflow/SKILL.md`        | Run/debug unit, integration, E2E, mutation tests                                                                                                                                          |
 
 ### 🏗️ Architecture & Quality Skills
 

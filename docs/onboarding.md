@@ -160,14 +160,14 @@ We use **GitHub Actions** with a variety of checks (17 CI checks, specifically),
 Additionally, we use:
 
 - **Local AI review loop** (`make ai-review-loop`) for fast feedback after `make ci`.
-- **BMAD FR/NFR review gate** (`BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`) for implemented work with BMAD specs.
+- **BMAD FR/NFR review gate** (`BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`) for implemented work with BMAD specs, expanded quality scoring, and whole-codebase impact analysis.
 - **CodeRabbit** for code reviews and AI suggestions (final external check).
 - **Snyk** for security scanning.
 
 ### Code Reviews & Approvals
 
 - Before marking a PR ready, run `make ci` and then `make ai-review-loop`.
-- For PRs with BMAD specs, also run `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate` and resolve every score below 5/5.
+- For PRs with BMAD specs, also run `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate` and resolve every score below 5/5, including expanded quality and whole-codebase impact scores.
 - All PRs require approval from **@kravalg** and **coderabbit ai** before merging.
 
 ---
