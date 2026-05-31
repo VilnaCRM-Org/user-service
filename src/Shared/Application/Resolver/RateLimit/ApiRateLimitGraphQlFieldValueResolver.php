@@ -12,11 +12,11 @@ use GraphQL\Language\AST\VariableNode;
 
 final readonly class ApiRateLimitGraphQlFieldValueResolver
 {
-    private ApiRateLimitNestedPayloadStringResolver $nestedPayloadStringResolver;
+    private ApiRateLimitGraphQlVariableValueResolver $variableValueResolver;
 
     public function __construct()
     {
-        $this->nestedPayloadStringResolver = new ApiRateLimitNestedPayloadStringResolver();
+        $this->variableValueResolver = new ApiRateLimitGraphQlVariableValueResolver();
     }
 
     /**
@@ -44,11 +44,13 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
     /**
      * @param list<FieldNode> $fields
      * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
      * @param list<string> $keys
      */
     public function findArgumentVariableValue(
         array $fields,
         array $variables,
+        array $variableDefaultValues,
         array $keys
     ): ?string {
         $variableName = $this->findArgumentVariableName($fields, $keys);
@@ -56,22 +58,32 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
             return null;
         }
 
-        $value = $variables[$variableName] ?? null;
-        return is_string($value) && $value !== '' ? $value : null;
+        return $this->variableValueResolver->resolveVariableNameStringValue(
+            $variableName,
+            $variables,
+            $variableDefaultValues
+        );
     }
 
     /**
      * @param list<FieldNode> $fields
      * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
      * @param list<string> $keys
      */
     public function findInputObjectVariableValue(
         array $fields,
         array $variables,
+        array $variableDefaultValues,
         array $keys
     ): ?string {
         foreach ($this->inputVariableNames($fields) as $variableName) {
-            $resolved = $this->resolveInputVariableStringValue($variables, $variableName, $keys);
+            $resolved = $this->variableValueResolver->resolveInputVariableStringValue(
+                $variables,
+                $variableDefaultValues,
+                $variableName,
+                $keys
+            );
             if ($resolved !== null) {
                 return $resolved;
             }
@@ -83,6 +95,7 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
     /**
      * @param list<FieldNode> $fields
      * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
      * @param list<string> $keys
      *
      * @return list<string>
@@ -90,11 +103,20 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
     public function findStringValuesForFields(
         array $fields,
         array $variables,
+        array $variableDefaultValues,
         array $keys
     ): array {
         $values = [];
         foreach ($fields as $field) {
-            array_push($values, ...$this->findStringValuesForField($field, $variables, $keys));
+            array_push(
+                $values,
+                ...$this->findStringValuesForField(
+                    $field,
+                    $variables,
+                    $variableDefaultValues,
+                    $keys
+                )
+            );
         }
 
         return $values;
@@ -117,6 +139,7 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
 
     /**
      * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
      * @param list<string> $keys
      *
      * @return list<string>
@@ -124,17 +147,21 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
     private function findStringValuesForField(
         FieldNode $field,
         array $variables,
+        array $variableDefaultValues,
         array $keys
     ): array {
-        $values = [];
         $value = $this->findNamedFieldArgumentValue($field, $keys);
-        $resolved = $this->resolveStringValue($value, $variables);
-        if ($resolved !== null) {
-            $values[] = $resolved;
-        }
+        $resolved = $this->variableValueResolver
+            ->resolveStringValue($value, $variables, $variableDefaultValues);
+        $values = $resolved === null ? [] : [$resolved];
 
         foreach ($this->inputVariableNamesForField($field) as $variableName) {
-            $resolved = $this->resolveInputVariableStringValue($variables, $variableName, $keys);
+            $resolved = $this->resolveInputVariableStringValue(
+                $variables,
+                $variableDefaultValues,
+                $variableName,
+                $keys
+            );
             if ($resolved !== null) {
                 $values[] = $resolved;
             }
@@ -145,54 +172,21 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
 
     /**
      * @param array<array-key, array|string|int|float|bool|null> $variables
-     */
-    private function resolveStringValue(
-        ?ValueNode $value,
-        array $variables
-    ): ?string {
-        if ($value instanceof StringValueNode) {
-            return $this->resolveInlineStringValue($value);
-        }
-
-        if ($value instanceof VariableNode) {
-            return $this->resolveVariableStringValue($value, $variables);
-        }
-
-        return null;
-    }
-
-    private function resolveInlineStringValue(StringValueNode $value): ?string
-    {
-        return $value->value !== '' ? $value->value : null;
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $variables
-     */
-    private function resolveVariableStringValue(
-        VariableNode $value,
-        array $variables
-    ): ?string {
-        $resolved = $variables[$value->name->value] ?? null;
-
-        return is_string($resolved) && $resolved !== '' ? $resolved : null;
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
      * @param list<string> $keys
      */
     private function resolveInputVariableStringValue(
         array $variables,
+        array $variableDefaultValues,
         string $variableName,
         array $keys
     ): ?string {
-        $value = $variables[$variableName] ?? null;
-        if (!is_array($value)) {
-            return null;
-        }
-
-        return $this->nestedPayloadStringResolver->resolve($value, $keys);
+        return $this->variableValueResolver->resolveInputVariableStringValue(
+            $variables,
+            $variableDefaultValues,
+            $variableName,
+            $keys
+        );
     }
 
     /**

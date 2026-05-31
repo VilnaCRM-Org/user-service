@@ -6,11 +6,17 @@ namespace App\Shared\Application\Resolver\RateLimit;
 
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\OperationDefinitionNode;
+use GraphQL\Language\AST\ValueNode;
 
 final readonly class ApiRateLimitGraphQlQueryInspection
 {
     private ApiRateLimitGraphQlRootFields $rootFields;
     private ApiRateLimitGraphQlFieldValueResolver $fieldValueResolver;
+
+    /**
+     * @var array<string, ValueNode>
+     */
+    private array $variableDefaultValues;
 
     /**
      * @param array<string, FragmentDefinitionNode> $fragments
@@ -21,6 +27,7 @@ final readonly class ApiRateLimitGraphQlQueryInspection
     ) {
         $this->rootFields = new ApiRateLimitGraphQlRootFields($operation, $fragments);
         $this->fieldValueResolver = new ApiRateLimitGraphQlFieldValueResolver();
+        $this->variableDefaultValues = $this->collectVariableDefaultValues($operation);
     }
 
     /**
@@ -70,6 +77,7 @@ final readonly class ApiRateLimitGraphQlQueryInspection
         return $this->fieldValueResolver->findStringValuesForFields(
             $this->rootFields->matchingMutationFields($fieldNames),
             $variables,
+            $this->variableDefaultValues,
             $keys
         );
     }
@@ -83,6 +91,7 @@ final readonly class ApiRateLimitGraphQlQueryInspection
         return $this->fieldValueResolver->findArgumentVariableValue(
             $this->rootFields->all(),
             $variables,
+            $this->variableDefaultValues,
             $keys
         );
     }
@@ -96,6 +105,7 @@ final readonly class ApiRateLimitGraphQlQueryInspection
         return $this->fieldValueResolver->findInputObjectVariableValue(
             $this->rootFields->all(),
             $variables,
+            $this->variableDefaultValues,
             $keys
         );
     }
@@ -106,5 +116,20 @@ final readonly class ApiRateLimitGraphQlQueryInspection
     public function inputVariableNames(): array
     {
         return $this->fieldValueResolver->inputVariableNames($this->rootFields->all());
+    }
+
+    /**
+     * @return array<string, ValueNode>
+     */
+    private function collectVariableDefaultValues(OperationDefinitionNode $operation): array
+    {
+        $defaultValues = [];
+        foreach ($operation->variableDefinitions as $definition) {
+            if ($definition->defaultValue !== null) {
+                $defaultValues[$definition->variable->name->value] = $definition->defaultValue;
+            }
+        }
+
+        return $defaultValues;
     }
 }

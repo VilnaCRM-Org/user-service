@@ -148,6 +148,27 @@ GRAPHQL;
         );
     }
 
+    public function testSigninEmailLimiterUsesInputVariableDefaultValue(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = '  DefaultEmail@example.TEST  ';
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation Real($input: passkeySignInOptionsUserInput = { email: "%s" }) {
+  passkeySignInOptionsUser(input: $input) { user { challengeId } }
+}
+GRAPHQL,
+            $email
+        );
+
+        $this->assertGraphQlLimiters(
+            $query,
+            $clientIp,
+            $this->signInLimiters($clientIp, $email),
+            []
+        );
+    }
+
     public function testSigninEmailLimiterIgnoresBlankInlineEmail(): void
     {
         $clientIp = $this->faker->ipv4();

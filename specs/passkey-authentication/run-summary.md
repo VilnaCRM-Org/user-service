@@ -405,17 +405,21 @@ workspace; GitHub Actions is the source of full-suite verification after push.
   repeated-fragment traversal state observable, and added negative/edge tests for
   fragment expansion, selected-operation scoping, duplicate auth fields,
   same-email aliases, invalid GraphQL JSON fallback, blank emails, non-string
-  variables, and missing variable decoys. Focused PHPUnit passed 91 tests / 287
-  assertions. Focused coverage passed 70 tests / 97 assertions and reported all
+  variables, missing variable decoys, and omitted GraphQL variables that rely on
+  operation-level default values. Focused PHPUnit passed 100 tests / 309
+  assertions. Focused coverage passed 79 tests / 119 assertions and reported all
   covered for
   `ApiRateLimitGraphQlAuthTargetResolver`,
   `ApiRateLimitGraphQlFieldValueResolver`,
   `ApiRateLimitGraphQlQueryInspection`, `ApiRateLimitGraphQlQueryInspector`,
   `ApiRateLimitGraphQlRootFields`, `ApiRateLimitNestedPayloadStringResolver`,
-  and `ApiRateLimitPayloadValueResolver`. Full local `make infection` passed
-  after the hardening: 5281 mutations generated, 5278 killed, 3 timed out, MSI
-  100%, covered MSI 100%. The affected rate-limit Infection slice also passed:
-  259 mutations generated, 256 killed, 3 timed out, MSI 100%, covered MSI 100%.
+  `ApiRateLimitGraphQlVariableValueResolver`, and
+  `ApiRateLimitPayloadValueResolver`. Full local `make infection` passed before
+  the default-variable follow-up: 5281 mutations generated, 5278 killed, 3 timed
+  out, MSI 100%, covered MSI 100%. The affected rate-limit Infection slice also
+  passed: 259 mutations generated, 256 killed, 3 timed out, MSI 100%, covered
+  MSI 100%. The default-variable follow-up slice passed with 93 mutations
+  generated and 93 killed, MSI 100%, covered MSI 100%.
   `make phpinsights` passed with source scores Code 100, Complexity 97.3,
   Architecture 100, Style 100 and test scores Code 100, Complexity 97.8,
   Architecture 100, Style 100. `make psalm` reported no errors, and

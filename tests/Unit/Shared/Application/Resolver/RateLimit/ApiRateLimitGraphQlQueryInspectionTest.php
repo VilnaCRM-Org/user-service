@@ -128,7 +128,19 @@ GRAPHQL,
 
         self::assertNotNull($inspection);
         self::assertSame('email', $inspection->findArgumentVariableName(['email']));
+        self::assertNull($inspection->findArgumentStringValue(['email']));
         self::assertSame([], $inspection->inputVariableNames());
+    }
+
+    public function testReturnsNullForEmptyInlineArgumentString(): void
+    {
+        $inspection = $this->createInspection(
+            'mutation Real { signInUser(input: { email: "" }) { user { id } } }',
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertNull($inspection->findArgumentStringValue(['email']));
     }
 
     public function testReturnsNullForMissingDirectArgumentVariable(): void
