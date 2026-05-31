@@ -14,8 +14,7 @@
 
 ## GitHub Issue
 
-> NOTE: Token has read-only access to VilnaCRM-Org/user-service — issue could not be created automatically.
-> Issue body drafted and ready in this spec. Requires write-access token or manual creation.
+**#302** — https://github.com/VilnaCRM-Org/user-service/issues/302
 
 ## Phase Checklist
 
