@@ -156,6 +156,7 @@ mutation($e: String!) {
 }
 GRAPHQL,
             'variables' => ['e' => $email],
+            'email' => $this->faker->safeEmail(),
         ], JSON_THROW_ON_ERROR);
 
         $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);

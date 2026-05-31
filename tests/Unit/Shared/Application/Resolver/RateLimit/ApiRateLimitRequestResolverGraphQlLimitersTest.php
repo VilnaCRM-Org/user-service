@@ -128,6 +128,31 @@ GRAPHQL;
         );
     }
 
+    public function testPasskeySigninOptionsIgnoresUnrelatedJsonEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $decoyEmail = $this->faker->email();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            ['e' => $email],
+            extraPayload: ['email' => $decoyEmail]
+        );
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
     public function testResolveEndpointLimitersForGraphQlPasskeySigninComplete(): void
     {
         $clientIp = $this->faker->ipv4();
@@ -199,13 +224,15 @@ GRAPHQL,
 
     /**
      * @param array<string, array<string, string>|string> $variables
+     * @param array<string, array<string, string>|string> $extraPayload
      */
     private function createGraphQlRequest(
         string $query,
         string $clientIp,
         array $variables = [],
         string $method = 'POST',
-        string $path = self::GRAPHQL_PATH
+        string $path = self::GRAPHQL_PATH,
+        array $extraPayload = []
     ): Request {
         return Request::create(
             $path,
@@ -218,7 +245,7 @@ GRAPHQL,
                 [
                     'query' => $query,
                     'variables' => $variables,
-                ],
+                ] + $extraPayload,
                 JSON_THROW_ON_ERROR
             )
         );

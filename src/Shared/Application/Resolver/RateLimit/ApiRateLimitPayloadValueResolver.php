@@ -40,12 +40,12 @@ final readonly class ApiRateLimitPayloadValueResolver
             return null;
         }
 
-        $resolved = $this->findStringValue($jsonPayload, $keys);
-        if ($resolved !== null) {
-            return $resolved;
+        $graphQlValue = $this->resolveGraphQlQueryValue($jsonPayload, $keys);
+        if ($graphQlValue !== null) {
+            return $graphQlValue;
         }
 
-        return $this->resolveGraphQlQueryValue($jsonPayload, $keys);
+        return $this->findStringValue($jsonPayload, $keys);
     }
 
     /**
@@ -84,7 +84,12 @@ final readonly class ApiRateLimitPayloadValueResolver
 
         $variables = $jsonPayload['variables'] ?? null;
         if (is_array($variables)) {
-            return $this->findGraphQlArgumentVariableValue($query, $variables, $keys);
+            $argumentValue = $this->findGraphQlArgumentVariableValue($query, $variables, $keys);
+            if ($argumentValue !== null) {
+                return $argumentValue;
+            }
+
+            return $this->findGraphQlInputObjectVariableValue($query, $variables, $keys);
         }
 
         return null;
@@ -177,6 +182,35 @@ final readonly class ApiRateLimitPayloadValueResolver
             $value = $variables[$matches[1]] ?? null;
             if (is_string($value) && $value !== '') {
                 return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param list<string> $keys
+     */
+    private function findGraphQlInputObjectVariableValue(
+        string $query,
+        array $variables,
+        array $keys
+    ): ?string {
+        $pattern = '/\binput\s*:\s*\$([A-Za-z_][A-Za-z0-9_]*)\b/';
+        if (preg_match_all($pattern, $query, $matches) === 0) {
+            return null;
+        }
+
+        foreach ($matches[1] as $variableName) {
+            $value = $variables[$variableName] ?? null;
+            if (!is_array($value)) {
+                continue;
+            }
+
+            $resolved = $this->findStringValue($value, $keys);
+            if ($resolved !== null) {
+                return $resolved;
             }
         }
 

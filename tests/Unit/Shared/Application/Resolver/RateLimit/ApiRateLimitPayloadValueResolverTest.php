@@ -122,6 +122,30 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($email, $resolver->resolve($request, ['email']));
     }
 
+    public function testResolveReturnsGraphQlInputVariableBeforeUnrelatedJsonKey(): void
+    {
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                [
+                    'email' => $this->faker->email(),
+                    'query' => $query,
+                    'variables' => ['input' => compact('email')],
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $this->createResolver()->resolve($request, ['email']));
+    }
+
     public function testResolveReturnsValueFromInlineGraphQlArgument(): void
     {
         $email = $this->faker->email();
@@ -150,6 +174,28 @@ GRAPHQL;
         $request = $this->createGraphQlRequest(
             json_encode(
                 ['query' => $query, 'variables' => ['e' => $email]],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
+    public function testResolveReturnsGraphQlArgumentVariableBeforeUnrelatedJsonKey(): void
+    {
+        $decoyEmail = $this->faker->email();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                ['email' => $decoyEmail, 'query' => $query, 'variables' => ['e' => $email]],
                 JSON_THROW_ON_ERROR
             )
         );
