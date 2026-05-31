@@ -104,8 +104,8 @@ final class ApiRateLimitListenerIntegrationTest extends AuthIntegrationTestCase
         $content = json_encode([
             'query' => sprintf(<<<'GRAPHQL'
 mutation {
-  passkeySignUpOptions(input: { email: "%s", initials: "%s" }) {
-    user { id }
+  passkeySignUpOptionsUser(input: { email: "%s", initials: "%s" }) {
+    user { challengeId }
   }
 }
 GRAPHQL, $email, $initials),
@@ -127,8 +127,8 @@ GRAPHQL, $email, $initials),
         $content = json_encode([
             'query' => sprintf(<<<'GRAPHQL'
 mutation {
-  passkeySignInOptions(input: { email: "%s" }) {
-    user { id }
+  passkeySignInOptionsUser(input: { email: "%s" }) {
+    user { challengeId }
   }
 }
 GRAPHQL, $email),

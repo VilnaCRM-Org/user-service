@@ -11,13 +11,13 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
     private const GRAPHQL_PATH = '/api/graphql';
     private const REGISTRATION_MUTATIONS = [
         'createUser',
-        'passkeySignUpOptions',
-        'passkeySignUpComplete',
+        'passkeySignUpOptionsUser',
+        'passkeySignUpCompleteUser',
     ];
     private const SIGNIN_MUTATIONS = [
-        'signIn',
-        'passkeySignInOptions',
-        'passkeySignInComplete',
+        'signInUser',
+        'passkeySignInOptionsUser',
+        'passkeySignInCompleteUser',
     ];
 
     public function __construct(

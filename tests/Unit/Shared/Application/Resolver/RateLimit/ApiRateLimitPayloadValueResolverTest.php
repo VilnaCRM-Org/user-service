@@ -12,7 +12,7 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
 {
     private const GRAPHQL_PATH = '/api/graphql';
     private const PASSKEY_SIGNIN_OPTIONS_MUTATION =
-        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }';
+        'mutation { passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } } }';
 
     public function testResolveReturnsNullForEmptyBody(): void
     {

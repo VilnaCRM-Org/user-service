@@ -118,6 +118,116 @@ GraphQL clients can use the matching passkey auth mutations on `AuthPayload`.
 The `credential` input and `publicKey` output use API Platform's `Iterable`
 scalar so WebAuthn browser JSON can be passed without flattening.
 
+The generated GraphQL contract exposes these passkey mutation field names:
+
+- `passkeySignUpOptionsUser(input: passkeySignUpOptionsUserInput!)`
+- `passkeySignUpCompleteUser(input: passkeySignUpCompleteUserInput!)`
+- `passkeySignInOptionsUser(input: passkeySignInOptionsUserInput!)`
+- `passkeySignInCompleteUser(input: passkeySignInCompleteUserInput!)`
+
+Sign-up options:
+
+```graphql
+mutation PasskeySignUpOptions($input: passkeySignUpOptionsUserInput!) {
+  passkeySignUpOptionsUser(input: $input) {
+    user {
+      challengeId
+      publicKey
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "email": "person@example.test",
+    "initials": "PE",
+    "displayName": "Person Example"
+  }
+}
+```
+
+Sign-up completion:
+
+```graphql
+mutation PasskeySignUpComplete($input: passkeySignUpCompleteUserInput!) {
+  passkeySignUpCompleteUser(input: $input) {
+    user {
+      accessToken
+      refreshToken
+      credentialId
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "challengeId": "01J00000000000000000000000",
+    "credential": {
+      "id": "credential-id",
+      "rawId": "credential-raw-id",
+      "type": "public-key",
+      "response": {}
+    },
+    "label": "Work laptop",
+    "rememberMe": true
+  }
+}
+```
+
+Sign-in options:
+
+```graphql
+mutation PasskeySignInOptions($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user {
+      challengeId
+      publicKey
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "email": "person@example.test",
+    "rememberMe": true
+  }
+}
+```
+
+Sign-in completion:
+
+```graphql
+mutation PasskeySignInComplete($input: passkeySignInCompleteUserInput!) {
+  passkeySignInCompleteUser(input: $input) {
+    user {
+      accessToken
+      refreshToken
+      pendingSessionId
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "challengeId": "01J00000000000000000000000",
+    "credential": {
+      "id": "credential-id",
+      "rawId": "credential-raw-id",
+      "type": "public-key",
+      "response": {}
+    }
+  }
+}
+```
+
 ## Load And Performance Verification
 
 The repeatable k6 coverage targets the server-side start-ceremony paths:

@@ -11,7 +11,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
 {
     private const GRAPHQL_PATH = '/api/graphql';
     private const PASSKEY_SIGNIN_OPTIONS_MUTATION =
-        'mutation { passkeySignInOptions(input: { email: "%s" }) { challengeId } }';
+        'mutation { passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } } }';
 
     private ApiRateLimitRequestResolver $resolver;
 
@@ -37,7 +37,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->safeEmail();
         $query = sprintf(
-            'mutation { passkeySignUpOptions(input: { email: "%s" }) { challengeId } }',
+            'mutation { passkeySignUpOptionsUser(input: { email: "%s" }) { user { challengeId } } }',
             $email
         );
 
@@ -49,7 +49,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $challengeId = $this->faker->uuid();
         $query = sprintf(
-            'mutation { passkeySignUpComplete(input: { challengeId: "%s" }) { accessToken } }',
+            'mutation { passkeySignUpCompleteUser(input: { challengeId: "%s" }) { user { accessToken } } }',
             $challengeId
         );
 
@@ -60,7 +60,7 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     {
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->email();
-        $query = 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { accessToken } }';
+        $query = 'mutation SignIn($input: signInUserInput!) { signInUser(input: $input) { user { accessToken } } }';
 
         $this->assertGraphQlLimiters(
             $query,
@@ -90,11 +90,29 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $challengeId = $this->faker->uuid();
         $query = sprintf(
-            'mutation { passkeySignInComplete(input: { challengeId: "%s" }) { accessToken } }',
+            'mutation { passkeySignInCompleteUser(input: { challengeId: "%s" }) { user { accessToken } } }',
             $challengeId
         );
 
         $this->assertGraphQlLimiters($query, $clientIp, $this->signInIpLimiters($clientIp));
+    }
+
+    public function testGeneratedGraphQlSpecExposesAuthFieldNamesCoveredByRateLimiter(): void
+    {
+        $spec = file_get_contents(dirname(__DIR__, 6) . '/.github/graphql-spec/spec');
+        if ($spec === false) {
+            self::fail('Generated GraphQL specification is not readable.');
+        }
+
+        foreach ([
+            'signInUser',
+            'passkeySignUpOptionsUser',
+            'passkeySignUpCompleteUser',
+            'passkeySignInOptionsUser',
+            'passkeySignInCompleteUser',
+        ] as $fieldName) {
+            self::assertStringContainsString(sprintf('%s(input:', $fieldName), $spec);
+        }
     }
 
     public function testResolveEndpointLimitersSkipsGraphQlAuthLimitersForGetRequest(): void
