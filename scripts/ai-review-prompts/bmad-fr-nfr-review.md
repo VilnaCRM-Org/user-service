@@ -247,21 +247,21 @@ Required review process:
    checks, fixtures, clocks, randomness, concurrency, retries, and external
    dependencies.
 10. Check QA best practices: automated tests for repeatable behavior, negative
-   paths, edge cases, regression coverage, security/data-loss risks, and no
-   lowered quality thresholds.
+    paths, edge cases, regression coverage, security/data-loss risks, and no
+    lowered quality thresholds.
 11. Check GitHub completion using the supplied PR number or by detecting the PR
-   for the current branch. If a PR cannot be identified, remote GitHub state
-   cannot be queried, or the review state cannot be verified, fail closed.
+    for the current branch. If a PR cannot be identified, remote GitHub state
+    cannot be queried, or the review state cannot be verified, fail closed.
 12. Check the CI gate separately. Local verification is supporting evidence, but
-   it does not replace GitHub check evidence for an open PR. If required
-   checks are configured, verify those required checks. If the repository
-   reports no required checks for the PR branch, verify the full current PR
-   check rollup instead. Exclude only `{STATUS_EXCLUDED_CONTEXT}` because that
-   is the BMAD gate's own in-flight result. Every other applicable check must
-   be complete and passing. If GitHub check data is unavailable, pending,
-   skipped unexpectedly, or failing, fail closed.
+    it does not replace GitHub check evidence for an open PR. If required
+    checks are configured, verify those required checks. If the repository
+    reports no required checks for the PR branch, verify the full current PR
+    check rollup instead. Exclude only `{STATUS_EXCLUDED_CONTEXT}` because that
+    is the BMAD gate's own in-flight result. Every other applicable check must
+    be complete and passing. If GitHub check data is unavailable, pending,
+    skipped unexpectedly, or failing, fail closed.
 13. Review only the current PR scope, but include related codebase impact within
-   that scope. Do not invent requirements. Do not accept guessed evidence.
+    that scope. Do not invent requirements. Do not accept guessed evidence.
 
 Output format (MUST follow exactly):
 
