@@ -153,6 +153,31 @@ GRAPHQL;
         );
     }
 
+    public function testGraphQlLimitersUseSelectedOperationOnly(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $decoyEmail = $this->faker->email();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation Decoy {
+  passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } }
+}
+mutation Real {
+  updateProject(input: { id: "project-id" }) { project { id } }
+}
+GRAPHQL,
+            $decoyEmail
+        );
+
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            extraPayload: ['operationName' => 'Real']
+        );
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
+    }
+
     public function testResolveEndpointLimitersForGraphQlPasskeySigninComplete(): void
     {
         $clientIp = $this->faker->ipv4();

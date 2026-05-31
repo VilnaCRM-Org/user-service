@@ -59,7 +59,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     private function containsMutation(Request $request, array $mutationNames): bool
     {
-        $payload = $request->getContent();
+        $payload = $this->resolveGraphQlOperationPayload($request);
         foreach ($mutationNames as $mutationName) {
             if (preg_match('/\b' . $mutationName . '\b/', $payload) === 1) {
                 return true;
@@ -67,6 +67,50 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         }
 
         return false;
+    }
+
+    private function resolveGraphQlOperationPayload(Request $request): string
+    {
+        $payload = $request->getContent();
+        $decoded = json_decode($payload, true);
+        if (!is_array($decoded)) {
+            return $payload;
+        }
+
+        $query = $decoded['query'] ?? null;
+        if (!is_string($query)) {
+            return $payload;
+        }
+
+        $operationName = $decoded['operationName'] ?? null;
+        if (!is_string($operationName) || $operationName === '') {
+            return $query;
+        }
+
+        return $this->extractNamedGraphQlOperation($query, $operationName);
+    }
+
+    private function extractNamedGraphQlOperation(string $query, string $operationName): string
+    {
+        if (preg_match_all(
+            '/\b(?:mutation|query|subscription)\s+[A-Za-z_][A-Za-z0-9_]*\b/',
+            $query,
+            $matches,
+            PREG_OFFSET_CAPTURE
+        ) === 0) {
+            return $query;
+        }
+
+        foreach ($matches[0] as $index => [$operation, $offset]) {
+            if (!str_ends_with($operation, ' ' . $operationName)) {
+                continue;
+            }
+
+            $next = $matches[0][$index + 1][1] ?? strlen($query);
+            return substr($query, $offset, $next - $offset);
+        }
+
+        return $query;
     }
 
     private function buildIpKey(Request $request): string

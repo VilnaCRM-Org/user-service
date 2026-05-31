@@ -203,6 +203,24 @@ GRAPHQL;
         self::assertSame($email, $resolver->resolve($request, ['email']));
     }
 
+    public function testResolveUsesSelectedGraphQlOperation(): void
+    {
+        $decoyEmail = $this->faker->email();
+        $email = $this->faker->email();
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                [
+                    'operationName' => 'Real',
+                    'query' => $this->createSelectedPasskeySigninQuery($decoyEmail),
+                    'variables' => ['e' => $email],
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $this->createResolver()->resolve($request, ['email']));
+    }
+
     public function testResolveInlineGraphQlArgumentRequiresExactKeyBoundary(): void
     {
         $ignoredEmail = $this->faker->email();
@@ -236,6 +254,21 @@ GRAPHQL;
     private function createResolver(): ApiRateLimitPayloadValueResolver
     {
         return new ApiRateLimitPayloadValueResolver($this->createJsonSerializer());
+    }
+
+    private function createSelectedPasskeySigninQuery(string $decoyEmail): string
+    {
+        return sprintf(
+            <<<'GRAPHQL'
+mutation Decoy {
+  passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } }
+}
+mutation Real($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) { user { challengeId } }
+}
+GRAPHQL,
+            $decoyEmail
+        );
     }
 
     private function createGraphQlRequest(string $content): Request

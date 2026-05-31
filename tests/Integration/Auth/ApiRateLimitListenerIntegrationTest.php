@@ -147,17 +147,7 @@ GRAPHQL, $email),
             sprintf('email:%s', $email),
             $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
         );
-        $content = json_encode([
-            'query' => <<<'GRAPHQL'
-mutation($e: String!) {
-  passkeySignInOptionsUser(input: { email: $e }) {
-    user { challengeId }
-  }
-}
-GRAPHQL,
-            'variables' => ['e' => $email],
-            'email' => $this->faker->safeEmail(),
-        ], JSON_THROW_ON_ERROR);
+        $content = $this->createSelectedPasskeySigninPayload($email);
 
         $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
 
@@ -226,6 +216,25 @@ GRAPHQL,
                 new \DateTimeImmutable('+5 minutes')
             )
         );
+    }
+
+    private function createSelectedPasskeySigninPayload(string $email): string
+    {
+        $decoyEmail = $this->faker->safeEmail();
+
+        return json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation Decoy {
+  passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } }
+}
+mutation Real($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) { user { challengeId } }
+}
+GRAPHQL, $decoyEmail),
+            'operationName' => 'Real',
+            'variables' => ['e' => $email],
+            'email' => $this->faker->safeEmail(),
+        ], JSON_THROW_ON_ERROR);
     }
 
     /**

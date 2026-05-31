@@ -76,6 +76,7 @@ final readonly class ApiRateLimitPayloadValueResolver
         if (!is_string($query)) {
             return null;
         }
+        $query = $this->selectGraphQlOperation($query, $jsonPayload);
 
         $inlineValue = $this->findGraphQlArgumentStringValue($query, $keys);
         if ($inlineValue !== null) {
@@ -215,5 +216,41 @@ final readonly class ApiRateLimitPayloadValueResolver
         }
 
         return null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $jsonPayload
+     */
+    private function selectGraphQlOperation(string $query, array $jsonPayload): string
+    {
+        $operationName = $jsonPayload['operationName'] ?? null;
+        if (!is_string($operationName) || $operationName === '') {
+            return $query;
+        }
+
+        return $this->extractNamedGraphQlOperation($query, $operationName);
+    }
+
+    private function extractNamedGraphQlOperation(string $query, string $operationName): string
+    {
+        if (preg_match_all(
+            '/\b(?:mutation|query|subscription)\s+[A-Za-z_][A-Za-z0-9_]*\b/',
+            $query,
+            $matches,
+            PREG_OFFSET_CAPTURE
+        ) === 0) {
+            return $query;
+        }
+
+        foreach ($matches[0] as $index => [$operation, $offset]) {
+            if (!str_ends_with($operation, ' ' . $operationName)) {
+                continue;
+            }
+
+            $next = $matches[0][$index + 1][1] ?? strlen($query);
+            return substr($query, $offset, $next - $offset);
+        }
+
+        return $query;
     }
 }
