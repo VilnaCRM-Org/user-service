@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Application\Resolver\RateLimit;
 
 use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
 
@@ -37,17 +38,33 @@ final readonly class ApiRateLimitGraphQlQueryInspector
         DocumentNode $document,
         ?string $operationName
     ): ?ApiRateLimitGraphQlQueryInspection {
+        $fragments = $this->collectFragments($document);
         foreach ($document->definitions as $definition) {
             if (!$definition instanceof OperationDefinitionNode) {
                 continue;
             }
 
             if ($this->operationMatches($definition, $operationName)) {
-                return new ApiRateLimitGraphQlQueryInspection($definition);
+                return new ApiRateLimitGraphQlQueryInspection($definition, $fragments);
             }
         }
 
         return null;
+    }
+
+    /**
+     * @return array<string, FragmentDefinitionNode>
+     */
+    private function collectFragments(DocumentNode $document): array
+    {
+        $fragments = [];
+        foreach ($document->definitions as $definition) {
+            if ($definition instanceof FragmentDefinitionNode) {
+                $fragments[$definition->name->value] = $definition;
+            }
+        }
+
+        return $fragments;
     }
 
     private function operationMatches(

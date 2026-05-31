@@ -395,13 +395,21 @@ workspace; GitHub Actions is the source of full-suite verification after push.
 - Post-BMAD GraphQL limiter hardening evidence collected on 2026-05-31 UTC:
   selected-operation auth limiter detection and sign-in email extraction now use
   AST inspection, so aliases, unrelated JSON `email` fields, unselected
-  operations, and operation-looking tokens inside GraphQL strings cannot poison
-  limiter selection. Focused PHPUnit passed 65 tests / 246 assertions. Focused
-  coverage for the changed rate-limit files reported all covered:
+  operations, operation-looking tokens inside GraphQL strings, root fragments,
+  inline fragments, missing/recursive fragments, and multi-root/aliased auth
+  mutations cannot bypass or poison limiter selection. Registration and sign-in
+  limiter targets are emitted per selected auth field; repeated same-email
+  sign-in aliases preserve duplicate `signin_ip` and `signin_email` target
+  consumption. Focused PHPUnit passed 74 tests / 259 assertions. Focused
+  coverage passed 53 tests / 69 assertions and reported all covered for
   `ApiRateLimitGraphQlAuthTargetResolver`,
+  `ApiRateLimitGraphQlFieldValueResolver`,
   `ApiRateLimitGraphQlQueryInspection`, `ApiRateLimitGraphQlQueryInspector`,
-  and `ApiRateLimitPayloadValueResolver`. `make phpinsights`, `make psalm`,
-  and `git diff --check` passed after the hardening.
+  `ApiRateLimitGraphQlRootFields`, `ApiRateLimitNestedPayloadStringResolver`,
+  and `ApiRateLimitPayloadValueResolver`. `make phpinsights` passed with source
+  scores Code 100, Complexity 97.3, Architecture 100, Style 100 and test scores
+  Code 100, Complexity 97.8, Architecture 100, Style 100. `make psalm` and
+  `git diff --check` passed after the hardening.
 - PHP syntax lint for modified and added PHP files: passed.
 - PHP-CS-Fixer for modified and added PHP files: passed.
 - Local AI review loop was run in a clean temporary worktree at commit `32334012`; it reported the three issues listed above, the fix pass changed only passkey source/tests/docs, and targeted re-verification passed.

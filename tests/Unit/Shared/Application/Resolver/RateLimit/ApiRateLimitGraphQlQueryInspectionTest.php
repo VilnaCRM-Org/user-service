@@ -35,28 +35,59 @@ GRAPHQL,
         self::assertFalse($inspection->containsMutationField(['passkeySignInOptionsUser']));
     }
 
-    public function testReadsOperationAfterFragmentsAndSkipsFragmentSelections(): void
+    public function testReadsOperationAfterFragmentsAndFollowsRootFragmentSelections(): void
     {
-        $inspection = $this->createInspection(
-            <<<'GRAPHQL'
-fragment IgnoredFields on Mutation {
-  signInUser(input: { email: "fragment@example.test" }) { user { id } }
-}
-mutation Real($input: signInUserInput!) {
-  ...IgnoredFields
-  signInUser(input: $input) { user { id } }
-}
-GRAPHQL,
-            'Real'
-        );
+        $inspection = $this->createInspection($this->fragmentSignInQuery(), 'Real');
 
         self::assertNotNull($inspection);
         self::assertTrue($inspection->containsMutationField(['signInUser']));
         self::assertSame(['input'], $inspection->inputVariableNames());
-        self::assertNull($inspection->findArgumentStringValue(['email']));
-        self::assertNull(
-            $inspection->findInputObjectVariableValue(['input' => ['name' => 'value']], ['email'])
+        self::assertSame('fragment@example.test', $inspection->findArgumentStringValue(['email']));
+        self::assertSame(
+            'selected@example.test',
+            $inspection->findInputObjectVariableValue(
+                ['input' => ['email' => 'selected@example.test']],
+                ['email']
+            )
         );
+    }
+
+    public function testReturnsScopedMutationFieldStringValuesFromFragments(): void
+    {
+        $inspection = $this->createInspection($this->scopedSignInQuery(), 'Real');
+
+        self::assertNotNull($inspection);
+        self::assertSame(
+            ['fragment@example.test', 'target@example.test'],
+            $inspection->findStringValuesForMutationFields(
+                $this->scopedSignInVariables(),
+                ['signInUser', 'passkeySignInOptionsUser'],
+                ['email']
+            )
+        );
+    }
+
+    public function testFollowsInlineFragmentsAndSkipsInvalidFragmentSpreads(): void
+    {
+        $inspection = $this->createInspection($this->inlineAndSkippedFragmentsQuery(), 'Real');
+
+        self::assertNotNull($inspection);
+        self::assertTrue($inspection->containsMutationField(['passkeySignInOptionsUser']));
+        self::assertSame('inline@example.test', $inspection->findArgumentStringValue(['email']));
+    }
+
+    public function testReturnsNullWhenInputVariableDoesNotContainKey(): void
+    {
+        $inspection = $this->createInspection(
+            'mutation Real($input: signInUserInput!) { signInUser(input: $input) { user { id } } }',
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertNull($inspection->findInputObjectVariableValue(
+            ['input' => ['name' => 'value']],
+            ['email']
+        ));
     }
 
     public function testReturnsDirectArgumentVariableName(): void
@@ -91,5 +122,59 @@ GRAPHQL,
         ?string $operationName
     ): ?ApiRateLimitGraphQlQueryInspection {
         return (new ApiRateLimitGraphQlQueryInspector())->inspect($query, $operationName);
+    }
+
+    private function scopedSignInQuery(): string
+    {
+        return <<<'GRAPHQL'
+mutation Real($target: String!, $input: signInUserInput!) {
+  updateProject(input: { email: "decoy@example.test" }) { project { id } }
+  ...SignInFields
+  passkeySignInOptionsUser(input: { email: $target }) { user { challengeId } }
+}
+fragment SignInFields on Mutation {
+  signInUser(input: $input) { user { id } }
+}
+GRAPHQL;
+    }
+
+    private function inlineAndSkippedFragmentsQuery(): string
+    {
+        return <<<'GRAPHQL'
+fragment Recursive on Mutation {
+  ...Recursive
+}
+mutation Real {
+  ...MissingFragment
+  ...Recursive
+  ... on Mutation {
+    passkeySignInOptionsUser(input: { email: "inline@example.test" }) { user { challengeId } }
+  }
+}
+GRAPHQL;
+    }
+
+    private function fragmentSignInQuery(): string
+    {
+        return <<<'GRAPHQL'
+fragment IgnoredFields on Mutation {
+  signInUser(input: { email: "fragment@example.test" }) { user { id } }
+}
+mutation Real($input: signInUserInput!) {
+  ...IgnoredFields
+  signInUser(input: $input) { user { id } }
+}
+GRAPHQL;
+    }
+
+    /**
+     * @return array<string, array<string, string>|string>
+     */
+    private function scopedSignInVariables(): array
+    {
+        return [
+            'target' => 'target@example.test',
+            'input' => ['credentials' => ['email' => 'fragment@example.test']],
+        ];
     }
 }

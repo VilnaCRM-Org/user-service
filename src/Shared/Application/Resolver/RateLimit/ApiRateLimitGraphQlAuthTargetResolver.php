@@ -36,16 +36,46 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
             return [];
         }
 
+        $inspection = $this->resolveGraphQlQueryInspection($request);
+        return [
+            ...$this->buildRegistrationTargets($request, $inspection),
+            ...$this->buildSignInMutationTargets($request, $inspection),
+        ];
+    }
+
+    /**
+     * @return list<array{name: 'registration', key: string}>
+     */
+    private function buildRegistrationTargets(
+        Request $request,
+        ?ApiRateLimitGraphQlQueryInspection $inspection
+    ): array {
         $targets = [];
-        if ($this->containsMutation($request, self::REGISTRATION_MUTATIONS)) {
+        $registrationMutationCount = $this->countMutations(
+            $request,
+            self::REGISTRATION_MUTATIONS,
+            $inspection
+        );
+        for ($index = 0; $index < $registrationMutationCount; ++$index) {
             $targets[] = ['name' => 'registration', 'key' => $this->buildIpKey($request)];
         }
 
-        if ($this->containsMutation($request, self::SIGNIN_MUTATIONS)) {
-            array_push($targets, ...$this->buildSignInTargets($request));
+        return $targets;
+    }
+
+    /**
+     * @return list<array{name: 'signin_email'|'signin_ip', key: string}>
+     */
+    private function buildSignInMutationTargets(
+        Request $request,
+        ?ApiRateLimitGraphQlQueryInspection $inspection
+    ): array {
+        $signInMutationCount = $this->countMutations($request, self::SIGNIN_MUTATIONS, $inspection);
+        if ($signInMutationCount === 0) {
+            return [];
         }
 
-        return $targets;
+        return $this->buildSignInTargets($request, $inspection, $signInMutationCount);
     }
 
     private function supports(Request $request): bool
@@ -57,12 +87,17 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
     /**
      * @return list<array{name: 'signin_email'|'signin_ip', key: string}>
      */
-    private function buildSignInTargets(Request $request): array
-    {
-        $targets = [['name' => 'signin_ip', 'key' => $this->buildIpKey($request)]];
+    private function buildSignInTargets(
+        Request $request,
+        ?ApiRateLimitGraphQlQueryInspection $inspection,
+        int $signInMutationCount
+    ): array {
+        $targets = [];
+        for ($index = 0; $index < $signInMutationCount; ++$index) {
+            $targets[] = ['name' => 'signin_ip', 'key' => $this->buildIpKey($request)];
+        }
 
-        $email = $this->clientIdentityResolver->resolveSignInEmail($request);
-        if ($email !== null) {
+        foreach ($this->resolveSignInEmails($request, $inspection) as $email) {
             $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
         }
 
@@ -70,23 +105,62 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
     }
 
     /**
+     * @return list<string>
+     */
+    private function resolveSignInEmails(
+        Request $request,
+        ?ApiRateLimitGraphQlQueryInspection $inspection
+    ): array {
+        if ($inspection === null) {
+            $email = $this->clientIdentityResolver->resolveSignInEmail($request);
+
+            return $email === null ? [] : [$email];
+        }
+
+        return $this->normalizeEmails($inspection->findStringValuesForMutationFields(
+            $this->resolveGraphQlVariables($request),
+            self::SIGNIN_MUTATIONS,
+            ['email'],
+        ));
+    }
+
+    /**
      * @param list<string> $mutationNames
      */
-    private function containsMutation(Request $request, array $mutationNames): bool
-    {
-        $inspection = $this->resolveGraphQlQueryInspection($request);
+    private function countMutations(
+        Request $request,
+        array $mutationNames,
+        ?ApiRateLimitGraphQlQueryInspection $inspection
+    ): int {
         if ($inspection !== null) {
-            return $inspection->containsMutationField($mutationNames);
+            return $inspection->countMutationFields($mutationNames);
         }
 
         $payload = $request->getContent();
         foreach ($mutationNames as $mutationName) {
             if (preg_match('/\b' . $mutationName . '\b/', $payload) === 1) {
-                return true;
+                return 1;
             }
         }
 
-        return false;
+        return 0;
+    }
+
+    /**
+     * @return array<array-key, array|string|int|float|bool|null>
+     */
+    private function resolveGraphQlVariables(Request $request): array
+    {
+        try {
+            /** @var array{variables?: array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null} $decoded */
+            $decoded = $request->toArray();
+        } catch (JsonException) {
+            return [];
+        }
+
+        $variables = $decoded['variables'] ?? null;
+
+        return is_array($variables) ? $variables : [];
     }
 
     private function resolveGraphQlQueryInspection(
@@ -119,6 +193,24 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
 
     private function buildEmailKey(string $email): string
     {
-        return sprintf('email:%s', $email);
+        return sprintf('email:%s', strtolower(trim($email)));
+    }
+
+    /**
+     * @param list<string> $emails
+     *
+     * @return list<string>
+     */
+    private function normalizeEmails(array $emails): array
+    {
+        $normalizedEmails = [];
+        foreach ($emails as $email) {
+            $normalizedEmail = strtolower(trim($email));
+            if ($normalizedEmail !== '') {
+                $normalizedEmails[] = $normalizedEmail;
+            }
+        }
+
+        return $normalizedEmails;
     }
 }
