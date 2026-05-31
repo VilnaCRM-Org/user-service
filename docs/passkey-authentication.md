@@ -124,6 +124,8 @@ The generated GraphQL contract exposes these passkey mutation field names:
 - `passkeySignUpCompleteUser(input: passkeySignUpCompleteUserInput!)`
 - `passkeySignInOptionsUser(input: passkeySignInOptionsUserInput!)`
 - `passkeySignInCompleteUser(input: passkeySignInCompleteUserInput!)`
+- `passkeyRegistrationOptionsUser(input: passkeyRegistrationOptionsUserInput!)`
+- `passkeyRegistrationCompleteUser(input: passkeyRegistrationCompleteUserInput!)`
 
 Sign-up options:
 
@@ -224,6 +226,52 @@ mutation PasskeySignInComplete($input: passkeySignInCompleteUserInput!) {
       "type": "public-key",
       "response": {}
     }
+  }
+}
+```
+
+Authenticated registration options:
+
+```graphql
+mutation PasskeyRegistrationOptions($input: passkeyRegistrationOptionsUserInput!) {
+  passkeyRegistrationOptionsUser(input: $input) {
+    user {
+      challengeId
+      publicKey
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {}
+}
+```
+
+Authenticated registration completion:
+
+```graphql
+mutation PasskeyRegistrationComplete($input: passkeyRegistrationCompleteUserInput!) {
+  passkeyRegistrationCompleteUser(input: $input) {
+    user {
+      credentialId
+    }
+  }
+}
+```
+
+```json
+{
+  "input": {
+    "challengeId": "01J00000000000000000000000",
+    "credential": {
+      "id": "credential-id",
+      "rawId": "credential-raw-id",
+      "type": "public-key",
+      "response": {}
+    },
+    "label": "Work laptop"
   }
 }
 ```
