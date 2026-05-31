@@ -128,4 +128,38 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
             'Generated codes should be unique'
         );
     }
+
+    public function testCreateContinuesAfterBiasedRandomByte(): void
+    {
+        $user = $this->createMock(User::class);
+        $user->method('getId')->willReturn($this->faker->uuid());
+
+        $ulid = $this->createMock(Ulid::class);
+        $ulid->method('__toString')->willReturn($this->faker->uuid());
+        $this->ulidFactory->method('create')->willReturn($ulid);
+
+        $recoveryCode = $this->createMock(RecoveryCode::class);
+        $this->recoveryCodeFactory->method('create')->willReturn($recoveryCode);
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('saveAll');
+
+        $randomCall = 0;
+        $factory = new RecoveryCodeBatchFactory(
+            $this->recoveryCodeRepository,
+            $this->recoveryCodeFactory,
+            $this->ulidFactory,
+            static function (int $length) use (&$randomCall): string {
+                self::assertSame(RecoveryCode::SEGMENT_LENGTH * 2, $length);
+                ++$randomCall;
+
+                return $randomCall % 2 === 1
+                    ? "\xFC\x00\x01\x02\x03\x04\x05\x06"
+                    : "\x07\x08\x09\x0A\x0B\x0C\x0D\x0E";
+            },
+        );
+
+        $codes = $factory->create($user);
+
+        self::assertSame('ABCD-EFGH', $codes[0]);
+    }
 }
