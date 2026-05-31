@@ -20,6 +20,11 @@ The NonFunctionals.com catalog categories are pinned for this repository as:
 Expanded quality dimensions are pinned for this repository as:
 {QUALITY_DIMENSIONS}
 
+System quality attributes from
+https://en.wikipedia.org/wiki/List_of_system_quality_attributes are pinned for
+this repository as:
+{SYSTEM_QUALITY_ATTRIBUTES}
+
 Whole-codebase impact surfaces are pinned for this repository as:
 {IMPACT_SURFACES}
 
@@ -38,11 +43,16 @@ Quality source model:
   OpenTelemetry/SRE signals, operational-excellence/releaseability, and
   sustainable resource-use lenses where the changed system surface makes them
   applicable.
+- Also use the Wikipedia system quality attribute list as a mandatory breadth
+  check. Every pinned system quality attribute must have a scored row. Do not
+  omit low-frequency attributes such as affordability, familiarity,
+  orthogonality, producibility, self-sustainability, securability, or
+  vulnerability.
 - Do not treat any catalog as a category-name checklist. For every applicable
-  category or expanded quality dimension, evaluate definition fit, key metrics,
-  measurable standards, testing/assessment methods, architectural context,
-  implementation controls, monitoring/operations, management/governance, and
-  anti-pattern avoidance.
+  category, expanded quality dimension, or system quality attribute, evaluate
+  definition fit, key metrics, measurable standards, testing/assessment
+  methods, architectural context, implementation controls, monitoring/
+  operations, management/governance, and anti-pattern avoidance.
 - A PASS score of 5/5 requires concrete evidence for every applicable
   subdimension or a concrete reason why that subdimension is outside the
   current PR scope. If measurable standards or verification evidence are
@@ -133,6 +143,20 @@ Expanded quality dimension checklist:
   reviewability, audit logs, safe autonomy boundaries, and human approval for
   high-risk writes.
 
+System quality attribute scorecard:
+
+- Score every pinned system quality attribute from `{SYSTEM_QUALITY_ATTRIBUTES}`.
+- Each row must state the checked meaning in this PR, evidence, source, score,
+  status, and improvement recommendation. If no improvement is needed, say
+  `Improvement: none`.
+- Do not use a blank not-applicable row. If an attribute is outside the current
+  PR scope, the row still needs a score and a concrete reason tied to changed
+  files, BMAD requirements, or graph impact evidence.
+- If a reasonable improvement, missing guardrail, missing metric, missing
+  documentation, missing test, missing CI check, or missing operational control
+  exists for an attribute, score below `{SCORE_THRESHOLD}/5`, mark it FAIL, and
+  include the implementation suggestion in Required Fixes.
+
 Whole-codebase impact review:
 
 - Review the current change set and all related codebase surfaces that could be
@@ -163,10 +187,37 @@ Scoring rubric:
 - 5/5: fully implemented, verified, traceable, and review-ready
 
 Passing threshold: every applicable FR, NFR, catalog category, expanded quality
-dimension, whole-codebase impact surface, QA checkpoint, manual-test
-requirement, GitHub completion gate, and CI gate must score
-`{SCORE_THRESHOLD}/5`. Anything below `{SCORE_THRESHOLD}/5` is a blocker.
-If evidence is missing or cannot be verified, fail closed.
+dimension, system quality attribute, whole-codebase impact surface, test-case
+matrix row, automated test/CI coverage row, flaky-test risk row, QA checkpoint,
+manual-test requirement, GitHub completion gate, and CI gate must score
+`{SCORE_THRESHOLD}/5`. Anything below `{SCORE_THRESHOLD}/5` is a blocker. If
+evidence is missing or cannot be verified, fail closed.
+
+Mandatory QA/test review:
+
+- For every FR, NFR, acceptance criterion, story requirement, expanded quality
+  dimension, and system quality attribute affected by the PR, generate the
+  positive, negative, and edge/boundary/race/timeout/error test cases that
+  should exist. Cover finite state combinations and meaningful equivalence
+  classes; do not stop at the tests already present.
+- Map each generated test case to automated evidence: unit, integration, E2E,
+  Behat, PHPUnit, Schemathesis, K6/load, mutation, static-analysis, security
+  scan, contract/schema, CI check, or another concrete automated check.
+- Manual evidence can support browser/device ceremonies or other behavior that
+  cannot be fully automated, but repeatable server-side behavior must have
+  automated tests and CI coverage. If repeatable FR/NFR behavior lacks
+  automation, score below `{SCORE_THRESHOLD}/5`, mark the gate FAIL, and
+  propose the exact tests to implement.
+- Review test quality for flaky-risk indicators: sleeps, wall-clock dependency,
+  random data without deterministic seeding, shared mutable state, order
+  dependency, parallel interference, eventual consistency without polling,
+  network/external-service dependency, timeouts, retries that hide failures,
+  race-prone assertions, fixture leakage, and unstable CI/environment
+  assumptions.
+- Treat missing negative tests, missing edge tests, missing vulnerability tests,
+  missing data-loss tests, missing concurrency/replay/idempotency tests, missing
+  contract checks, or missing flaky-test mitigation as blockers unless there is
+  a concrete source-backed reason they are outside PR scope.
 
 Required review process:
 
@@ -182,14 +233,26 @@ Required review process:
 4. Evaluate all pinned NonFunctionals.com categories and all expanded quality
    dimensions. For each row, enumerate applicable subdimensions checked. Use
    not applicable only with a concrete reason and source reference.
-5. Perform whole-codebase impact analysis for all pinned impact surfaces.
-6. Check QA best practices: automated tests for repeatable behavior, negative
+5. Evaluate every pinned system quality attribute from the Wikipedia-derived
+   list. Every row must include checked meaning, evidence, source, score,
+   status, and improvement recommendation.
+6. Perform whole-codebase impact analysis for all pinned impact surfaces.
+7. Build the Test Case Matrix by deriving positive, negative, and edge cases
+   from every FR/NFR/acceptance criterion/quality requirement, not just from
+   existing tests. Identify exact missing tests as blockers.
+8. Check Automated Test And CI Coverage: every repeatable FR/NFR/quality case
+   must map to automated tests and CI checks. Manual-only evidence is
+   insufficient for repeatable behavior.
+9. Check Flaky Test Risk across changed tests, impacted existing tests, CI
+   checks, fixtures, clocks, randomness, concurrency, retries, and external
+   dependencies.
+10. Check QA best practices: automated tests for repeatable behavior, negative
    paths, edge cases, regression coverage, security/data-loss risks, and no
    lowered quality thresholds.
-7. Check GitHub completion using the supplied PR number or by detecting the PR
+11. Check GitHub completion using the supplied PR number or by detecting the PR
    for the current branch. If a PR cannot be identified, remote GitHub state
    cannot be queried, or the review state cannot be verified, fail closed.
-8. Check the CI gate separately. Local verification is supporting evidence, but
+12. Check the CI gate separately. Local verification is supporting evidence, but
    it does not replace GitHub check evidence for an open PR. If required
    checks are configured, verify those required checks. If the repository
    reports no required checks for the PR branch, verify the full current PR
@@ -197,7 +260,7 @@ Required review process:
    is the BMAD gate's own in-flight result. Every other applicable check must
    be complete and passing. If GitHub check data is unavailable, pending,
    skipped unexpectedly, or failing, fail closed.
-9. Review only the current PR scope, but include related codebase impact within
+13. Review only the current PR scope, but include related codebase impact within
    that scope. Do not invent requirements. Do not accept guessed evidence.
 
 Output format (MUST follow exactly):
@@ -214,8 +277,12 @@ line, after the second line:
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
 GRAPH_IMPACT_CONTEXT: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+FLAKY_TEST_RISK: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -226,7 +293,11 @@ Then include these exact evidence markers, each on its own line:
 FR_NFR_MIN_SCORE: {SCORE_THRESHOLD}/5
 NFR_CATALOG_MIN_SCORE: {SCORE_THRESHOLD}/5
 EXPANDED_QUALITY_MIN_SCORE: {SCORE_THRESHOLD}/5
+SYSTEM_QUALITY_ATTRIBUTES_MIN_SCORE: {SCORE_THRESHOLD}/5
 IMPACT_ANALYSIS_MIN_SCORE: {SCORE_THRESHOLD}/5
+TEST_CASE_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
+AUTO_TEST_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
+FLAKY_TEST_RISK_MIN_SCORE: {SCORE_THRESHOLD}/5
 GITHUB_COMPLETION_STATE: APPROVED
 CI_CHECK_ROLLUP: PASSING
 
@@ -240,11 +311,21 @@ Then include these sections using the exact section names:
 - Expanded Quality Scorecard: every pinned expanded quality dimension with
   checked subdimensions, evidence or not-applicable reason, source, score,
   status
+- System Quality Attributes Scorecard: every pinned Wikipedia system quality
+  attribute with checked meaning, evidence or concrete not-applicable reason,
+  source, score, status, improvement recommendation
 - Whole-Codebase Impact Analysis: every pinned impact surface, related files or
-  concrete not-applicable reason, graph/relationship evidence where available,
-  source, score, status
+  concrete not-applicable reason, mandatory graph/relationship evidence, source,
+  score, status
 - Graph Impact Context: graph artifact path, graph provider, changed-file
   relationship edges inspected, source files validated, score, status
+- Test Case Matrix: every FR/NFR/acceptance/quality requirement with generated
+  positive, negative, and edge cases; mapped automated/manual evidence; missing
+  tests; score, status
+- Automated Test And CI Coverage: every repeatable FR/NFR/quality case mapped
+  to automated tests and CI checks; uncovered gaps; score, status
+- Flaky Test Risk: changed and impacted tests, nondeterminism sources,
+  mitigation/evidence, score, status
 - Manual Test Evidence: tester/date/scenario/steps/observed result/artifacts,
   score, status
 - QA Verification: commands, tests, CI, coverage, mutation, static analysis,
@@ -258,5 +339,8 @@ Then include these sections using the exact section names:
 For PASS, every listed section except Required Fixes must include scored
 evidence at `{SCORE_THRESHOLD}/5` or higher. The NFR Catalog Scorecard must
 cover `{NFR_CATEGORIES}`. The Expanded Quality Scorecard must cover
-`{QUALITY_DIMENSIONS}`. The Whole-Codebase Impact Analysis must cover
-`{IMPACT_SURFACES}`.
+`{QUALITY_DIMENSIONS}`. The System Quality Attributes Scorecard must cover
+`{SYSTEM_QUALITY_ATTRIBUTES}`. The Whole-Codebase Impact Analysis must cover
+`{IMPACT_SURFACES}`. The Test Case Matrix, Automated Test And CI Coverage, and
+Flaky Test Risk sections must include concrete evidence and scored PASS rows,
+not generic statements.

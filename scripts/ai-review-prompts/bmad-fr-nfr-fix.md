@@ -11,14 +11,18 @@ Review context:
 - Required score threshold: `{SCORE_THRESHOLD}/5`
 - NFR catalog categories: `{NFR_CATEGORIES}`
 - Expanded quality dimensions: `{QUALITY_DIMENSIONS}`
+- System quality attributes: `{SYSTEM_QUALITY_ATTRIBUTES}`
 - Whole-codebase impact surfaces: `{IMPACT_SURFACES}`
 - Required graph-backed impact context: `{IMPACT_CONTEXT}`
 
 The reviewer now checks more than the changed diff. It requires evidence for
 the pinned NonFunctionals.com catalog, expanded ISO/wider quality dimensions,
-graph/relationship context, and related whole-codebase impact surfaces. Treat
-missing graph or impact evidence as a blocker when the latest review marks it
-below `{SCORE_THRESHOLD}/5`.
+every pinned Wikipedia system quality attribute, generated positive/negative/
+edge test cases for every FR/NFR, automated test and CI coverage for repeatable
+behavior, flaky-test risk, graph/relationship context, and related
+whole-codebase impact surfaces. Treat missing graph, test, CI, flaky-risk, or
+quality-attribute evidence as a blocker when the latest review marks it below
+`{SCORE_THRESHOLD}/5`.
 
 Constraints:
 
@@ -30,6 +34,10 @@ Constraints:
 - Keep changes within the current PR scope and the referenced BMAD specs.
 - Do not fabricate manual evidence. If manual evidence is missing, add or
   update a checklist/template and clearly report the remaining human action.
+- Do not satisfy automated-test gaps with manual evidence when the behavior is
+  repeatable in CI. Add the missing unit, integration, E2E, contract,
+  load/performance, mutation, static-analysis, or security test instead, or
+  document a concrete technical reason automation is impossible.
 - Do not lower quality thresholds or add suppressions to hide failures, except
   repo-approved inline suppressions for locked analyzer configs such as
   `psalm.xml` and `infection.json5`, including specific DI-wired/static-analysis
@@ -41,13 +49,21 @@ Fix priorities:
 1. Missing or incorrect implementation for FR/NFR requirements.
 2. Missing automated tests or QA evidence for repeatable checks.
 3. Security, data-loss, privacy, availability, and dependability risks.
-4. Missing detailed NFR/expanded-quality evidence, tests, monitoring,
-   operational docs, or concrete not-applicable reasoning.
-5. Missing whole-codebase impact evidence across related runtime paths,
+4. Missing positive, negative, edge, boundary, race, replay, idempotency,
+   timeout, vulnerability, data-loss, or concurrency tests generated from
+   FR/NFR/acceptance criteria.
+5. Flaky tests or CI checks caused by sleeps, wall-clock dependence, random
+   data, shared mutable fixtures, order dependence, parallel interference,
+   external services, broad timeouts, or retries that hide failures.
+6. Missing detailed NFR, expanded-quality, or system-quality-attribute
+   evidence, tests, monitoring, operational docs, or concrete not-applicable
+   reasoning.
+7. Missing whole-codebase impact evidence across related runtime paths,
    architecture layers, data/persistence, public contracts, config, dependency,
    CI, docs, tests, operations, security/privacy, and compatibility surfaces.
-6. Missing manual-test checklist/evidence structure.
-7. Documentation and traceability gaps.
+8. Missing manual-test checklist/evidence structure for behavior that cannot be
+   automated.
+9. Documentation and traceability gaps.
 
 Output format (MUST follow exactly):
 

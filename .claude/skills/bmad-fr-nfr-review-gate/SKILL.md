@@ -1,6 +1,6 @@
 ---
 name: bmad-fr-nfr-review-gate
-description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, expanded quality dimension, whole-codebase impact surface, manual test expectation, QA best practice, GitHub review comment, approval, and CI check before completion.
+description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, expanded quality dimension, Wikipedia system quality attribute, positive/negative/edge test case, automated test and CI coverage expectation, flaky-test risk, whole-codebase impact surface, manual test expectation, QA best practice, GitHub review comment, approval, and CI check before completion.
 ---
 
 # BMAD FR/NFR Review Gate
@@ -8,8 +8,10 @@ description: Run a BMAD spec-driven post-implementation review gate. Use after i
 Use this skill after implementation when a PR, feature, bugfix, or task has
 BMAD specs under `specs/`. The gate checks whether the implementation
 corresponds to every functional and non-functional requirement, verifies
-expanded quality dimensions and related whole-codebase impact, then blocks
-completion until all applicable rows score 5/5.
+expanded quality dimensions, every pinned system quality attribute, generated
+positive/negative/edge test cases, automated test and CI coverage, flaky-test
+risk, and related whole-codebase impact, then blocks completion until all
+applicable rows score 5/5.
 
 ## Inputs
 
@@ -65,6 +67,14 @@ The gate also requires an Expanded Quality Scorecard covering:
 - Sustainability Resource Impact
 - AI Automation Governance
 
+It also requires a System Quality Attributes Scorecard covering every pinned
+attribute from
+https://en.wikipedia.org/wiki/List_of_system_quality_attributes. Each
+attribute must have a scored row with evidence, source, status, and an
+improvement recommendation. If an improvement, metric, guardrail, test, CI
+check, or operational control is missing, the row fails and the report must
+include a Required Fix.
+
 The Whole-Codebase Impact Analysis must cover changed and related surfaces:
 runtime paths, architecture/layer boundaries, domain model, persistence,
 public API/schema, async events/queues, config/env, dependencies/lockfiles,
@@ -89,10 +99,20 @@ than relying only on changed files.
 | 5/5   | Fully implemented, verified, traceable, and review-ready         |
 
 PASS requires all applicable FRs, NFRs, NFR catalog categories, expanded
-quality dimensions, whole-codebase impact surfaces, manual-test requirements,
-QA checkpoints, GitHub completion checks, and CI checks to score 5/5. A
-not-applicable row is allowed only with a concrete reason and source evidence.
-Missing evidence fails closed.
+quality dimensions, system quality attributes, generated test-case matrix rows,
+automated test and CI coverage rows, flaky-test risk rows, whole-codebase impact
+surfaces, manual-test requirements, QA checkpoints, GitHub completion checks,
+and CI checks to score 5/5. A not-applicable row is allowed only with a
+concrete reason and source evidence. Missing evidence fails closed.
+
+## Mandatory QA Matrix
+
+The reviewer must generate expected positive, negative, and edge/boundary/
+race/timeout/error cases from every FR, NFR, acceptance criterion, story, and
+quality requirement. It must map each repeatable case to automated tests and CI
+checks. Manual evidence is supporting evidence only for behavior that cannot be
+fully automated. Missing repeatable automated coverage, missing negative or edge
+tests, or unmitigated flaky-test risk blocks PASS.
 
 ## Workflow
 
@@ -100,13 +120,15 @@ Missing evidence fails closed.
    implementation-readiness files when present.
 2. Extract every FR, NFR, acceptance criterion, story requirement, and readiness
    requirement with source path evidence.
-3. Run the gate:
+3. Confirm expected positive, negative, and edge test classes from the spec so
+   missing automated coverage can be treated as a blocker.
+4. Run the gate:
 
    ```bash
    BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
    ```
 
-4. If manual testing is required, record evidence in a markdown file and rerun:
+5. If manual testing is required, record evidence in a markdown file and rerun:
 
    ```bash
    BMAD_REVIEW_SPEC_PATH=specs/my-bundle \
@@ -114,15 +136,15 @@ Missing evidence fails closed.
    make bmad-fr-nfr-review-gate
    ```
 
-5. If the review reports `STATUS: FAIL`, apply fixes within the current PR
+6. If the review reports `STATUS: FAIL`, apply fixes within the current PR
    scope, rerun `make ci`, then rerun the gate. When GitHub publishing is
    enabled, failed review iterations publish a failing commit status before the
    fix loop continues.
-6. Fetch and address GitHub comments with `make pr-comments` when a PR exists.
-7. Do not mark the PR/task complete until the gate reports `STATUS: PASS`,
+7. Fetch and address GitHub comments with `make pr-comments` when a PR exists.
+8. Do not mark the PR/task complete until the gate reports `STATUS: PASS`,
    `make ci` passes, GitHub comments are resolved, required checks pass, and no
    requested-changes review remains.
-8. For PR work, leave the final BMAD result visible on the PR through the
+9. For PR work, leave the final BMAD result visible on the PR through the
    generated PR comment and `BMAD FR/NFR Review Gate` commit status.
 
 ## Required PASS Markers
@@ -133,8 +155,12 @@ The review output must include:
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
 GRAPH_IMPACT_CONTEXT: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+FLAKY_TEST_RISK: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -144,7 +170,10 @@ CI_GATE: PASS
 The wrapper treats a `STATUS: PASS` without these markers as failure. In BMAD
 mode, `STATUS: PASS` or `STATUS: FAIL` must also be the exact first line of the
 review output. PASS also requires `EXPANDED_QUALITY_MIN_SCORE: 5/5` and
-`IMPACT_ANALYSIS_MIN_SCORE: 5/5` evidence markers.
+`IMPACT_ANALYSIS_MIN_SCORE: 5/5` evidence markers, plus
+`SYSTEM_QUALITY_ATTRIBUTES_MIN_SCORE: 5/5`, `TEST_CASE_COVERAGE_MIN_SCORE:
+5/5`, `AUTO_TEST_COVERAGE_MIN_SCORE: 5/5`, and `FLAKY_TEST_RISK_MIN_SCORE:
+5/5`.
 
 ## GitHub Publishing
 

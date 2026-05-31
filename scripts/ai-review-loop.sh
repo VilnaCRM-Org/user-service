@@ -25,6 +25,7 @@ pr_number="${AI_REVIEW_PR_NUMBER:-}"
 score_threshold="${AI_REVIEW_SCORE_THRESHOLD:-5}"
 nfr_categories="${AI_REVIEW_NFR_CATEGORIES:-Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability}"
 quality_dimensions="${AI_REVIEW_QUALITY_DIMENSIONS:-}"
+system_quality_attributes="${AI_REVIEW_SYSTEM_QUALITY_ATTRIBUTES:-}"
 impact_surfaces="${AI_REVIEW_IMPACT_SURFACES:-}"
 impact_context="${AI_REVIEW_IMPACT_CONTEXT:-}"
 require_gate_markers="${AI_REVIEW_REQUIRE_GATE_MARKERS:-false}"
@@ -128,6 +129,7 @@ agent_env=(
   -u AI_REVIEW_SCORE_THRESHOLD
   -u AI_REVIEW_NFR_CATEGORIES
   -u AI_REVIEW_QUALITY_DIMENSIONS
+  -u AI_REVIEW_SYSTEM_QUALITY_ATTRIBUTES
   -u AI_REVIEW_IMPACT_SURFACES
   -u AI_REVIEW_IMPACT_CONTEXT
   -u AI_REVIEW_REQUIRE_GATE_MARKERS
@@ -289,6 +291,7 @@ apply_prompt_placeholders() {
   template="${template//\{SCORE_THRESHOLD\}/$(escape_prompt_replacement "$score_threshold")}"
   template="${template//\{NFR_CATEGORIES\}/$(escape_prompt_replacement "$nfr_categories")}"
   template="${template//\{QUALITY_DIMENSIONS\}/$(escape_prompt_replacement "$quality_dimensions")}"
+  template="${template//\{SYSTEM_QUALITY_ATTRIBUTES\}/$(escape_prompt_replacement "$system_quality_attributes")}"
   template="${template//\{IMPACT_SURFACES\}/$(escape_prompt_replacement "$impact_surfaces")}"
   template="${template//\{IMPACT_CONTEXT\}/$(escape_prompt_replacement "$impact_value")}"
   template="${template//\{STATUS_CONTEXT\}/$(escape_prompt_replacement "$status_context_value")}"
@@ -414,7 +417,7 @@ review_section_content() {
       sub(/\*\*[[:space:]]*$/, "", heading)
     }
     heading ~ "^(#+[[:space:]]*)?" section ":" { in_section = 1; print; next }
-    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|Whole-Codebase Impact Analysis|Graph Impact Context|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
+    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|System Quality Attributes Scorecard|Whole-Codebase Impact Analysis|Graph Impact Context|Test Case Matrix|Automated Test And CI Coverage|Flaky Test Risk|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
     in_section { print }
   ' "$file"
 }
@@ -486,7 +489,8 @@ review_section_has_text_with_score() {
           cell_count = split_gfm_table_row(normalized, cells)
           last_cell_count = cell_count
           first_cell = cells[1]
-          if (tolower(first_cell) == "category") {
+          header = tolower(first_cell)
+          if (header == "category" || header == "dimension" || header == "attribute" || header == "surface" || header == "requirement" || header == "checkpoint" || header == "area") {
             score_col = 0
             for (i = 1; i <= cell_count; i++) {
               if (tolower(cells[i]) == "score") {
@@ -549,6 +553,93 @@ review_has_whole_codebase_graph_evidence() {
   return 1
 }
 
+review_has_test_case_matrix_evidence() {
+  local file="$1"
+  local section
+
+  section="$(review_section_content "$file" "Test Case Matrix")"
+  if ! grep -Eiq -- 'positive|happy[ -]?path|success' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks positive test-case evidence in Test Case Matrix." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'negative|failure|invalid|unauthorized|forbidden|error' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks negative test-case evidence in Test Case Matrix." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'edge|boundary|race|timeout|empty|null|limit|expiry|concurrency' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks edge-case evidence in Test Case Matrix." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'FR|functional requirement|NFR|non-functional requirement|quality' <<< "$section"; then
+    echo "Warning: BMAD PASS output does not map test cases to FR/NFR requirements." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'every|each|all' <<< "$section"; then
+    echo "Warning: BMAD PASS output does not claim full per-requirement test-case coverage." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'automated|unit|integration|e2e|end-to-end|behat|phpunit|ci|manual' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks test evidence mapping in Test Case Matrix." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'missing|gap|uncovered|required fix|none' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks explicit missing-test/gap assessment in Test Case Matrix." >&2
+    return 1
+  fi
+
+  return 0
+}
+
+review_has_auto_test_coverage_evidence() {
+  local file="$1"
+  local section
+
+  section="$(review_section_content "$file" "Automated Test And CI Coverage")"
+  if ! grep -Eiq -- 'automated|unit|integration|e2e|end-to-end|behat|phpunit|k6|schemathesis|infection|ci' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks automated test or CI evidence." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'FR|functional requirement|NFR|non-functional requirement|quality|acceptance' <<< "$section"; then
+    echo "Warning: BMAD PASS output does not map automated coverage to FR/NFR requirements." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'every|each|all|repeatable' <<< "$section"; then
+    echo "Warning: BMAD PASS output does not claim full repeatable automated coverage mapping." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'covered|coverage|verified|gap|missing|required fix' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks explicit automated coverage/gap assessment." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'github|workflow|check|pipeline|rollup|required' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks CI check mapping for automated coverage." >&2
+    return 1
+  fi
+
+  return 0
+}
+
+review_has_flaky_test_evidence() {
+  local file="$1"
+  local section
+
+  section="$(review_section_content "$file" "Flaky Test Risk")"
+  if ! grep -Eiq -- 'flaky|flake|nondeterministic|deterministic|race|timeout|sleep|random|clock|parallel|retry|order' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks flaky-test risk analysis." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'evidence|mitigat|risk|source|test|ci|command' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks flaky-test evidence or mitigation." >&2
+    return 1
+  fi
+  if ! grep -Eiq -- 'changed|impacted|existing|fixture|environment|dependency|clock|random|parallel|order|external|timeout|retry|sleep|race' <<< "$section"; then
+    echo "Warning: BMAD PASS output lacks concrete flaky-test risk sources inspected." >&2
+    return 1
+  fi
+
+  return 0
+}
+
 score_at_or_above_threshold_regex() {
   local scores=() score joined
 
@@ -563,7 +654,7 @@ score_at_or_above_threshold_regex() {
 
 review_has_scorecard_evidence() {
   local file="$1"
-  local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension impact_surface
+  local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension system_quality_attribute impact_surface
   local score_sections=(
     "Requirement Scorecard"
     "NFR Catalog Scorecard"
@@ -574,11 +665,16 @@ review_has_scorecard_evidence() {
   )
   local nfr_category_arr=()
   local quality_dimension_arr=()
+  local system_quality_attribute_arr=()
   local impact_surface_arr=()
 
   [[ -n "$quality_dimensions" ]] && score_sections+=("Expanded Quality Scorecard")
+  [[ -n "$system_quality_attributes" ]] && score_sections+=("System Quality Attributes Scorecard")
   [[ -n "$impact_surfaces" ]] && score_sections+=("Whole-Codebase Impact Analysis")
   [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] && score_sections+=("Graph Impact Context")
+  [[ "$required_gate_markers_raw" == *"TEST_CASE_MATRIX: PASS"* ]] && score_sections+=("Test Case Matrix")
+  [[ "$required_gate_markers_raw" == *"AUTO_TEST_COVERAGE: PASS"* ]] && score_sections+=("Automated Test And CI Coverage")
+  [[ "$required_gate_markers_raw" == *"FLAKY_TEST_RISK: PASS"* ]] && score_sections+=("Flaky Test Risk")
 
   local evidence_markers=(
     "FR_NFR_MIN_SCORE: ${score_threshold}/5" \
@@ -588,7 +684,11 @@ review_has_scorecard_evidence() {
   )
 
   [[ -n "$quality_dimensions" ]] && evidence_markers+=("EXPANDED_QUALITY_MIN_SCORE: ${score_threshold}/5")
+  [[ -n "$system_quality_attributes" ]] && evidence_markers+=("SYSTEM_QUALITY_ATTRIBUTES_MIN_SCORE: ${score_threshold}/5")
   [[ -n "$impact_surfaces" ]] && evidence_markers+=("IMPACT_ANALYSIS_MIN_SCORE: ${score_threshold}/5")
+  [[ "$required_gate_markers_raw" == *"TEST_CASE_MATRIX: PASS"* ]] && evidence_markers+=("TEST_CASE_COVERAGE_MIN_SCORE: ${score_threshold}/5")
+  [[ "$required_gate_markers_raw" == *"AUTO_TEST_COVERAGE: PASS"* ]] && evidence_markers+=("AUTO_TEST_COVERAGE_MIN_SCORE: ${score_threshold}/5")
+  [[ "$required_gate_markers_raw" == *"FLAKY_TEST_RISK: PASS"* ]] && evidence_markers+=("FLAKY_TEST_RISK_MIN_SCORE: ${score_threshold}/5")
 
   for evidence_marker in "${evidence_markers[@]}"; do
     if ! grep -Fxq -- "$evidence_marker" < <(tr -d '\r' < "$file"); then
@@ -607,8 +707,12 @@ review_has_scorecard_evidence() {
   )
 
   [[ -n "$quality_dimensions" ]] && required_sections+=("Expanded Quality Scorecard:")
+  [[ -n "$system_quality_attributes" ]] && required_sections+=("System Quality Attributes Scorecard:")
   [[ -n "$impact_surfaces" ]] && required_sections+=("Whole-Codebase Impact Analysis:")
   [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] && required_sections+=("Graph Impact Context:")
+  [[ "$required_gate_markers_raw" == *"TEST_CASE_MATRIX: PASS"* ]] && required_sections+=("Test Case Matrix:")
+  [[ "$required_gate_markers_raw" == *"AUTO_TEST_COVERAGE: PASS"* ]] && required_sections+=("Automated Test And CI Coverage:")
+  [[ "$required_gate_markers_raw" == *"FLAKY_TEST_RISK: PASS"* ]] && required_sections+=("Flaky Test Risk:")
 
   for section in "${required_sections[@]}"; do
     if ! grep -Fq -- "$section" "$file"; then
@@ -657,6 +761,18 @@ review_has_scorecard_evidence() {
     done
   fi
 
+  if [[ -n "$system_quality_attributes" ]]; then
+    IFS=',' read -r -a system_quality_attribute_arr <<< "$system_quality_attributes"
+    for system_quality_attribute in "${system_quality_attribute_arr[@]}"; do
+      system_quality_attribute="$(echo "$system_quality_attribute" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+      [[ -z "$system_quality_attribute" ]] && continue
+      if ! review_section_has_text_with_score "$file" "System Quality Attributes Scorecard" "$system_quality_attribute" "$threshold_regex"; then
+        echo "Warning: BMAD PASS output lacks ${score_threshold}/5 evidence for system quality attribute: $system_quality_attribute." >&2
+        return 1
+      fi
+    done
+  fi
+
   if [[ -n "$impact_surfaces" ]]; then
     IFS=',' read -r -a impact_surface_arr <<< "$impact_surfaces"
     for impact_surface in "${impact_surface_arr[@]}"; do
@@ -675,6 +791,18 @@ review_has_scorecard_evidence() {
   fi
   if [[ "$required_gate_markers_raw" == *"GRAPH_IMPACT_CONTEXT: PASS"* ]] \
     && ! review_has_whole_codebase_graph_evidence "$file"; then
+    return 1
+  fi
+  if [[ "$required_gate_markers_raw" == *"TEST_CASE_MATRIX: PASS"* ]] \
+    && ! review_has_test_case_matrix_evidence "$file"; then
+    return 1
+  fi
+  if [[ "$required_gate_markers_raw" == *"AUTO_TEST_COVERAGE: PASS"* ]] \
+    && ! review_has_auto_test_coverage_evidence "$file"; then
+    return 1
+  fi
+  if [[ "$required_gate_markers_raw" == *"FLAKY_TEST_RISK: PASS"* ]] \
+    && ! review_has_flaky_test_evidence "$file"; then
     return 1
   fi
 

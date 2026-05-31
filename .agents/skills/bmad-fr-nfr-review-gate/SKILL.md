@@ -4,8 +4,10 @@ description: >
   Codex entrypoint for post-implementation BMAD FR/NFR review gates. Use after
   a PR, feature, or bugfix has BMAD specs and must be checked against every
   functional requirement, non-functional requirement, expanded quality
-  dimension, whole-codebase impact surface, manual-test expectation, GitHub
-  review comment, approval, and CI check before completion.
+  dimension, Wikipedia system quality attribute, generated positive/negative/
+  edge test case, automated test and CI coverage expectation, flaky-test risk,
+  whole-codebase impact surface, manual-test expectation, GitHub review
+  comment, approval, and CI check before completion.
 ---
 
 This is the Codex wrapper. The canonical workflow lives in
@@ -36,9 +38,14 @@ Optional inputs:
 
 The gate uses the tracked AI review loop and BMAD-specific prompts. It fails
 unless every applicable FR, NFR, pinned NonFunctionals.com category, expanded
-quality dimension, whole-codebase impact surface, QA checkpoint, manual-test
-requirement, GitHub completion gate, and CI gate has 5/5 evidence or an
-explicit not-applicable reason with source evidence.
+quality dimension, Wikipedia system quality attribute, generated positive/
+negative/edge test case, automated test and CI coverage row, flaky-test risk
+row, whole-codebase impact surface, QA checkpoint, manual-test requirement,
+GitHub completion gate, and CI gate has 5/5 evidence or an explicit
+not-applicable reason with source evidence.
+It fails if repeatable FR/NFR behavior lacks automated tests that run in CI, if
+negative/edge/security/data-loss/concurrency cases are missing, or if changed
+or impacted tests have unmitigated flaky-test risk.
 Graph/relationship evidence is mandatory for whole-codebase impact scoring.
 Graphify, codebase-memory MCP, Deptrac graph output, CodeQL, SCIP, or similar
 tools can be supplied through `BMAD_REVIEW_IMPACT_CONTEXT`; otherwise the

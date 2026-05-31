@@ -36,8 +36,9 @@ USAGE
 
 bmad_nfr_categories="Performance, Usability, Maintainability, Availability, Interoperability, Security, Manageability, Automatability, Dependability"
 bmad_quality_dimensions="Functional Suitability, Performance Resource Sustainability, Compatibility Coexistence, Interaction Capability Accessibility, Reliability Resilience, Security Privacy Accountability, Maintainability Testability, Flexibility Portability, Safety Harm Prevention, Data Quality Integrity, Operational Excellence Releaseability, Observability Diagnosability, Supply-Chain Integrity, Compliance Governance, Sustainability Resource Impact, AI Automation Governance"
+bmad_system_quality_attributes="Accessibility, Accountability, Accuracy, Adaptability, Administrability, Affordability, Agility, Analyzability, Auditability, Autonomy, Availability, Compatibility, Composability, Confidentiality, Configurability, Convenience, Correctness, Credibility, Customizability, Debuggability, Degradability, Determinability, Demonstrability, Dependability, Deployability, Discoverability, Distributability, Durability, Effectiveness, Efficiency, Elasticity, Evolvability, Extensibility, Failure Transparency, Familiarity, Fault-Tolerance, Fidelity, Flexibility, Inspectability, Installability, Integrity, Interactivity, Interchangeability, Interoperability, Intuitiveness, Learnability, Localizability, Maintainability, Manageability, Mobility, Modifiability, Modularity, Observability, Operability, Orthogonality, Portability, Precision, Predictability, Process Capabilities, Producibility, Provability, Recoverability, Redundancy, Relevance, Reliability, Repairability, Repeatability, Reproducibility, Resilience, Responsiveness, Reusability, Robustness, Safety, Scalability, Seamlessness, Self-Sustainability, Serviceability, Securability, Simplicity, Stability, Standards Compliance, Survivability, Sustainability, Tailorability, Testability, Timeliness, Traceability, Transparency, Ubiquity, Understandability, Upgradability, Usability, Vulnerability"
 bmad_impact_surfaces="Runtime paths, Architecture and layer boundaries, Domain model, Persistence and database, Public API and schema, Async events and queues, Configuration and environment, Dependencies and lockfiles, CI and workflows, Tests and fixtures, Documentation, Operations and observability, Security and privacy, Backward compatibility"
-bmad_required_gate_markers="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,GRAPH_IMPACT_CONTEXT: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS"
+bmad_required_gate_markers="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,EXPANDED_QUALITY_SCORECARD: PASS,SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS,WHOLE_CODEBASE_IMPACT: PASS,GRAPH_IMPACT_CONTEXT: PASS,TEST_CASE_MATRIX: PASS,AUTO_TEST_COVERAGE: PASS,FLAKY_TEST_RISK: PASS,MANUAL_TEST_EVIDENCE: PASS,QA_BEST_PRACTICES: PASS,GITHUB_COMPLETION_GATE: PASS,CI_GATE: PASS"
 
 spec_path="${BMAD_REVIEW_SPEC_PATH:-${AI_REVIEW_SPEC_PATH:-}}"
 manual_evidence="${BMAD_REVIEW_MANUAL_EVIDENCE:-}"
@@ -473,6 +474,7 @@ export AI_REVIEW_SPEC_PATH="$spec_path"
 export AI_REVIEW_SCORE_THRESHOLD="5"
 export AI_REVIEW_NFR_CATEGORIES="$bmad_nfr_categories"
 export AI_REVIEW_QUALITY_DIMENSIONS="$bmad_quality_dimensions"
+export AI_REVIEW_SYSTEM_QUALITY_ATTRIBUTES="$bmad_system_quality_attributes"
 export AI_REVIEW_IMPACT_SURFACES="$bmad_impact_surfaces"
 export AI_REVIEW_IMPACT_CONTEXT="$impact_context"
 export AI_REVIEW_REQUIRE_GATE_MARKERS="true"

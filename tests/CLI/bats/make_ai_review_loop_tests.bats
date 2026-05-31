@@ -3,7 +3,216 @@
 load 'bats-support/load'
 load 'bats-assert/load'
 
+write_strict_bmad_pass_report_fixture() {
+  local output_file="$1"
+
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+FR_NFR_SCORECARD: PASS
+NFR_CATALOG_SCORECARD: PASS
+EXPANDED_QUALITY_SCORECARD: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+FLAKY_TEST_RISK: PASS
+MANUAL_TEST_EVIDENCE: PASS
+QA_BEST_PRACTICES: PASS
+GITHUB_COMPLETION_GATE: PASS
+CI_GATE: PASS
+FR_NFR_MIN_SCORE: 5/5
+NFR_CATALOG_MIN_SCORE: 5/5
+EXPANDED_QUALITY_MIN_SCORE: 5/5
+SYSTEM_QUALITY_ATTRIBUTES_MIN_SCORE: 5/5
+IMPACT_ANALYSIS_MIN_SCORE: 5/5
+TEST_CASE_COVERAGE_MIN_SCORE: 5/5
+AUTO_TEST_COVERAGE_MIN_SCORE: 5/5
+FLAKY_TEST_RISK_MIN_SCORE: 5/5
+GITHUB_COMPLETION_STATE: APPROVED
+CI_CHECK_ROLLUP: PASSING
+
+Requirement Scorecard:
+- FR-01 evidence: 5/5 PASS
+
+NFR Catalog Scorecard:
+- Performance: 5/5 PASS
+- Usability: 5/5 PASS
+- Maintainability: 5/5 PASS
+- Availability: 5/5 PASS
+- Interoperability: 5/5 PASS
+- Security: 5/5 PASS
+- Manageability: 5/5 PASS
+- Automatability: 5/5 PASS
+- Dependability: 5/5 PASS
+
+Expanded Quality Scorecard:
+- Functional Suitability: 5/5 PASS
+- Performance Resource Sustainability: 5/5 PASS
+- Compatibility Coexistence: 5/5 PASS
+- Interaction Capability Accessibility: 5/5 PASS
+- Reliability Resilience: 5/5 PASS
+- Security Privacy Accountability: 5/5 PASS
+- Maintainability Testability: 5/5 PASS
+- Flexibility Portability: 5/5 PASS
+- Safety Harm Prevention: 5/5 PASS
+- Data Quality Integrity: 5/5 PASS
+- Operational Excellence Releaseability: 5/5 PASS
+- Observability Diagnosability: 5/5 PASS
+- Supply-Chain Integrity: 5/5 PASS
+- Compliance Governance: 5/5 PASS
+- Sustainability Resource Impact: 5/5 PASS
+- AI Automation Governance: 5/5 PASS
+
+System Quality Attributes Scorecard:
+- Accessibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Accountability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Accuracy: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Adaptability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Administrability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Affordability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Agility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Analyzability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Auditability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Autonomy: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Availability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Compatibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Composability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Confidentiality: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Configurability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Convenience: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Correctness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Credibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Customizability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Debuggability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Degradability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Determinability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Demonstrability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Dependability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Deployability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Discoverability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Distributability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Durability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Effectiveness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Efficiency: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Elasticity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Evolvability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Extensibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Failure Transparency: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Familiarity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Fault-Tolerance: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Fidelity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Flexibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Inspectability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Installability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Integrity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Interactivity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Interchangeability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Interoperability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Intuitiveness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Learnability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Localizability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Maintainability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Manageability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Mobility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Modifiability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Modularity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Observability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Operability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Orthogonality: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Portability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Precision: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Predictability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Process Capabilities: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Producibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Provability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Recoverability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Redundancy: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Relevance: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Reliability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Repairability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Repeatability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Reproducibility: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Resilience: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Responsiveness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Reusability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Robustness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Safety: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Scalability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Seamlessness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Self-Sustainability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Serviceability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Securability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Simplicity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Stability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Standards Compliance: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Survivability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Sustainability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Tailorability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Testability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Timeliness: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Traceability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Transparency: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Ubiquity: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Understandability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Upgradability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Usability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+- Vulnerability: checked PR scope, graph impact, tests, and CI evidence; source Wikipedia/BMAD; Improvement: none. Score: 5/5 PASS
+
+Whole-Codebase Impact Analysis:
+- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
+- Architecture and layer boundaries: 5/5 PASS
+- Domain model: 5/5 PASS
+- Persistence and database: 5/5 PASS
+- Public API and schema: 5/5 PASS
+- Async events and queues: 5/5 PASS
+- Configuration and environment: 5/5 PASS
+- Dependencies and lockfiles: 5/5 PASS
+- CI and workflows: 5/5 PASS
+- Tests and fixtures: 5/5 PASS
+- Documentation: 5/5 PASS
+- Operations and observability: 5/5 PASS
+- Security and privacy: 5/5 PASS
+- Backward compatibility: 5/5 PASS
+
+Graph Impact Context:
+- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
+
+Test Case Matrix:
+- Every FR/NFR/quality requirement has positive success, negative invalid/error, and edge boundary/race/timeout/concurrency cases mapped to automated PHPUnit/Behat/CI evidence and manual evidence where required; missing gaps: none. Score: 5/5 PASS
+
+Automated Test And CI Coverage:
+- Every repeatable FR/NFR/quality acceptance case is covered by automated unit, integration, e2e, Behat, PHPUnit, Schemathesis, K6, Infection, and GitHub workflow check rollup evidence; missing required fix gaps: none. Score: 5/5 PASS
+
+Flaky Test Risk:
+- Changed and impacted existing tests inspected for flaky nondeterministic risk sources: sleeps, clock, random, parallel order, external dependency, timeout, retry, race, and fixture environment issues; mitigations evidenced by deterministic CI command/check rollup. Score: 5/5 PASS
+
+Manual Test Evidence:
+- Manual evidence reviewed: 5/5 PASS
+- Not applicable for shell validation fixture.
+
+QA Verification:
+- QA verification completed: 5/5 PASS
+- make ci: PASS
+
+GitHub Completion Gate:
+- GitHub completion verified: 5/5 PASS
+- reviewDecision APPROVED, unresolved threads 0.
+
+CI Gate:
+- Required CI checks verified: 5/5 PASS
+- statusCheckRollup PASSING.
+
+Required Fixes:
+- None.
+STATUS
+}
+
 setup() {
+  export BMAD_PASS_REPORT="${BATS_TEST_TMPDIR}/bmad-pass-report.md"
+  write_strict_bmad_pass_report_fixture "$BMAD_PASS_REPORT"
+
   if project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     cd "$project_root"
     return
@@ -347,93 +556,56 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  exit 0
+fi
 
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+}
 
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-Performance: 5/5 PASS
+write_mutating_bmad_pass_codex_stub() {
+  local bin_dir="$1"
 
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
 
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
 
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
 
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
+  cat >/dev/null
+  cp "${BMAD_PASS_REPORT}" "$output_file"
 
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  case "${BMAD_REPORT_MUTATION:-}" in
+    missing_system_attribute)
+      sed -i '/^- Repairability:/d' "$output_file"
+      ;;
+    weak_test_matrix)
+      perl -0pi -e 's/Test Case Matrix:\n.*?\n\nAutomated Test And CI Coverage:/Test Case Matrix:\n- Every FR\/NFR quality requirement has positive success cases mapped to automated PHPUnit CI evidence; missing gaps: none. Score: 5\/5 PASS\n\nAutomated Test And CI Coverage:/s' "$output_file"
+      ;;
+    weak_auto_coverage)
+      perl -0pi -e 's/Automated Test And CI Coverage:\n.*?\n\nFlaky Test Risk:/Automated Test And CI Coverage:\n- Every FR\/NFR quality case has automated unit coverage; missing gaps: none. Score: 5\/5 PASS\n\nFlaky Test Risk:/s' "$output_file"
+      ;;
+    weak_flaky_risk)
+      perl -0pi -e 's/Flaky Test Risk:\n.*?\n\nManual Test Evidence:/Flaky Test Risk:\n- Flaky risk reviewed. Score: 5\/5 PASS\n\nManual Test Evidence:/s' "$output_file"
+      ;;
+  esac
   exit 0
 fi
 
@@ -754,8 +926,12 @@ STATUS: PASS
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
 GRAPH_IMPACT_CONTEXT: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+FLAKY_TEST_RISK: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -1202,93 +1378,7 @@ if [[ "${1:-}" == "exec" ]]; then
   prompt="$(cat)"
   printf "%s" "$prompt" > "${PROMPT_CAPTURE}"
 
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -1534,93 +1624,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -1677,93 +1681,7 @@ if [[ "${1:-}" == "exec" ]]; then
   prompt="$(cat)"
   printf "%s" "$prompt" > "${PROMPT_CAPTURE}"
 
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -1838,93 +1756,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -1989,93 +1821,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -2128,93 +1874,7 @@ if [[ "${1:-}" == "exec" ]]; then
   prompt="$(cat)"
   printf "%s" "$prompt" > "${PROMPT_CAPTURE}"
 
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -2367,8 +2027,12 @@ STATUS: PASS
 FR_NFR_SCORECARD: PASS
 NFR_CATALOG_SCORECARD: PASS
 EXPANDED_QUALITY_SCORECARD: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
 WHOLE_CODEBASE_IMPACT: PASS
 GRAPH_IMPACT_CONTEXT: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+FLAKY_TEST_RISK: PASS
 MANUAL_TEST_EVIDENCE: PASS
 QA_BEST_PRACTICES: PASS
 GITHUB_COMPLETION_GATE: PASS
@@ -2426,93 +2090,8 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 0/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-Performance: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  sed -i '0,/FR-01 evidence: 5\/5 PASS/s//FR-01 evidence: 0\/5 PASS/' "$output_file"
   exit 0
 fi
 
@@ -3350,6 +2929,95 @@ SCRIPT
   assert_output --partial "Warning: BMAD PASS output does not use graph or relationship evidence in Whole-Codebase Impact Analysis."
 }
 
+@test "ai-review-loop rejects PASS without pinned system quality attribute coverage" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+  write_mutating_bmad_pass_codex_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    BMAD_REPORT_MUTATION=missing_system_attribute \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS" \
+    AI_REVIEW_SYSTEM_QUALITY_ATTRIBUTES="Accessibility, Repairability" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks 5/5 evidence for system quality attribute: Repairability."
+}
+
+@test "ai-review-loop rejects PASS without positive negative and edge test matrix evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+  write_mutating_bmad_pass_codex_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    BMAD_REPORT_MUTATION=weak_test_matrix \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,TEST_CASE_MATRIX: PASS" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks negative test-case evidence in Test Case Matrix."
+}
+
+@test "ai-review-loop rejects PASS without automated coverage to CI mapping" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+  write_mutating_bmad_pass_codex_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    BMAD_REPORT_MUTATION=weak_auto_coverage \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,AUTO_TEST_COVERAGE: PASS" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks CI check mapping for automated coverage."
+}
+
+@test "ai-review-loop rejects PASS without flaky-test risk source evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+  write_mutating_bmad_pass_codex_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    BMAD_REPORT_MUTATION=weak_flaky_risk \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRED_GATE_MARKERS="FR_NFR_SCORECARD: PASS,NFR_CATALOG_SCORECARD: PASS,FLAKY_TEST_RISK: PASS" \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: BMAD PASS output lacks concrete flaky-test risk sources inspected."
+}
+
 @test "ai-review-loop accepts bold markdown scorecard headings" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   mkdir -p "$bin_dir"
@@ -3998,96 +3666,8 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Review Notes:
-- A draft mention of Requirement Scorecard: 0/5 should not be parsed as the scorecard section.
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  sed -i '/Requirement Scorecard:/i Review Notes:\n- A draft mention of Requirement Scorecard: 0/5 should not be parsed as the scorecard section.\n' "$output_file"
   exit 0
 fi
 
@@ -4139,93 +3719,8 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-Performance: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Manual session date 1/5/2026; not a score.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  sed -i '/Manual evidence reviewed/a - Manual session date 1/5/2026; not a score.' "$output_file"
   exit 0
 fi
 
@@ -4277,93 +3772,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -4575,88 +3984,7 @@ STATUS
     exit 0
   fi
 
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -4827,93 +4155,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
@@ -5144,93 +4386,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  cat > "$output_file" <<'STATUS'
-STATUS: PASS
-0 issues.
-FR_NFR_SCORECARD: PASS
-NFR_CATALOG_SCORECARD: PASS
-EXPANDED_QUALITY_SCORECARD: PASS
-WHOLE_CODEBASE_IMPACT: PASS
-GRAPH_IMPACT_CONTEXT: PASS
-MANUAL_TEST_EVIDENCE: PASS
-QA_BEST_PRACTICES: PASS
-GITHUB_COMPLETION_GATE: PASS
-CI_GATE: PASS
-FR_NFR_MIN_SCORE: 5/5
-NFR_CATALOG_MIN_SCORE: 5/5
-EXPANDED_QUALITY_MIN_SCORE: 5/5
-IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
-CI_CHECK_ROLLUP: PASSING
-
-Requirement Scorecard:
-- FR-01 evidence: 5/5 PASS
-
-NFR Catalog Scorecard:
-- Performance: 5/5 PASS
-- Usability: 5/5 PASS
-- Maintainability: 5/5 PASS
-- Availability: 5/5 PASS
-- Interoperability: 5/5 PASS
-- Security: 5/5 PASS
-- Manageability: 5/5 PASS
-- Automatability: 5/5 PASS
-- Dependability: 5/5 PASS
-- Maintainability evidence: 5/5 PASS
-
-Expanded Quality Scorecard:
-- Functional Suitability: 5/5 PASS
-- Performance Resource Sustainability: 5/5 PASS
-- Compatibility Coexistence: 5/5 PASS
-- Interaction Capability Accessibility: 5/5 PASS
-- Reliability Resilience: 5/5 PASS
-- Security Privacy Accountability: 5/5 PASS
-- Maintainability Testability: 5/5 PASS
-- Flexibility Portability: 5/5 PASS
-- Safety Harm Prevention: 5/5 PASS
-- Data Quality Integrity: 5/5 PASS
-- Operational Excellence Releaseability: 5/5 PASS
-- Observability Diagnosability: 5/5 PASS
-- Supply-Chain Integrity: 5/5 PASS
-- Compliance Governance: 5/5 PASS
-- Sustainability Resource Impact: 5/5 PASS
-- AI Automation Governance: 5/5 PASS
-
-Whole-Codebase Impact Analysis:
-- Runtime paths: wrapper-generated local relationship graph edge evidence inspected in codebase-graph-impact-context.md: 5/5 PASS
-- Architecture and layer boundaries: 5/5 PASS
-- Domain model: 5/5 PASS
-- Persistence and database: 5/5 PASS
-- Public API and schema: 5/5 PASS
-- Async events and queues: 5/5 PASS
-- Configuration and environment: 5/5 PASS
-- Dependencies and lockfiles: 5/5 PASS
-- CI and workflows: 5/5 PASS
-- Tests and fixtures: 5/5 PASS
-- Documentation: 5/5 PASS
-- Operations and observability: 5/5 PASS
-- Security and privacy: 5/5 PASS
-- Backward compatibility: 5/5 PASS
-
-Graph Impact Context:
-- Provider/artifact path: wrapper-generated local relationship graph at codebase-graph-impact-context.md; changed-file relationship edges inspected and source files validated: 5/5 PASS
-
-Manual Test Evidence:
-- Manual evidence reviewed: 5/5 PASS
-- Not applicable for shell validation fixture.
-
-QA Verification:
-- QA verification completed: 5/5 PASS
-- make ci: PASS
-
-GitHub Completion Gate:
-- GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
-
-CI Gate:
-- Required CI checks verified: 5/5 PASS
-- statusCheckRollup PASSING.
-STATUS
+  cp "${BMAD_PASS_REPORT}" "$output_file"
   exit 0
 fi
 
