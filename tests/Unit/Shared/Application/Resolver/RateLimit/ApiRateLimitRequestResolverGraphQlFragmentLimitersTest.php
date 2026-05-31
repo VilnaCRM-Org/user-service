@@ -44,6 +44,24 @@ GRAPHQL;
         );
     }
 
+    public function testRegistrationLimiterConsumesEverySignupField(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation Real {
+  first: passkeySignUpOptionsUser(input: { email: "first@example.test" }) { user { id } }
+  second: passkeySignUpOptionsUser(input: { email: "second@example.test" }) { user { id } }
+}
+GRAPHQL;
+
+        $this->assertGraphQlLimiters(
+            $query,
+            $clientIp,
+            $this->registrationLimiters($clientIp, 2),
+            []
+        );
+    }
+
     public function testPasskeySigninOptionsUsesRootFragmentLimiter(): void
     {
         $clientIp = $this->faker->ipv4();
@@ -130,10 +148,22 @@ GRAPHQL;
         );
     }
 
+    public function testSigninEmailLimiterIgnoresBlankInlineEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation Real {
+  passkeySignInOptionsUser(input: { email: "   " }) { user { challengeId } }
+}
+GRAPHQL;
+
+        $this->assertGraphQlLimiters($query, $clientIp, $this->signInIpLimiters($clientIp, 1), []);
+    }
+
     public function testRawGraphQlSigninRequestUsesInlineEmailLimiter(): void
     {
         $clientIp = $this->faker->ipv4();
-        $email = $this->faker->email();
+        $email = '  MixedCase@example.TEST  ';
         $query = sprintf(
             <<<'GRAPHQL'
 mutation {
@@ -151,6 +181,31 @@ GRAPHQL,
             $this->signInLimiters($clientIp, $email),
             $this->resolver->resolveEndpointLimiters($request)
         );
+    }
+
+    public function testInvalidGraphQlJsonSigninFallbackUsesPayloadEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = '  MixedFallback@example.TEST  ';
+        $request = $this->createJsonGraphQlRequest(
+            $clientIp,
+            ['query' => 42, 'operation' => 'passkeySignInOptionsUser', 'email' => $email]
+        );
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testInvalidGraphQlJsonWithoutSigninTokenIgnoresPayloadEmail(): void
+    {
+        $request = $this->createJsonGraphQlRequest(
+            $this->faker->ipv4(),
+            ['query' => 42, 'email' => $this->faker->email()]
+        );
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
     }
 
     /**
@@ -179,11 +234,14 @@ GRAPHQL,
     /**
      * @return list<array{name: string, key: string}>
      */
-    private function registrationLimiters(string $clientIp): array
+    private function registrationLimiters(string $clientIp, int $attempts = 1): array
     {
-        return [
-            ['name' => 'registration', 'key' => 'ip:' . $clientIp],
-        ];
+        $limiters = [];
+        for ($index = 0; $index < $attempts; ++$index) {
+            $limiters[] = ['name' => 'registration', 'key' => 'ip:' . $clientIp];
+        }
+
+        return $limiters;
     }
 
     /**
@@ -204,10 +262,26 @@ GRAPHQL,
     ): array {
         $limiters = $this->signInIpLimiters($clientIp, $attempts);
         foreach ($emails as $email) {
-            $limiters[] = ['name' => 'signin_email', 'key' => 'email:' . strtolower($email)];
+            $limiters[] = ['name' => 'signin_email', 'key' => 'email:' . strtolower(trim($email))];
         }
 
         return $limiters;
+    }
+
+    /**
+     * @param array<string, array<string, string>|int|string> $payload
+     */
+    private function createJsonGraphQlRequest(string $clientIp, array $payload): Request
+    {
+        return Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json', 'REMOTE_ADDR' => $clientIp],
+            json_encode($payload, JSON_THROW_ON_ERROR)
+        );
     }
 
     private function createRawGraphQlRequest(string $query, string $clientIp): Request

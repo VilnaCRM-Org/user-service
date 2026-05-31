@@ -46,6 +46,53 @@ GRAPHQL;
         self::assertSame($email, $this->createResolver()->resolve($request, ['email']));
     }
 
+    public function testResolveEscapesRegexCharactersInVariableKey(): void
+    {
+        $value = $this->faker->word();
+        $query = <<<'GRAPHQL'
+mutation($wrong: String!, $target: String!) {
+  m(input: { clientXid: $wrong, client.id: $target }) { ok }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                ['query' => $query, 'variables' => ['wrong' => 'wrong', 'target' => $value]],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($value, $this->createResolver()->resolve($request, ['client.id']));
+    }
+
+    public function testResolveTriesLaterKeysWhenInvalidGraphQlVariableKeyMisses(): void
+    {
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  m(input: { email: $e, client.id: "invalid" }) { ok }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            json_encode(['query' => $query, 'variables' => ['e' => $email]], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertSame($email, $this->createResolver()->resolve($request, ['missing', 'email']));
+    }
+
+    public function testResolveRejectsInvalidGraphQlNonStringVariableValue(): void
+    {
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  m(input: { email: $e, client.id: "invalid" }) { ok }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            json_encode(['query' => $query, 'variables' => ['e' => 42]], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertNull($this->createResolver()->resolve($request, ['email']));
+    }
+
     public function testResolveFallsBackToRegexInputVariableForInvalidGraphQl(): void
     {
         $email = $this->faker->email();
@@ -59,6 +106,27 @@ GRAPHQL;
                 [
                     'query' => $query,
                     'variables' => ['input' => compact('email')],
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $this->createResolver()->resolve($request, ['email']));
+    }
+
+    public function testResolveFallsBackToLaterRegexInputVariableForInvalidGraphQl(): void
+    {
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($first: passkeySignInOptionsUserInput!, $second: passkeySignInOptionsUserInput!) {
+  m(input: $first, input: $second, client.id: "invalid") { ok }
+}
+GRAPHQL;
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                [
+                    'query' => $query,
+                    'variables' => ['first' => 'not-array', 'second' => compact('email')],
                 ],
                 JSON_THROW_ON_ERROR
             )

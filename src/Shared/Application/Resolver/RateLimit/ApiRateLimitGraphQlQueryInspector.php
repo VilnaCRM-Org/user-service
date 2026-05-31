@@ -75,6 +75,10 @@ final readonly class ApiRateLimitGraphQlQueryInspector
             return true;
         }
 
-        return $operation->name?->value === $operationName;
+        if ($operation->name === null) {
+            return false;
+        }
+
+        return $operation->name->value === $operationName;
     }
 }

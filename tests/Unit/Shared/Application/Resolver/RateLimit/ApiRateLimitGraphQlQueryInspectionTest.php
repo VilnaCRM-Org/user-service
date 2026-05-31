@@ -76,6 +76,35 @@ GRAPHQL,
         self::assertSame('inline@example.test', $inspection->findArgumentStringValue(['email']));
     }
 
+    public function testCollectsMultipleFragmentDefinitions(): void
+    {
+        $inspection = $this->createInspection($this->multiFragmentSignInQuery(), 'Real');
+
+        self::assertNotNull($inspection);
+        self::assertSame(2, $inspection->countMutationFields([
+            'signInUser',
+            'passkeySignInOptionsUser',
+        ]));
+        self::assertSame(
+            ['first@example.test', 'second@example.test'],
+            $inspection->findStringValuesForMutationFields(
+                [],
+                ['signInUser', 'passkeySignInOptionsUser'],
+                ['email']
+            )
+        );
+    }
+
+    public function testReturnsNullForAnonymousOperationWhenSpecificNameRequested(): void
+    {
+        $inspection = $this->createInspection(
+            'mutation { signInUser(input: { email: "user@example.test" }) { user { id } } }',
+            'Real'
+        );
+
+        self::assertNull($inspection);
+    }
+
     public function testReturnsNullWhenInputVariableDoesNotContainKey(): void
     {
         $inspection = $this->createInspection(
@@ -100,6 +129,116 @@ GRAPHQL,
         self::assertNotNull($inspection);
         self::assertSame('email', $inspection->findArgumentVariableName(['email']));
         self::assertSame([], $inspection->inputVariableNames());
+    }
+
+    public function testReturnsNullForMissingDirectArgumentVariable(): void
+    {
+        $inspection = $this->createInspection(
+            'mutation Real { signInUser(input: { email: "user@example.test" }) { user { id } } }',
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertNull($inspection->findArgumentVariableValue(
+            ['' => 'leak@example.test'],
+            ['email']
+        ));
+    }
+
+    public function testRejectsEmptyAndNonStringVariableValues(): void
+    {
+        $inspection = $this->createInspection(
+            'mutation Real($email: String!) { signInUser(email: $email) { user { id } } }',
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertNull($inspection->findArgumentVariableValue(['email' => ''], ['email']));
+        self::assertNull($inspection->findArgumentVariableValue(['email' => 42], ['email']));
+    }
+
+    public function testFieldStringValuesRejectEmptyAndNonStringVariableValues(): void
+    {
+        $inspection = $this->createInspection(
+            <<<'GRAPHQL'
+mutation Real($email: String!) {
+  passkeySignInOptionsUser(input: { email: $email }) { user { id } }
+}
+GRAPHQL,
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertSame([], $inspection->findStringValuesForMutationFields(
+            ['email' => ''],
+            ['passkeySignInOptionsUser'],
+            ['email']
+        ));
+        self::assertSame([], $inspection->findStringValuesForMutationFields(
+            ['email' => 42],
+            ['passkeySignInOptionsUser'],
+            ['email']
+        ));
+    }
+
+    public function testKeepsAllStringValuesResolvedForOneField(): void
+    {
+        $inspection = $this->createInspection(
+            <<<'GRAPHQL'
+mutation Real($input: signInUserInput!) {
+  signInUser(email: "direct@example.test", input: $input) { user { id } }
+}
+GRAPHQL,
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertSame(
+            ['direct@example.test', 'variable@example.test'],
+            $inspection->findStringValuesForMutationFields(
+                ['input' => ['email' => 'variable@example.test']],
+                ['signInUser'],
+                ['email']
+            )
+        );
+    }
+
+    public function testInputVariableNamesAreUniqueAndStable(): void
+    {
+        $inspection = $this->createInspection($this->duplicatedInputVariableQuery(), 'Real');
+
+        self::assertNotNull($inspection);
+        self::assertSame(['first', 'second'], $inspection->inputVariableNames());
+    }
+
+    public function testInputVariableNamesKeepMultipleInputArgumentsOnOneField(): void
+    {
+        $inspection = $this->createInspection(
+            <<<'GRAPHQL'
+mutation Real($first: signInUserInput!, $second: signInUserInput!) {
+  signInUser(input: $first, input: $second) { user { id } }
+}
+GRAPHQL,
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertSame(['first', 'second'], $inspection->inputVariableNames());
+    }
+
+    public function testInputVariableNamesContinuePastOtherArguments(): void
+    {
+        $inspection = $this->createInspection(
+            <<<'GRAPHQL'
+mutation Real($input: signInUserInput!) {
+  signInUser(clientMutationId: "client-id", input: $input) { user { id } }
+}
+GRAPHQL,
+            'Real'
+        );
+
+        self::assertNotNull($inspection);
+        self::assertSame(['input'], $inspection->inputVariableNames());
     }
 
     public function testReturnsNestedObjectStringValue(): void
@@ -150,6 +289,33 @@ mutation Real {
   ... on Mutation {
     passkeySignInOptionsUser(input: { email: "inline@example.test" }) { user { challengeId } }
   }
+}
+GRAPHQL;
+    }
+
+    private function multiFragmentSignInQuery(): string
+    {
+        return <<<'GRAPHQL'
+fragment FirstSignIn on Mutation {
+  signInUser(input: { email: "first@example.test" }) { user { id } }
+}
+fragment SecondSignIn on Mutation {
+  passkeySignInOptionsUser(input: { email: "second@example.test" }) { user { id } }
+}
+mutation Real {
+  ...FirstSignIn
+  ...SecondSignIn
+}
+GRAPHQL;
+    }
+
+    private function duplicatedInputVariableQuery(): string
+    {
+        return <<<'GRAPHQL'
+mutation Real($first: signInUserInput!, $second: signInUserInput!) {
+  first: signInUser(input: $first) { user { id } }
+  second: signInUser(input: $first) { user { id } }
+  third: signInUser(input: $second) { user { id } }
 }
 GRAPHQL;
     }

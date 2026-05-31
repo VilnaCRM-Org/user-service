@@ -151,6 +151,17 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     private function resolveGraphQlVariables(Request $request): array
     {
+        $decoded = $this->decodeGraphQlJsonPayload($request);
+        $variables = $decoded['variables'] ?? null;
+
+        return is_array($variables) ? $variables : [];
+    }
+
+    /**
+     * @return array{variables?: array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null}
+     */
+    private function decodeGraphQlJsonPayload(Request $request): array
+    {
         try {
             /** @var array{variables?: array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null} $decoded */
             $decoded = $request->toArray();
@@ -158,9 +169,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
             return [];
         }
 
-        $variables = $decoded['variables'] ?? null;
-
-        return is_array($variables) ? $variables : [];
+        return $decoded;
     }
 
     private function resolveGraphQlQueryInspection(
@@ -205,9 +214,8 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
     {
         $normalizedEmails = [];
         foreach ($emails as $email) {
-            $normalizedEmail = strtolower(trim($email));
-            if ($normalizedEmail !== '') {
-                $normalizedEmails[] = $normalizedEmail;
+            if (trim($email) !== '') {
+                $normalizedEmails[] = $email;
             }
         }
 

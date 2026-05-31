@@ -41,14 +41,18 @@ final readonly class ApiRateLimitGraphQlRootFields
             return [];
         }
 
-        return array_values(array_filter(
-            $this->all(),
-            static fn (FieldNode $field): bool => in_array($field->name->value, $fieldNames, true)
-        ));
+        $matchingFields = [];
+        foreach ($this->all() as $field) {
+            if (in_array($field->name->value, $fieldNames, true)) {
+                $matchingFields[] = $field;
+            }
+        }
+
+        return $matchingFields;
     }
 
     /**
-     * @param array<string, true> $visitedFragmentNames
+     * @param array<string, string> $visitedFragmentNames
      *
      * @return list<FieldNode>
      */
@@ -68,7 +72,7 @@ final readonly class ApiRateLimitGraphQlRootFields
     }
 
     /**
-     * @param array<string, true> $visitedFragmentNames
+     * @param array<string, string> $visitedFragmentNames
      *
      * @return list<FieldNode>
      */
@@ -90,7 +94,7 @@ final readonly class ApiRateLimitGraphQlRootFields
     }
 
     /**
-     * @param array<string, true> $visitedFragmentNames
+     * @param array<string, string> $visitedFragmentNames
      *
      * @return list<FieldNode>
      */
@@ -110,7 +114,7 @@ final readonly class ApiRateLimitGraphQlRootFields
 
         return $this->collectFromSelectionSet(
             $fragment->selectionSet,
-            $visitedFragmentNames + [$fragmentName => true]
+            $visitedFragmentNames + [$fragmentName => $fragmentName]
         );
     }
 }

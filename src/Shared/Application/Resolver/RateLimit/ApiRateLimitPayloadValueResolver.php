@@ -139,7 +139,7 @@ final readonly class ApiRateLimitPayloadValueResolver
             return $argumentValue;
         }
 
-        return $this->findGraphQlInputObjectVariableValue($query, $variables, $keys);
+        return null;
     }
 
     /**
@@ -229,35 +229,6 @@ final readonly class ApiRateLimitPayloadValueResolver
             $value = $variables[$matches[1]] ?? null;
             if (is_string($value) && $value !== '') {
                 return $value;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $variables
-     * @param list<string> $keys
-     */
-    private function findGraphQlInputObjectVariableValue(
-        string $query,
-        array $variables,
-        array $keys
-    ): ?string {
-        $pattern = '/\binput\s*:\s*\$([A-Za-z_][A-Za-z0-9_]*)\b/';
-        if (preg_match_all($pattern, $query, $matches) === 0) {
-            return null;
-        }
-
-        foreach ($matches[1] as $variableName) {
-            $value = $variables[$variableName] ?? null;
-            if (!is_array($value)) {
-                continue;
-            }
-
-            $resolved = $this->findStringValue($value, $keys);
-            if ($resolved !== null) {
-                return $resolved;
             }
         }
 

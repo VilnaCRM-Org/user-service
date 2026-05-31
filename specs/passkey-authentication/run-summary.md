@@ -400,15 +400,25 @@ workspace; GitHub Actions is the source of full-suite verification after push.
   mutations cannot bypass or poison limiter selection. Registration and sign-in
   limiter targets are emitted per selected auth field; repeated same-email
   sign-in aliases preserve duplicate `signin_ip` and `signin_email` target
-  consumption. Focused PHPUnit passed 74 tests / 259 assertions. Focused
-  coverage passed 53 tests / 69 assertions and reported all covered for
+  consumption. Follow-up mutation-survivor hardening removed a redundant invalid
+  GraphQL input-object fallback, made selected operation matching explicit, kept
+  repeated-fragment traversal state observable, and added negative/edge tests for
+  fragment expansion, selected-operation scoping, duplicate auth fields,
+  same-email aliases, invalid GraphQL JSON fallback, blank emails, non-string
+  variables, and missing variable decoys. Focused PHPUnit passed 91 tests / 287
+  assertions. Focused coverage passed 70 tests / 97 assertions and reported all
+  covered for
   `ApiRateLimitGraphQlAuthTargetResolver`,
   `ApiRateLimitGraphQlFieldValueResolver`,
   `ApiRateLimitGraphQlQueryInspection`, `ApiRateLimitGraphQlQueryInspector`,
   `ApiRateLimitGraphQlRootFields`, `ApiRateLimitNestedPayloadStringResolver`,
-  and `ApiRateLimitPayloadValueResolver`. `make phpinsights` passed with source
-  scores Code 100, Complexity 97.3, Architecture 100, Style 100 and test scores
-  Code 100, Complexity 97.8, Architecture 100, Style 100. `make psalm` and
+  and `ApiRateLimitPayloadValueResolver`. Full local `make infection` passed
+  after the hardening: 5281 mutations generated, 5278 killed, 3 timed out, MSI
+  100%, covered MSI 100%. The affected rate-limit Infection slice also passed:
+  259 mutations generated, 256 killed, 3 timed out, MSI 100%, covered MSI 100%.
+  `make phpinsights` passed with source scores Code 100, Complexity 97.3,
+  Architecture 100, Style 100 and test scores Code 100, Complexity 97.8,
+  Architecture 100, Style 100. `make psalm` reported no errors, and
   `git diff --check` passed after the hardening.
 - PHP syntax lint for modified and added PHP files: passed.
 - PHP-CS-Fixer for modified and added PHP files: passed.
