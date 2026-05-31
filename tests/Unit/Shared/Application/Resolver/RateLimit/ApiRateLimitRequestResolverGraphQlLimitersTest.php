@@ -108,6 +108,26 @@ GRAPHQL;
         );
     }
 
+    public function testPasskeySigninOptionsUsesAliasedEmailVariableLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $this->assertGraphQlLimiters(
+            $query,
+            $clientIp,
+            $this->signInLimiters($clientIp, $email),
+            ['variables' => ['e' => $email]]
+        );
+    }
+
     public function testResolveEndpointLimitersForGraphQlPasskeySigninComplete(): void
     {
         $clientIp = $this->faker->ipv4();

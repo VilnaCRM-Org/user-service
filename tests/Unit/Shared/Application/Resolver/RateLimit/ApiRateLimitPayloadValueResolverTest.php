@@ -136,6 +136,27 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($email, $resolver->resolve($request, ['email']));
     }
 
+    public function testResolveReturnsValueFromGraphQlArgumentVariableWithDifferentName(): void
+    {
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest(
+            json_encode(
+                ['query' => $query, 'variables' => ['e' => $email]],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame($email, $resolver->resolve($request, ['email']));
+    }
+
     public function testResolveInlineGraphQlArgumentRequiresExactKeyBoundary(): void
     {
         $ignoredEmail = $this->faker->email();

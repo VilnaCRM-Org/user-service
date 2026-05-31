@@ -73,8 +73,18 @@ final readonly class ApiRateLimitPayloadValueResolver
     private function resolveGraphQlQueryValue(array $jsonPayload, array $keys): ?string
     {
         $query = $jsonPayload['query'] ?? null;
-        if (is_string($query)) {
-            return $this->findGraphQlArgumentStringValue($query, $keys);
+        if (!is_string($query)) {
+            return null;
+        }
+
+        $inlineValue = $this->findGraphQlArgumentStringValue($query, $keys);
+        if ($inlineValue !== null) {
+            return $inlineValue;
+        }
+
+        $variables = $jsonPayload['variables'] ?? null;
+        if (is_array($variables)) {
+            return $this->findGraphQlArgumentVariableValue($query, $variables, $keys);
         }
 
         return null;
@@ -143,6 +153,30 @@ final readonly class ApiRateLimitPayloadValueResolver
             $pattern = '/\b' . preg_quote($key, '/') . '\s*:\s*"([^"]+)"/';
             if (preg_match($pattern, $query, $matches) === 1) {
                 return $matches[1];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param list<string> $keys
+     */
+    private function findGraphQlArgumentVariableValue(
+        string $query,
+        array $variables,
+        array $keys
+    ): ?string {
+        foreach ($keys as $key) {
+            $pattern = '/\b' . preg_quote($key, '/') . '\s*:\s*\$([A-Za-z_][A-Za-z0-9_]*)\b/';
+            if (preg_match($pattern, $query, $matches) !== 1) {
+                continue;
+            }
+
+            $value = $variables[$matches[1]] ?? null;
+            if (is_string($value) && $value !== '') {
+                return $value;
             }
         }
 

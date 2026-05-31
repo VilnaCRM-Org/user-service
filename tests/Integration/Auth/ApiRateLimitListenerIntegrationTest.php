@@ -139,6 +139,30 @@ GRAPHQL, $email),
         $this->assertRateLimitResponse($response);
     }
 
+    public function testGraphQlPasskeySigninUsesSignInEmailLimiterWithAliasedVariable(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => <<<'GRAPHQL'
+mutation($e: String!) {
+  passkeySignInOptionsUser(input: { email: $e }) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+            'variables' => ['e' => $email],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
     public function testTwoFactorSetupLimiterUsesJwtSubjectAndReturns429(): void
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
