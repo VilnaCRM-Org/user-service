@@ -12,8 +12,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class ApiRateLimitPayloadValueResolver
 {
-    public function __construct(private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private SerializerInterface $serializer,
+        private ApiRateLimitGraphQlQueryInspector $graphQlQueryInspector,
+    ) {
     }
 
     /**
@@ -76,24 +78,68 @@ final readonly class ApiRateLimitPayloadValueResolver
         if (!is_string($query)) {
             return null;
         }
-        $query = $this->selectGraphQlOperation($query, $jsonPayload);
+        $operationName = $jsonPayload['operationName'] ?? null;
+        $inspection = $this->graphQlQueryInspector->inspect(
+            $query,
+            is_string($operationName) ? $operationName : null
+        );
 
+        $variables = $jsonPayload['variables'] ?? null;
+        return $inspection !== null
+            ? $this->resolveGraphQlInspectionValue($inspection, $variables, $keys)
+            : $this->resolveLegacyGraphQlQueryValue($query, $variables, $keys);
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null $variables
+     * @param list<string> $keys
+     */
+    private function resolveGraphQlInspectionValue(
+        ApiRateLimitGraphQlQueryInspection $inspection,
+        array|string|int|float|bool|null $variables,
+        array $keys
+    ): ?string {
+        $inlineValue = $inspection->findArgumentStringValue($keys);
+        if ($inlineValue !== null) {
+            return $inlineValue;
+        }
+
+        if (!is_array($variables)) {
+            return null;
+        }
+
+        $argumentValue = $inspection->findArgumentVariableValue($variables, $keys);
+        if ($argumentValue !== null) {
+            return $argumentValue;
+        }
+
+        return $inspection->findInputObjectVariableValue($variables, $keys);
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null>|string|int|float|bool|null $variables
+     * @param list<string> $keys
+     */
+    private function resolveLegacyGraphQlQueryValue(
+        string $query,
+        array|string|int|float|bool|null $variables,
+        array $keys
+    ): ?string {
         $inlineValue = $this->findGraphQlArgumentStringValue($query, $keys);
         if ($inlineValue !== null) {
             return $inlineValue;
         }
 
-        $variables = $jsonPayload['variables'] ?? null;
-        if (is_array($variables)) {
-            $argumentValue = $this->findGraphQlArgumentVariableValue($query, $variables, $keys);
-            if ($argumentValue !== null) {
-                return $argumentValue;
-            }
-
-            return $this->findGraphQlInputObjectVariableValue($query, $variables, $keys);
+        if (!is_array($variables)) {
+            return null;
         }
 
-        return null;
+        $argumentValue = $this->findGraphQlArgumentVariableValue($query, $variables, $keys);
+        if ($argumentValue !== null) {
+            return $argumentValue;
+        }
+
+        return $this->findGraphQlInputObjectVariableValue($query, $variables, $keys);
     }
 
     /**
@@ -216,41 +262,5 @@ final readonly class ApiRateLimitPayloadValueResolver
         }
 
         return null;
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $jsonPayload
-     */
-    private function selectGraphQlOperation(string $query, array $jsonPayload): string
-    {
-        $operationName = $jsonPayload['operationName'] ?? null;
-        if (!is_string($operationName) || $operationName === '') {
-            return $query;
-        }
-
-        return $this->extractNamedGraphQlOperation($query, $operationName);
-    }
-
-    private function extractNamedGraphQlOperation(string $query, string $operationName): string
-    {
-        if (preg_match_all(
-            '/\b(?:mutation|query|subscription)\s+[A-Za-z_][A-Za-z0-9_]*\b/',
-            $query,
-            $matches,
-            PREG_OFFSET_CAPTURE
-        ) === 0) {
-            return $query;
-        }
-
-        foreach ($matches[0] as $index => [$operation, $offset]) {
-            if (!str_ends_with($operation, ' ' . $operationName)) {
-                continue;
-            }
-
-            $next = $matches[0][$index + 1][1] ?? strlen($query);
-            return substr($query, $offset, $next - $offset);
-        }
-
-        return $query;
     }
 }

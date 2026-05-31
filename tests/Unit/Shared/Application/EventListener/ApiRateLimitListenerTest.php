@@ -9,6 +9,7 @@ use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
@@ -302,14 +303,12 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     private function createDefaultRequestMatcher(): ApiRateLimitRequestResolver
     {
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
-            new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
-        );
+        $clientIdentityResolver = $this->createClientIdentityResolver();
 
         return new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver),
-            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            $this->createGraphQlAuthTargetResolver($clientIdentityResolver),
             new ApiRateLimitOAuthSocialTargetResolver(),
         );
     }
@@ -324,10 +323,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         array $payload
     ): ApiRateLimitListener {
         $jwtConverter = $this->createJwtConverter($token, $payload);
-        $clientIdentityResolver = new ApiRateLimitClientIdentityResolver(
-            new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
-            $jwtConverter,
-        );
+        $clientIdentityResolver = $this->createClientIdentityResolver($jwtConverter);
         $authTargetResolver = new ApiRateLimitAuthTargetResolver(
             null,
             $clientIdentityResolver,
@@ -335,11 +331,32 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             $authTargetResolver,
-            new ApiRateLimitGraphQlAuthTargetResolver($clientIdentityResolver),
+            $this->createGraphQlAuthTargetResolver($clientIdentityResolver),
             new ApiRateLimitOAuthSocialTargetResolver()
         );
 
         return $this->createListener($limiterFactories, $requestMatcher);
+    }
+
+    private function createClientIdentityResolver(
+        ?JwtTokenConverterInterface $jwtConverter = null
+    ): ApiRateLimitClientIdentityResolver {
+        return new ApiRateLimitClientIdentityResolver(
+            new ApiRateLimitPayloadValueResolver(
+                $this->createJsonSerializer(),
+                new ApiRateLimitGraphQlQueryInspector()
+            ),
+            $jwtConverter,
+        );
+    }
+
+    private function createGraphQlAuthTargetResolver(
+        ApiRateLimitClientIdentityResolver $clientIdentityResolver
+    ): ApiRateLimitGraphQlAuthTargetResolver {
+        return new ApiRateLimitGraphQlAuthTargetResolver(
+            $clientIdentityResolver,
+            new ApiRateLimitGraphQlQueryInspector()
+        );
     }
 
     /**

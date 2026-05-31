@@ -392,6 +392,16 @@ workspace; GitHub Actions is the source of full-suite verification after push.
 - OpenAPI diff against main: backward compatible; six passkey endpoints added.
 - Spectral OpenAPI validation: no hint-or-higher results.
 - `git diff --check`: passed.
+- Post-BMAD GraphQL limiter hardening evidence collected on 2026-05-31 UTC:
+  selected-operation auth limiter detection and sign-in email extraction now use
+  AST inspection, so aliases, unrelated JSON `email` fields, unselected
+  operations, and operation-looking tokens inside GraphQL strings cannot poison
+  limiter selection. Focused PHPUnit passed 65 tests / 246 assertions. Focused
+  coverage for the changed rate-limit files reported all covered:
+  `ApiRateLimitGraphQlAuthTargetResolver`,
+  `ApiRateLimitGraphQlQueryInspection`, `ApiRateLimitGraphQlQueryInspector`,
+  and `ApiRateLimitPayloadValueResolver`. `make phpinsights`, `make psalm`,
+  and `git diff --check` passed after the hardening.
 - PHP syntax lint for modified and added PHP files: passed.
 - PHP-CS-Fixer for modified and added PHP files: passed.
 - Local AI review loop was run in a clean temporary worktree at commit `32334012`; it reported the three issues listed above, the fix pass changed only passkey source/tests/docs, and targeted re-verification passed.

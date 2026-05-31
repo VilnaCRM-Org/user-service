@@ -178,6 +178,60 @@ GRAPHQL,
         self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
     }
 
+    public function testGraphQlLimitersIgnoreOperationTokensInsideSelectedOperationStrings(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $decoyEmail = $this->faker->email();
+        $email = $this->faker->email();
+        $query = $this->createSelectedPasskeySigninQueryWithStringTokens($decoyEmail);
+
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            ['e' => $email],
+            extraPayload: ['operationName' => 'Real']
+        );
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testResolveEndpointLimitersSupportsInvalidRawGraphQlRequestFallback(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp],
+            'not valid GraphQL passkeySignInOptionsUser'
+        );
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testResolveEndpointLimitersSkipsGraphQlAuthWhenQueryPayloadIsNotString(): void
+    {
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json', 'REMOTE_ADDR' => $this->faker->ipv4()],
+            json_encode(['query' => 42], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
+    }
+
     public function testResolveEndpointLimitersForGraphQlPasskeySigninComplete(): void
     {
         $clientIp = $this->faker->ipv4();
@@ -273,6 +327,25 @@ GRAPHQL,
                 ] + $extraPayload,
                 JSON_THROW_ON_ERROR
             )
+        );
+    }
+
+    private function createSelectedPasskeySigninQueryWithStringTokens(string $decoyEmail): string
+    {
+        return sprintf(
+            <<<'GRAPHQL'
+mutation Decoy {
+  passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } }
+}
+mutation Real($e: String!) {
+  passkeySignInOptionsUser(input: {
+    clientMutationId: "mutation Stop email: \"%s\""
+    email: $e
+  }) { user { challengeId } }
+}
+GRAPHQL,
+            $this->faker->email(),
+            $decoyEmail
         );
     }
 

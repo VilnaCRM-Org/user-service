@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver\RateLimit;
 
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitGraphQlAuthTargetResolver
@@ -22,6 +23,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
 
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
+        private ApiRateLimitGraphQlQueryInspector $graphQlQueryInspector,
     ) {
     }
 
@@ -30,10 +32,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     public function resolve(Request $request): array
     {
-        if (
-            strtoupper($request->getMethod()) !== 'POST'
-            || $request->getPathInfo() !== self::GRAPHQL_PATH
-        ) {
+        if (!$this->supports($request)) {
             return [];
         }
 
@@ -43,12 +42,28 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         }
 
         if ($this->containsMutation($request, self::SIGNIN_MUTATIONS)) {
-            $targets[] = ['name' => 'signin_ip', 'key' => $this->buildIpKey($request)];
+            array_push($targets, ...$this->buildSignInTargets($request));
+        }
 
-            $email = $this->clientIdentityResolver->resolveSignInEmail($request);
-            if ($email !== null) {
-                $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
-            }
+        return $targets;
+    }
+
+    private function supports(Request $request): bool
+    {
+        return strtoupper($request->getMethod()) === 'POST'
+            && $request->getPathInfo() === self::GRAPHQL_PATH;
+    }
+
+    /**
+     * @return list<array{name: 'signin_email'|'signin_ip', key: string}>
+     */
+    private function buildSignInTargets(Request $request): array
+    {
+        $targets = [['name' => 'signin_ip', 'key' => $this->buildIpKey($request)]];
+
+        $email = $this->clientIdentityResolver->resolveSignInEmail($request);
+        if ($email !== null) {
+            $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
         }
 
         return $targets;
@@ -59,7 +74,12 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     private function containsMutation(Request $request, array $mutationNames): bool
     {
-        $payload = $this->resolveGraphQlOperationPayload($request);
+        $inspection = $this->resolveGraphQlQueryInspection($request);
+        if ($inspection !== null) {
+            return $inspection->containsMutationField($mutationNames);
+        }
+
+        $payload = $request->getContent();
         foreach ($mutationNames as $mutationName) {
             if (preg_match('/\b' . $mutationName . '\b/', $payload) === 1) {
                 return true;
@@ -69,48 +89,26 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         return false;
     }
 
-    private function resolveGraphQlOperationPayload(Request $request): string
-    {
+    private function resolveGraphQlQueryInspection(
+        Request $request
+    ): ?ApiRateLimitGraphQlQueryInspection {
         $payload = $request->getContent();
-        $decoded = json_decode($payload, true);
-        if (!is_array($decoded)) {
-            return $payload;
+        try {
+            $decoded = $request->toArray();
+        } catch (JsonException) {
+            return $this->graphQlQueryInspector->inspect($payload, null);
         }
 
         $query = $decoded['query'] ?? null;
         if (!is_string($query)) {
-            return $payload;
+            return null;
         }
 
         $operationName = $decoded['operationName'] ?? null;
-        if (!is_string($operationName) || $operationName === '') {
-            return $query;
-        }
-
-        return $this->extractNamedGraphQlOperation($query, $operationName);
-    }
-
-    private function extractNamedGraphQlOperation(string $query, string $operationName): string
-    {
-        if (preg_match_all(
-            '/\b(?:mutation|query|subscription)\s+[A-Za-z_][A-Za-z0-9_]*\b/',
+        return $this->graphQlQueryInspector->inspect(
             $query,
-            $matches,
-            PREG_OFFSET_CAPTURE
-        ) === 0) {
-            return $query;
-        }
-
-        foreach ($matches[0] as $index => [$operation, $offset]) {
-            if (!str_ends_with($operation, ' ' . $operationName)) {
-                continue;
-            }
-
-            $next = $matches[0][$index + 1][1] ?? strlen($query);
-            return substr($query, $offset, $next - $offset);
-        }
-
-        return $query;
+            is_string($operationName) ? $operationName : null
+        );
     }
 
     private function buildIpKey(Request $request): string
