@@ -10,8 +10,13 @@ use Symfony\Component\HttpFoundation\Request;
 final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClientTestCase
 {
     private const GRAPHQL_PATH = '/api/graphql';
-    private const PASSKEY_SIGNIN_OPTIONS_MUTATION =
-        'mutation { passkeySignInOptionsUser(input: { email: "%s" }) { user { challengeId } } }';
+    private const PASSKEY_SIGNIN_OPTIONS_MUTATION = <<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(input: { email: "%s" }) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
 
     private ApiRateLimitRequestResolver $resolver;
 
@@ -37,7 +42,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->safeEmail();
         $query = sprintf(
-            'mutation { passkeySignUpOptionsUser(input: { email: "%s" }) { user { challengeId } } }',
+            <<<'GRAPHQL'
+mutation {
+  passkeySignUpOptionsUser(input: { email: "%s" }) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
             $email
         );
 
@@ -49,7 +60,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $challengeId = $this->faker->uuid();
         $query = sprintf(
-            'mutation { passkeySignUpCompleteUser(input: { challengeId: "%s" }) { user { accessToken } } }',
+            <<<'GRAPHQL'
+mutation {
+  passkeySignUpCompleteUser(input: { challengeId: "%s" }) {
+    user { accessToken }
+  }
+}
+GRAPHQL,
             $challengeId
         );
 
@@ -60,7 +77,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
     {
         $clientIp = $this->faker->ipv4();
         $email = $this->faker->email();
-        $query = 'mutation SignIn($input: signInUserInput!) { signInUser(input: $input) { user { accessToken } } }';
+        $query = <<<'GRAPHQL'
+mutation SignIn($input: signInUserInput!) {
+  signInUser(input: $input) {
+    user { accessToken }
+  }
+}
+GRAPHQL;
 
         $this->assertGraphQlLimiters(
             $query,
@@ -90,7 +113,13 @@ final class ApiRateLimitRequestResolverGraphQlLimitersTest extends RateLimitClie
         $clientIp = $this->faker->ipv4();
         $challengeId = $this->faker->uuid();
         $query = sprintf(
-            'mutation { passkeySignInCompleteUser(input: { challengeId: "%s" }) { user { accessToken } } }',
+            <<<'GRAPHQL'
+mutation {
+  passkeySignInCompleteUser(input: { challengeId: "%s" }) {
+    user { accessToken }
+  }
+}
+GRAPHQL,
             $challengeId
         );
 

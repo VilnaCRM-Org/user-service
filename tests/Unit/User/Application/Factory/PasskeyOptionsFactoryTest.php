@@ -16,18 +16,12 @@ use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
-
 use function array_column;
-
 use Cose\Algorithms;
 use DateTimeImmutable;
-
 use const JSON_THROW_ON_ERROR;
-
 use PHPUnit\Framework\MockObject\MockObject;
-
 use function strlen;
-
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
