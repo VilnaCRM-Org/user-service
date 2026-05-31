@@ -131,20 +131,38 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
 
     public function testCreateContinuesAfterBiasedRandomByte(): void
     {
+        $this->stubRecoveryCodeCreation();
+
+        $codes = $this->createFactoryWithBiasedRandomByte()
+            ->create($this->createUserWithId());
+
+        self::assertSame('ABCD-EFGH', $codes[0]);
+    }
+
+    private function createUserWithId(): User
+    {
         $user = $this->createMock(User::class);
         $user->method('getId')->willReturn($this->faker->uuid());
 
+        return $user;
+    }
+
+    private function stubRecoveryCodeCreation(): void
+    {
         $ulid = $this->createMock(Ulid::class);
         $ulid->method('__toString')->willReturn($this->faker->uuid());
         $this->ulidFactory->method('create')->willReturn($ulid);
-
-        $recoveryCode = $this->createMock(RecoveryCode::class);
-        $this->recoveryCodeFactory->method('create')->willReturn($recoveryCode);
+        $this->recoveryCodeFactory->method('create')
+            ->willReturn($this->createMock(RecoveryCode::class));
         $this->recoveryCodeRepository->expects($this->once())
             ->method('saveAll');
+    }
 
+    private function createFactoryWithBiasedRandomByte(): RecoveryCodeBatchFactory
+    {
         $randomCall = 0;
-        $factory = new RecoveryCodeBatchFactory(
+
+        return new RecoveryCodeBatchFactory(
             $this->recoveryCodeRepository,
             $this->recoveryCodeFactory,
             $this->ulidFactory,
@@ -157,9 +175,5 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
                     : "\x07\x08\x09\x0A\x0B\x0C\x0D\x0E";
             },
         );
-
-        $codes = $factory->create($user);
-
-        self::assertSame('ABCD-EFGH', $codes[0]);
     }
 }
