@@ -81,6 +81,7 @@ GRAPHQL;
     protected TokenRepositoryInterface $confirmationTokenRepository;
     protected PasswordResetTokenFactoryInterface $passwordResetTokenFactory;
     protected PasswordResetTokenRepositoryInterface $passwordResetTokenRepository;
+    private int $graphQlRequestIndex = 0;
 
     #[\Override]
     protected function setUp(): void
@@ -88,6 +89,7 @@ GRAPHQL;
         parent::setUp();
 
         $this->faker = Factory::create();
+        $this->graphQlRequestIndex = 0;
     }
 
     #[\Override]
@@ -695,6 +697,7 @@ GRAPHQL;
             'HTTP_ACCEPT' => 'application/json',
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT_LANGUAGE' => 'en',
+            'REMOTE_ADDR' => $this->nextGraphQlClientIp(),
         ];
 
         if ($accessToken !== null) {
@@ -702,6 +705,14 @@ GRAPHQL;
         }
 
         return $server;
+    }
+
+    private function nextGraphQlClientIp(): string
+    {
+        $requestIndex = $this->graphQlRequestIndex;
+        ++$this->graphQlRequestIndex;
+
+        return sprintf('10.254.%d.%d', intdiv($requestIndex, 250), ($requestIndex % 250) + 1);
     }
 
     /**
