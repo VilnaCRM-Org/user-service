@@ -22,7 +22,7 @@
 - [x] 02-specification
 - [x] 03-impact-analysis
 - [x] 04-implementation-plan
-- [ ] 05-implementation
+- [x] 05-implementation
 - [ ] 06-local-validation
 - [ ] 07-ci-investigation
 - [ ] 08-pr-comments

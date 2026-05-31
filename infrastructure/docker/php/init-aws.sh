@@ -1,5 +1,5 @@
 #!/bin/sh
 
-awslocal sqs create-queue --queue-name send-email
-awslocal sqs create-queue --queue-name failed-emails
-awslocal sqs create-queue --queue-name insert-user
+aws sqs create-queue --queue-name send-email
+aws sqs create-queue --queue-name failed-emails
+aws sqs create-queue --queue-name insert-user
