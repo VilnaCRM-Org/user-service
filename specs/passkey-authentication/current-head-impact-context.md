@@ -24,8 +24,9 @@ The local Graphify artifact was regenerated with:
 
 Generated `graphify-out/` artifacts are local review evidence and are not
 committed. The latest local refresh completed on 2026-06-01 20:47:15 +0300
-at PR head `87fa1a696092101b5b0734ea5295d16389faa925` and produced
-22,647 nodes and 623,199 edges.
+after the workflow and BMAD-runner changes and produced 22,647 nodes and
+623,199 edges. This committed evidence file can move in a later docs-only
+commit; the final BMAD sidecar report records the exact reviewed PR SHA.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`

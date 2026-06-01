@@ -275,8 +275,8 @@ config/services.yaml`, `bin/console lint:container`,
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
   and recorded in `graphify-out/graph.json` on 2026-06-01 20:47:15 +0300
-  at PR head `87fa1a696092101b5b0734ea5295d16389faa925` with 22,647 nodes
-  and 623,199 edges. The refreshed graph includes
+  after the workflow and BMAD-runner changes with 22,647 nodes and 623,199
+  edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
   `PasskeyProductionReadinessListenerTestCase.php`, and the split
