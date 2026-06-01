@@ -363,11 +363,11 @@ PR evidence collected on 2026-05-25 UTC:
 
 Strict BMAD remediation evidence collected on 2026-06-01 UTC:
 
-| Scenario | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
-| --- | --- | ---: | ---: | ---: | ---: |
-| `passkeySignupOptions` | 100% | 48.21ms | 78.89ms | 89.48ms | 165.49ms |
-| `passkeySigninOptions` | 100% | 357.2ms | 67.77ms | 115.23ms | 5.97ms |
-| `passkeyRegistrationOptions` | 100% | 108.6ms | 164.63ms | 73.29ms | 201.87ms |
+| Scenario                     | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
+| ---------------------------- | ------ | --------: | ----------: | ---------: | --------: |
+| `passkeySignupOptions`       | 100%   |   48.21ms |     78.89ms |    89.48ms |  165.49ms |
+| `passkeySigninOptions`       | 100%   |   357.2ms |     67.77ms |   115.23ms |    5.97ms |
+| `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms |
 
 The run used isolated Compose project `user-service-pr286-passkey-load`, the
 MongoDB 7 load-test override, and `make setup-load-test-db` before executing

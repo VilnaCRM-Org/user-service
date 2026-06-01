@@ -22,17 +22,17 @@ recovery-code values.
 
 ## Observed Scenarios
 
-| Scenario | Sanitized result |
-| --- | --- |
-| New-email signup ceremony | Returned a challenge id, RP ID `localhost`, `residentKey=required`, `2fa=false`, and access/refresh token fields after browser credential creation and signup completion. |
-| Existing-email signup rejection | Returned HTTP `409` and no challenge id. |
-| Challenge replay rejection | Returned HTTP `401` and no access token. |
-| Passkey sign-in before 2FA | Returned empty `allowCredentials`, `userVerification=required`, `2fa=false`, and access/refresh token fields after browser assertion completion. |
-| Authenticated registration | Returned a challenge id, an `excludeCredentials` array, `residentKey=required`, and a credential id after browser credential creation and registration completion. |
-| 2FA setup payload | Returned a setup secret and an otpauth URI; values are intentionally omitted. |
-| 2FA setup parity | Returned 8 recovery codes; values are intentionally omitted. |
-| Passkey sign-in after 2FA | Returned `2fa=true`, a pending session id, and no access/refresh token fields. |
-| Expiration rejection | Returned HTTP `401` and no access token. |
+| Scenario                        | Sanitized result                                                                                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New-email signup ceremony       | Returned a challenge id, RP ID `localhost`, `residentKey=required`, `2fa=false`, and access/refresh token fields after browser credential creation and signup completion. |
+| Existing-email signup rejection | Returned HTTP `409` and no challenge id.                                                                                                                                  |
+| Challenge replay rejection      | Returned HTTP `401` and no access token.                                                                                                                                  |
+| Passkey sign-in before 2FA      | Returned empty `allowCredentials`, `userVerification=required`, `2fa=false`, and access/refresh token fields after browser assertion completion.                          |
+| Authenticated registration      | Returned a challenge id, an `excludeCredentials` array, `residentKey=required`, and a credential id after browser credential creation and registration completion.        |
+| 2FA setup payload               | Returned a setup secret and an otpauth URI; values are intentionally omitted.                                                                                             |
+| 2FA setup parity                | Returned 8 recovery codes; values are intentionally omitted.                                                                                                              |
+| Passkey sign-in after 2FA       | Returned `2fa=true`, a pending session id, and no access/refresh token fields.                                                                                            |
+| Expiration rejection            | Returned HTTP `401` and no access token.                                                                                                                                  |
 
 ## Acceptance Notes
 

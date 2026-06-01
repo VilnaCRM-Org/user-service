@@ -26,11 +26,11 @@ load-test run. It excludes generated HTML reports and raw container logs.
 
 ## Results
 
-| Scenario | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 | Result |
-| --- | --- | ---: | ---: | ---: | ---: | --- |
-| `passkeySignupOptions` | 100% | 48.21ms | 78.89ms | 89.48ms | 165.49ms | Pass |
-| `passkeySigninOptions` | 100% | 357.2ms | 67.77ms | 115.23ms | 5.97ms | Pass |
-| `passkeyRegistrationOptions` | 100% | 108.6ms | 164.63ms | 73.29ms | 201.87ms | Pass |
+| Scenario                     | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 | Result |
+| ---------------------------- | ------ | --------: | ----------: | ---------: | --------: | ------ |
+| `passkeySignupOptions`       | 100%   |   48.21ms |     78.89ms |    89.48ms |  165.49ms | Pass   |
+| `passkeySigninOptions`       | 100%   |   357.2ms |     67.77ms |   115.23ms |    5.97ms | Pass   |
+| `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms | Pass   |
 
 ## Quality Finding
 

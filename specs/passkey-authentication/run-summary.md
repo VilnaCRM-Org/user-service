@@ -447,11 +447,11 @@ Targeted Psalm validation for the same files reported no errors.
 Passkey load validation passed for all option scenarios with smoke, average,
 stress, and spike enabled in the same K6 invocation:
 
-| Scenario | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
-| --- | --- | ---: | ---: | ---: | ---: |
-| `passkeySignupOptions` | 100% | 48.21ms | 78.89ms | 89.48ms | 165.49ms |
-| `passkeySigninOptions` | 100% | 357.2ms | 67.77ms | 115.23ms | 5.97ms |
-| `passkeyRegistrationOptions` | 100% | 108.6ms | 164.63ms | 73.29ms | 201.87ms |
+| Scenario                     | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
+| ---------------------------- | ------ | --------: | ----------: | ---------: | --------: |
+| `passkeySignupOptions`       | 100%   |   48.21ms |     78.89ms |    89.48ms |  165.49ms |
+| `passkeySigninOptions`       | 100%   |   357.2ms |     67.77ms |   115.23ms |    5.97ms |
+| `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms |
 
 The load run used isolated Compose project `user-service-pr286-passkey-load`,
 MongoDB 7 override, `make setup-load-test-db`, then
