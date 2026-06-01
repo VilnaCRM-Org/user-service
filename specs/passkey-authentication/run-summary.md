@@ -274,13 +274,15 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-01 21:39:40 +0300
-  after the workflow, BMAD-runner, rate-limit, and final coverage-test changes
-  with 20,445 nodes and 35,771 edges. The refreshed graph includes
+  and recorded in `graphify-out/graph.json` on 2026-06-01 22:24:19 +0300
+  after the passkey sign-in rate-limit hardening with 20,502 nodes and 35,923
+  edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
-  `PasskeyProductionReadinessListenerTestCase.php`, and the split
-  `PasskeyReadiness*Test.php` nodes. Relationship notes were added in
+  `PasskeyProductionReadinessListenerTestCase.php`, the split
+  `PasskeyReadiness*Test.php` nodes, the GraphQL rate-limit resolver
+  collaborators, and the expanded rate-limit unit/integration tests.
+  Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
   test, documentation, dependency, strict BMAD parser-adapter changes, load-test

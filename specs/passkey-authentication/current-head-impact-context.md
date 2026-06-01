@@ -23,20 +23,24 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest clean local refresh completed on 2026-06-01 21:39:40 +0300
-after the workflow, BMAD-runner, rate-limit, and final coverage-test changes
-and produced 20,445 nodes and 35,771 edges. This committed evidence file can
-move in a later docs-only commit; the final BMAD sidecar report records the
-exact reviewed PR SHA.
+committed. The latest clean local refresh completed on 2026-06-01 22:24:19 +0300
+after the passkey sign-in rate-limit hardening and produced 20,502 nodes and
+35,923 edges. This committed evidence file can move in a later docs-only commit;
+the final BMAD sidecar report records the exact reviewed PR SHA.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`
 - `src/User/Application/EventListener/PasskeyGraphQlRequestResolver.php`
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlAuthTargetResolver.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlFieldValueResolver.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlVariableValueResolver.php`
 - `tests/Unit/User/Application/EventListener/PasskeyProductionReadinessListenerTestCase.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessListenerTest.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlBlockingTest.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlResolutionTest.php`
+- `tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolverGraphQlLimitersTest.php`
+- `tests/Integration/Auth/ApiRateLimitListenerIntegrationTest.php`
 
 The latest strict BMAD report includes graph counts and reviewed-head context in
 its log directory for the exact head it reviews. The graph impact context is
@@ -303,6 +307,11 @@ Deterministic 2FA recovery-code testability path:
 
 - Runtime paths: GraphQL rate limiting now parses selected operations,
   fragments, aliases, defaults, and nested variables through AST helpers.
+  The latest hardening also seeds GraphQL limiter parsing from query-string
+  `query`, `operationName`, and `variables`, overlays JSON/form/multipart
+  `operations` fields, parses form/multipart `operations`, limits passkey
+  sign-in options by top-level `email` only, and ignores nested
+  `credential.email` decoys for sign-in options and completion.
   REST passkey WebAuthn ceremony paths are unchanged by the rate-limit parser
   extraction. GraphQL passkey options, validation, completion serialization,
   replay, wrong-user, and duplicate-conflict paths now have API-level
