@@ -16,7 +16,7 @@ Previous strict-gate graph artifact reported as stale before this remediation:
 This file records current-head relationship evidence for the post-graph changes.
 The local Graphify artifact was regenerated with
 `uvx --from graphifyy graphify update . --force --no-cluster`, producing
-`graphify-out/graph.json` with 20,345 nodes and 230,796 edges. Generated
+`graphify-out/graph.json` with 20,350 nodes and 263,498 edges. Generated
 `graphify-out/` artifacts are local review evidence and are not committed. The
 strict BMAD gate also generates a fresh `codebase-graph-impact-context.md` in
 its log directory for the exact head it reviews.
@@ -83,12 +83,14 @@ The strict FR/NFR remediation on 2026-06-01 additionally changed:
 - `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`
 - `tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`
 - `tests/Shared/Auth/Support/ControllableCommandBus.php`
+- `tests/Unit/Shared/Auth/Support/ControllableCommandBusTest.php`
 
 This delta adds `/api/graphql` passkey ceremony integration coverage, records
 current-head passkey K6 smoke/average/stress/spike evidence, and records a
 current-head Chrome DevTools virtual-authenticator browser rerun, removes the
 temporary PHPInsights exclusions, and adds a DI-wired test command-bus
-decorator without changing production runtime services.
+decorator with direct unit coverage without changing production runtime
+services.
 
 ## Relationship Edges
 

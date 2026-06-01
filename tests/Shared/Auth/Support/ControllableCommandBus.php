@@ -17,11 +17,6 @@ final class ControllableCommandBus implements CommandBusInterface, ResetInterfac
      */
     private ?Closure $handler = null;
 
-    /**
-     * Symfony DI constructs this test-only decorator from `config/services_test.yaml`.
-     *
-     * @psalm-suppress PossiblyUnusedMethod
-     */
     public function __construct(private readonly CommandBusInterface $inner)
     {
     }

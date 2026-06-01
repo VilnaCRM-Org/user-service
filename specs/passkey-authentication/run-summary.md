@@ -215,7 +215,7 @@ config/services.yaml`, `bin/console lint:container`,
   `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
 - Current-head graph evidence was refreshed with Graphify
   (`uvx --from graphifyy graphify update . --force --no-cluster`) and recorded
-  in `graphify-out/graph.json` with 20,345 nodes and 230,796 edges. Relationship
+  in `graphify-out/graph.json` with 20,350 nodes and 263,498 edges. Relationship
   notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
@@ -441,6 +441,10 @@ shared base test case. The new integration suite executes
 Focused GraphQL validation passed after clearing stale Symfony test cache:
 `docker compose exec -T php ./vendor/bin/phpunit tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`
 passed 13 tests / 176 assertions.
+Suppression-free command-bus validation plus the split GraphQL suite also
+passed:
+`docker compose exec -T php ./vendor/bin/phpunit tests/Unit/Shared/Auth/Support/ControllableCommandBusTest.php tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`
+passed 16 tests / 183 assertions.
 Targeted PHP Insights validation for the new GraphQL test/support files passed
 Code 100, Complexity 100, Architecture 100, and Style 100 without excluding the
 new passkey GraphQL tests from complexity or function-length rules.
@@ -448,8 +452,8 @@ The broader CI-equivalent `make phpinsights` target also passed after the split:
 PHPMD reported no source or test violations, PHPInsights reported Code 100,
 Architecture 100, Style 100, and green complexity thresholds. Targeted Psalm
 validation for the same files reported no errors, and full `make psalm` reported
-no errors after adding a narrow DI-constructor suppression for the test-only
-`ControllableCommandBus`.
+no errors after replacing the DI-constructor suppression with direct unit
+coverage for the test-only `ControllableCommandBus`.
 
 Passkey load validation passed for all option scenarios with smoke, average,
 stress, and spike enabled in the same K6 invocation:
