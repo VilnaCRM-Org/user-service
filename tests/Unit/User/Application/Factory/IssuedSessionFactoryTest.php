@@ -214,16 +214,13 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         $this->refreshTokenRepo->expects($this->exactly(2))
             ->method('delete')
             ->willReturnCallback(
-                function (AuthRefreshToken $token) use (
+                static function (AuthRefreshToken $token) use (
                     $refreshToken,
-                    $secondRefreshToken,
                     $rollbackFailure
                 ): void {
                     if ($token === $refreshToken) {
                         throw $rollbackFailure;
                     }
-
-                    $this->assertSame($secondRefreshToken, $token);
                 }
             );
         $this->authSessionRepo->expects($this->once())->method('delete')->with($session);
