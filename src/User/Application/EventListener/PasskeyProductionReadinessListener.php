@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\User\Application\EventListener;
 
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +35,7 @@ final readonly class PasskeyProductionReadinessListener
         private bool $productionTrafficEnabled,
         private bool $productionMonitoringReady,
         private ApiRateLimitGraphQlQueryInspector $graphQlQueryInspector,
+        private PasskeyGraphQlRequestResolver $graphQlRequestResolver,
     ) {
     }
 
@@ -104,50 +104,18 @@ final readonly class PasskeyProductionReadinessListener
             return false;
         }
 
-        $query = $this->resolveGraphQlQuery($request);
+        $query = $this->graphQlRequestResolver->resolveQuery($request);
         if ($query === null) {
             return false;
         }
 
         $inspection = $this->graphQlQueryInspector->inspect(
             $query,
-            $this->resolveGraphQlOperationName($request)
+            $this->graphQlRequestResolver->resolveOperationName($request)
         );
 
         return $inspection !== null
             && $inspection->containsMutationField(self::PASSKEY_GRAPHQL_FIELDS);
-    }
-
-    private function resolveGraphQlQuery(Request $request): ?string
-    {
-        $payload = $this->resolveGraphQlPayload($request);
-        $query = $payload['query']
-            ?? $request->query->get('query')
-            ?? $request->getContent();
-
-        return is_string($query) && trim($query) !== '' ? $query : null;
-    }
-
-    private function resolveGraphQlOperationName(Request $request): ?string
-    {
-        $payload = $this->resolveGraphQlPayload($request);
-        $operationName = $payload['operationName'] ?? $request->query->get('operationName');
-
-        return is_string($operationName) && trim($operationName) !== ''
-            ? $operationName
-            : null;
-    }
-
-    /**
-     * @return array<string, array<array-key, scalar|null>|scalar|null>|null
-     */
-    private function resolveGraphQlPayload(Request $request): ?array
-    {
-        try {
-            return $request->toArray();
-        } catch (JsonException) {
-            return null;
-        }
     }
 
     private function setUnavailableResponse(RequestEvent $event, string $detail): void

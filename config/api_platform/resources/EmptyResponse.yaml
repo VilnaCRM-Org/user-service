@@ -127,8 +127,31 @@ resources:
               description: 'Email is already registered'
             422:
               description: 'Validation error'
-            503:
+            503: &passkey_production_readiness_response
               description: 'Production passkey traffic disabled until monitoring is ready'
+              content:
+                application/problem+json:
+                  schema:
+                    type: object
+                    required: [type, title, status, detail]
+                    properties:
+                      type:
+                        type: string
+                        example: '/errors/passkey-production-readiness'
+                      title:
+                        type: string
+                        example: 'Service Unavailable'
+                      status:
+                        type: integer
+                        example: 503
+                      detail:
+                        type: string
+                        example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+                  example:
+                    type: '/errors/passkey-production-readiness'
+                    title: 'Service Unavailable'
+                    status: 503
+                    detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
       passkey_signup_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -164,8 +187,7 @@ resources:
               description: 'Email or passkey credential is already registered'
             422:
               description: 'Validation error'
-            503:
-              description: 'Production passkey traffic disabled until monitoring is ready'
+            503: *passkey_production_readiness_response
       passkey_register_options_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -213,8 +235,7 @@ resources:
                       timeout: 60000
             401:
               description: 'Authentication required'
-            503:
-              description: 'Production passkey traffic disabled until monitoring is ready'
+            503: *passkey_production_readiness_response
       passkey_register_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -247,8 +268,7 @@ resources:
               description: 'Passkey credential is already registered'
             422:
               description: 'Validation error'
-            503:
-              description: 'Production passkey traffic disabled until monitoring is ready'
+            503: *passkey_production_readiness_response
       passkey_signin_options_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -285,8 +305,7 @@ resources:
                       timeout: 60000
             422:
               description: 'Validation error'
-            503:
-              description: 'Production passkey traffic disabled until monitoring is ready'
+            503: *passkey_production_readiness_response
       passkey_signin_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -326,8 +345,7 @@ resources:
               description: 'Invalid passkey credential or challenge'
             422:
               description: 'Validation error'
-            503:
-              description: 'Production passkey traffic disabled until monitoring is ready'
+            503: *passkey_production_readiness_response
       confirm_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST

@@ -139,13 +139,16 @@ The BMAD stages were executed in the main session:
   `69af2cf13c46f797da7076bff272fa7736e01ce9`, bridged that artifact to the
   reviewed PR head, and reran all passkey K6 profiles after the load-test
   database setup. The latest BMAD remediation refreshes that bridge for the
-  strict-gate reviewed head and explicitly accounts for the post-`109e7538`
-  single-use sign-up challenge rollback/retry behavior.
+  current PR-head evidence set and explicitly accounts for the post-`109e7538`
+  single-use sign-up challenge rollback/retry behavior. The exact final
+  reviewed commit is recorded in the BMAD gate artifact generated when the gate
+  runs.
 
 ## Current-Head Remediation Evidence
 
-Status: source fixes plus browser/authenticator evidence bridged to the
-strict-gate reviewed PR head.
+Status: source fixes plus browser/authenticator evidence bridged to the current
+PR-head evidence set. The exact final reviewed commit is recorded in the BMAD
+gate artifact generated when the gate runs.
 
 Verifier: Codex.
 Date: 2026-05-25 UTC.
@@ -155,11 +158,12 @@ Browser ceremony tested SHA:
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`.
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
-Current PR head bridge scope: source-impact bridge through the current PR head
-under BMAD review. The strict BMAD gate records the exact reviewed commit in its
-generated context. This bridge keeps the manual browser run tied to its runtime
-source base, then covers later source deltas through automated tests, graph
-context, and PR check evidence. The post-`109e7538` delta removes sign-up
+Current PR head bridge scope: source-impact bridge through
+`19694b53eae36aa952ea96389f2e2a2e37fc9fed`. The strict BMAD gate re-records
+the exact reviewed commit in its generated context after the final remediation
+commit. This bridge keeps the manual browser run tied to its runtime source
+base, then covers later source deltas through automated tests, graph context,
+and PR check evidence. The post-`109e7538` delta removes sign-up
 challenge release after rollback failures, so a claimed sign-up challenge
 remains consumed and a retry fails through the invalid/expired challenge path.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
@@ -258,13 +262,15 @@ config/services.yaml`, `bin/console lint:container`,
   `PASSKEY_PRODUCTION_MONITORING_READY`, enforced by
   `PasskeyProductionReadinessListener` so `prod` passkey REST and GraphQL
   traffic returns `503` until required monitoring and alert controls are ready.
-  The OpenAPI passkey REST contract documents this `503` response, and
-  `PasskeyProductionReadinessListenerTest` covers disabled traffic, missing
-  monitoring readiness, allowed ready traffic, JSON/raw/GET/query-param
-  GraphQL passkey detection, subrequests, and non-passkey GraphQL traffic.
+  The OpenAPI passkey REST contract documents this `503` problem response, and
+  the split `PasskeyReadiness*Test` suite covers all six REST endpoints, all
+  six GraphQL passkey fields, form/multipart GraphQL `operations` payloads,
+  disabled traffic, missing monitoring readiness, allowed ready traffic,
+  JSON/raw/GET/query-param GraphQL passkey detection, GET decoy-body handling,
+  subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` with 22,592 nodes and 361,901
+  and recorded in `graphify-out/graph.json` with 22,598 nodes and 524,469
   edges. The refreshed graph includes the production-readiness listener and
   unit-test nodes. Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
@@ -280,7 +286,7 @@ config/services.yaml`, `bin/console lint:container`,
   after 2FA, and expiration rejection. Durable sanitized evidence is in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
   raw local JSON is `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
-  The bridge to the strict-gate reviewed head accounts for later production
+  The bridge to the current PR-head evidence set accounts for later production
   changes in `IssuedSessionFactory` rollback-failure logging,
   `ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing,
   and post-`109e7538` single-use sign-up challenge rollback/retry semantics.
@@ -369,7 +375,9 @@ Latest browser rerun: 2026-06-01T02:23:28.150Z against
 `http://localhost:19081` at runtime source base commit
 `69af2cf13c46f797da7076bff272fa7736e01ce9`, using Google Chrome headless
 through Chrome DevTools Protocol with virtual CTAP2 authenticators. Reviewed PR
-head bridge: recorded by the strict BMAD gate in its generated context. Sanitized transcript:
+head bridge through `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the strict
+BMAD gate re-records the final reviewed commit in its generated context.
+Sanitized transcript:
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
 ### Scenario 1: Passkey Sign-Up Rejects Existing Email
@@ -636,8 +644,9 @@ For Behat, the local `mongo:8.0` container repeatedly exited with code 139 after
 
 ## GitHub Required Check Configuration Evidence
 
-Status: historical required-check configuration evidence plus current-head
-pre-fix PR check/review corroboration in `Current-Head Remediation Evidence`.
+Status: historical required-check configuration evidence and historical pre-fix
+PR check/review corroboration. Current-head check evidence is produced by the
+live BMAD gate run.
 
 Verifier: Codex.
 Date: 2026-05-24 UTC.

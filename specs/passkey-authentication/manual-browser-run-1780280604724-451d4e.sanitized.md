@@ -15,7 +15,9 @@ recovery-code values.
 - Authenticator: Chrome DevTools virtual CTAP2 authenticators with resident
   keys, user verification, and automatic presence simulation enabled
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
+- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
+  strict BMAD gate re-records the final reviewed commit in its generated
+  context.
 - Source scope: browser/WebAuthn observations were collected at the runtime
   source base commit above. Later production changes before the reviewed PR head
   include `IssuedSessionFactory` rollback-failure logging, a legacy GraphQL
@@ -52,8 +54,9 @@ recovery-code values.
 - The run proves the runtime source base satisfies sign-up, replay rejection,
   sign-in, authenticated registration, 2FA parity, and expiry behavior after
   strict BMAD remediation.
-- The bridge to the strict-gate reviewed head relies on current automated
+- The bridge to the current PR-head evidence set relies on current automated
   coverage for the later session rollback, GraphQL rate-limit, single-use
   sign-up challenge rollback/retry, GraphQL description quality, and production
-  readiness changes; no later source change touched browser-specific WebAuthn
-  ceremony code.
+  readiness changes, including form/multipart GraphQL `operations` readiness
+  detection; no later source change touched browser-specific WebAuthn ceremony
+  code.

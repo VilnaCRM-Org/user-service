@@ -396,6 +396,7 @@ Production passkey traffic is guarded by two release flags:
 In `prod`, passkey REST endpoints and passkey GraphQL mutations return `503`
 while traffic is disabled, or while traffic is enabled without monitoring
 readiness. The GraphQL gate inspects JSON bodies, raw GraphQL bodies, URL query
-strings, and URL-selected `operationName` values. This keeps password, OAuth,
-password reset, and TOTP fallback flows available while preventing production
-passkey traffic before the required operational controls exist.
+strings, form/multipart `operations` payloads, and URL-selected
+`operationName` values. This keeps password, OAuth, password reset, and TOTP
+fallback flows available while preventing production passkey traffic before the
+required operational controls exist.

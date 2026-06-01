@@ -4,13 +4,13 @@ Generated: 2026-06-01 UTC
 
 Base ref: `refs/remotes/origin/main`
 
-Current PR head for this evidence refresh is recorded by the strict BMAD gate
-with `git rev-parse HEAD` when the gate runs. This committed support file does
-not pin the exact head SHA because evidence refresh commits change `HEAD`; the
-strict-gate generated `codebase-graph-impact-context.md` is authoritative for
-the exact reviewed commit.
+Current PR head bridge scope for this evidence refresh:
+`19694b53eae36aa952ea96389f2e2a2e37fc9fed`. The BMAD gate-generated
+`codebase-graph-impact-context.md` re-confirms the exact reviewed commit when
+the gate runs after the final remediation commit.
 
-Previous strict-gate graph artifact reported as stale before this remediation:
+Previous strict-gate graph artifact reported as stale before this remediation
+and retained here only as historical context:
 `/home/kravtsov/tmp/bmad-pr286-strict-20260531_182458/`
 `review-loop-final-noapproval-e650f0d4-20260601_124135/`
 `bmad-required-impact-and-github-context.md`
@@ -24,11 +24,14 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The refreshed graph includes:
+committed. The latest local refresh produced 22,598 nodes and 524,469 edges.
+The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`
-- `tests/Unit/User/Application/EventListener/PasskeyProductionReadinessListenerTest.php`
+- `tests/Unit/User/Application/EventListener/PasskeyReadinessListenerTest.php`
+- `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlBlockingTest.php`
+- `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlResolutionTest.php`
 
 The strict BMAD gate also generates a fresh `codebase-graph-impact-context.md`
 in its log directory for the exact head it reviews.
@@ -104,7 +107,7 @@ current-head passkey K6 smoke/average/stress/spike evidence, records a
 Chrome DevTools virtual-authenticator browser rerun at runtime source base
 `69af2cf13c46f797da7076bff272fa7736e01ce9`, removes the temporary PHPInsights
 exclusions, and adds a DI-wired test command-bus decorator with direct unit
-coverage. Later edits through the strict-gate reviewed head include
+coverage. Later edits through the current PR-head evidence set include
 `IssuedSessionFactory` rollback-failure logging, a legacy GraphQL rate-limit
 regex fallback in `ApiRateLimitPayloadValueResolver`, the post-`109e7538`
 single-use sign-up challenge fix that removes release/retry support from
@@ -132,7 +135,8 @@ The production-readiness remediation adds:
   `docs/planning/architecture.md`, and the passkey specs for manageability and
   release-readiness evidence
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`
-  and `tests/Unit/User/Application/EventListener/PasskeyProductionReadinessListenerTest.php`
+  and the split `tests/Unit/User/Application/EventListener/PasskeyReadiness*Test.php`
+  production-readiness suite
 - `tests/Integration/Auth/GraphQLAuthSupportTest.php` generated GraphQL
   description regression coverage
 
@@ -209,16 +213,17 @@ Production-readiness path:
   -> `PASSKEY_PRODUCTION_MONITORING_READY`
 - `PasskeyProductionReadinessListener`
   -> passkey REST path matcher for `/api/passkeys/*/(options|complete)`
-  -> JSON, raw-body, and query-string passkey GraphQL mutation detection through
-  `ApiRateLimitGraphQlQueryInspector`
+  -> JSON, form/multipart `operations`, raw-body, and query-string passkey
+  GraphQL mutation detection through `ApiRateLimitGraphQlQueryInspector`
   -> URL-selected GraphQL `operationName` detection for multi-operation requests
   -> RFC 7807 `503` JSON response while `prod` traffic is disabled or
   monitoring readiness is false
-- `PasskeyProductionReadinessListenerTest`
+- `PasskeyReadiness*Test`
   -> non-prod allowance
   -> subrequest skip
   -> disabled REST and GraphQL traffic
-  -> GraphQL GET/query-string and URL-selected `operationName` coverage
+  -> GraphQL GET/query-string, decoy body, and URL-selected `operationName`
+  coverage
   -> missing monitoring readiness
   -> ready production allowance
   -> non-passkey GraphQL allowance
@@ -278,8 +283,8 @@ Deterministic 2FA recovery-code testability path:
   invalid GraphQL fallback, deterministic recovery-code biased-byte rejection,
   API-level passkey GraphQL mutation execution, generated passkey GraphQL
   descriptions, and the production passkey readiness gate across REST,
-  JSON GraphQL, raw-body GraphQL, GET/query-string GraphQL, and URL-selected
-  operation-name GraphQL requests.
+  JSON GraphQL, form/multipart GraphQL `operations`, raw-body GraphQL,
+  GET/query-string GraphQL, and URL-selected operation-name GraphQL requests.
 - Documentation: `docs/passkey-authentication.md`, `docs/performance.md`,
   `nfr-catalog-evidence.md`, this impact context, and `run-summary.md` carry
   current-head automated evidence plus the manual browser source-impact bridge.
@@ -306,7 +311,7 @@ Browser/WebAuthn evidence was rerun on 2026-06-01 UTC against
 Protocol and virtual CTAP2 authenticators at runtime source base
 `69af2cf13c46f797da7076bff272fa7736e01ce9`. The durable sanitized artifact is
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
-The artifact is bridged to the strict-gate reviewed head by the
+The artifact is bridged to the current PR-head evidence set by the
 production-change analysis above and by current automated coverage for session
 rollback, GraphQL rate-limit extraction, atomic challenge claim,
 retry-after-rollback rejection, GraphQL description quality, and production

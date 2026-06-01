@@ -13,7 +13,9 @@ evidence required for BMAD FR/NFR sign-off.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
+- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
+  strict BMAD gate re-records the final reviewed commit in its generated
+  context.
 - Historical environment URL: `https://localhost:65443`
 - Historical browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -37,8 +39,9 @@ evidence required for BMAD FR/NFR sign-off.
 
 Current PR head note: the browser scenarios below were rerun at runtime source
 base `69af2cf13c46f797da7076bff272fa7736e01ce9` with Chrome DevTools virtual
-authenticators and are bridged to the strict-gate reviewed head. The bridge
-accounts for later
+authenticators and are bridged to the current PR-head evidence set. The exact
+final reviewed commit is recorded in the BMAD gate artifact generated when the
+gate runs. The bridge accounts for later
 production changes in `IssuedSessionFactory` rollback-failure logging,
 `ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing,
 and the post-`109e7538` removal of sign-up challenge release after rollback
@@ -56,7 +59,9 @@ browser evidence. Details are captured in
 - Tester: Codex
 - Execution date/time (UTC): `2026-06-01T02:23:28.150Z`
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
+- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
+  strict BMAD gate re-records the final reviewed commit in its generated
+  context.
 - Environment URL: `http://localhost:19081`
 - Browser and version: Google Chrome headless through Chrome DevTools Protocol
 - Operating system/device: local Linux workspace

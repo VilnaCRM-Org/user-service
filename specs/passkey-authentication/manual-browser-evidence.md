@@ -14,7 +14,9 @@ credential private material, TOTP secrets, and recovery-code values.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
+- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
+  strict BMAD gate re-records the final reviewed commit in its generated
+  context.
 - Historical application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Historical origin: `https://localhost:65443`
@@ -103,10 +105,11 @@ Raw local JSON evidence:
 Runtime source base commit:
 `69af2cf13c46f797da7076bff272fa7736e01ce9`.
 
-Reviewed PR head bridged by this artifact: recorded by the strict BMAD gate in
-its generated context.
+Reviewed PR head bridged by this artifact:
+`19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the strict BMAD gate re-records
+the final reviewed commit in its generated context.
 
-Post-run production source changes through the strict-gate reviewed head:
+Post-run production source changes through the current PR-head evidence set:
 
 1. `src/User/Application/Factory/IssuedSessionFactory.php` adds rollback-failure
    logging and keeps throwing the original session issuance exception. This
@@ -168,18 +171,21 @@ Observed browser scenarios at runtime source base
    access or refresh token fields.
 8. Expiration rejection returned HTTP 401 and no access token.
 
-The source-impact bridge to the strict-gate reviewed head therefore consists of
-automated session rollback coverage, GraphQL rate-limit extraction coverage, the
-current-head single-use sign-up challenge rollback/retry coverage listed above,
-GraphQL description quality checks, production-readiness gate coverage, and
-documentation evidence. Strict BMAD remediation on 2026-06-01 also added
+The source-impact bridge to the current PR-head evidence set therefore consists
+of automated session rollback coverage, GraphQL rate-limit extraction coverage,
+the current-head single-use sign-up challenge rollback/retry coverage listed
+above, GraphQL description quality checks, production-readiness gate coverage,
+and documentation evidence. The exact final reviewed commit is recorded in the
+BMAD gate artifact generated when the gate runs. Strict BMAD remediation on
+2026-06-01 also added
 API-level `/api/graphql` integration tests for passkey mutations, with
 deterministic completion serialization coverage through the test-only command
 bus decorator and real resolver coverage for options, validation, privacy
 shape, replay, wrong-user, and duplicate-conflict behavior. No post-run source
 change altered a browser-specific WebAuthn API contract; the server-side
-single-use rollback and production-readiness changes are intentionally covered
-by automated tests because they are repeatable without manual authenticator
+single-use rollback and production-readiness changes, including form/multipart
+GraphQL `operations` readiness detection, are intentionally covered by
+automated tests because they are repeatable without manual authenticator
 evidence.
 
 ## Expiration Run

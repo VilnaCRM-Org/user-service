@@ -38,23 +38,57 @@ $descriptionsByOperation = [
     'passkeyRegistrationComplete' => $registrationComplete,
 ];
 
-$generatedDefaults = array_map(
-    static fn (string $operationName): string => sprintf(
-        '%ss a AuthPayload.',
-        ucfirst($operationName)
-    ),
-    array_keys($descriptionsByOperation)
-);
+$normalized = $contents;
+$errors = [];
+$replacementCount = 0;
 
-$normalized = str_replace(
-    $generatedDefaults,
-    array_values($descriptionsByOperation),
-    $contents
-);
+foreach ($descriptionsByOperation as $operationName => $description) {
+    $fieldName = sprintf('%sUser', $operationName);
+    $generatedDefault = sprintf('%ss a AuthPayload.', ucfirst($operationName));
+    $normalized = str_replace(
+        $generatedDefault,
+        $description,
+        $normalized,
+        $replacements
+    );
+    $replacementCount += $replacements;
+
+    if ($replacements === 0) {
+        $errors[] = sprintf('Missing generated default description for %s.', $fieldName);
+    }
+}
+
+foreach ($descriptionsByOperation as $operationName => $description) {
+    $fieldName = sprintf('%sUser', $operationName);
+    $generatedDefault = sprintf('%ss a AuthPayload.', ucfirst($operationName));
+
+    if (str_contains($normalized, $generatedDefault)) {
+        $errors[] = sprintf('Generated default description remains for %s.', $fieldName);
+    }
+
+    $descriptionPattern = sprintf(
+        '/"%s"\s+%s\(input:/',
+        preg_quote($description, '/'),
+        preg_quote($fieldName, '/')
+    );
+
+    if (preg_match($descriptionPattern, $normalized) !== 1) {
+        $errors[] = sprintf('Normalized description not found on %s.', $fieldName);
+    }
+}
+
+if ($errors !== []) {
+    fwrite(STDERR, implode("\n", $errors) . "\n");
+    exit(1);
+}
 
 if (file_put_contents($specPath, $normalized) === false) {
     fwrite(STDERR, sprintf("Unable to write GraphQL spec at %s\n", $specPath));
     exit(1);
 }
 
-echo sprintf("Normalized passkey GraphQL descriptions in %s\n", $specPath);
+echo sprintf(
+    "Normalized %d passkey GraphQL descriptions in %s\n",
+    $replacementCount,
+    $specPath
+);

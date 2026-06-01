@@ -191,6 +191,10 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 125 }
 
+  App\User\Application\EventListener\PasskeyGraphQlRequestResolver:
+    arguments:
+      $jsonEncoder: '@serializer.encoder.json'
+
   App\Shared\Application\EventListener\InvalidUuidRequestListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }

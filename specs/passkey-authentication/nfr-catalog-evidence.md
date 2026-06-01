@@ -87,7 +87,7 @@ Evidence and standards:
 - Manual browser evidence records successful signup, enrollment, sign-in, 2FA
   parity, replay rejection, and expiry behavior at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`; the evidence is bridged to the
-  strict-gate reviewed head by the source-impact analysis in
+  current PR-head evidence set by the source-impact analysis in
   `manual-browser-evidence.md`. The post-`109e7538` single-use sign-up challenge
   rollback/retry behavior is covered by automated unit and repository tests
   because it is deterministic server behavior.
@@ -212,7 +212,8 @@ Evidence and standards:
 - Production passkey REST and GraphQL traffic is gated by
   `PasskeyProductionReadinessListener`; `prod` returns `503` while traffic is
   disabled or monitoring readiness is false. The GraphQL gate covers JSON
-  bodies, raw GraphQL bodies, URL query strings, and URL-selected operations.
+  bodies, raw GraphQL bodies, URL query strings, form/multipart `operations`
+  payloads, and URL-selected operations.
 - `EndpointInvocations` EMF metrics are emitted for passkey API operations
   through `ApiEndpointBusinessMetricsSubscriber`.
 - Platform/AppRunner metrics must track latency, traffic, errors, and
@@ -238,9 +239,10 @@ Evidence and standards:
   and K6 option-ceremony checks are repeatable through make targets.
 - GraphQL schema description regressions are guarded by
   `GraphQLAuthSupportTest::testGeneratedGraphQlSpecUsesPasskeyDescriptions`.
-- Production passkey release gates are guarded by
-  `PasskeyProductionReadinessListenerTest` for REST, GraphQL, disabled traffic,
-  missing monitoring readiness, subrequests, and non-passkey traffic.
+- Production passkey release gates are guarded by the split
+  `PasskeyReadiness*Test` suite for REST, GraphQL, disabled traffic, missing
+  monitoring readiness, subrequests, GET decoy-body handling, and non-passkey
+  traffic.
 - Passkey GraphQL runtime behavior is covered by
   `tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php`,
   `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`, and
@@ -284,7 +286,7 @@ Evidence and standards:
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9` and is recorded in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
-  the bridge to the strict-gate reviewed head is documented in
+  the bridge to the current PR-head evidence set is documented in
   `specs/passkey-authentication/manual-browser-evidence.md` and includes
   current-head automated evidence for the post-`109e7538` single-use challenge
   rollback/retry change.
