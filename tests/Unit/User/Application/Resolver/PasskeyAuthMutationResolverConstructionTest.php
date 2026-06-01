@@ -17,7 +17,9 @@ use App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver;
 use App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver;
 use App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver;
 use App\User\Application\Validator\MutationInputValidator;
+
 use function array_merge;
+
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # ==============================================================================
-# GitHub PR ALL Comments Retrieval Script (Enhanced)
+# GitHub PR Comments Retrieval Script (Enhanced)
 # ==============================================================================
 #
-# This script retrieves ALL unresolved inline comments for a GitHub PR
+# This script retrieves current unresolved inline comments for a GitHub PR
 # with automatic categorization and prioritization for systematic code review
 #
 # KEY FEATURES:
@@ -13,7 +13,7 @@
 # - Automatic categorization (committable, llm-prompt, question, feedback)
 # - Priority sorting (HIGHEST, HIGH, MEDIUM, LOW)
 # - Multiple output formats (text, json, markdown)
-# - Includes outdated comments option
+# - Includes outdated comments only when requested
 # - Better error handling
 # - Shows fetching progress
 #
@@ -32,7 +32,7 @@ PR_NUMBER=""
 FORMAT="text"
 REPO=""
 GITHUB_HOST="${GITHUB_HOST:-github.com}"
-INCLUDE_OUTDATED="${INCLUDE_OUTDATED:-true}"
+INCLUDE_OUTDATED="${INCLUDE_OUTDATED:-false}"
 VERBOSE="${VERBOSE:-false}"
 
 # Help functions

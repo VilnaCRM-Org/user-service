@@ -303,6 +303,12 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
 
     private function expectClaimedChallenge(PasskeyChallenge $challenge): void
     {
+        if ($challenge->getPurpose() === PasskeyChallenge::PURPOSE_REGISTRATION) {
+            $this->expectClaimedRegistrationChallenge($challenge);
+
+            return;
+        }
+
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
             ->with(
@@ -313,6 +319,28 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
             ->willReturnCallback(static function (
                 string $id,
                 string $purpose,
+                DateTimeImmutable $consumedAt
+            ) use ($challenge): PasskeyChallenge {
+                $challenge->consume($consumedAt);
+
+                return $challenge;
+            });
+    }
+
+    private function expectClaimedRegistrationChallenge(PasskeyChallenge $challenge): void
+    {
+        $this->challengeRepository->expects($this->once())
+            ->method('claimActiveForUser')
+            ->with(
+                $this->objects->token('challengeId'),
+                PasskeyChallenge::PURPOSE_REGISTRATION,
+                $challenge->getUserId(),
+                self::isInstanceOf(DateTimeImmutable::class)
+            )
+            ->willReturnCallback(static function (
+                string $id,
+                string $purpose,
+                string $userId,
                 DateTimeImmutable $consumedAt
             ) use ($challenge): PasskeyChallenge {
                 $challenge->consume($consumedAt);

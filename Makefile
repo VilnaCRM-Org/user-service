@@ -558,7 +558,7 @@ ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has
 	fi
 
 
-pr-comments: ## Retrieve ALL unresolved comments (including outdated) for current PR (markdown format)
+pr-comments: ## Retrieve current unresolved comments for current PR (markdown format)
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -570,12 +570,12 @@ pr-comments: ## Retrieve ALL unresolved comments (including outdated) for curren
 		exit 1; \
 	fi
 ifdef PR
-	@echo "Retrieving unresolved comments (including outdated) for PR #$(PR)..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+	@echo "Retrieving current unresolved comments for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
 		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-markdown}"
 else
 	@echo "Auto-detecting PR from current git branch..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
 		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
 endif
 
@@ -600,7 +600,7 @@ else
 		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
 endif
 
-pr-comments-all: ## Retrieve ALL unresolved comments (with pagination) for a GitHub Pull Request
+pr-comments-all: ## Retrieve all unresolved comments, including outdated, for a GitHub Pull Request
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -613,14 +613,14 @@ pr-comments-all: ## Retrieve ALL unresolved comments (with pagination) for a Git
 	fi
 ifdef PR
 	@echo "Retrieving ALL unresolved comments for PR #$(PR)..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="$${VERBOSE:-false}" \
 		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-text}"
 else
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="$${VERBOSE:-false}" \
 		./scripts/get-pr-comments.sh "$${FORMAT:-text}"
 endif
 
-pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments-errors.txt
+pr-comments-to-file: ## Fetch current unresolved PR comments and save to pr-comments-errors.txt
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -644,13 +644,13 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo ""; \
 	} > "$$output_file"; \
 	if [ -n "$(PR)" ]; then \
-		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="false" \
 			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1; then \
 			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
 			echo "❌ Failed to fetch PR comments for PR #$(PR)"; \
 		fi; \
 	else \
-		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="false" \
 			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1; then \
 			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
 			echo "❌ Failed to fetch PR comments from current branch"; \

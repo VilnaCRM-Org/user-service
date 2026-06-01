@@ -24,8 +24,10 @@ final readonly class CompletePasskeyRegistrationCommandHandler implements Comman
 
     public function __invoke(CompletePasskeyRegistrationCommand $command): void
     {
-        $challenge = $this->challengeResolver->resolveRegistration($command->challengeId);
-        $this->challengeResolver->assertBelongsToUser($challenge, $command->currentUserId);
+        $challenge = $this->challengeResolver->resolveRegistrationForUser(
+            $command->challengeId,
+            $command->currentUserId
+        );
 
         $credential = $this->credentialFactory->create(
             $command->currentUserId,

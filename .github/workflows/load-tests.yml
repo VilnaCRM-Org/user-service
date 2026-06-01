@@ -16,6 +16,7 @@ jobs:
       COMPOSE_PROJECT_NAME: user-service-load-tests
       COMPOSE_FILE: docker-compose.yml:docker-compose.override.yml:docker-compose.load-tests.yml
       LOAD_TEST_COMPOSE_PROJECT: user-service-load-tests
+      FRANKENPHP_LOOP_MAX: "-1"
 
     steps:
       - name: Checkout Repository

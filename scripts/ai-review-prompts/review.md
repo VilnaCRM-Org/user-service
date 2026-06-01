@@ -16,7 +16,7 @@ Mandatory BMAD review gate:
 - Extract every functional requirement (FR), non-functional requirement (NFR), and inferred changed-behavior requirement supported by the diff/docs.
 - Generate positive, negative, edge, regression, security, performance, operability, compatibility, and data-protection cases for every applicable FR/NFR.
 - Map every case to automated tests, CI checks, mutation/coverage, contract/spec validation, load/performance evidence, or an explicit manual exception.
-- Treat uncovered applicable cases, missing CI gates, stale SHA evidence, unresolved review comments, or flaky-test risk as blocking findings.
+- Treat uncovered applicable cases, missing CI gates, stale SHA evidence, unresolved current-diff review comments, or flaky-test risk as blocking findings. Outdated unresolved threads are historical context unless code search proves the issue still exists on the reviewed SHA.
 - Review whole-codebase impact using graph evidence or code search across entry points, listeners, resolvers, handlers, config, generated specs, docs, CI jobs, and downstream callers.
 - Score every system quality attribute listed in the strict gate as PASS, WARN, FAIL, or N/A. WARN/FAIL must include a concrete fix or mandatory follow-up.
 - Enforce the expected PR check allowlist from the strict gate even if branch protection reports no required contexts.

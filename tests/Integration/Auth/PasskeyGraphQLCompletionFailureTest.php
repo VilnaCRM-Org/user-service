@@ -54,18 +54,24 @@ final class PasskeyGraphQLCompletionFailureTest extends PasskeyGraphQLAuthIntegr
         $otherUser = $this->createUserWithPassword();
         $challengeId = $this->createRegistrationChallengeId($owner);
         $field = 'passkeyRegistrationCompleteUser';
-
-        $response = $this->executeRegistrationCompleteForUser($otherUser, [
+        $scenario = [
             'challengeId' => $challengeId,
             'credential' => $this->createCredentialInput(),
             'label' => $this->faker->words(2, true),
-        ]);
+        ];
+
+        $response = $this->executeRegistrationCompleteForUser($otherUser, $scenario);
 
         $this->assertGraphQlErrorsContain(
             $response['body'],
             'Invalid or expired passkey challenge.'
         );
         $this->assertNoAuthResultPayloadValues($response['body'], $field);
+
+        $ownerResponse = $this->executeRegistrationCompleteForUser($owner, $scenario);
+
+        $this->assertGraphQlErrorsContain($ownerResponse['body'], 'Invalid passkey credential.');
+        $this->assertNoAuthResultPayloadValues($ownerResponse['body'], $field);
     }
 
     public function testRegistrationCompleteMutationSerializesDuplicateCredentialConflict(): void

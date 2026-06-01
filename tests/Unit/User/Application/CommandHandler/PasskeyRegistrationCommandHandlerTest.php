@@ -236,20 +236,25 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
     public function testCompleteRegistrationRejectsChallengeForAnotherUser(): void
     {
         $challenge = $this->objects->createRegistrationChallenge($this->faker->uuid());
+        $currentUserId = $this->objects->user('otherUserId');
 
-        $this->expectClaimedChallenge($challenge);
+        $this->expectRegistrationClaimRejected($currentUserId);
         $this->credentialValidator->expects($this->never())->method('verifyAttestation');
         $this->credentialRepository->expects($this->never())->method('save');
 
-        $this->expectException(UnauthorizedHttpException::class);
-        $this->expectExceptionMessage('Invalid or expired passkey challenge.');
+        try {
+            $this->support()->completeRegistration(
+                $this->objects->token('challengeId'),
+                ['id' => $this->objects->credential('rawCredentialId')],
+                $this->objects->credential('credentialLabel'),
+                $currentUserId
+            );
+            self::fail('Expected wrong-user registration challenge rejection.');
+        } catch (UnauthorizedHttpException $exception) {
+            self::assertSame('Invalid or expired passkey challenge.', $exception->getMessage());
+        }
 
-        $this->support()->completeRegistration(
-            $this->objects->token('challengeId'),
-            ['id' => $this->objects->credential('rawCredentialId')],
-            $this->objects->credential('credentialLabel'),
-            $this->objects->user('otherUserId')
-        );
+        self::assertFalse($challenge->isConsumed());
     }
 
     private function support(): PasskeyRegistrationCommandHandlerTestSupport
@@ -312,6 +317,12 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
     private function expectClaimedChallenge(PasskeyChallenge $challenge): void
     {
+        if ($challenge->getPurpose() === PasskeyChallenge::PURPOSE_REGISTRATION) {
+            $this->expectClaimedRegistrationChallenge($challenge);
+
+            return;
+        }
+
         $this->challengeRepository->expects($this->once())
             ->method('claimActive')
             ->with(
@@ -328,6 +339,42 @@ final class PasskeyRegistrationCommandHandlerTest extends UnitTestCase
 
                 return $challenge;
             });
+    }
+
+    private function expectClaimedRegistrationChallenge(PasskeyChallenge $challenge): void
+    {
+        $this->challengeRepository->expects($this->once())
+            ->method('claimActiveForUser')
+            ->with(
+                $this->objects->token('challengeId'),
+                PasskeyChallenge::PURPOSE_REGISTRATION,
+                $challenge->getUserId(),
+                self::isInstanceOf(DateTimeImmutable::class)
+            )
+            ->willReturnCallback(static function (
+                string $id,
+                string $purpose,
+                string $userId,
+                DateTimeImmutable $consumedAt
+            ) use ($challenge): PasskeyChallenge {
+                $challenge->consume($consumedAt);
+
+                return $challenge;
+            });
+    }
+
+    private function expectRegistrationClaimRejected(string $currentUserId): void
+    {
+        $this->challengeRepository->expects($this->never())->method('claimActive');
+        $this->challengeRepository->expects($this->once())
+            ->method('claimActiveForUser')
+            ->with(
+                $this->objects->token('challengeId'),
+                PasskeyChallenge::PURPOSE_REGISTRATION,
+                $currentUserId,
+                self::isInstanceOf(DateTimeImmutable::class)
+            )
+            ->willReturn(null);
     }
 
     private function expectEmailIsAvailable(string $email): void

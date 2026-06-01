@@ -167,6 +167,18 @@ teardown() {
     assert_output --partial "GITHUB_HOST"
 }
 
+@test "make pr-comments defaults to current unresolved comments" {
+    run bash -c "sed -n '/^pr-comments:/,/^pr-comments-current:/p' Makefile"
+    assert_success
+    assert_output --partial 'INCLUDE_OUTDATED="false"'
+    refute_output --partial 'INCLUDE_OUTDATED="true"'
+}
+
+@test "get-pr-comments excludes outdated comments by default" {
+    run grep -F 'INCLUDE_OUTDATED="${INCLUDE_OUTDATED:-false}"' scripts/get-pr-comments.sh
+    assert_success
+}
+
 @test "make pr-comments integration with scripts directory" {
     # Verify the script file exists and is executable
     [ -f "scripts/get-pr-comments.sh" ]

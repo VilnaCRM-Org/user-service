@@ -154,7 +154,7 @@ Fail the gate when any of these are true:
 - Mutation, coverage, contract, generated spec, or load evidence is required by the NFR but missing.
 - A changed test is plausibly flaky and not fixed.
 - A critical system quality attribute scores FAIL or WARN without an implemented fix or explicit blocking suggestion.
-- Review comments, current-diff conversations, or required CI failures remain unresolved.
+- Current-diff review comments, current-diff conversations, or required CI failures remain unresolved. Outdated unresolved comments are historical/non-blocking unless independently revalidated against current code.
 - Expected current-head PR checks are missing, pending, cancelled, skipped without a documented reason, or failing.
 - The report was generated for a stale SHA.
 - Graph impact context is stale for the reviewed SHA, references deleted files, uses old graph counts, or is not replaced by current-head code-search impact evidence.

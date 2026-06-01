@@ -40,7 +40,9 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
+
 use const JSON_THROW_ON_ERROR;
+
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Cookie;

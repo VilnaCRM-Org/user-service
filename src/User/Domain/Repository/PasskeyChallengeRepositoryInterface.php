@@ -19,5 +19,12 @@ interface PasskeyChallengeRepositoryInterface
         DateTimeImmutable $consumedAt
     ): ?PasskeyChallenge;
 
+    public function claimActiveForUser(
+        string $id,
+        string $purpose,
+        string $userId,
+        DateTimeImmutable $consumedAt
+    ): ?PasskeyChallenge;
+
     public function delete(PasskeyChallenge $challenge): void;
 }

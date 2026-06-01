@@ -7,6 +7,7 @@ namespace App\Tests\Integration\Auth;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
 use App\User\Domain\Entity\PasskeyChallenge;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -17,8 +18,8 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * @phpstan-type JsonScalar bool|float|int|string|null
- * @phpstan-type JsonObject array<string, JsonScalar|array<string, JsonScalar>>
- * @phpstan-type JsonBody array<string, JsonObject|JsonScalar>
+ * @phpstan-type JsonObject array<string, mixed>
+ * @phpstan-type JsonBody array<string, mixed>
  * @phpstan-type JsonResponse array{response: Response, body: JsonBody}
  */
 final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
@@ -91,6 +92,52 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $this->assertNoSignupChallengeWasCreatedForEmail($email);
     }
 
+    public function testRegistrationCompleteRejectsWrongUserWithoutConsumingOwnerChallenge(): void
+    {
+        $owner = $this->createUser($this->faker->unique()->safeEmail());
+        $otherUser = $this->createUser($this->faker->unique()->safeEmail());
+        $options = $this->requestEmptyJsonObject(
+            '/api/passkeys/register/options',
+            $this->createAuthenticatedHeaders($owner->getId())
+        );
+        $challengeId = $this->requireStringKey($options['body'], 'challenge_id');
+        $payload = [
+            'challengeId' => $challengeId,
+            'credential' => $this->createCredentialInput(),
+            'label' => $this->faker->words(2, true),
+        ];
+
+        $wrongUserResponse = $this->requestJson(
+            '/api/passkeys/register/complete',
+            $payload,
+            $this->createAuthenticatedHeaders($otherUser->getId())
+        );
+
+        $this->assertSame(
+            Response::HTTP_UNAUTHORIZED,
+            $wrongUserResponse['response']->getStatusCode()
+        );
+        $this->assertSame(
+            'Invalid or expired passkey challenge.',
+            $wrongUserResponse['body']['detail'] ?? null
+        );
+
+        $ownerResponse = $this->requestJson(
+            '/api/passkeys/register/complete',
+            $payload,
+            $this->createAuthenticatedHeaders($owner->getId())
+        );
+
+        $this->assertSame(
+            Response::HTTP_UNAUTHORIZED,
+            $ownerResponse['response']->getStatusCode()
+        );
+        $this->assertSame(
+            'Invalid passkey credential.',
+            $ownerResponse['body']['detail'] ?? null
+        );
+    }
+
     /**
      * @param JsonObject $publicKey
      */
@@ -124,7 +171,7 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         return $value;
     }
 
-    private function createUser(string $email): void
+    private function createUser(string $email): User
     {
         $plainPassword = $this->faker->password(12, 20);
         $user = $this->userFactory->create(
@@ -137,6 +184,8 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user::class);
         $user->setPassword($passwordHasher->hash($plainPassword, null));
         $this->userRepository->save($user);
+
+        return $user;
     }
 
     private function assertNoSignupChallengeWasCreatedForEmail(string $email): void
@@ -153,11 +202,55 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
     }
 
     /**
-     * @param array<string, string> $payload
+     * @return array<string, array<string, scalar|array|null>|scalar|null>
+     */
+    private function createCredentialInput(): array
+    {
+        return [
+            'id' => $this->faker->uuid(),
+            'rawId' => $this->faker->uuid(),
+            'response' => [
+                'attestationObject' => $this->faker->sha256(),
+                'authenticatorData' => $this->faker->sha256(),
+                'clientDataJSON' => $this->faker->sha256(),
+                'signature' => $this->faker->sha256(),
+                'userHandle' => null,
+            ],
+            'type' => 'public-key',
+        ];
+    }
+
+    /**
+     * @param JsonBody              $payload
+     * @param array<string, string> $headers
      *
      * @return JsonResponse
      */
-    private function requestJson(string $uri, array $payload): array
+    private function requestJson(string $uri, array $payload, array $headers = []): array
+    {
+        return $this->requestJsonContent(
+            $uri,
+            json_encode($payload, JSON_THROW_ON_ERROR),
+            $headers
+        );
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
+     * @return JsonResponse
+     */
+    private function requestEmptyJsonObject(string $uri, array $headers = []): array
+    {
+        return $this->requestJsonContent($uri, '{}', $headers);
+    }
+
+    /**
+     * @param array<string, string> $headers
+     *
+     * @return JsonResponse
+     */
+    private function requestJsonContent(string $uri, string $content, array $headers = []): array
     {
         $response = $this->httpKernel->handle(
             Request::create(
@@ -166,12 +259,12 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
                 [],
                 [],
                 [],
-                [
+                array_merge([
                     'REMOTE_ADDR' => $this->faker->ipv4(),
                     'HTTP_ACCEPT' => 'application/json',
                     'CONTENT_TYPE' => 'application/json',
-                ],
-                json_encode($payload, JSON_THROW_ON_ERROR)
+                ], $headers),
+                $content
             )
         );
 

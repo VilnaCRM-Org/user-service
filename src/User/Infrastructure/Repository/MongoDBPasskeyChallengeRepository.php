@@ -46,12 +46,44 @@ final class MongoDBPasskeyChallengeRepository extends ServiceDocumentRepository 
         string $purpose,
         DateTimeImmutable $consumedAt
     ): ?PasskeyChallenge {
-        $result = $this->createQueryBuilder()
+        return $this->claimActiveMatching($id, $purpose, null, $consumedAt);
+    }
+
+    #[\Override]
+    public function claimActiveForUser(
+        string $id,
+        string $purpose,
+        string $userId,
+        DateTimeImmutable $consumedAt
+    ): ?PasskeyChallenge {
+        return $this->claimActiveMatching($id, $purpose, $userId, $consumedAt);
+    }
+
+    #[\Override]
+    public function delete(PasskeyChallenge $challenge): void
+    {
+        $this->documentManager->remove($challenge);
+        $this->documentManager->flush();
+    }
+
+    private function claimActiveMatching(
+        string $id,
+        string $purpose,
+        ?string $userId,
+        DateTimeImmutable $consumedAt
+    ): ?PasskeyChallenge {
+        $queryBuilder = $this->createQueryBuilder()
             ->updateOne()
             ->field('id')->equals($id)
             ->field('purpose')->equals($purpose)
             ->field('expiresAt')->gte($consumedAt)
-            ->field('consumedAt')->equals(null)
+            ->field('consumedAt')->equals(null);
+
+        if ($userId !== null) {
+            $queryBuilder->field('userId')->equals($userId);
+        }
+
+        $result = $queryBuilder
             ->field('consumedAt')->set($consumedAt)
             ->getQuery()
             ->execute();
@@ -63,12 +95,5 @@ final class MongoDBPasskeyChallengeRepository extends ServiceDocumentRepository 
         $this->documentManager->clear(PasskeyChallenge::class);
 
         return $this->find($id);
-    }
-
-    #[\Override]
-    public function delete(PasskeyChallenge $challenge): void
-    {
-        $this->documentManager->remove($challenge);
-        $this->documentManager->flush();
     }
 }
