@@ -15,6 +15,7 @@ use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 abstract class RateLimitClientTestCase extends UnitTestCase
 {
@@ -87,7 +88,8 @@ abstract class RateLimitClientTestCase extends UnitTestCase
             ),
             new ApiRateLimitGraphQlAuthTargetResolver(
                 $clientIdentityResolver,
-                new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
+                new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver()),
+                new JsonEncoder(),
             ),
             new ApiRateLimitOAuthSocialTargetResolver(),
         );

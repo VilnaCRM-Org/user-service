@@ -35,6 +35,20 @@ final readonly class ApiRateLimitPayloadValueResolver
     /**
      * @param list<string> $keys
      */
+    public function resolveTopLevel(Request $request, array $keys): ?string
+    {
+        $rawPayload = trim($request->getContent());
+        $jsonPayload = $this->decodeJsonPayload($rawPayload);
+        if ($jsonPayload !== null) {
+            return $this->findTopLevelStringValue($jsonPayload, $keys);
+        }
+
+        return $this->resolveTopLevelFormPayloadValue($request, $rawPayload, $keys);
+    }
+
+    /**
+     * @param list<string> $keys
+     */
     private function resolveJsonPayloadValue(string $rawPayload, array $keys): ?string
     {
         $jsonPayload = $this->decodeJsonPayload($rawPayload);
@@ -150,6 +164,35 @@ final readonly class ApiRateLimitPayloadValueResolver
         parse_str($rawPayload, $formPayload);
 
         return $this->findStringValue($formPayload, $keys);
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function resolveTopLevelFormPayloadValue(Request $request, string $rawPayload, array $keys): ?string
+    {
+        $formPayload = $request->request->all();
+        if ($formPayload === []) {
+            parse_str($rawPayload, $formPayload);
+        }
+
+        return $this->findTopLevelStringValue($formPayload, $keys);
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $payload
+     * @param list<string> $keys
+     */
+    private function findTopLevelStringValue(array $payload, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $value = $payload[$key] ?? null;
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**

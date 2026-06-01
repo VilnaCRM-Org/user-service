@@ -185,6 +185,516 @@ GRAPHQL;
         );
     }
 
+    public function testPasskeySigninOptionsIgnoresNestedCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(input: {
+    credential: { email: "%s" }
+  }) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+            $email
+        );
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsUsesTopLevelEmailBeforeNestedDecoy(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $decoyEmail = $this->faker->email();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(input: {
+    email: "%s"
+    credential: { email: "%s" }
+  }) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+            $email,
+            $decoyEmail
+        );
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsInputVariableIgnoresNestedCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            ['input' => ['credential' => ['email' => $this->faker->email()]]]
+        );
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsInputVariableUsesTopLevelEmailBeforeNestedDecoy(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            [
+                'input' => [
+                    'email' => $email,
+                    'credential' => ['email' => $this->faker->email()],
+                ],
+            ]
+        );
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsUsesMultipartOperationsPayloadLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlOperationsRequest(
+            [
+                'query' => $query,
+                'variables' => ['input' => ['email' => $email]],
+            ],
+            $clientIp,
+            'multipart/form-data; boundary=----rate-limit'
+        );
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsFormOperationsOperationNameUsesQueryStringQuery(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation Passkey($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlOperationsRequest(
+            ['operationName' => 'Passkey'],
+            $clientIp,
+            'application/x-www-form-urlencoded'
+        );
+        $request->query->set('query', $query);
+        $request->query->set('variables', json_encode(['input' => ['email' => $email]], JSON_THROW_ON_ERROR));
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninCompleteFormOperationsOperationNameUsesQueryStringQuery(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation Passkey {
+  passkeySignInCompleteUser(input: { challengeId: "%s" }) {
+    user { accessToken }
+  }
+}
+GRAPHQL,
+            $challengeId
+        );
+
+        $request = $this->createGraphQlOperationsRequest(
+            ['operationName' => 'Passkey'],
+            $clientIp,
+            'application/x-www-form-urlencoded'
+        );
+        $request->query->set('query', $query);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testMalformedFormOperationsFallsBackToQueryStringLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = sprintf(self::PASSKEY_SIGNIN_OPTIONS_MUTATION, $email);
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            ['operations' => '{'],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/x-www-form-urlencoded', 'REMOTE_ADDR' => $clientIp]
+        );
+        $request->query->set('query', $query);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testFormOperationsVariablesOverlayQueryStringQuery(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = <<<'GRAPHQL'
+mutation Passkey($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlOperationsRequest(
+            [
+                'operationName' => 'Passkey',
+                'variables' => ['input' => ['email' => $email]],
+            ],
+            $clientIp,
+            'application/x-www-form-urlencoded'
+        );
+        $request->query->set('query', $query);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testInvalidJsonPayloadFallsBackToQueryStringLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = sprintf(self::PASSKEY_SIGNIN_OPTIONS_MUTATION, $email);
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json', 'REMOTE_ADDR' => $clientIp],
+            '{'
+        );
+        $request->query->set('query', $query);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testInvalidQueryStringVariablesUsesOnlyIpLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'text/plain', 'REMOTE_ADDR' => $clientIp]
+        );
+        $request->query->set('query', $query);
+        $request->query->set('variables', '{');
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testRawGraphQlContentTypeUsesRequestBodyLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/graphql', 'REMOTE_ADDR' => $clientIp],
+            sprintf(
+                'mutation { passkeySignInCompleteUser(input: { challengeId: "%s" }) { user { accessToken } } }',
+                $challengeId
+            )
+        );
+        $request->setFormat('graphql', ['application/graphql']);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testRawGraphQlEmptyBodyUsesQueryStringLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/graphql', 'REMOTE_ADDR' => $clientIp]
+        );
+        $request->query->set('query', sprintf(self::PASSKEY_SIGNIN_OPTIONS_MUTATION, $email));
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsMultipartOperationsIgnoresNestedCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlOperationsRequest(
+            [
+                'query' => $query,
+                'variables' => ['input' => ['credential' => ['email' => $this->faker->email()]]],
+            ],
+            $clientIp,
+            'application/x-www-form-urlencoded'
+        );
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsDirectEmailArgumentUsesEmailLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = sprintf(
+            'mutation { passkeySignInOptionsUser(email: "%s") { user { challengeId } } }',
+            $email
+        );
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsContinuesPastNonInputArgument(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(
+    clientMutationId: "client-id"
+    input: { email: "%s" }
+  ) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+            $email
+        );
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInLimiters($clientIp, $email),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsStringInputUsesOnlyIpLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = 'mutation { passkeySignInOptionsUser(input: "not-object") { user { challengeId } } }';
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsWithoutEmailArgumentUsesOnlyIpLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = 'mutation { passkeySignInOptionsUser(other: "value") { user { challengeId } } }';
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsInputVariableRejectsNonArrayInput(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $request = $this->createGraphQlRequest(
+            $query,
+            $clientIp,
+            ['input' => 'not-array']
+        );
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testPasskeySigninOptionsInputVariableDefaultIgnoresNestedCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput = {
+  credential: { email: "%s" }
+}) {
+  passkeySignInOptionsUser(input: $input) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+            $this->faker->email()
+        );
+
+        $request = $this->createGraphQlRequest($query, $clientIp);
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
+    public function testGraphQlOperationsPayloadWithInvalidJsonUsesNoAuthLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            ['operations' => '{'],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'multipart/form-data; boundary=----rate-limit', 'REMOTE_ADDR' => $clientIp]
+        );
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
+    }
+
+    public function testGraphQlOperationsPayloadWithScalarJsonUsesNoAuthLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = $this->createGraphQlOperationsRequest(
+            ['operationName' => 'Ignored'],
+            $clientIp,
+            'multipart/form-data; boundary=----rate-limit'
+        );
+        $request->request->set('operations', 'true');
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
+    }
+
+    public function testGraphQlOperationsPayloadWithoutQueryUsesNoAuthLimiters(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = $this->createGraphQlOperationsRequest(
+            ['operationName' => 'Ignored'],
+            $clientIp,
+            'multipart/form-data; boundary=----rate-limit'
+        );
+
+        self::assertSame([], $this->resolver->resolveEndpointLimiters($request));
+    }
+
     public function testGraphQlLimitersUseSelectedOperationOnly(): void
     {
         $clientIp = $this->faker->ipv4();
@@ -378,8 +888,8 @@ GRAPHQL,
     }
 
     /**
-     * @param array<string, array<string, string>|string> $variables
-     * @param array<string, array<string, string>|string> $extraPayload
+     * @param array<string, mixed> $variables
+     * @param array<string, mixed> $extraPayload
      */
     private function createGraphQlRequest(
         string $query,
@@ -403,6 +913,24 @@ GRAPHQL,
                 ] + $extraPayload,
                 JSON_THROW_ON_ERROR
             )
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $operations
+     */
+    private function createGraphQlOperationsRequest(
+        array $operations,
+        string $clientIp,
+        string $contentType
+    ): Request {
+        return Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            ['operations' => json_encode($operations, JSON_THROW_ON_ERROR)],
+            [],
+            [],
+            ['CONTENT_TYPE' => $contentType, 'REMOTE_ADDR' => $clientIp]
         );
     }
 
@@ -430,7 +958,7 @@ GRAPHQL,
      * @param array{
      *     method?: string,
      *     path?: string,
-     *     variables?: array<string, array<string, string>|string>
+     *     variables?: array<string, mixed>
      * } $options
      */
     private function assertGraphQlLimiters(

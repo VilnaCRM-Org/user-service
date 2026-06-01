@@ -188,6 +188,90 @@ GRAPHQL, $email),
         $this->assertRateLimitResponse($response);
     }
 
+    public function testGraphQlPasskeySigninMultipartOperationsUsesSignInEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = $this->createMultipartPasskeySigninPayload($email);
+
+        $response = $this->handleFormRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testGraphQlPasskeySigninFormOperationsUsesQueryStringSignInEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', $email),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $query = <<<'GRAPHQL'
+mutation Passkey($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) { user { challengeId } }
+}
+GRAPHQL;
+        $uri = '/api/graphql?' . http_build_query([
+            'query' => $query,
+            'variables' => json_encode(['input' => ['email' => $email]], JSON_THROW_ON_ERROR),
+        ]);
+
+        $response = $this->handleFormRequest(
+            $uri,
+            Request::METHOD_POST,
+            ['operations' => json_encode(['operationName' => 'Passkey'], JSON_THROW_ON_ERROR)]
+        );
+
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testRestPasskeySigninOptionsIgnoresNestedCredentialEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', strtolower(trim($email))),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'credential' => ['email' => $email],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/passkeys/signin/options', Request::METHOD_POST, $content);
+
+        $this->assertNotSame(429, $response->getStatusCode());
+    }
+
+    public function testGraphQlPasskeySigninOptionsIgnoresNestedCredentialEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', strtolower(trim($email))),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(input: {
+    credential: { email: "%s" }
+  }) {
+    user { challengeId }
+  }
+}
+GRAPHQL, $email),
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertNotSame(429, $response->getStatusCode());
+    }
+
     public function testRestPasskeySigninCompleteIgnoresCredentialEmailLimiter(): void
     {
         $email = $this->faker->safeEmail();
@@ -308,6 +392,23 @@ GRAPHQL, $decoyEmail),
         ], JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @return array{operations: string}
+     */
+    private function createMultipartPasskeySigninPayload(string $email): array
+    {
+        return [
+            'operations' => json_encode([
+                'query' => <<<'GRAPHQL'
+mutation($input: passkeySignInOptionsUserInput!) {
+  passkeySignInOptionsUser(input: $input) { user { challengeId } }
+}
+GRAPHQL,
+                'variables' => ['input' => ['email' => $email]],
+            ], JSON_THROW_ON_ERROR),
+        ];
+    }
+
     private function createPasskeySigninCompleteGraphQlPayload(string $email): string
     {
         return json_encode([
@@ -367,6 +468,27 @@ GRAPHQL,
 
         return $this->httpKernel->handle(
             Request::create($uri, $method, [], [], [], $serverParams, $content)
+        );
+    }
+
+    /**
+     * @param array<string, string> $parameters
+     */
+    private function handleFormRequest(string $uri, string $method, array $parameters): Response
+    {
+        return $this->httpKernel->handle(
+            Request::create(
+                $uri,
+                $method,
+                $parameters,
+                [],
+                [],
+                [
+                    'REMOTE_ADDR' => '127.0.0.1',
+                    'HTTP_ACCEPT' => 'application/json',
+                    'CONTENT_TYPE' => 'multipart/form-data; boundary=----rate-limit',
+                ]
+            )
         );
     }
 

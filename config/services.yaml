@@ -195,6 +195,10 @@ services:
     arguments:
       $jsonEncoder: '@serializer.encoder.json'
 
+  App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver:
+    arguments:
+      $jsonEncoder: '@serializer.encoder.json'
+
   App\Shared\Application\EventListener\InvalidUuidRequestListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }

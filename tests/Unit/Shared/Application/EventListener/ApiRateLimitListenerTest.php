@@ -25,6 +25,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\RateLimiter\LimiterInterface;
 use Symfony\Component\RateLimiter\RateLimit;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 final class ApiRateLimitListenerTest extends UnitTestCase
 {
@@ -358,7 +359,8 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     ): ApiRateLimitGraphQlAuthTargetResolver {
         return new ApiRateLimitGraphQlAuthTargetResolver(
             $clientIdentityResolver,
-            new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
+            new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver()),
+            new JsonEncoder(),
         );
     }
 

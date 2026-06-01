@@ -85,6 +85,33 @@ final readonly class ApiRateLimitGraphQlVariableValueResolver
         return $this->nestedPayloadStringResolver->resolve($value, $keys);
     }
 
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     */
+    public function resolveInputVariableTopLevelStringValue(
+        array $variables,
+        array $variableDefaultValues,
+        string $variableName,
+        array $keys
+    ): ?string {
+        if (!array_key_exists($variableName, $variables)) {
+            return $this->resolveInputVariableDefaultTopLevelStringValue(
+                $variableDefaultValues,
+                $variableName,
+                $keys
+            );
+        }
+
+        $value = $variables[$variableName];
+        if (!is_array($value)) {
+            return null;
+        }
+
+        return $this->findTopLevelStringValue($value, $keys);
+    }
+
     private function resolveInlineStringValue(StringValueNode $value): ?string
     {
         return $value->value !== '' ? $value->value : null;
@@ -127,6 +154,42 @@ final readonly class ApiRateLimitGraphQlVariableValueResolver
     }
 
     /**
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     */
+    private function resolveInputVariableDefaultTopLevelStringValue(
+        array $variableDefaultValues,
+        string $variableName,
+        array $keys
+    ): ?string {
+        $defaultValue = $variableDefaultValues[$variableName] ?? null;
+
+        return $defaultValue instanceof ObjectValueNode
+            ? $this->resolveStringValue(
+                $this->findDirectNamedObjectFieldValue($defaultValue, $keys),
+                [],
+                $variableDefaultValues
+            )
+            : null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $payload
+     * @param list<string> $keys
+     */
+    private function findTopLevelStringValue(array $payload, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $value = $payload[$key] ?? null;
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param list<string> $keys
      */
     private function findNamedObjectFieldValue(ValueNode $value, array $keys): ?ValueNode
@@ -141,6 +204,20 @@ final readonly class ApiRateLimitGraphQlVariableValueResolver
                 if ($nested !== null) {
                     return $nested;
                 }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function findDirectNamedObjectFieldValue(ObjectValueNode $value, array $keys): ?ValueNode
+    {
+        foreach ($value->fields as $field) {
+            if (in_array($field->name->value, $keys, true)) {
+                return $field->value;
             }
         }
 

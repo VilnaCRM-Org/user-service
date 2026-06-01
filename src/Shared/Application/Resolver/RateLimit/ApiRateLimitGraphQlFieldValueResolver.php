@@ -124,6 +124,36 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
 
     /**
      * @param list<FieldNode> $fields
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     *
+     * @return list<string>
+     */
+    public function findTopLevelInputStringValuesForFields(
+        array $fields,
+        array $variables,
+        array $variableDefaultValues,
+        array $keys
+    ): array {
+        $values = [];
+        foreach ($fields as $field) {
+            $resolved = $this->findTopLevelInputStringValueForField(
+                $field,
+                $variables,
+                $variableDefaultValues,
+                $keys
+            );
+            if ($resolved !== null) {
+                $values[] = $resolved;
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param list<FieldNode> $fields
      *
      * @return list<string>
      */
@@ -168,6 +198,77 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
         }
 
         return $values;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     */
+    private function findTopLevelInputStringValueForField(
+        FieldNode $field,
+        array $variables,
+        array $variableDefaultValues,
+        array $keys
+    ): ?string {
+        foreach ($field->arguments as $argument) {
+            if (in_array($argument->name->value, $keys, true)) {
+                return $this->variableValueResolver->resolveStringValue(
+                    $argument->value,
+                    $variables,
+                    $variableDefaultValues
+                );
+            }
+
+            if ($argument->name->value !== 'input') {
+                continue;
+            }
+
+            $resolved = $this->resolveTopLevelInputValue(
+                $argument->value,
+                $variables,
+                $variableDefaultValues,
+                $keys
+            );
+            if ($resolved !== null) {
+                return $resolved;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     */
+    private function resolveTopLevelInputValue(
+        ValueNode $value,
+        array $variables,
+        array $variableDefaultValues,
+        array $keys
+    ): ?string {
+        if ($value instanceof VariableNode) {
+            return $this->variableValueResolver->resolveInputVariableTopLevelStringValue(
+                $variables,
+                $variableDefaultValues,
+                $value->name->value,
+                $keys
+            );
+        }
+
+        if (!$value instanceof ObjectValueNode) {
+            return null;
+        }
+
+        $directValue = $this->findDirectNamedObjectFieldValue($value, $keys);
+
+        return $this->variableValueResolver->resolveStringValue(
+            $directValue,
+            $variables,
+            $variableDefaultValues
+        );
     }
 
     /**
@@ -270,6 +371,20 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
             $nested = $this->findNamedObjectFieldValue($field->value, $keys);
             if ($nested !== null) {
                 return $nested;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param list<string> $keys
+     */
+    private function findDirectNamedObjectFieldValue(ObjectValueNode $value, array $keys): ?ValueNode
+    {
+        foreach ($value->fields as $field) {
+            if (in_array($field->name->value, $keys, true)) {
+                return $field->value;
             }
         }
 

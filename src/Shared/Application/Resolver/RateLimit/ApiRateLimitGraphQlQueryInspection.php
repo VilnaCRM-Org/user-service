@@ -84,6 +84,26 @@ final readonly class ApiRateLimitGraphQlQueryInspection
 
     /**
      * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param list<string> $fieldNames
+     * @param list<string> $keys
+     *
+     * @return list<string>
+     */
+    public function findTopLevelInputStringValuesForMutationFields(
+        array $variables,
+        array $fieldNames,
+        array $keys
+    ): array {
+        return $this->fieldValueResolver->findTopLevelInputStringValuesForFields(
+            $this->rootFields->matchingMutationFields($fieldNames),
+            $variables,
+            $this->variableDefaultValues,
+            $keys
+        );
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
      * @param list<string> $keys
      */
     public function findArgumentVariableValue(array $variables, array $keys): ?string

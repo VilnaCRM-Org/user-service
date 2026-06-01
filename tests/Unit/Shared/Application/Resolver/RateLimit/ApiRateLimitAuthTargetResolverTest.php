@@ -85,6 +85,55 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         self::assertSame('email:' . strtolower(trim($email)), $result[1]['key']);
     }
 
+    public function testResolvePasskeySignInOptionsIgnoresNestedCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $resolver = $this->createAuthTargetResolver();
+        $request = Request::create(
+            '/api/passkeys/signin/options',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode(['credential' => ['email' => $this->faker->email()]], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertSame([
+            ['name' => 'signin_ip', 'key' => 'ip:' . $clientIp],
+        ], $resolver->resolve($request));
+    }
+
+    public function testResolvePasskeySignInOptionsUsesTopLevelEmailBeforeNestedDecoy(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $email = $this->faker->email();
+        $resolver = $this->createAuthTargetResolver();
+        $request = Request::create(
+            '/api/passkeys/signin/options',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                [
+                    'email' => $email,
+                    'credential' => ['email' => $this->faker->email()],
+                ],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame(
+            [
+                ['name' => 'signin_ip', 'key' => 'ip:' . $clientIp],
+                ['name' => 'signin_email', 'key' => 'email:' . strtolower(trim($email))],
+            ],
+            $resolver->resolve($request)
+        );
+    }
+
     public function testResolvePasskeySignInCompleteUsesIpSignInLimiter(): void
     {
         $clientIp = $this->faker->ipv4();
