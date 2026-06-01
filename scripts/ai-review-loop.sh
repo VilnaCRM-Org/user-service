@@ -61,6 +61,7 @@ review_sandbox="${AI_REVIEW_REVIEW_SANDBOX:-read-only}"
 fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
 github_status_enabled="${AI_REVIEW_GITHUB_STATUS:-true}"
 github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
+github_pr_number="${AI_REVIEW_GITHUB_PR:-${AI_REVIEW_PR_NUMBER:-}}"
 github_repo=""
 github_head_sha=""
 github_pr_url=""
@@ -109,7 +110,14 @@ validate_agent "$fix_agent"
 
 base_branch="${AI_REVIEW_BASE:-}"
 if [[ -z "$base_branch" ]] && command -v gh >/dev/null 2>&1; then
-  base_branch=$(gh pr view --json baseRefName -q .baseRefName 2>/dev/null || true)
+  if [[ -n "$github_pr_number" ]]; then
+    base_repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)"
+    if [[ -n "$base_repo" ]]; then
+      base_branch=$(gh pr view "$github_pr_number" --repo "$base_repo" --json baseRefName -q .baseRefName 2>/dev/null || true)
+    fi
+  else
+    base_branch=$(gh pr view --json baseRefName -q .baseRefName 2>/dev/null || true)
+  fi
 fi
 
 if [[ -z "$base_branch" ]]; then
@@ -156,8 +164,13 @@ detect_github_pr() {
   fi
 
   github_repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)"
-  github_head_sha="$(gh pr view --json headRefOid --jq .headRefOid 2>/dev/null || true)"
-  github_pr_url="$(gh pr view --json url --jq .url 2>/dev/null || true)"
+  if [[ -n "$github_repo" && -n "$github_pr_number" ]]; then
+    github_head_sha="$(gh pr view "$github_pr_number" --repo "$github_repo" --json headRefOid --jq .headRefOid 2>/dev/null || true)"
+    github_pr_url="$(gh pr view "$github_pr_number" --repo "$github_repo" --json url --jq .url 2>/dev/null || true)"
+  else
+    github_head_sha="$(gh pr view --json headRefOid --jq .headRefOid 2>/dev/null || true)"
+    github_pr_url="$(gh pr view --json url --jq .url 2>/dev/null || true)"
+  fi
 
   if [[ -z "$github_repo" || -z "$github_head_sha" || -z "$github_pr_url" ]]; then
     echo "Warning: Unable to detect GitHub PR; BMAD status updates disabled." >&2
