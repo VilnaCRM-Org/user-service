@@ -141,11 +141,17 @@ Expanded quality dimension checklist:
   polling, retained data, and cost/carbon-sensitive workload growth.
 - AI Automation Governance: agent/bot permissions, deterministic automation,
   reviewability, audit logs, safe autonomy boundaries, and human approval for
-  high-risk writes.
+  high-risk writes. BMAD PR status/comment publishing is a required low-risk
+  review-gate write; do not wait for human approval before running the review
+  or posting pending/failure/success status updates.
 
 System quality attribute scorecard:
 
 - Score every pinned system quality attribute from `{SYSTEM_QUALITY_ATTRIBUTES}`.
+- Treat the pinned wrapper list as the current
+  https://en.wikipedia.org/wiki/List_of_system_quality_attributes baseline. If
+  a current Wikipedia-listed attribute is missing from the pinned list, fail and
+  list the missing attribute as a Required Fix.
 - Each row must state the checked meaning in this PR, evidence, source, score,
   status, and improvement recommendation. If no improvement is needed, say
   `Improvement: none`.
@@ -174,6 +180,9 @@ Whole-codebase impact review:
   based, or not used in the Whole-Codebase Impact Analysis.
 - Score every pinned impact surface. Mark a surface not applicable only with a
   concrete reason tied to the BMAD source and changed files.
+- Every NFR catalog row, expanded quality row, and system quality attribute row
+  must cite graph/relationship evidence, or give a concrete source-backed
+  reason why graph evidence is irrelevant for that row.
 - Fail if a changed file has plausible callers, public contracts, persistence,
   configuration, tests, docs, security/privacy, operations, dependency, or
   backward-compatibility impact that is not inspected or explicitly ruled out.
@@ -218,6 +227,10 @@ Mandatory QA/test review:
   missing data-loss tests, missing concurrency/replay/idempotency tests, missing
   contract checks, or missing flaky-test mitigation as blockers unless there is
   a concrete source-backed reason they are outside PR scope.
+- Search explicitly for vulnerabilities, bugs, regressions, defects,
+  operational problems, and data-loss/privacy/security risks. If any are found
+  or insufficiently ruled out, report them as blockers with source evidence and
+  Required Fixes.
 
 Required review process:
 
@@ -250,8 +263,11 @@ Required review process:
     paths, edge cases, regression coverage, security/data-loss risks, and no
     lowered quality thresholds.
 11. Check GitHub completion using the supplied PR number or by detecting the PR
-    for the current branch. If a PR cannot be identified, remote GitHub state
-    cannot be queried, or the review state cannot be verified, fail closed.
+   for the current branch. If a PR cannot be identified, remote GitHub state
+   cannot be queried, or review-thread/check state cannot be verified, fail
+   closed. Human approval is not required for the BMAD review to run or pass;
+   fail only on unresolved active review threads, requested-changes reviews,
+   mismatched PR head, draft PR state, or non-passing applicable checks.
 12. Check the CI gate separately. Local verification is supporting evidence, but
     it does not replace GitHub check evidence for an open PR. If required
     checks are configured, verify those required checks. If the repository
@@ -298,7 +314,8 @@ IMPACT_ANALYSIS_MIN_SCORE: {SCORE_THRESHOLD}/5
 TEST_CASE_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
 AUTO_TEST_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
 FLAKY_TEST_RISK_MIN_SCORE: {SCORE_THRESHOLD}/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>
 CI_CHECK_ROLLUP: PASSING
 
 For FAIL, include the same markers with FAIL for any failed area.
@@ -330,7 +347,7 @@ Then include these sections using the exact section names:
   score, status
 - QA Verification: commands, tests, CI, coverage, mutation, static analysis,
   score, status
-- GitHub Completion Gate: comments, approvals, requested changes, checks,
+- GitHub Completion Gate: comments, human approval state, requested changes, checks,
   score, status
 - CI Gate: required/applicable checks, status, conclusion, run URL, score,
   status

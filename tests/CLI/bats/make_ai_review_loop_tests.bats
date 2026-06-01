@@ -30,7 +30,7 @@ IMPACT_ANALYSIS_MIN_SCORE: 5/5
 TEST_CASE_COVERAGE_MIN_SCORE: 5/5
 AUTO_TEST_COVERAGE_MIN_SCORE: 5/5
 FLAKY_TEST_RISK_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -198,7 +198,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS
@@ -243,7 +243,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -290,7 +290,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -336,7 +336,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -382,7 +382,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -424,7 +424,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -470,7 +470,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -512,7 +512,7 @@ if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t0000000000000000000000000000000000000000\n'
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t0000000000000000000000000000000000000000\n'
   exit 0
 fi
 
@@ -940,7 +940,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -1005,7 +1005,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS
@@ -2156,7 +2156,7 @@ GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 4/5
 NFR_CATALOG_MIN_SCORE: 4/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2301,7 +2301,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2431,7 +2431,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2553,7 +2553,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2647,7 +2647,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2743,7 +2743,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2871,7 +2871,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3054,7 +3054,7 @@ GITHUB_COMPLETION_GATE: PASS
 CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 **Requirement Scorecard:**
@@ -3143,7 +3143,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3277,7 +3277,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3411,7 +3411,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3545,7 +3545,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3794,8 +3794,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "Warning: GitHub required PR checks are not fully passing: Run Bats Core Tests"
-  assert_output --partial "GitHub corroboration failed before AI review."
-  refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
 @test "bmad-fr-nfr-review-gate falls back to visible checks when required check rollup is empty" {
@@ -4048,8 +4047,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "Warning: GitHub PR check rollup is empty."
-  assert_output --partial "GitHub corroboration failed before AI review."
-  refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
 @test "bmad-fr-nfr-review-gate rejects PASS when fallback visible GitHub checks are not passing" {
@@ -4073,8 +4071,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "Warning: GitHub PR checks are not fully passing: Run Bats Core Tests"
-  assert_output --partial "GitHub corroboration failed before AI review."
-  refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
 @test "bmad-fr-nfr-review-gate rejects PASS when PR head differs from local HEAD" {
@@ -4098,7 +4095,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "does not match local HEAD"
-  assert_output --partial "GitHub corroboration failed before AI review."
+  assert_output --partial "GitHub preflight failed before AI review."
   refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
@@ -4123,8 +4120,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "Warning: GitHub required PR checks are not fully passing: Optional Docs"
-  assert_output --partial "GitHub corroboration failed before AI review."
-  refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
 @test "bmad-fr-nfr-review-gate checks paginated unresolved review threads" {
@@ -4179,7 +4175,7 @@ if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
-  printf '287\tfalse\tAPPROVED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
   exit 0
 fi
 
@@ -4214,8 +4210,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial "Warning: GitHub PR has unresolved review threads: 1"
-  assert_output --partial "GitHub corroboration failed before AI review."
-  refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
 @test "bmad-fr-nfr-review-gate requires STATUS on the first line" {
@@ -4263,7 +4258,7 @@ FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
-GITHUB_COMPLETION_STATE: APPROVED
+GITHUB_COMPLETION_STATE: PASSING
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -4328,7 +4323,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision APPROVED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS

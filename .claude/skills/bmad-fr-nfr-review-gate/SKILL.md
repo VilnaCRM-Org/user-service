@@ -1,6 +1,6 @@
 ---
 name: bmad-fr-nfr-review-gate
-description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, expanded quality dimension, Wikipedia system quality attribute, positive/negative/edge test case, automated test and CI coverage expectation, flaky-test risk, whole-codebase impact surface, manual test expectation, QA best practice, GitHub review comment, approval, and CI check before completion.
+description: Run a BMAD spec-driven post-implementation review gate. Use after implementing a GitHub PR, feature, bugfix, or task with BMAD specs to verify every FR/NFR, pinned NonFunctionals.com NFR category, expanded quality dimension, Wikipedia system quality attribute, positive/negative/edge test case, automated test and CI coverage expectation, flaky-test risk, whole-codebase impact surface, manual test expectation, QA best practice, GitHub review comments and requested-changes state, and CI check before completion.
 ---
 
 # BMAD FR/NFR Review Gate
@@ -21,9 +21,10 @@ applicable rows score 5/5.
 - Optional base ref: `BMAD_REVIEW_BASE=<base-ref>`
 - Graph impact context from Graphify/codebase-memory/Deptrac/manual notes:
   `BMAD_REVIEW_IMPACT_CONTEXT=<path>`
-- Optional publishing toggles: `BMAD_REVIEW_POST_PR_COMMENT=true|false` and
-  `BMAD_REVIEW_POST_GITHUB_STATUS=true|false` (BMAD wrapper defaults both to
-  `true`)
+- PR publishing toggles: `BMAD_REVIEW_POST_PR_COMMENT=true|false` and
+  `BMAD_REVIEW_POST_GITHUB_STATUS=true|false`. For PR runs, BMAD status
+  publishing is required and defaults to `true`; disabling is only for
+  local-only dry runs or test harnesses that must not write to GitHub.
 - Optional status context: `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
 - Optional status self-filter override:
   `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT=<check-context>`; defaults to the final
@@ -67,13 +68,13 @@ The gate also requires an Expanded Quality Scorecard covering:
 - Sustainability Resource Impact
 - AI Automation Governance
 
-It also requires a System Quality Attributes Scorecard covering every pinned
-attribute from
-https://en.wikipedia.org/wiki/List_of_system_quality_attributes. Each
-attribute must have a scored row with evidence, source, status, and an
-improvement recommendation. If an improvement, metric, guardrail, test, CI
-check, or operational control is missing, the row fails and the report must
-include a Required Fix.
+It also requires a System Quality Attributes Scorecard covering every current
+attribute from https://en.wikipedia.org/wiki/List_of_system_quality_attributes
+as pinned by the wrapper. Each attribute must have a scored row with evidence,
+source, status, and an improvement recommendation. If the wrapper list is
+missing a current Wikipedia-listed attribute, or if an improvement, metric,
+guardrail, test, CI check, or operational control is missing, the row fails and
+the report must include a Required Fix.
 
 The Whole-Codebase Impact Analysis must cover changed and related surfaces:
 runtime paths, architecture/layer boundaries, domain model, persistence,
@@ -87,6 +88,9 @@ tools can be supplied as impact context. If no context is supplied, the wrapper
 generates a bounded local graph/relationship context from changed files and
 direct symbol references; the reviewer still has to inspect related code rather
 than relying only on changed files.
+Every NFR catalog row, expanded quality row, and system quality attribute row
+must cite graph/relationship evidence, or give a concrete source-backed reason
+why graph evidence is irrelevant for that row.
 
 ## Scoring Contract
 
@@ -102,17 +106,22 @@ PASS requires all applicable FRs, NFRs, NFR catalog categories, expanded
 quality dimensions, system quality attributes, generated test-case matrix rows,
 automated test and CI coverage rows, flaky-test risk rows, whole-codebase impact
 surfaces, manual-test requirements, QA checkpoints, GitHub completion checks,
-and CI checks to score 5/5. A not-applicable row is allowed only with a
-concrete reason and source evidence. Missing evidence fails closed.
+and CI checks to score 5/5. It also requires review of vulnerabilities, bugs,
+regressions, defects, operational problems, and data-loss/privacy/security
+risks. A not-applicable row is allowed only with a concrete reason and source
+evidence. Missing evidence fails closed.
 
 ## Mandatory QA Matrix
 
 The reviewer must generate expected positive, negative, and edge/boundary/
 race/timeout/error cases from every FR, NFR, acceptance criterion, story, and
 quality requirement. It must map each repeatable case to automated tests and CI
-checks. Manual evidence is supporting evidence only for behavior that cannot be
-fully automated. Missing repeatable automated coverage, missing negative or edge
-tests, or unmitigated flaky-test risk blocks PASS.
+checks, including applicable unit, integration, E2E, Behat, PHPUnit,
+Schemathesis, K6/load, mutation, static-analysis, security-scan, and
+contract/schema checks. Manual evidence is supporting evidence only for behavior
+that cannot be fully automated. Missing repeatable automated coverage, missing
+negative or edge tests, unmitigated flaky-test risk, or unreviewed
+vulnerability/defect risk blocks PASS.
 
 ## Workflow
 
@@ -143,7 +152,8 @@ tests, or unmitigated flaky-test risk blocks PASS.
 7. Fetch and address GitHub comments with `make pr-comments` when a PR exists.
 8. Do not mark the PR/task complete until the gate reports `STATUS: PASS`,
    `make ci` passes, GitHub comments are resolved, required checks pass, and no
-   requested-changes review remains.
+   requested-changes review remains. Human approval is not required before the
+   BMAD reviewer runs or posts status updates.
 9. For PR work, leave the final BMAD result visible on the PR through the
    generated PR comment and `BMAD FR/NFR Review Gate` commit status.
 
@@ -177,10 +187,11 @@ review output. PASS also requires `EXPANDED_QUALITY_MIN_SCORE: 5/5` and
 
 ## GitHub Publishing
 
-For BMAD wrapper runs, PR comment and commit-status publishing default to on.
+For BMAD wrapper PR runs, PR comment and commit-status publishing are required
+low-risk review-gate writes and must run without waiting for human approval.
 Set `BMAD_REVIEW_POST_PR_COMMENT=false` or
-`BMAD_REVIEW_POST_GITHUB_STATUS=false` only for dry runs or tests that must not
-write to GitHub. The commit-status context defaults to
+`BMAD_REVIEW_POST_GITHUB_STATUS=false` only for local-only dry runs or tests
+that must not write to GitHub. The commit-status context defaults to
 `BMAD FR/NFR Review Gate`; the loop ignores that same context while checking the
 rest of the PR check rollup, so an earlier failed gate status does not block the
 next remediation run from starting.

@@ -389,13 +389,14 @@ parse_status_line() {
 
 review_has_required_gate_markers() {
   local file="$1"
-  local marker
+  local marker normalized_output
   IFS=',' read -r -a required_gate_markers <<< "$required_gate_markers_raw"
+  normalized_output="$(tr -d '\r' < "$file")"
 
   for marker in "${required_gate_markers[@]}"; do
     marker="$(echo "$marker" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     [[ -z "$marker" ]] && continue
-    if ! grep -Fxq -- "$marker" < <(tr -d '\r' < "$file"); then
+    if ! grep -Fxq -- "$marker" <<< "$normalized_output"; then
       echo "Warning: PASS output is missing required gate marker: $marker" >&2
       return 1
     fi
@@ -426,8 +427,10 @@ review_section_has_score() {
   local file="$1"
   local section="$2"
   local threshold_regex="$3"
+  local section_content
 
-  review_section_content "$file" "$section" | grep -Eq -- "$threshold_regex"
+  section_content="$(review_section_content "$file" "$section")"
+  grep -Eq -- "$threshold_regex" <<< "$section_content"
 }
 
 review_section_has_text_with_score() {
@@ -655,6 +658,7 @@ score_at_or_above_threshold_regex() {
 review_has_scorecard_evidence() {
   local file="$1"
   local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension system_quality_attribute impact_surface
+  local normalized_output github_completion_marker_found=false
   local score_sections=(
     "Requirement Scorecard"
     "NFR Catalog Scorecard"
@@ -679,7 +683,6 @@ review_has_scorecard_evidence() {
   local evidence_markers=(
     "FR_NFR_MIN_SCORE: ${score_threshold}/5" \
     "NFR_CATALOG_MIN_SCORE: ${score_threshold}/5" \
-    "GITHUB_COMPLETION_STATE: APPROVED" \
     "CI_CHECK_ROLLUP: PASSING"
   )
 
@@ -690,12 +693,21 @@ review_has_scorecard_evidence() {
   [[ "$required_gate_markers_raw" == *"AUTO_TEST_COVERAGE: PASS"* ]] && evidence_markers+=("AUTO_TEST_COVERAGE_MIN_SCORE: ${score_threshold}/5")
   [[ "$required_gate_markers_raw" == *"FLAKY_TEST_RISK: PASS"* ]] && evidence_markers+=("FLAKY_TEST_RISK_MIN_SCORE: ${score_threshold}/5")
 
+  normalized_output="$(tr -d '\r' < "$file")"
   for evidence_marker in "${evidence_markers[@]}"; do
-    if ! grep -Fxq -- "$evidence_marker" < <(tr -d '\r' < "$file"); then
+    if ! grep -Fxq -- "$evidence_marker" <<< "$normalized_output"; then
       echo "Warning: BMAD PASS output is missing required evidence marker: $evidence_marker" >&2
       return 1
     fi
   done
+  if grep -Fxq -- "GITHUB_COMPLETION_STATE: PASSING" <<< "$normalized_output" \
+    || grep -Fxq -- "GITHUB_COMPLETION_STATE: APPROVED" <<< "$normalized_output"; then
+    github_completion_marker_found=true
+  fi
+  if [[ "$github_completion_marker_found" != "true" ]]; then
+    echo "Warning: BMAD PASS output is missing required evidence marker: GITHUB_COMPLETION_STATE: PASSING" >&2
+    return 1
+  fi
 
   local required_sections=(
     "Requirement Scorecard:" \
@@ -852,8 +864,8 @@ review_has_github_ci_corroboration() {
     echo "Warning: GitHub PR is still draft." >&2
     return 1
   fi
-  if [[ "$review_decision" != "APPROVED" ]]; then
-    echo "Warning: GitHub review decision is not APPROVED: ${review_decision:-UNKNOWN}" >&2
+  if [[ "$review_decision" == "CHANGES_REQUESTED" ]]; then
+    echo "Warning: GitHub review decision has requested changes: ${review_decision:-UNKNOWN}" >&2
     return 1
   fi
 
@@ -949,6 +961,48 @@ review_has_github_ci_corroboration() {
 
   if [[ "$unresolved_threads" != "0" ]]; then
     echo "Warning: GitHub PR has unresolved review threads: $unresolved_threads" >&2
+    return 1
+  fi
+
+  return 0
+}
+
+review_has_github_preflight_context() {
+  local pr_view_cmd=(gh pr view)
+  local pr_summary pr_number_detected is_draft _review_decision pr_url pr_head_oid local_head_oid
+
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "Warning: GitHub preflight requires gh CLI." >&2
+    return 1
+  fi
+
+  if [[ -n "$pr_number" ]]; then
+    pr_view_cmd+=("$pr_number")
+  fi
+
+  if ! pr_summary="$("${pr_view_cmd[@]}" \
+    --json number,isDraft,reviewDecision,url,headRefOid \
+    --jq '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | @tsv' 2>/dev/null)"; then
+    echo "Warning: Unable to query GitHub PR state for BMAD preflight." >&2
+    return 1
+  fi
+
+  IFS=$'\t' read -r pr_number_detected is_draft _review_decision pr_url pr_head_oid <<< "$pr_summary"
+
+  if [[ -z "$pr_number_detected" || -z "$pr_url" || -z "$pr_head_oid" ]]; then
+    echo "Warning: GitHub PR state is incomplete for BMAD preflight." >&2
+    return 1
+  fi
+  if ! local_head_oid="$(git rev-parse HEAD 2>/dev/null)"; then
+    echo "Warning: Unable to resolve local HEAD for BMAD preflight." >&2
+    return 1
+  fi
+  if [[ "$local_head_oid" != "$pr_head_oid" ]]; then
+    echo "Warning: GitHub PR head $pr_head_oid does not match local HEAD $local_head_oid." >&2
+    return 1
+  fi
+  if [[ "$is_draft" == "true" ]]; then
+    echo "Warning: GitHub PR is still draft." >&2
     return 1
   fi
 
@@ -1232,8 +1286,8 @@ if ! publish_gate_result "PENDING" "BMAD FR/NFR review gate started." "" ""; the
 fi
 
 if is_enabled "$require_github_ci_corroboration" \
-  && ! review_has_github_ci_corroboration; then
-  failure_reason="GitHub corroboration failed before AI review. Fix PR review/check state and rerun."
+  && ! review_has_github_preflight_context; then
+  failure_reason="GitHub preflight failed before AI review. Fix PR identity/check visibility and rerun."
   publish_gate_result "FAIL" "$failure_reason" "" "" || true
   echo "$failure_reason" >&2
   exit 1
