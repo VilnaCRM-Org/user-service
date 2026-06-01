@@ -17,6 +17,10 @@ browser WebAuthn APIs:
   options.
 - `PASSKEY_CHALLENGE_TTL_SECONDS`: server-side TTL for stored WebAuthn
   challenges.
+- `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`: production-only release flag for
+  passkey REST and GraphQL traffic.
+- `PASSKEY_PRODUCTION_MONITORING_READY`: production-only readiness flag for
+  the required passkey dashboard and alert controls.
 
 MongoDB stores passkey credential records in `passkey_credentials` and
 short-lived ceremony state in `passkey_challenges`. The challenge collection has
@@ -380,8 +384,18 @@ options, completion response shapes, validation, conflict, unauthenticated
 access, challenge replay, wrong-user registration, and duplicate credential
 errors.
 
-Production dashboard and alert creation is deployment-owned rather than a code
-artifact in this repository. Release acceptance requires passkey latency,
-traffic, error-rate, active-challenge, expired-challenge, and TTL-index panels,
-plus alerts for p99 latency, 5xx rate, and expired challenge backlog, before the
-feature is enabled for production traffic.
+Production passkey traffic is guarded by two release flags:
+
+- `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`: keep `false` until the production
+  monitoring controls below are implemented.
+- `PASSKEY_PRODUCTION_MONITORING_READY`: set to `true` only after passkey
+  latency, traffic, error-rate, active-challenge, expired-challenge, and
+  TTL-index monitoring panels exist with alerts for p99 latency, 5xx rate, and
+  expired challenge backlog.
+
+In `prod`, passkey REST endpoints and passkey GraphQL mutations return `503`
+while traffic is disabled, or while traffic is enabled without monitoring
+readiness. The GraphQL gate inspects JSON bodies, raw GraphQL bodies, URL query
+strings, and URL-selected `operationName` values. This keeps password, OAuth,
+password reset, and TOTP fallback flows available while preventing production
+passkey traffic before the required operational controls exist.

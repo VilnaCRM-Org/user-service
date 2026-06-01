@@ -127,6 +127,8 @@ resources:
               description: 'Email is already registered'
             422:
               description: 'Validation error'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       passkey_signup_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -162,6 +164,8 @@ resources:
               description: 'Email or passkey credential is already registered'
             422:
               description: 'Validation error'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       passkey_register_options_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -209,6 +213,8 @@ resources:
                       timeout: 60000
             401:
               description: 'Authentication required'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       passkey_register_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -241,6 +247,8 @@ resources:
               description: 'Passkey credential is already registered'
             422:
               description: 'Validation error'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       passkey_signin_options_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -277,6 +285,8 @@ resources:
                       timeout: 60000
             422:
               description: 'Validation error'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       passkey_signin_complete_http:
         class: ApiPlatform\Metadata\Post
         method: POST
@@ -316,6 +326,8 @@ resources:
               description: 'Invalid passkey credential or challenge'
             422:
               description: 'Validation error'
+            503:
+              description: 'Production passkey traffic disabled until monitoring is ready'
       confirm_2fa_http:
         class: ApiPlatform\Metadata\Post
         method: POST

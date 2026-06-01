@@ -49,6 +49,8 @@ Add environment-backed arguments:
 - `PASSKEY_ALLOWED_ORIGINS`
 - `PASSKEY_TIMEOUT_SECONDS`
 - `PASSKEY_CHALLENGE_TTL_SECONDS`
+- `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`
+- `PASSKEY_PRODUCTION_MONITORING_READY`
 
 Default local values should be compatible with the existing local API URL.
 

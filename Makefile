@@ -429,6 +429,9 @@ coverage-xml: ## Create the code coverage report with PHPUnit
 generate-openapi-spec:
 	$(EXEC_PHP) php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 	@if command -v npx >/dev/null 2>&1; then \
+		if [ ! -w .github/openapi-spec/spec.yaml ]; then \
+			$(EXEC_PHP) chown "$$(id -u):$$(id -g)" .github/openapi-spec/spec.yaml 2>/dev/null || true; \
+		fi; \
 		if [ ! -w .github/openapi-spec/spec.yaml ] && command -v sudo >/dev/null 2>&1; then \
 			sudo -n chown "$$(id -u):$$(id -g)" .github/openapi-spec/spec.yaml 2>/dev/null || true; \
 		fi; \
@@ -455,6 +458,7 @@ schemathesis-validate: reset-db generate-openapi-spec ## Validate the running AP
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
+	$(EXEC_PHP) php scripts/normalize-graphql-passkey-descriptions.php .github/graphql-spec/spec
 
 start-prod-loadtest: ## Start production environment with load testing capabilities
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml up --detach

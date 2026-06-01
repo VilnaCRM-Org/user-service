@@ -14,8 +14,7 @@ credential private material, TOTP secrets, and recovery-code values.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head bridged by source-impact analysis:
-  `109e753876270bfe82864b65014702a16d023f64`.
+- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
 - Historical application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Historical origin: `https://localhost:65443`
@@ -104,10 +103,10 @@ Raw local JSON evidence:
 Runtime source base commit:
 `69af2cf13c46f797da7076bff272fa7736e01ce9`.
 
-Reviewed PR head bridged by this artifact:
-`109e753876270bfe82864b65014702a16d023f64`.
+Reviewed PR head bridged by this artifact: recorded by the strict BMAD gate in
+its generated context.
 
-Post-run production source changes before the reviewed PR head:
+Post-run production source changes through the strict-gate reviewed head:
 
 1. `src/User/Application/Factory/IssuedSessionFactory.php` adds rollback-failure
    logging and keeps throwing the original session issuance exception. This
@@ -127,6 +126,22 @@ Post-run production source changes before the reviewed PR head:
    coverage in the rate-limit resolver tests covers GraphQL variable extraction,
    invalid GraphQL fallback, selected operation scoping, aliases, fragments, and
    decoy payload fields.
+3. After `109e7538`, `CompletePasskeySignUpCommandHandler`,
+   `PasskeyChallengeResolver`, `PasskeyChallenge`,
+   `PasskeyChallengeRepositoryInterface`, and
+   `MongoDBPasskeyChallengeRepository` removed passkey challenge release on
+   sign-up completion rollback paths. A sign-up challenge is now single-use once
+   atomically claimed: authentication/session issuance failures can roll back
+   persisted user and credential state, but the consumed challenge is not made
+   retryable. This is server-side repeatable behavior, so the current-head
+   bridge relies on automated evidence instead of fabricating a new browser run:
+   `PasskeySignUpAuthenticationRollbackTest::testCompleteSignupRejectsRetryAfterAuthenticationIssueFails`,
+   `PasskeyCredentialSaveFailureCommandHandlerTest::testCompleteSignupRollsBackCredentialWhenUserSaveFails`,
+   `MongoDBPasskeyRepositoryTest::testChallengeRepositoryClaimsActiveChallengeAtomically`,
+   and
+   `MongoDBPasskeyRepositoryTest::testChallengeRepositoryReturnsNullWhenClaimDoesNotUpdate`.
+   Commit `e650f0d4` only refactors the rollback test shape and removes obsolete
+   test grouping noise after the single-use challenge fix.
 
 The browser rerun used Google Chrome headless through Chrome DevTools Protocol
 with virtual CTAP2 authenticators, resident keys, user verification, and
@@ -153,15 +168,19 @@ Observed browser scenarios at runtime source base
    access or refresh token fields.
 8. Expiration rejection returned HTTP 401 and no access token.
 
-The source-impact bridge to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64` is therefore limited to automated
-session rollback, GraphQL rate-limit extraction, and documentation evidence.
-Strict BMAD remediation on 2026-06-01 also added API-level `/api/graphql`
-integration tests for passkey mutations, with deterministic completion
-serialization coverage through the test-only command bus decorator and real
-resolver coverage for options, validation, privacy shape, replay, wrong-user,
-and duplicate-conflict behavior. No post-run source change altered a
-browser-specific WebAuthn API contract.
+The source-impact bridge to the strict-gate reviewed head therefore consists of
+automated session rollback coverage, GraphQL rate-limit extraction coverage, the
+current-head single-use sign-up challenge rollback/retry coverage listed above,
+GraphQL description quality checks, production-readiness gate coverage, and
+documentation evidence. Strict BMAD remediation on 2026-06-01 also added
+API-level `/api/graphql` integration tests for passkey mutations, with
+deterministic completion serialization coverage through the test-only command
+bus decorator and real resolver coverage for options, validation, privacy
+shape, replay, wrong-user, and duplicate-conflict behavior. No post-run source
+change altered a browser-specific WebAuthn API contract; the server-side
+single-use rollback and production-readiness changes are intentionally covered
+by automated tests because they are repeatable without manual authenticator
+evidence.
 
 ## Expiration Run
 

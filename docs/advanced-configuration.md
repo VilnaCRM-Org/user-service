@@ -92,6 +92,15 @@ Password grant is intentionally disabled (`enable_password_grant: false`); use a
 - `PASSKEY_ALLOWED_ORIGINS`: Comma-separated browser origins allowed for WebAuthn ceremonies.
 - `PASSKEY_TIMEOUT_SECONDS`: Browser WebAuthn ceremony timeout in seconds.
 - `PASSKEY_CHALLENGE_TTL_SECONDS`: Server-side passkey challenge TTL in seconds.
+- `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`: Production-only release flag for
+  passkey REST and GraphQL traffic. Keep `false` until production monitoring
+  and alerts are ready. The Docker Compose production services pass this value
+  through from the deployment environment.
+- `PASSKEY_PRODUCTION_MONITORING_READY`: Production-only readiness flag
+  confirming passkey latency, traffic, error-rate, active-challenge,
+  expired-challenge, and TTL-index monitoring controls exist. The Docker
+  Compose production services pass this value through from the deployment
+  environment.
 - `OAUTH_TOKEN_RATE_LIMIT_MAX_REQUESTS`: Maximum token exchange requests allowed per interval (default: 10).
 - `OAUTH_TOKEN_RATE_LIMIT_INTERVAL`: Time window for token exchange rate limiting (default: "1 minute").
 - `SIGNIN_IP_RATE_LIMIT_MAX_REQUESTS`: Maximum sign-in attempts per IP per interval (default: 10).

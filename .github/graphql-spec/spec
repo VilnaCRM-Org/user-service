@@ -195,22 +195,22 @@ type Mutation {
   "SignOutAlls a AuthPayload."
   signOutAllUser(input: signOutAllUserInput!): signOutAllUserPayload
 
-  "PasskeySignUpOptionss a AuthPayload."
+  "Creates WebAuthn public key creation options for a new passkey-backed account."
   passkeySignUpOptionsUser(input: passkeySignUpOptionsUserInput!): passkeySignUpOptionsUserPayload
 
-  "PasskeySignUpCompletes a AuthPayload."
+  "Verifies WebAuthn attestation, creates the account, stores the passkey, and returns authentication data."
   passkeySignUpCompleteUser(input: passkeySignUpCompleteUserInput!): passkeySignUpCompleteUserPayload
 
-  "PasskeySignInOptionss a AuthPayload."
+  "Creates WebAuthn public key request options for passkey sign-in."
   passkeySignInOptionsUser(input: passkeySignInOptionsUserInput!): passkeySignInOptionsUserPayload
 
-  "PasskeySignInCompletes a AuthPayload."
+  "Verifies WebAuthn assertion and returns authentication data."
   passkeySignInCompleteUser(input: passkeySignInCompleteUserInput!): passkeySignInCompleteUserPayload
 
-  "PasskeyRegistrationOptionss a AuthPayload."
+  "Creates WebAuthn public key creation options for the authenticated user."
   passkeyRegistrationOptionsUser(input: passkeyRegistrationOptionsUserInput!): passkeyRegistrationOptionsUserPayload
 
-  "PasskeyRegistrationCompletes a AuthPayload."
+  "Verifies WebAuthn attestation and stores a passkey for the authenticated user."
   passkeyRegistrationCompleteUser(input: passkeyRegistrationCompleteUserInput!): passkeyRegistrationCompleteUserPayload
 
   "Updates a EmptyResponse."
@@ -534,7 +534,7 @@ type signOutAllUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeySignUpOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for a new passkey-backed account."
 input passkeySignUpOptionsUserInput {
   clientMutationId: String
   email: String!
@@ -542,13 +542,13 @@ input passkeySignUpOptionsUserInput {
   displayName: String
 }
 
-"PasskeySignUpOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for a new passkey-backed account."
 type passkeySignUpOptionsUserPayload {
   user: passkeySignUpOptionsUserPayloadData
   clientMutationId: String
 }
 
-"PasskeySignUpOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for a new passkey-backed account."
 type passkeySignUpOptionsUserPayloadData implements Node {
   id: ID!
   _id: String!
@@ -567,7 +567,7 @@ type passkeySignUpOptionsUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeySignUpCompletes a AuthPayload."
+"Verifies WebAuthn attestation, creates the account, stores the passkey, and returns authentication data."
 input passkeySignUpCompleteUserInput {
   clientMutationId: String
   challengeId: String!
@@ -576,13 +576,13 @@ input passkeySignUpCompleteUserInput {
   rememberMe: Boolean
 }
 
-"PasskeySignUpCompletes a AuthPayload."
+"Verifies WebAuthn attestation, creates the account, stores the passkey, and returns authentication data."
 type passkeySignUpCompleteUserPayload {
   user: passkeySignUpCompleteUserPayloadData
   clientMutationId: String
 }
 
-"PasskeySignUpCompletes a AuthPayload."
+"Verifies WebAuthn attestation, creates the account, stores the passkey, and returns authentication data."
 type passkeySignUpCompleteUserPayloadData implements Node {
   id: ID!
   _id: String!
@@ -601,20 +601,20 @@ type passkeySignUpCompleteUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeySignInOptionss a AuthPayload."
+"Creates WebAuthn public key request options for passkey sign-in."
 input passkeySignInOptionsUserInput {
   clientMutationId: String
   email: String!
   rememberMe: Boolean
 }
 
-"PasskeySignInOptionss a AuthPayload."
+"Creates WebAuthn public key request options for passkey sign-in."
 type passkeySignInOptionsUserPayload {
   user: passkeySignInOptionsUserPayloadData
   clientMutationId: String
 }
 
-"PasskeySignInOptionss a AuthPayload."
+"Creates WebAuthn public key request options for passkey sign-in."
 type passkeySignInOptionsUserPayloadData implements Node {
   id: ID!
   _id: String!
@@ -633,20 +633,20 @@ type passkeySignInOptionsUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeySignInCompletes a AuthPayload."
+"Verifies WebAuthn assertion and returns authentication data."
 input passkeySignInCompleteUserInput {
   clientMutationId: String
   challengeId: String!
   credential: Iterable!
 }
 
-"PasskeySignInCompletes a AuthPayload."
+"Verifies WebAuthn assertion and returns authentication data."
 type passkeySignInCompleteUserPayload {
   user: passkeySignInCompleteUserPayloadData
   clientMutationId: String
 }
 
-"PasskeySignInCompletes a AuthPayload."
+"Verifies WebAuthn assertion and returns authentication data."
 type passkeySignInCompleteUserPayloadData implements Node {
   id: ID!
   _id: String!
@@ -665,18 +665,18 @@ type passkeySignInCompleteUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeyRegistrationOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for the authenticated user."
 input passkeyRegistrationOptionsUserInput {
   clientMutationId: String
 }
 
-"PasskeyRegistrationOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for the authenticated user."
 type passkeyRegistrationOptionsUserPayload {
   user: passkeyRegistrationOptionsUserPayloadData
   clientMutationId: String
 }
 
-"PasskeyRegistrationOptionss a AuthPayload."
+"Creates WebAuthn public key creation options for the authenticated user."
 type passkeyRegistrationOptionsUserPayloadData implements Node {
   id: ID!
   _id: String!
@@ -695,7 +695,7 @@ type passkeyRegistrationOptionsUserPayloadData implements Node {
   warning: String
 }
 
-"PasskeyRegistrationCompletes a AuthPayload."
+"Verifies WebAuthn attestation and stores a passkey for the authenticated user."
 input passkeyRegistrationCompleteUserInput {
   clientMutationId: String
   challengeId: String!
@@ -703,13 +703,13 @@ input passkeyRegistrationCompleteUserInput {
   label: String
 }
 
-"PasskeyRegistrationCompletes a AuthPayload."
+"Verifies WebAuthn attestation and stores a passkey for the authenticated user."
 type passkeyRegistrationCompleteUserPayload {
   user: passkeyRegistrationCompleteUserPayloadData
   clientMutationId: String
 }
 
-"PasskeyRegistrationCompletes a AuthPayload."
+"Verifies WebAuthn attestation and stores a passkey for the authenticated user."
 type passkeyRegistrationCompleteUserPayloadData implements Node {
   id: ID!
   _id: String!

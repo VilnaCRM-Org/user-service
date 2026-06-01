@@ -13,8 +13,7 @@ evidence required for BMAD FR/NFR sign-off.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head bridged by source-impact analysis:
-  `109e753876270bfe82864b65014702a16d023f64`.
+- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
 - Historical environment URL: `https://localhost:65443`
 - Historical browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -38,14 +37,18 @@ evidence required for BMAD FR/NFR sign-off.
 
 Current PR head note: the browser scenarios below were rerun at runtime source
 base `69af2cf13c46f797da7076bff272fa7736e01ce9` with Chrome DevTools virtual
-authenticators and are bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`. The bridge accounts for the later
-production changes in `IssuedSessionFactory` rollback-failure logging and
-`ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing;
-neither changes browser WebAuthn option generation, credential/assertion
-verification, challenge claim semantics, successful session response shape,
-pending-2FA response shape, or persisted passkey credential state. Details are
-captured in `specs/passkey-authentication/manual-browser-evidence.md` and
+authenticators and are bridged to the strict-gate reviewed head. The bridge
+accounts for later
+production changes in `IssuedSessionFactory` rollback-failure logging,
+`ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing,
+and the post-`109e7538` removal of sign-up challenge release after rollback
+failures. The first two changes do not alter browser WebAuthn option
+generation, credential/assertion verification, successful session response
+shape, pending-2FA response shape, or persisted passkey credential state. The
+single-use sign-up challenge rollback/retry behavior is deterministic server
+logic and is covered by current-head automated tests instead of new manual
+browser evidence. Details are captured in
+`specs/passkey-authentication/manual-browser-evidence.md` and
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
 ## Latest Browser Rerun And PR-Head Bridge Template
@@ -53,8 +56,7 @@ captured in `specs/passkey-authentication/manual-browser-evidence.md` and
 - Tester: Codex
 - Execution date/time (UTC): `2026-06-01T02:23:28.150Z`
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Reviewed PR head bridged by source-impact analysis:
-  `109e753876270bfe82864b65014702a16d023f64`
+- Reviewed PR head: recorded by the strict BMAD gate in its generated context.
 - Environment URL: `http://localhost:19081`
 - Browser and version: Google Chrome headless through Chrome DevTools Protocol
 - Operating system/device: local Linux workspace
@@ -69,7 +71,8 @@ captured in `specs/passkey-authentication/manual-browser-evidence.md` and
 
 Latest browser rerun status: completed at the runtime source base commit.
 Current PR head bridge status: completed through source-impact analysis and
-automated coverage for the post-run production changes.
+automated coverage for the post-run production changes, including the
+post-`109e7538` single-use sign-up challenge rollback/retry behavior.
 
 ## Story 1.1 BMALPH Implementation-Transition Evidence
 
@@ -150,9 +153,9 @@ Observed result: browser run id `1779672967201-kekp2o` created baseline account
 same email returned `409` and did not return a `challenge_id`. Automated
 coverage in `PasskeyRegistrationCommandHandlerTest::testStartSignupRejectsExistingEmail`
 asserts no challenge id is generated and no challenge is saved for this path.
-June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`, also returned HTTP `409` and no
-challenge id for existing-email signup rejection.
+June 1 run id `1780280604724-451d4e`, bridged by current source-impact
+analysis, also returned HTTP `409` and no challenge id for existing-email signup
+rejection.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,
@@ -183,10 +186,10 @@ for `manual-signup-1779672967201-kekp2o@example.test`, created a credential with
 `navigator.credentials.create()`, submitted `credential.toJSON()` to
 `/api/passkeys/signup/complete`, and received access and refresh tokens with
 `2fa_enabled=false`.
-June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`, also returned a challenge id,
-RP ID `localhost`, `residentKey=required`, `2fa=false`, and access/refresh
-token fields after browser credential creation and signup completion.
+June 1 run id `1780280604724-451d4e`, bridged by current source-impact
+analysis, also returned a challenge id, RP ID `localhost`,
+`residentKey=required`, `2fa=false`, and access/refresh token fields after
+browser credential creation and signup completion.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,
@@ -213,10 +216,10 @@ Observed result: browser run id `1779672967201-kekp2o` used the issued bearer
 token, requested authenticated registration options, created a second credential
 on a second virtual authenticator, and `/api/passkeys/register/complete` returned
 a credential id.
-June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`, also returned a registration
-challenge id, an `excludeCredentials` array, `residentKey=required`, and a
-credential id after browser credential creation and registration completion.
+June 1 run id `1780280604724-451d4e`, bridged by current source-impact
+analysis, also returned a registration challenge id, an `excludeCredentials`
+array, `residentKey=required`, and a credential id after browser credential
+creation and registration completion.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,
@@ -244,8 +247,8 @@ Observed result: browser run id `1779672967201-kekp2o` enabled TOTP with
 `/api/2fa/setup` and `/api/2fa/confirm`, receiving 8 recovery codes. A later
 passkey sign-in returned `2fa_enabled=true` and a `pending_session_id`, and did
 not return access or refresh tokens.
-June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`, also returned empty
+June 1 run id `1780280604724-451d4e`, bridged by current source-impact
+analysis, also returned empty
 `allowCredentials`, `userVerification=required`, `2fa=false`, and tokens
 before 2FA; after TOTP setup/confirm it returned `2fa=true`, a pending session
 id, and no access or refresh token fields.
@@ -276,11 +279,14 @@ expiration run used `PASSKEY_CHALLENGE_TTL_SECONDS=1`, waited past expiry for
 challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`, and completion returned `401` with
 detail `Invalid or expired passkey challenge.` and no access token. Automated
 repository coverage verifies atomic challenge claim returns no challenge when no
-record is updated, and rollback coverage verifies failed signup completion does
-not keep additional credential state.
-June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
-`109e753876270bfe82864b65014702a16d023f64`, also returned HTTP `401` and no
-access token for replay rejection and expiration rejection.
+record is updated, and current-head rollback coverage verifies failed signup
+completion does not keep additional credential or user state and does not
+release the consumed sign-up challenge for retry.
+June 1 run id `1780280604724-451d4e`, bridged by current source-impact
+analysis, also returned HTTP `401` and no access token for
+successful-completion replay rejection and expiration rejection.
+Post-`109e7538` retry-after-rollback rejection is covered by
+`PasskeySignUpAuthenticationRollbackTest::testCompleteSignupRejectsRetryAfterAuthenticationIssueFails`.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,

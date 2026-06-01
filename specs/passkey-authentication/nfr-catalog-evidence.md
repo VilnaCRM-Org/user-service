@@ -86,9 +86,11 @@ Evidence and standards:
   risk and frontend branching.
 - Manual browser evidence records successful signup, enrollment, sign-in, 2FA
   parity, replay rejection, and expiry behavior at runtime source base
-  `69af2cf13c46f797da7076bff272fa7736e01ce9`; the evidence is bridged to
-  reviewed PR head `109e753876270bfe82864b65014702a16d023f64` by the
-  source-impact analysis in `manual-browser-evidence.md`.
+  `69af2cf13c46f797da7076bff272fa7736e01ce9`; the evidence is bridged to the
+  strict-gate reviewed head by the source-impact analysis in
+  `manual-browser-evidence.md`. The post-`109e7538` single-use sign-up challenge
+  rollback/retry behavior is covered by automated unit and repository tests
+  because it is deterministic server behavior.
 
 ## Maintainability
 
@@ -120,8 +122,10 @@ Evidence and standards:
   existing health-check surface.
 - A failed or expired passkey challenge does not disable password, social OAuth,
   password reset, or TOTP flows.
-- Challenge records are ephemeral and retryable; no separate passkey RPO applies
-  to challenges. Credential records inherit service MongoDB backup and restore.
+- Challenge records are ephemeral; users retry a failed or expired ceremony by
+  requesting a fresh challenge, not by reusing a claimed challenge. No separate
+  passkey RPO applies to challenges. Credential records inherit service MongoDB
+  backup and restore.
 - MongoDB TTL cleanup avoids application sweep workers as a single point of
   failure for expired challenges.
 - MTTD target is `15m` through passkey endpoint error/latency alerts. MTTR
@@ -201,8 +205,14 @@ tracing, golden signals, runbooks, capacity forecasting, and user-centric SLOs.
 Evidence and standards:
 
 - `PASSKEY_RP_ID`, `PASSKEY_RP_NAME`, `PASSKEY_ALLOWED_ORIGINS`,
-  `PASSKEY_TIMEOUT_SECONDS`, and `PASSKEY_CHALLENGE_TTL_SECONDS` are explicit
-  environment configuration.
+  `PASSKEY_TIMEOUT_SECONDS`, `PASSKEY_CHALLENGE_TTL_SECONDS`,
+  `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`, and
+  `PASSKEY_PRODUCTION_MONITORING_READY` are explicit environment
+  configuration.
+- Production passkey REST and GraphQL traffic is gated by
+  `PasskeyProductionReadinessListener`; `prod` returns `503` while traffic is
+  disabled or monitoring readiness is false. The GraphQL gate covers JSON
+  bodies, raw GraphQL bodies, URL query strings, and URL-selected operations.
 - `EndpointInvocations` EMF metrics are emitted for passkey API operations
   through `ApiEndpointBusinessMetricsSubscriber`.
 - Platform/AppRunner metrics must track latency, traffic, errors, and
@@ -226,6 +236,11 @@ Evidence and standards:
 
 - Unit, integration, Behat/API access, OpenAPI/Spectral/Schemathesis, mutation,
   and K6 option-ceremony checks are repeatable through make targets.
+- GraphQL schema description regressions are guarded by
+  `GraphQLAuthSupportTest::testGeneratedGraphQlSpecUsesPasskeyDescriptions`.
+- Production passkey release gates are guarded by
+  `PasskeyProductionReadinessListenerTest` for REST, GraphQL, disabled traffic,
+  missing monitoring readiness, subrequests, and non-passkey traffic.
 - Passkey GraphQL runtime behavior is covered by
   `tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php`,
   `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`, and
@@ -257,7 +272,9 @@ Evidence and standards:
 - Expired, reused, unknown, or mismatched challenges fail safely without token
   issuance.
 - Signup rollback removes persisted user/credential state on downstream
-  session issuance failures.
+  session issuance failures while leaving the claimed sign-up challenge
+  consumed, so a retry fails through the generic invalid-challenge path instead
+  of reusing the same challenge.
 - Duplicate credential IDs are rejected.
 - Credential counter/record updates occur after successful assertion
   verification.
@@ -267,6 +284,7 @@ Evidence and standards:
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9` and is recorded in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
-  the bridge to reviewed PR head
-  `109e753876270bfe82864b65014702a16d023f64` is documented in
-  `specs/passkey-authentication/manual-browser-evidence.md`.
+  the bridge to the strict-gate reviewed head is documented in
+  `specs/passkey-authentication/manual-browser-evidence.md` and includes
+  current-head automated evidence for the post-`109e7538` single-use challenge
+  rollback/retry change.

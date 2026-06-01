@@ -138,12 +138,14 @@ The BMAD stages were executed in the main session:
   DevTools virtual authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`, bridged that artifact to the
   reviewed PR head, and reran all passkey K6 profiles after the load-test
-  database setup.
+  database setup. The latest BMAD remediation refreshes that bridge for the
+  strict-gate reviewed head and explicitly accounts for the post-`109e7538`
+  single-use sign-up challenge rollback/retry behavior.
 
 ## Current-Head Remediation Evidence
 
-Status: source fixes plus browser/authenticator evidence bridged to reviewed PR
-head `109e753876270bfe82864b65014702a16d023f64`.
+Status: source fixes plus browser/authenticator evidence bridged to the
+strict-gate reviewed PR head.
 
 Verifier: Codex.
 Date: 2026-05-25 UTC.
@@ -154,10 +156,12 @@ Browser ceremony tested SHA:
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 Current PR head bridge scope: source-impact bridge through the current PR head
-under BMAD review. For the latest manual-browser evidence blocker, the reviewed
-head is `109e753876270bfe82864b65014702a16d023f64`; pushed follow-up commits
-refresh this bridge through automated tests, graph context, and PR check
-evidence.
+under BMAD review. The strict BMAD gate records the exact reviewed commit in its
+generated context. This bridge keeps the manual browser run tied to its runtime
+source base, then covers later source deltas through automated tests, graph
+context, and PR check evidence. The post-`109e7538` delta removes sign-up
+challenge release after rollback failures, so a claimed sign-up challenge
+remains consumed and a retry fails through the invalid/expired challenge path.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
@@ -245,10 +249,24 @@ config/services.yaml`, `bin/console lint:container`,
   GraphQL sign-up mutations to the registration limiter and passkey GraphQL
   sign-in mutations to the sign-in IP/email limiters. Focused verification:
   `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
+- BMAD FR/NFR remediation after the final strict review added explicit passkey
+  GraphQL mutation descriptions in `AuthPayload.yaml`, updated the generated
+  GraphQL SDL, and added
+  `GraphQLAuthSupportTest::testGeneratedGraphQlSpecUsesPasskeyDescriptions`.
+- The same remediation added production passkey release flags
+  `PASSKEY_PRODUCTION_TRAFFIC_ENABLED` and
+  `PASSKEY_PRODUCTION_MONITORING_READY`, enforced by
+  `PasskeyProductionReadinessListener` so `prod` passkey REST and GraphQL
+  traffic returns `503` until required monitoring and alert controls are ready.
+  The OpenAPI passkey REST contract documents this `503` response, and
+  `PasskeyProductionReadinessListenerTest` covers disabled traffic, missing
+  monitoring readiness, allowed ready traffic, JSON/raw/GET/query-param
+  GraphQL passkey detection, subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
-  (`uvx --from graphifyy graphify update . --force --no-cluster`) and recorded
-  in `graphify-out/graph.json` with 20,350 nodes and 263,498 edges. Relationship
-  notes were added in
+  (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
+  and recorded in `graphify-out/graph.json` with 22,592 nodes and 361,901
+  edges. The refreshed graph includes the production-readiness listener and
+  unit-test nodes. Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
   test, documentation, dependency, and strict BMAD parser-adapter changes.
@@ -262,14 +280,19 @@ config/services.yaml`, `bin/console lint:container`,
   after 2FA, and expiration rejection. Durable sanitized evidence is in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
   raw local JSON is `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
-  The bridge to reviewed PR head
-  `109e753876270bfe82864b65014702a16d023f64` accounts for later production
-  changes in `IssuedSessionFactory` rollback-failure logging and
-  `ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing.
-  Neither change alters browser WebAuthn option generation,
-  credential/assertion verification, challenge claim semantics, successful
-  session response shape, pending-2FA response shape, or persisted passkey
-  credential state.
+  The bridge to the strict-gate reviewed head accounts for later production
+  changes in `IssuedSessionFactory` rollback-failure logging,
+  `ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing,
+  and post-`109e7538` single-use sign-up challenge rollback/retry semantics.
+  The first two changes do not alter browser WebAuthn option generation,
+  credential/assertion verification, successful session response shape,
+  pending-2FA response shape, or persisted passkey credential state. The
+  single-use challenge behavior is repeatable server logic covered by
+  `PasskeySignUpAuthenticationRollbackTest::testCompleteSignupRejectsRetryAfterAuthenticationIssueFails`,
+  `PasskeyCredentialSaveFailureCommandHandlerTest::testCompleteSignupRollsBackCredentialWhenUserSaveFails`,
+  `MongoDBPasskeyRepositoryTest::testChallengeRepositoryClaimsActiveChallengeAtomically`,
+  and
+  `MongoDBPasskeyRepositoryTest::testChallengeRepositoryReturnsNullWhenClaimDoesNotUpdate`.
 - BMAD strict remediation on 2026-06-01 removed the forbidden PHPMD
   static-access suppression from `ApiRateLimitGraphQlQueryInspector` by
   extracting Webonyx document parsing to the injected
@@ -346,7 +369,7 @@ Latest browser rerun: 2026-06-01T02:23:28.150Z against
 `http://localhost:19081` at runtime source base commit
 `69af2cf13c46f797da7076bff272fa7736e01ce9`, using Google Chrome headless
 through Chrome DevTools Protocol with virtual CTAP2 authenticators. Reviewed PR
-head bridge: `109e753876270bfe82864b65014702a16d023f64`. Sanitized transcript:
+head bridge: recorded by the strict BMAD gate in its generated context. Sanitized transcript:
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
 ### Scenario 1: Passkey Sign-Up Rejects Existing Email

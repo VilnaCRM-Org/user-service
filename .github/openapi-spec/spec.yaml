@@ -241,6 +241,8 @@ paths:
           description: 'Passkey credential is already registered'
         '422':
           description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
@@ -311,6 +313,8 @@ paths:
                   timeout: 60000
         '401':
           description: 'Authentication required'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
@@ -388,6 +392,8 @@ paths:
           description: 'Invalid passkey credential or challenge'
         '422':
           description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
@@ -454,6 +460,8 @@ paths:
                   timeout: 60000
         '422':
           description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
@@ -522,6 +530,8 @@ paths:
           description: 'Email or passkey credential is already registered'
         '422':
           description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
@@ -593,6 +603,8 @@ paths:
           description: 'Email is already registered'
         '422':
           description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
         '500':
           description: 'Internal server error'
           content:
