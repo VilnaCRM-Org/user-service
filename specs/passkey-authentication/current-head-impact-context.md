@@ -5,8 +5,10 @@ Generated: 2026-06-01 UTC
 Base ref: `refs/remotes/origin/main`
 
 Current PR head is recorded by the strict BMAD gate with `git rev-parse HEAD`
-when the gate runs. Latest pushed current-head evidence baseline:
-`2395eb1b7fef05479e53e621182697944fb814d0`.
+when the gate runs. This committed support file does not pin the exact head SHA
+because evidence refresh commits change `HEAD`; the strict-gate generated
+`codebase-graph-impact-context.md` is authoritative for the exact reviewed
+commit.
 
 Previous strict-gate graph artifact reported as stale before this remediation:
 `/home/kravtsov/tmp/bmad-pr286-strict-20260531_182458/review-loop-final-noapproval-20260601_001216/bmad-required-impact-and-github-context.md`
@@ -54,12 +56,16 @@ and the current PR head under review:
 - `tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolverGraphQlLimitersTest.php`
 - `tests/Unit/Shared/Application/Resolver/RateLimit/RateLimitClientTestCase.php`
 - `tests/Unit/User/Application/Factory/PasskeyOptionsFactoryTest.php`
+- `tests/Unit/User/Application/Processor/PasskeyProcessorTest.php`
+- `tests/Unit/User/Application/Resolver/PasskeyAuthMutationResolverConstructionTest.php`
+- `tests/Unit/User/Application/Transformer/PasskeyJsonTransformerTest.php`
 - `tests/Unit/User/Infrastructure/Factory/RecoveryCodeBatchFactoryTest.php`
 
 The strict BMAD suppression-remediation delta adds the injected
 `ApiRateLimitGraphQlDocumentResolver`, moves global limiter consumption before
 endpoint-specific GraphQL target resolution, updates rate-limit construction
-tests, and refreshes current-head BMAD evidence files.
+tests, applies passkey test coding-standard grouping fixes, and refreshes
+current-head BMAD evidence files.
 
 ## Relationship Edges
 
