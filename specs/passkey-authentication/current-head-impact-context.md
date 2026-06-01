@@ -5,8 +5,8 @@ Generated: 2026-06-01 UTC
 Base ref: `refs/remotes/origin/main`
 
 Current PR head is recorded by the strict BMAD gate with `git rev-parse HEAD`
-when the gate runs. Latest pushed pre-remediation head:
-`d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`.
+when the gate runs. Latest pushed current-head evidence baseline:
+`2395eb1b7fef05479e53e621182697944fb814d0`.
 
 Previous strict-gate graph artifact reported as stale before this remediation:
 `/home/kravtsov/tmp/bmad-pr286-strict-20260531_182458/review-loop-final-noapproval-20260601_001216/bmad-required-impact-and-github-context.md`
@@ -27,8 +27,13 @@ and the current PR head under review:
 
 - `composer.lock`
 - `docs/passkey-authentication.md`
+- `specs/passkey-authentication/current-head-impact-context.md`
+- `specs/passkey-authentication/manual-browser-evidence.md`
+- `specs/passkey-authentication/manual-test-checklist.md`
 - `specs/passkey-authentication/run-summary.md`
+- `src/Shared/Application/EventListener/ApiRateLimitListener.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlAuthTargetResolver.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlDocumentResolver.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlFieldValueResolver.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlQueryInspection.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlQueryInspector.php`
@@ -51,10 +56,10 @@ and the current PR head under review:
 - `tests/Unit/User/Application/Factory/PasskeyOptionsFactoryTest.php`
 - `tests/Unit/User/Infrastructure/Factory/RecoveryCodeBatchFactoryTest.php`
 
-The strict BMAD suppression-remediation delta adds
-`src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlDocumentResolver.php`
-and injects it into `ApiRateLimitGraphQlQueryInspector`. It also updates
-rate-limit unit-test construction sites and current-head BMAD evidence files.
+The strict BMAD suppression-remediation delta adds the injected
+`ApiRateLimitGraphQlDocumentResolver`, moves global limiter consumption before
+endpoint-specific GraphQL target resolution, updates rate-limit construction
+tests, and refreshes current-head BMAD evidence files.
 
 ## Relationship Edges
 
