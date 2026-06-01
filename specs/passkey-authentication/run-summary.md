@@ -101,6 +101,13 @@ The BMAD stages were executed in the main session:
   browser JSON contract. Passkey REST `200` responses now include OpenAPI
   success body schemas/examples for options, token responses, and registration
   completion.
+- Strict BMAD review on 2026-06-01 found three remaining evidence gaps:
+  missing API-level `/api/graphql` passkey ceremony tests, missing
+  average/stress/spike K6 evidence for passkey option scenarios, and stale
+  browser/WebAuthn evidence. The remediation added deterministic GraphQL
+  integration coverage, reran the current runtime source with Chrome DevTools
+  virtual authenticators, and reran all passkey K6 profiles after the load-test
+  database setup.
 
 ## Current-Head Remediation Evidence
 
@@ -186,29 +193,43 @@ config/services.yaml`, `bin/console lint:container`,
   standards, passkey K6 scripts, operational monitoring/runbook guidance, and a
   detailed catalog evidence matrix in
   `specs/passkey-authentication/nfr-catalog-evidence.md`.
-- Current PR passkey option-ceremony smoke evidence collected on 2026-05-25 UTC
-  passed the configured thresholds: `passkeySignupOptions` checks `100%`, p99
-  `1.17s`; `passkeySigninOptions` checks `100%`, p99 `44.92ms`;
-  `passkeyRegistrationOptions` checks `100%`, p99 `65.03ms`.
+- Current PR passkey option-ceremony smoke/average/stress/spike evidence
+  collected on 2026-06-01 UTC passed the configured thresholds after
+  `make setup-load-test-db` prepared schema, indexes, OAuth client, and JWT
+  fixtures for isolated Compose project `user-service-pr286-passkey-load`:
+  `passkeySignupOptions` checks `100%`, p99 smoke `48.21ms`, average
+  `78.89ms`, stress `89.48ms`, spike `165.49ms`; `passkeySigninOptions` checks
+  `100%`, p99 smoke `357.2ms`, average `67.77ms`, stress `115.23ms`, spike
+  `5.97ms`; `passkeyRegistrationOptions` checks `100%`, p99 smoke `108.6ms`,
+  average `164.63ms`, stress `73.29ms`, spike `201.87ms`. Raw local logs are in
+  `/home/kravtsov/tmp/pr286-passkey-load-mongo7-after-setup-20260601T022759Z`;
+  durable sanitized summary is
+  `specs/passkey-authentication/passkey-load-run-20260601T022759Z.sanitized.md`.
+- A prior passkey load run without the repository load-test DB setup found a
+  real NFR/precondition failure: `passkeySignupOptions` stress p99 was `6.14s`,
+  above the `3000ms` threshold. The fix was to run the documented
+  `make setup-load-test-db` preparation and rerun all passkey profiles.
 - NFR follow-up closed the passkey GraphQL rate-limit gap by mapping passkey
   GraphQL sign-up mutations to the registration limiter and passkey GraphQL
   sign-in mutations to the sign-in IP/email limiters. Focused verification:
   `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
 - Current-head graph evidence was refreshed with Graphify
   (`uvx --from graphifyy graphify update . --force --no-cluster`) and recorded
-  in `graphify-out/graph.json` with 20,236 nodes and 35,311 edges. Relationship
+  in `graphify-out/graph.json` with 20,305 nodes and 165,829 edges. Relationship
   notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
   test, documentation, dependency, and strict BMAD parser-adapter changes.
   Generated `graphify-out/` artifacts are local review evidence and are not
   committed.
-- Current-head manual-browser bridge evidence was added to
-  `specs/passkey-authentication/manual-browser-evidence.md`. It does not claim a
-  browser rerun on the current PR head; it records the source-impact reason the
-  post-bridge GraphQL rate-limit, deterministic recovery-code, strict parser
-  adapter, and evidence-only changes do not alter the REST WebAuthn ceremony
-  behavior.
+- Current-head browser/WebAuthn evidence was rerun on 2026-06-01 UTC with
+  Google Chrome headless through Chrome DevTools Protocol and virtual CTAP2
+  authenticators. It verified new-email signup, existing-email rejection,
+  replay rejection, passkey sign-in before 2FA, authenticated registration, 2FA
+  setup/parity, passkey sign-in after 2FA, and expiration rejection. Durable
+  sanitized evidence is in
+  `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
+  raw local JSON is `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
 - BMAD strict remediation on 2026-06-01 removed the forbidden PHPMD
   static-access suppression from `ApiRateLimitGraphQlQueryInspector` by
   extracting Webonyx document parsing to the injected
@@ -280,6 +301,13 @@ Redis 8.
 Browser/authenticator: Google Chrome/HeadlessChrome 148 with Chrome DevTools
 virtual CTAP2 authenticators, resident keys enabled, user verification enabled,
 automatic presence simulation enabled.
+
+Current-head rerun: 2026-06-01T02:23:28.150Z against
+`http://localhost:19081` at runtime source base commit
+`69af2cf13c46f797da7076bff272fa7736e01ce9`, using Google Chrome headless
+through Chrome DevTools Protocol with virtual CTAP2 authenticators. Sanitized
+transcript:
+`specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
 ### Scenario 1: Passkey Sign-Up Rejects Existing Email
 
@@ -381,6 +409,53 @@ checklist scenario 5.
 Status: current focused verification plus historical automated evidence for
 earlier remediation commits. Full post-push CI is provided by GitHub Actions for
 each pushed PR head.
+
+Strict BMAD FR/NFR remediation on 2026-06-01 added
+`tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`,
+`tests/Shared/Auth/Support/ControllableCommandBus.php`, test-container wiring,
+targeted test-quality config, current-head browser evidence, current-head K6
+evidence, and matching documentation updates. The new integration suite executes
+`/api/graphql` passkey mutations for:
+
+- `passkeySignUpOptionsUser` success, invalid-email validation, and
+  existing-email conflict.
+- `passkeySignInOptionsUser` known-user and unknown-user privacy-preserving
+  response shape with empty `allowCredentials`.
+- `passkeyRegistrationOptionsUser` unauthenticated rejection and authenticated
+  browser-safe public-key response.
+- `passkeySignUpCompleteUser`, `passkeySignInCompleteUser`, and
+  `passkeyRegistrationCompleteUser` deterministic GraphQL completion response
+  serialization through a test-only command bus decorator.
+- Invalid signup credential JSON, sign-in challenge replay after an invalid
+  credential, wrong-user registration challenge completion, and duplicate
+  registration credential conflict.
+- Command payload mapping for completion mutations, including challenge id,
+  nested browser credential JSON, label, remember-me, authenticated user id, IP
+  address, and user-agent where applicable.
+- Rejected GraphQL mutations not leaking token, pending-session, credential,
+  challenge, or public-key payload values in partial response data.
+
+Focused GraphQL validation passed after clearing stale Symfony test cache:
+`docker compose exec -T php ./vendor/bin/phpunit tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`
+passed 13 tests / 176 assertions.
+Targeted PHP Insights validation for the new GraphQL test/support files passed
+Code 100, Complexity 100, Architecture 100, and Style 100. The test quality
+config keeps disallowed `mixed`, style, and type checks active while following
+the existing exclusion pattern for long scenario-style integration tests.
+Targeted Psalm validation for the same files reported no errors.
+
+Passkey load validation passed for all option scenarios with smoke, average,
+stress, and spike enabled in the same K6 invocation:
+
+| Scenario | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `passkeySignupOptions` | 100% | 48.21ms | 78.89ms | 89.48ms | 165.49ms |
+| `passkeySigninOptions` | 100% | 357.2ms | 67.77ms | 115.23ms | 5.97ms |
+| `passkeyRegistrationOptions` | 100% | 108.6ms | 164.63ms | 73.29ms | 201.87ms |
+
+The load run used isolated Compose project `user-service-pr286-passkey-load`,
+MongoDB 7 override, `make setup-load-test-db`, then
+`tests/Load/execute-load-test.sh <scenario> true true true true`.
 
 - Current focused integration verification:
   `./vendor/bin/phpunit tests/Integration/Auth/PasskeyAuthEndpointsIntegrationTest.php tests/Integration/Auth/AuthEndpointsIntegrationTest.php --filter "testSignupOptionsReturnsBrowserSafeWebauthnJson|testRefreshTokenEndpointRotatesTokenAndIssuesNewTokens"`

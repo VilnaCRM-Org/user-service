@@ -10,17 +10,17 @@ credential private material, TOTP secrets, and recovery-code values.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
-- Current source bridge scope: source-impact bridge from the browser-tested
-  ceremony through the current PR head under BMAD review. The latest pushed
-  pre-remediation head was `d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`; the
-  strict BMAD gate records the exact reviewed head with `git rev-parse HEAD`.
-- Application URL: `https://localhost:65443`
+- Current-head rerun: 2026-06-01T02:23:28.150Z against
+  `http://localhost:19081`, using Chrome DevTools virtual CTAP2
+  authenticators. The strict BMAD gate records the exact reviewed head with
+  `git rev-parse HEAD`.
+- Historical application URL: `https://localhost:65443`
 - RP ID: `localhost`
-- Origin: `https://localhost:65443`
-- Browser: Google Chrome / HeadlessChrome 148
-- Authenticator: Chrome DevTools virtual CTAP2 authenticators with resident
+- Historical origin: `https://localhost:65443`
+- Historical browser: Google Chrome / HeadlessChrome 148
+- Historical authenticator: Chrome DevTools virtual CTAP2 authenticators with resident
   keys, user verification, and automatic presence simulation enabled
-- Runtime stack: isolated Docker Compose project
+- Historical runtime stack: isolated Docker Compose project
   `user-service-pr286-manual`, PHP 8.4.5, MongoDB 7.0, Redis 8,
   `APP_ENV=test`
 
@@ -87,35 +87,51 @@ in that commit. Focused unit and integration verification at the bridge SHA
 asserted that browser-safe signup options now include `residentKey=required` and
 `requireResidentKey=true`.
 
-## Current PR Head Bridge
+## Current PR Head Browser Rerun
 
-The browser ceremony was not rerun on the current PR head. This section is a
-source-impact bridge from the browser-tested ceremony and the
-`b6ced150d8eacd4e2d59e099e6c72f043c8c875b` bridge through the current PR head
-under BMAD review.
+Sanitized run id: `1780280604724-451d4e`.
 
-Changes from `b6ced150d8eacd4e2d59e099e6c72f043c8c875b` to
-the current PR head are limited to documentation, BMAD/local-coder setup,
-passkey option load-test evidence, GraphQL rate-limit AST inspection and tests,
-memory coverage inventory, OpenAPI response schema evidence, deterministic
-recovery-code factory testability, strict BMAD parser-adapter remediation, and
-evidence-only updates. The REST browser ceremony paths used by this evidence
-remain the same passkey processors, command handlers, WebAuthn JSON
-transformer, credential validators, challenge claiming, credential persistence,
-token issuance, and existing 2FA pending-session behavior.
+Execution date/time (UTC): `2026-06-01T02:23:28.150Z`.
 
-The new GraphQL rate-limit parser path applies to `POST /api/graphql` limiter
-target detection before API Platform handles the mutation. It does not change
-REST `/api/passkeys/*` request or response bodies, RP ID/origin validation,
-attestation/assertion verification, challenge TTL/claim semantics, credential
-counter updates, or token/2FA response construction. The recovery-code factory
-change keeps the same random-code contract and adds deterministic unit coverage
-for biased-byte rejection.
+Durable sanitized transcript:
+`specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
-Current-head automated evidence for the post-bridge changes is listed in
-`specs/passkey-authentication/run-summary.md`, including focused GraphQL
-rate-limit unit/integration tests, changed-source Infection evidence, PHP
-Insights, Psalm, and diff hygiene checks.
+Raw local JSON evidence:
+`/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
+
+Runtime source base commit:
+`69af2cf13c46f797da7076bff272fa7736e01ce9`. Subsequent remediation edits are
+tests, test-container wiring, and evidence docs only.
+
+The current-head rerun used Google Chrome headless through Chrome DevTools
+Protocol with virtual CTAP2 authenticators, resident keys, user verification,
+and automatic presence simulation enabled. It targeted API origin
+`http://localhost:19081` and RP ID `localhost`.
+
+Observed current-head scenarios:
+
+1. New-email signup ceremony returned a challenge id, RP ID `localhost`,
+   `residentKey=required`, `2fa=false`, and access/refresh token fields after
+   browser credential creation and signup completion.
+2. Existing-email signup rejection returned HTTP 409 and no challenge id.
+3. Challenge replay rejection returned HTTP 401 and no access token.
+4. Passkey sign-in before 2FA returned empty `allowCredentials`,
+   `userVerification=required`, `2fa=false`, and access/refresh token fields
+   after browser assertion completion.
+5. Authenticated registration returned a challenge id, an `excludeCredentials`
+   array, `residentKey=required`, and a credential id after browser credential
+   creation and registration completion.
+6. 2FA setup returned a setup secret and otpauth URI, then 2FA confirmation
+   returned 8 recovery codes. Secret and code values are intentionally omitted.
+7. Passkey sign-in after 2FA returned `2fa=true`, a pending session id, and no
+   access or refresh token fields.
+8. Expiration rejection returned HTTP 401 and no access token.
+
+Strict BMAD remediation on 2026-06-01 also added API-level `/api/graphql`
+integration tests for passkey mutations, with deterministic completion
+serialization coverage through the test-only command bus decorator and real
+resolver coverage for options, validation, privacy shape, replay, wrong-user,
+and duplicate-conflict behavior.
 
 ## Expiration Run
 

@@ -29,24 +29,38 @@ Evidence and standards:
   rates, and challenge backlog for the six passkey REST operations and matching
   GraphQL mutations.
 
-Current PR smoke evidence, collected on 2026-05-25 UTC against an isolated
-local load-test stack (`user-service-passkey-nfr-load`) with the MongoDB 7
-override from `var/ai-review/load-test-mongo7.compose.yml`:
+Current PR smoke/average/stress/spike evidence, collected on 2026-06-01 UTC
+against isolated Compose project `user-service-pr286-passkey-load` with the
+MongoDB 7 override from `var/ai-review/load-test-mongo7.compose.yml` after
+`make setup-load-test-db`:
 
-- `passkeySignupOptions`: `checks=100%`, p99 `1.17s`, threshold
-  `p(99)<1500ms`.
-- `passkeySigninOptions`: `checks=100%`, p99 `44.92ms`, threshold
-  `p(99)<1500ms`.
-- `passkeyRegistrationOptions`: `checks=100%`, p99 `65.03ms`, threshold
-  `p(99)<1500ms`.
+- `passkeySignupOptions`: checks `100%`; p99 smoke `48.21ms`, average
+  `78.89ms`, stress `89.48ms`, spike `165.49ms`.
+- `passkeySigninOptions`: checks `100%`; p99 smoke `357.2ms`, average
+  `67.77ms`, stress `115.23ms`, spike `5.97ms`.
+- `passkeyRegistrationOptions`: checks `100%`; p99 smoke `108.6ms`, average
+  `164.63ms`, stress `73.29ms`, spike `201.87ms`.
+- Durable sanitized summary:
+  `specs/passkey-authentication/passkey-load-run-20260601T022759Z.sanitized.md`.
+  Raw local logs:
+  `/home/kravtsov/tmp/pr286-passkey-load-mongo7-after-setup-20260601T022759Z`.
 
 Suggested repeatable validation targets:
 
 - `make smoke-load-tests`
+- `make average-load-tests`
+- `make stress-load-tests`
+- `make spike-load-tests`
 - `make load-tests`
 - `make execute-load-tests-script scenario=passkeySignupOptions`
 - `make execute-load-tests-script scenario=passkeySigninOptions`
 - `make execute-load-tests-script scenario=passkeyRegistrationOptions`
+
+An earlier cold run without the repository load-test database setup failed the
+signup stress threshold at p99 `6.14s`. The fix was procedural: run the existing
+`make setup-load-test-db` preparation so schema, indexes, OAuth client, and JWT
+fixtures match the documented load-test preconditions, then rerun all passkey
+profiles.
 
 ## Usability
 
@@ -58,6 +72,10 @@ Evidence and standards:
 
 - REST and GraphQL contracts expose the same ceremony sequence: options first,
   browser WebAuthn call, completion second.
+- `PasskeyGraphQLAuthEndpointsIntegrationTest` executes `/api/graphql`
+  sign-up, sign-in, and authenticated registration options mutations, including
+  validation/conflict and privacy-preserving known/unknown sign-in response
+  shapes.
 - `docs/passkey-authentication.md` documents browser JSON parsing with
   `PublicKeyCredential.parseCreationOptionsFromJSON()`,
   `PublicKeyCredential.parseRequestOptionsFromJSON()`, and `credential.toJSON()`.
@@ -66,7 +84,7 @@ Evidence and standards:
 - Sign-in options intentionally omit credential descriptors, reducing privacy
   risk and frontend branching.
 - Manual browser evidence records successful signup, enrollment, sign-in, 2FA
-  parity, replay rejection, and expiry behavior.
+  parity, replay rejection, and expiry behavior on the current runtime source.
 
 ## Maintainability
 
@@ -122,6 +140,14 @@ Evidence and standards:
 - REST contracts are documented in API Platform YAML and generated OpenAPI.
 - GraphQL mutations use the existing `AuthPayload` surface and API Platform's
   `Iterable` scalar for nested browser credential JSON.
+- `PasskeyGraphQLAuthEndpointsIntegrationTest` verifies the GraphQL mutation
+  names, runtime response envelope, `publicKey` scalar payloads, completion
+  response shapes, unauthenticated registration rejection, wrong-user challenge
+  rejection, duplicate credential conflict, and reused challenge rejection
+  through `/api/graphql`.
+- The same suite asserts completion command mapping for challenge id,
+  credential JSON, label, remember-me, authenticated user id, IP address, and
+  user-agent where the GraphQL resolver owns that adaptation.
 - Passkey endpoints are additive and do not break password, OAuth, refresh
   token, sign-out, or TOTP contracts.
 - Challenge completion is idempotency-safe through atomic single-use claim and
@@ -148,6 +174,13 @@ Evidence and standards:
   limiter, and passkey GraphQL sign-in mutations are mapped to the same sign-in
   IP/email limiters, so GraphQL does not bypass the REST endpoint-specific
   abuse controls.
+- API-level GraphQL tests cover invalid email, existing email, invalid
+  credential JSON, challenge replay, wrong-user registration completion, and
+  duplicate credential conflict without relying on manual evidence for
+  repeatable negative/security cases.
+- The negative GraphQL assertions verify rejected mutations do not expose token,
+  pending-session, credential, challenge, or public-key payload values in partial
+  response data.
 - Sign-in options do not expose credential descriptors or user existence beyond
   the existing username-first sign-in pattern.
 - Successful passkey sign-in uses existing session issuance and sign-in event
@@ -189,10 +222,15 @@ Evidence and standards:
 
 - Unit, integration, Behat/API access, OpenAPI/Spectral/Schemathesis, mutation,
   and K6 option-ceremony checks are repeatable through make targets.
+- Passkey GraphQL runtime behavior is covered by
+  `tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`; a
+  test-only command bus decorator is used only where a browser-created
+  WebAuthn attestation/assertion would otherwise be required for deterministic
+  completion response serialization.
 - Load scripts use stable public APIs and deterministic scenario selection.
-- Browser completion remains human/browser controlled because the authenticator
-  is the security boundary; sanitized transcript files provide immutable manual
-  evidence for that non-headless step.
+- Browser completion remains browser controlled because the authenticator is the
+  security boundary; sanitized transcript files provide immutable evidence for
+  the Chrome DevTools virtual-authenticator run.
 - CI and GitHub gate evidence is live current-head evidence, not static source
   documentation. The BMAD gate must verify `gh auth status`, PR #286
   `reviewDecision`, unresolved review threads, branch protection visibility, and
@@ -219,3 +257,6 @@ Evidence and standards:
   verification.
 - Manual browser evidence and automated tests are linked from
   `specs/passkey-authentication/run-summary.md`.
+- Current-head browser evidence was rerun on 2026-06-01 with Chrome DevTools
+  virtual CTAP2 authenticators and is recorded in
+  `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.

@@ -24,6 +24,15 @@ services:
   App\Tests\Shared\Auth\Factory\TestAccessTokenFactory:
     public: true
 
+  App\Tests\Shared\Auth\Support\ControllableCommandBus:
+    decorates: App\Shared\Infrastructure\Bus\Command\InMemorySymfonyCommandBus
+    arguments:
+      $inner: '@App\Tests\Shared\Auth\Support\ControllableCommandBus.inner'
+    public: true
+
+  App\Shared\Domain\Bus\Command\CommandBusInterface:
+    alias: App\Tests\Shared\Auth\Support\ControllableCommandBus
+
   App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher:
     decorates: App\OAuth\Infrastructure\Publisher\OAuthPublisher
     arguments:

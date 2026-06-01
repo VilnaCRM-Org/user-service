@@ -36,11 +36,20 @@ under `5000ms` for spike. Browser-created attestation/assertion completion is
 covered by integration tests and manual browser evidence because k6 does not
 provide a WebAuthn authenticator.
 
-Current PR smoke evidence from 2026-05-25 UTC, using the isolated
-`user-service-passkey-nfr-load` stack, passed the smoke thresholds:
-`passkeySignupOptions` checks `100%` and p99 `1.17s`,
-`passkeySigninOptions` checks `100%` and p99 `44.92ms`, and
-`passkeyRegistrationOptions` checks `100%` and p99 `65.03ms`.
+Current PR evidence from 2026-06-01 UTC, using isolated Compose project
+`user-service-pr286-passkey-load` with the MongoDB 7 load-test override after
+`make setup-load-test-db`, passed smoke, average, stress, and spike thresholds:
+
+| Scenario | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `passkeySignupOptions` | 100% | 48.21ms | 78.89ms | 89.48ms | 165.49ms |
+| `passkeySigninOptions` | 100% | 357.2ms | 67.77ms | 115.23ms | 5.97ms |
+| `passkeyRegistrationOptions` | 100% | 108.6ms | 164.63ms | 73.29ms | 201.87ms |
+
+An earlier run without the load-test database preparation failed the signup
+stress threshold at p99 `6.14s`. The documented precondition is to run the repo's
+load-test setup so schema, indexes, OAuth client, and JWT fixtures exist before
+capturing passkey performance evidence.
 
 ## PR 278 Performance Report
 
