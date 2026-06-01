@@ -6,15 +6,44 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
 
 ## BMALPH Evidence
 
-- `bmalph status` showed Phase 1 / Analyst planning.
-- `bmalph doctor` initially found missing bundled BMAD assets.
-- `bmalph upgrade --force` restored `_bmad`, `.ralph`, and BMAD command assets.
-- `bmalph doctor` then passed all checks.
-- `_bmad/COMMANDS.md` was used to map the planning sequence.
-- Current remediation adds a transition-readable mirror under `docs/planning`
-  because the installed `bmalph implement` release discovers BMAD transition
-  artifacts only from fixed paths such as `docs/planning` and
-  `_bmad-output/planning-artifacts`, not from `_bmad/config.yaml`.
+- Current transition evidence was collected on `2026-06-01T05:00:52Z` at
+  commit `b5a593a7df00e51fa215d6990799945a104dd199` with BMALPH CLI
+  `2.11.0`.
+- `bmalph -C . doctor --json` initially failed because local generated BMAD
+  and Ralph assets were absent: `_bmad/`, `_bmad/COMMANDS.md`,
+  `_bmad/lite/create-prd.md`, `.ralph/ralph_loop.sh`, and `.ralph/lib/`.
+- `bmalph -C . upgrade --force` restored the local untracked BMAD/Ralph
+  assets: `_bmad/`, `.ralph/ralph_loop.sh`, `.ralph/ralph_import.sh`,
+  `.ralph/ralph_monitor.sh`, `.ralph/lib/`, `.ralph/PROMPT.md`,
+  `.ralph/@AGENT.md`, `.ralph/REVIEW_PROMPT.md`, `.ralph/.ralphrc`, and
+  `.ralph/RALPH-REFERENCE.md`.
+- `bmalph -C . doctor --json` then passed all installation checks:
+  `passed=19`, `failed=0`, `total=19`; the successful checks included
+  `_bmad/ directory present`, `ralph_loop.sh present and has content`,
+  `.ralph/lib/ directory present`, `_bmad/COMMANDS.md present`,
+  `_bmad/lite/create-prd.md present`, and `version marker matches:
+  v2.11.0`.
+- Before transition, `bmalph -C . status --json` reported Phase 3
+  `Solutioning`, status `planning`, artifact directory `docs/planning`, found
+  `architecture.md`, `epics.md`, `implementation-readiness.md`, and `prd.md`,
+  with no missing artifacts and next action `Run: bmalph implement`.
+- `bmalph -C . implement` discovered the BMAD planning mirror, parsed stories,
+  generated a fix plan for 5 stories, copied specs to `.ralph/specs/`,
+  generated `.ralph/SPECS_INDEX.md`, `.ralph/PROJECT_CONTEXT.md`, and
+  `.ralph/PROMPT.md`, and completed with `phase 4 (implementing)`.
+- `bmalph -C . status --json` after transition reported `phase=4`,
+  `phaseName=Implementation`, `status=implementing`, Ralph status
+  `not_started`, and next action `Start Ralph loop with: bmalph run`.
+- `.ralph/PROJECT_CONTEXT.md` contains the Ralph implementation context for the
+  passkey feature: project goals, scope boundaries, and non-functional
+  requirements covering REST/GraphQL ceremonies, MongoDB challenge and
+  credential persistence, `web-auth/webauthn-lib`, DDD/CQRS/API Platform
+  boundaries, WebAuthn privacy, TTL/replay resistance, fallback authentication
+  paths, and verification evidence expectations.
+- `_bmad/COMMANDS.md` was used to map the planning sequence. The committed
+  transition-readable mirror remains under `docs/planning` because the current
+  `bmalph implement` release discovers transition artifacts from fixed paths
+  such as `docs/planning` and `_bmad-output/planning-artifacts`.
 
 ## Planning Artifacts
 

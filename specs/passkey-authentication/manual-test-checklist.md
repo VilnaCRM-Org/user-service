@@ -58,6 +58,54 @@ in `specs/passkey-authentication/manual-browser-evidence.md` and
 
 Current-head rerun status: completed.
 
+## Story 1.1 BMALPH Implementation-Transition Evidence
+
+- Tester: Codex
+- Execution date/time (UTC): `2026-06-01T05:00:52Z`
+- Tested commit SHA: `b5a593a7df00e51fa215d6990799945a104dd199`
+- BMALPH CLI version: `2.11.0`
+- Scope: Story 1.1 acceptance criteria for `bmalph doctor`,
+  `bmalph implement`, Ralph implementation context generation, and
+  `bmalph status` reporting Phase 4 Implementation with status
+  `implementing`.
+
+Steps and observed results:
+
+1. Ran `bmalph -C . doctor --json` before restoring generated local assets.
+   Observed expected setup failure because `_bmad/`, `_bmad/COMMANDS.md`,
+   `_bmad/lite/create-prd.md`, `.ralph/ralph_loop.sh`, and `.ralph/lib/`
+   were absent from the workspace.
+2. Ran `bmalph -C . upgrade --force`. Observed BMALPH restore `_bmad/` and
+   Ralph assets including `.ralph/ralph_loop.sh`, `.ralph/ralph_import.sh`,
+   `.ralph/ralph_monitor.sh`, `.ralph/lib/`, `.ralph/PROMPT.md`,
+   `.ralph/@AGENT.md`, `.ralph/REVIEW_PROMPT.md`, `.ralph/.ralphrc`, and
+   `.ralph/RALPH-REFERENCE.md`.
+3. Ran `bmalph -C . doctor --json` again. Observed `passed=19`, `failed=0`,
+   `total=19`; checks for `_bmad/`, `_bmad/COMMANDS.md`,
+   `_bmad/lite/create-prd.md`, `.ralph/ralph_loop.sh`, and `.ralph/lib/`
+   all passed.
+4. Ran `bmalph -C . status --json` before transition. Observed Phase 3
+   `Solutioning`, status `planning`, artifact directory `docs/planning`, found
+   `architecture.md`, `epics.md`, `implementation-readiness.md`, and `prd.md`,
+   no missing artifacts, and next action `Run: bmalph implement`.
+5. Ran `bmalph -C . implement`. Observed BMALPH locate artifacts, parse
+   stories, generate a fix plan for 5 stories, prepare the specs tree, copy
+   specs to `.ralph/specs/`, generate `.ralph/SPECS_INDEX.md`,
+   `.ralph/PROJECT_CONTEXT.md`, and `.ralph/PROMPT.md`, then report
+   `Transition complete: phase 4 (implementing)`.
+6. Inspected `.ralph/PROJECT_CONTEXT.md` and `.ralph/SPECS_INDEX.md`.
+   Observed Ralph implementation context for the passkey feature with goals,
+   scope boundaries, and NFRs, plus an index of 5 transition spec files:
+   `README.md`, `architecture.md`, `epics.md`,
+   `implementation-readiness.md`, and `prd.md`.
+7. Ran `bmalph -C . status --json` after transition. Observed `phase=4`,
+   `phaseName=Implementation`, `status=implementing`, Ralph status
+   `not_started`, and next action `Start Ralph loop with: bmalph run`.
+
+Result: Pass. Story 1.1 implementation-transition evidence now supports the
+doctor, implement, Ralph context, and Phase 4 status acceptance criteria without
+fabricating manual evidence.
+
 ## Preconditions
 
 - The service is running with the passkey environment values documented in

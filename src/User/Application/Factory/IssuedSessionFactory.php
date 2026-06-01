@@ -11,6 +11,7 @@ use App\User\Domain\Factory\AuthSessionFactoryInterface;
 use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -25,6 +26,7 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
         private AuthTokenFactoryInterface $authTokenFactory,
         private AuthSessionFactoryInterface $authSessionFactory,
         private IdFactoryInterface $idFactory,
+        private LoggerInterface $logger,
         private int $standardSessionTtlSeconds = 900,
         private int $rememberMeSessionTtlSeconds = 2592000,
     ) {
@@ -44,11 +46,13 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
         try {
             return $this->issueTokens($session, $user, $issuedAt);
         } catch (Throwable $exception) {
-            try {
-                $this->rollbackSession($session);
-            } finally {
-                throw $exception;
+            $rollbackFailures = $this->rollbackSession($session);
+
+            if ($rollbackFailures !== []) {
+                $this->logRollbackFailures($session, $exception, $rollbackFailures);
             }
+
+            throw $exception;
         }
     }
 
@@ -92,16 +96,58 @@ final readonly class IssuedSessionFactory implements IssuedSessionFactoryInterfa
         return new IssuedSession($session->getId(), $accessToken, $refreshToken);
     }
 
-    private function rollbackSession(AuthSession $session): void
+    /**
+     * @return list<Throwable>
+     */
+    private function rollbackSession(AuthSession $session): array
     {
+        $failures = [];
+
         try {
             $tokens = $this->authRefreshTokenRepository->findBySessionId($session->getId());
 
             foreach ($tokens as $token) {
-                $this->authRefreshTokenRepository->delete($token);
+                try {
+                    $this->authRefreshTokenRepository->delete($token);
+                } catch (Throwable $exception) {
+                    $failures[] = $exception;
+                }
             }
-        } finally {
-            $this->authSessionRepository->delete($session);
+        } catch (Throwable $exception) {
+            $failures[] = $exception;
         }
+
+        try {
+            $this->authSessionRepository->delete($session);
+        } catch (Throwable $exception) {
+            $failures[] = $exception;
+        }
+
+        return $failures;
+    }
+
+    /**
+     * @param list<Throwable> $rollbackFailures
+     */
+    private function logRollbackFailures(
+        AuthSession $session,
+        Throwable $issuanceException,
+        array $rollbackFailures
+    ): void {
+        $this->logger->error('Session issuance rollback failed', [
+            'session_id' => $session->getId(),
+            'issuance_exception_class' => $issuanceException::class,
+            'rollback_failure_count' => count($rollbackFailures),
+            'rollback_exception_classes' => array_map(
+                static fn (Throwable $exception): string => $exception::class,
+                $rollbackFailures
+            ),
+            'rollback_exception_messages' => array_map(
+                static fn (Throwable $exception): string => $exception->getMessage(),
+                $rollbackFailures
+            ),
+            'rollback_exceptions' => $rollbackFailures,
+            'exception' => $rollbackFailures[0],
+        ]);
     }
 }

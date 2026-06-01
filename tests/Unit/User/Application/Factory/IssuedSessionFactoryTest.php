@@ -18,6 +18,7 @@ use App\User\Domain\Repository\AuthRefreshTokenRepositoryInterface;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 final class IssuedSessionFactoryTest extends UnitTestCase
@@ -31,6 +32,7 @@ final class IssuedSessionFactoryTest extends UnitTestCase
     private AuthTokenFactoryInterface&MockObject $authTokenFactory;
     private AuthSessionFactoryInterface&MockObject $sessionFactory;
     private IdFactoryInterface&MockObject $idFactory;
+    private LoggerInterface&MockObject $logger;
     private IssuedSessionFactory $issuer;
 
     #[\Override]
@@ -45,6 +47,7 @@ final class IssuedSessionFactoryTest extends UnitTestCase
             $this->authTokenFactory,
             $this->sessionFactory,
             $this->idFactory,
+            $this->logger,
             self::STANDARD_TTL,
             self::REMEMBER_ME_TTL,
         );
@@ -101,6 +104,26 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         );
     }
 
+    public function testCreateLogsRollbackFailureAndPreservesIssuanceFailure(): void
+    {
+        $failure = new RuntimeException('JWT signing failed.');
+        $rollbackFailure = new RuntimeException('Refresh token cleanup failed.');
+        [$user, $issuedAt] = $this->arrangeAccessTokenFailureRollbackFailure(
+            $failure,
+            $rollbackFailure
+        );
+
+        $this->expectExceptionObject($failure);
+
+        $this->issuer->create(
+            $user,
+            $this->faker->ipv4(),
+            $this->faker->userAgent(),
+            false,
+            $issuedAt
+        );
+    }
+
     /**
      * @return array{User&MockObject, DateTimeImmutable}
      */
@@ -118,6 +141,37 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
         $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
         $this->expectSessionRollback($sessionId, $session, $refreshToken);
+
+        return [$user, $issuedAt];
+    }
+
+    /**
+     * @return array{User&MockObject, DateTimeImmutable}
+     */
+    private function arrangeAccessTokenFailureRollbackFailure(
+        RuntimeException $failure,
+        RuntimeException $rollbackFailure
+    ): array {
+        $userId = $this->faker->uuid();
+        $sessionId = $this->faker->uuid();
+        $issuedAt = new DateTimeImmutable();
+        $session = $this->createMock(AuthSession::class);
+        $refreshToken = $this->createMock(AuthRefreshToken::class);
+        $secondRefreshToken = $this->createMock(AuthRefreshToken::class);
+        $user = $this->createMock(User::class);
+
+        $user->method('getId')->willReturn($userId);
+        $session->method('getId')->willReturn($sessionId);
+        $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
+        $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
+        $this->expectFailingTokenRollback(
+            $sessionId,
+            $session,
+            $refreshToken,
+            $secondRefreshToken,
+            $rollbackFailure
+        );
+        $this->expectRollbackFailureLog($sessionId, $failure, $rollbackFailure);
 
         return [$user, $issuedAt];
     }
@@ -144,6 +198,60 @@ final class IssuedSessionFactoryTest extends UnitTestCase
             ->willReturn([$refreshToken]);
         $this->refreshTokenRepo->expects($this->once())->method('delete')->with($refreshToken);
         $this->authSessionRepo->expects($this->once())->method('delete')->with($session);
+    }
+
+    private function expectFailingTokenRollback(
+        string $sessionId,
+        AuthSession&MockObject $session,
+        AuthRefreshToken&MockObject $refreshToken,
+        AuthRefreshToken&MockObject $secondRefreshToken,
+        RuntimeException $rollbackFailure
+    ): void {
+        $this->refreshTokenRepo->expects($this->once())
+            ->method('findBySessionId')
+            ->with($sessionId)
+            ->willReturn([$refreshToken, $secondRefreshToken]);
+        $this->refreshTokenRepo->expects($this->exactly(2))
+            ->method('delete')
+            ->willReturnCallback(
+                function (AuthRefreshToken $token) use (
+                    $refreshToken,
+                    $secondRefreshToken,
+                    $rollbackFailure
+                ): void {
+                    if ($token === $refreshToken) {
+                        throw $rollbackFailure;
+                    }
+
+                    $this->assertSame($secondRefreshToken, $token);
+                }
+            );
+        $this->authSessionRepo->expects($this->once())->method('delete')->with($session);
+    }
+
+    private function expectRollbackFailureLog(
+        string $sessionId,
+        RuntimeException $failure,
+        RuntimeException $rollbackFailure
+    ): void {
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with(
+                'Session issuance rollback failed',
+                $this->callback(static function (array $context) use (
+                    $sessionId,
+                    $failure,
+                    $rollbackFailure
+                ): bool {
+                    return $context['session_id'] === $sessionId
+                        && $context['issuance_exception_class'] === $failure::class
+                        && $context['rollback_failure_count'] === 1
+                        && $context['rollback_exception_classes'] === [$rollbackFailure::class]
+                        && $context['rollback_exception_messages'] === [$rollbackFailure->getMessage()]
+                        && $context['rollback_exceptions'] === [$rollbackFailure]
+                        && $context['exception'] === $rollbackFailure;
+                })
+            );
     }
 
     /**
@@ -227,5 +335,6 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         $this->authTokenFactory = $m(AuthTokenFactoryInterface::class);
         $this->sessionFactory = $m(AuthSessionFactoryInterface::class);
         $this->idFactory = $m(IdFactoryInterface::class);
+        $this->logger = $m(LoggerInterface::class);
     }
 }
