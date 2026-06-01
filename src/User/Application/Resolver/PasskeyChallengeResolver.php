@@ -54,11 +54,6 @@ final readonly class PasskeyChallengeResolver
         $this->challengeRepository->delete($challenge);
     }
 
-    public function release(PasskeyChallenge $challenge): void
-    {
-        $this->challengeRepository->release($challenge);
-    }
-
     private function resolveActive(string $challengeId, string $purpose): PasskeyChallenge
     {
         $now = new DateTimeImmutable();

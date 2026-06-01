@@ -96,11 +96,18 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
     public function testCompleteSignupRollsBackCredentialWhenUserSaveFails(): void
     {
         $storageFailure = new RuntimeException('User storage unavailable.');
+        $challenge = $this->objects->createSignupChallenge();
 
-        $this->expectSignupUserPersistenceFailure($storageFailure);
-        $this->expectExceptionObject($storageFailure);
+        $this->expectSignupUserPersistenceFailure($challenge, $storageFailure);
 
-        $this->support()->completeSignup($this->credentialPayload);
+        try {
+            $this->support()->completeSignup($this->credentialPayload);
+            self::fail('Expected user storage failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($storageFailure, $exception);
+        }
+
+        self::assertTrue($challenge->isConsumed());
     }
 
     public function testCompleteSignupKeepsAuthenticationWhenRegisteredEventPublishFails(): void
@@ -220,10 +227,10 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectCredentialSaveFailure($storageFailure, $credentialExists);
     }
 
-    private function expectSignupUserPersistenceFailure(RuntimeException $storageFailure): void
-    {
-        $challenge = $this->objects->createSignupChallenge();
-
+    private function expectSignupUserPersistenceFailure(
+        PasskeyChallenge $challenge,
+        RuntimeException $storageFailure
+    ): void {
         $this->expectClaimedChallenge($challenge);
         $this->challengeRepository->expects($this->never())->method('delete');
         $this->expectEmailIsAvailable();
@@ -231,7 +238,6 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectUserCreationBeforeSave($storageFailure);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('delete');
-        $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
         $this->sessionFactory->expects($this->never())->method('create');
     }
 
@@ -246,7 +252,6 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectPersistedUserCreation($eventFailure);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('keep');
-        $this->challengeRepository->expects($this->never())->method('release');
         $this->expectSessionIssue();
         $this->expectSignupWarning(
             'Passkey signup registered event dispatch failed.',
@@ -268,7 +273,6 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
         $this->expectPersistedUserCreation(null);
         $this->expectPasskeyId();
         $this->expectCredentialSavedAfterSignup('keep');
-        $this->challengeRepository->expects($this->never())->method('release');
         $this->expectSessionIssue();
         $this->expectSignupWarning(
             'Passkey signup challenge cleanup failed.',

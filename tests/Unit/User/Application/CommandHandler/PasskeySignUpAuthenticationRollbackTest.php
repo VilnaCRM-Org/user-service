@@ -30,6 +30,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
 {
@@ -82,7 +83,6 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectCredentialSavedThenDeleted();
         $this->challengeRepository->expects($this->never())->method('delete');
-        $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
         $this->sessionFactory->expects($this->once())
             ->method('create')
             ->willThrowException($failure);
@@ -90,9 +90,14 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->eventBus->expects($this->never())->method('publish');
         $this->signInPublisher->expects($this->never())->method('publishSignedIn');
 
-        $this->expectExceptionObject($failure);
+        try {
+            $this->support()->completeSignup($this->credentialPayload);
+            self::fail('Expected authentication failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($failure, $exception);
+        }
 
-        $this->support()->completeSignup($this->credentialPayload);
+        self::assertTrue($challenge->isConsumed());
     }
 
     public function testCompleteSignupThrowsUserDeleteFailureWhenAuthenticationRollbackFails(): void
@@ -106,7 +111,6 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectCredentialSavedThenDeleted();
         $this->challengeRepository->expects($this->never())->method('delete');
-        $this->challengeRepository->expects($this->once())->method('release')->with($challenge);
         $this->sessionFactory->expects($this->once())
             ->method('create')
             ->willThrowException($authenticationFailure);
@@ -114,7 +118,44 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->eventBus->expects($this->never())->method('publish');
         $this->signInPublisher->expects($this->never())->method('publishSignedIn');
 
-        $this->expectExceptionObject($rollbackFailure);
+        try {
+            $this->support()->completeSignup($this->credentialPayload);
+            self::fail('Expected rollback failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($rollbackFailure, $exception);
+        }
+
+        self::assertTrue($challenge->isConsumed());
+    }
+
+    public function testCompleteSignupRejectsRetryAfterAuthenticationIssueFails(): void
+    {
+        $failure = new RuntimeException('Authentication unavailable.');
+        $challenge = $this->objects->createSignupChallenge();
+
+        $this->expectRetryAwareClaimedChallenge($challenge);
+        $this->expectSignupUserPersistedThenDeleted();
+        $this->expectCredentialVerification($challenge, $this->credentialPayload);
+        $this->expectCredentialSavedThenDeleted();
+        $this->challengeRepository->expects($this->never())->method('delete');
+        $this->sessionFactory->expects($this->once())
+            ->method('create')
+            ->willThrowException($failure);
+        $this->eventIdFactory->expects($this->never())->method('generate');
+        $this->eventBus->expects($this->never())->method('publish');
+        $this->signInPublisher->expects($this->never())->method('publishSignedIn');
+
+        try {
+            $this->support()->completeSignup($this->credentialPayload);
+            self::fail('Expected authentication failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($failure, $exception);
+        }
+
+        self::assertTrue($challenge->isConsumed());
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid or expired passkey challenge.');
 
         $this->support()->completeSignup($this->credentialPayload);
     }
@@ -129,7 +170,6 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
         $this->expectCredentialVerification($challenge, $this->credentialPayload);
         $this->expectCredentialSavedAndKept();
         $this->challengeRepository->expects($this->once())->method('delete')->with($challenge);
-        $this->challengeRepository->expects($this->never())->method('release');
         $this->expectSessionIssuedWithPublishFailure($failure);
 
         $result = $this->support()->completeSignup($this->credentialPayload);
@@ -221,6 +261,28 @@ final class PasskeySignUpAuthenticationRollbackTest extends UnitTestCase
                 string $purpose,
                 DateTimeImmutable $consumedAt
             ) use ($challenge): PasskeyChallenge {
+                $challenge->consume($consumedAt);
+
+                return $challenge;
+            });
+    }
+
+    private function expectRetryAwareClaimedChallenge(PasskeyChallenge $challenge): void
+    {
+        $this->challengeRepository->expects($this->exactly(2))
+            ->method('claimActive')
+            ->willReturnCallback(static function (
+                string $id,
+                string $purpose,
+                DateTimeImmutable $consumedAt
+            ) use ($challenge): ?PasskeyChallenge {
+                self::assertSame($challenge->getId(), $id);
+                self::assertSame(PasskeyChallenge::PURPOSE_SIGNUP, $purpose);
+
+                if ($challenge->isConsumed()) {
+                    return null;
+                }
+
                 $challenge->consume($consumedAt);
 
                 return $challenge;

@@ -92,16 +92,6 @@ final class PasskeyResolverTest extends UnitTestCase
         $this->createCredentialResolver()->delete($credential);
     }
 
-    public function testReleaseChallengeDelegatesToRepository(): void
-    {
-        $challenge = $this->createSignupChallenge();
-        $this->challengeRepository->expects($this->once())
-            ->method('release')
-            ->with($challenge);
-
-        $this->createChallengeResolver()->release($challenge);
-    }
-
     public function testSignupChallengeRequiresEmail(): void
     {
         $this->expectInvalidChallenge();
@@ -201,6 +191,27 @@ final class PasskeyResolverTest extends UnitTestCase
             }
         );
         self::assertSame(1, $rollbackCalls);
+    }
+
+    public function testSaveUniqueAndRunWithoutRollbackRethrowsAfterSaveFailure(): void
+    {
+        $credential = $this->createCredential($this->userId);
+        $afterSaveFailure = new RuntimeException('After save failed.');
+
+        $this->credentialRepository->expects($this->once())->method('save')->with($credential);
+        $this->credentialRepository->expects($this->once())->method('delete')->with($credential);
+
+        try {
+            $this->createCredentialResolver()->saveUniqueAndRun(
+                $credential,
+                static function () use ($afterSaveFailure): void {
+                    throw $afterSaveFailure;
+                }
+            );
+            self::fail('Expected after-save failure was not thrown.');
+        } catch (RuntimeException $exception) {
+            self::assertSame($afterSaveFailure, $exception);
+        }
     }
 
     public function testSaveUniqueAndRunKeepsDeleteFailureWhenRollbackAlsoFails(): void

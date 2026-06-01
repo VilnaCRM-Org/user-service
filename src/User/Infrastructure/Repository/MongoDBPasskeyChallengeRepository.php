@@ -71,12 +71,4 @@ final class MongoDBPasskeyChallengeRepository extends ServiceDocumentRepository 
         $this->documentManager->remove($challenge);
         $this->documentManager->flush();
     }
-
-    #[\Override]
-    public function release(PasskeyChallenge $challenge): void
-    {
-        $challenge->release();
-        $this->documentManager->persist($challenge);
-        $this->documentManager->flush();
-    }
 }

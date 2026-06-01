@@ -65,9 +65,6 @@ final readonly class CompletePasskeySignUpCommandHandler implements CommandHandl
                     $command,
                     $now
                 );
-            },
-            function () use ($challenge): void {
-                $this->challengeResolver->release($challenge);
             }
         );
 

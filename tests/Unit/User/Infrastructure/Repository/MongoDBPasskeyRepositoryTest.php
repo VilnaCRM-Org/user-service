@@ -108,25 +108,6 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         ));
     }
 
-    public function testChallengeRepositoryReleasesClaimedChallenge(): void
-    {
-        $challenge = $this->createChallenge();
-        $challenge->consume(new DateTimeImmutable());
-        $this->expectRegistryFor(PasskeyChallenge::class);
-        $repository = $this->createRepositoryMock(
-            MongoDBPasskeyChallengeRepository::class,
-            [$this->documentManager, $this->registry, $this->writeResultCounter],
-            []
-        );
-
-        $this->documentManager->expects($this->once())->method('persist')->with($challenge);
-        $this->documentManager->expects($this->once())->method('flush');
-
-        $repository->release($challenge);
-
-        self::assertFalse($challenge->isConsumed());
-    }
-
     public function testCredentialRepositorySavesFindsListsAndChecksCredential(): void
     {
         $credential = $this->createCredential();

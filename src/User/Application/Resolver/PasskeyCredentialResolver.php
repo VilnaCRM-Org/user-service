@@ -62,12 +62,12 @@ final readonly class PasskeyCredentialResolver
 
     /**
      * @param callable(): void $afterSave
-     * @param callable(): void $rollback
+     * @param (callable(): void)|null $rollback
      */
     public function saveUniqueAndRun(
         PasskeyCredential $credential,
         callable $afterSave,
-        callable $rollback
+        ?callable $rollback = null
     ): void {
         $this->saveUnique($credential);
 
@@ -90,11 +90,11 @@ final readonly class PasskeyCredentialResolver
     }
 
     /**
-     * @param callable(): void $rollback
+     * @param (callable(): void)|null $rollback
      */
     private function runCredentialRollback(
         PasskeyCredential $credential,
-        callable $rollback
+        ?callable $rollback
     ): ?Throwable {
         $rollbackFailure = null;
 
@@ -102,6 +102,10 @@ final readonly class PasskeyCredentialResolver
             $this->delete($credential);
         } catch (Throwable $exception) {
             $rollbackFailure = $exception;
+        }
+
+        if ($rollback === null) {
+            return $rollbackFailure;
         }
 
         try {
