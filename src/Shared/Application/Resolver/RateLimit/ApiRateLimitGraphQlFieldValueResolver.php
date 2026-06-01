@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver\RateLimit;
 
+use GraphQL\Language\AST\ArgumentNode;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\StringValueNode;
@@ -13,10 +14,12 @@ use GraphQL\Language\AST\VariableNode;
 final readonly class ApiRateLimitGraphQlFieldValueResolver
 {
     private ApiRateLimitGraphQlVariableValueResolver $variableValueResolver;
+    private ApiRateLimitGraphQlObjectFieldResolver $objectFieldResolver;
 
     public function __construct()
     {
         $this->variableValueResolver = new ApiRateLimitGraphQlVariableValueResolver();
+        $this->objectFieldResolver = new ApiRateLimitGraphQlObjectFieldResolver();
     }
 
     /**
@@ -212,20 +215,8 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
         array $keys
     ): ?string {
         foreach ($field->arguments as $argument) {
-            if (in_array($argument->name->value, $keys, true)) {
-                return $this->variableValueResolver->resolveStringValue(
-                    $argument->value,
-                    $variables,
-                    $variableDefaultValues
-                );
-            }
-
-            if ($argument->name->value !== 'input') {
-                continue;
-            }
-
-            $resolved = $this->resolveTopLevelInputValue(
-                $argument->value,
+            $resolved = $this->resolveTopLevelInputArgumentValue(
+                $argument,
                 $variables,
                 $variableDefaultValues,
                 $keys
@@ -236,6 +227,51 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
         }
 
         return null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     * @param list<string> $keys
+     */
+    private function resolveTopLevelInputArgumentValue(
+        ArgumentNode $argument,
+        array $variables,
+        array $variableDefaultValues,
+        array $keys
+    ): ?string {
+        if (in_array($argument->name->value, $keys, true)) {
+            return $this->resolveArgumentStringValue(
+                $argument->value,
+                $variables,
+                $variableDefaultValues
+            );
+        }
+
+        return $argument->name->value === 'input'
+            ? $this->resolveTopLevelInputValue(
+                $argument->value,
+                $variables,
+                $variableDefaultValues,
+                $keys
+            )
+            : null;
+    }
+
+    /**
+     * @param array<array-key, array|string|int|float|bool|null> $variables
+     * @param array<string, ValueNode> $variableDefaultValues
+     */
+    private function resolveArgumentStringValue(
+        ValueNode $value,
+        array $variables,
+        array $variableDefaultValues
+    ): ?string {
+        return $this->variableValueResolver->resolveStringValue(
+            $value,
+            $variables,
+            $variableDefaultValues
+        );
     }
 
     /**
@@ -262,7 +298,7 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
             return null;
         }
 
-        $directValue = $this->findDirectNamedObjectFieldValue($value, $keys);
+        $directValue = $this->objectFieldResolver->findDirect($value, $keys);
 
         return $this->variableValueResolver->resolveStringValue(
             $directValue,
@@ -345,46 +381,9 @@ final readonly class ApiRateLimitGraphQlFieldValueResolver
                 return $argument->value;
             }
 
-            $nested = $this->findNamedObjectFieldValue($argument->value, $keys);
+            $nested = $this->objectFieldResolver->findNested($argument->value, $keys);
             if ($nested !== null) {
                 return $nested;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param list<string> $keys
-     */
-    private function findNamedObjectFieldValue(ValueNode $value, array $keys): ?ValueNode
-    {
-        if (!$value instanceof ObjectValueNode) {
-            return null;
-        }
-
-        foreach ($value->fields as $field) {
-            if (in_array($field->name->value, $keys, true)) {
-                return $field->value;
-            }
-
-            $nested = $this->findNamedObjectFieldValue($field->value, $keys);
-            if ($nested !== null) {
-                return $nested;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param list<string> $keys
-     */
-    private function findDirectNamedObjectFieldValue(ObjectValueNode $value, array $keys): ?ValueNode
-    {
-        foreach ($value->fields as $field) {
-            if (in_array($field->name->value, $keys, true)) {
-                return $field->value;
             }
         }
 

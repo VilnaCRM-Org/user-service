@@ -195,7 +195,7 @@ services:
     arguments:
       $jsonEncoder: '@serializer.encoder.json'
 
-  App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver:
+  App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlPayloadResolver:
     arguments:
       $jsonEncoder: '@serializer.encoder.json'
 

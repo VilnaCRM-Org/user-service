@@ -10,6 +10,7 @@ use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlDocumentResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlPayloadResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
@@ -360,7 +361,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         return new ApiRateLimitGraphQlAuthTargetResolver(
             $clientIdentityResolver,
             new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver()),
-            new JsonEncoder(),
+            new ApiRateLimitGraphQlPayloadResolver(new JsonEncoder()),
         );
     }
 

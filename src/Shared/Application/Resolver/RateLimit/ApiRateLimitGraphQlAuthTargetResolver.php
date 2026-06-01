@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Resolver\RateLimit;
 
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 final readonly class ApiRateLimitGraphQlAuthTargetResolver
 {
@@ -32,7 +29,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
         private ApiRateLimitGraphQlQueryInspector $graphQlQueryInspector,
-        private JsonEncoder $jsonEncoder,
+        private ApiRateLimitGraphQlPayloadResolver $graphQlPayloadResolver,
     ) {
     }
 
@@ -80,11 +77,9 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         ?ApiRateLimitGraphQlQueryInspection $inspection
     ): array {
         $signInMutationCount = $this->countMutations($request, self::SIGNIN_MUTATIONS, $inspection);
-        if ($signInMutationCount === 0) {
-            return [];
-        }
-
-        return $this->buildSignInTargets($request, $inspection, $signInMutationCount);
+        return $signInMutationCount === 0
+            ? []
+            : $this->buildSignInTargets($request, $inspection, $signInMutationCount);
     }
 
     private function supports(Request $request): bool
@@ -121,11 +116,9 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         ?ApiRateLimitGraphQlQueryInspection $inspection
     ): array {
         if ($inspection === null) {
-            if ($this->countMutations($request, self::SIGNIN_EMAIL_MUTATIONS, null) === 0) {
-                return [];
-            }
-
-            $email = $this->clientIdentityResolver->resolveTopLevelSignInEmail($request);
+            $email = $this->countMutations($request, self::SIGNIN_EMAIL_MUTATIONS, null) === 0
+                ? null
+                : $this->clientIdentityResolver->resolveTopLevelSignInEmail($request);
 
             return $email === null ? [] : [$email];
         }
@@ -164,208 +157,14 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
      */
     private function resolveGraphQlVariables(Request $request): array
     {
-        $decoded = $this->resolveGraphQlPayload($request);
-        $variables = $decoded['variables'] ?? null;
-
-        return is_array($variables) ? $variables : [];
-    }
-
-    /**
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function resolveGraphQlPayload(Request $request): ?array
-    {
-        $payload = $this->resolveQueryStringPayload($request);
-        if ($request->getContentTypeFormat() === 'json') {
-            return $this->mergeGraphQlPayload($payload, $this->resolveJsonPayload($request));
-        }
-
-        if ($this->isRawGraphQlPost($request)) {
-            $content = $request->getContent();
-
-            return $content === ''
-                ? $payload
-                : $this->mergeGraphQlPayload($payload, ['query' => $content]);
-        }
-
-        $operationsPayload = $this->resolveOperationsPayload($request);
-        if ($operationsPayload !== null) {
-            return $this->mergeGraphQlPayload($payload, $operationsPayload);
-        }
-
-        return $payload;
-    }
-
-    /**
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function resolveJsonPayload(Request $request): ?array
-    {
-        try {
-            $payload = $request->toArray();
-            /** @var array<array-key, array|string|int|float|bool|null> $payload */
-            return $this->normalizeGraphQlPayload($payload);
-        } catch (JsonException) {
-            return null;
-        }
-    }
-
-    /**
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function resolveOperationsPayload(Request $request): ?array
-    {
-        $operations = $this->resolveOperationsParameter($request);
-        if ($operations === null) {
-            return null;
-        }
-
-        try {
-            $payload = $this->jsonEncoder->decode($operations, JsonEncoder::FORMAT);
-        } catch (NotEncodableValueException) {
-            return null;
-        }
-
-        /** @var array<array-key, array|string|int|float|bool|null> $payload */
-        return is_array($payload) ? $this->normalizeGraphQlPayload($payload) : null;
-    }
-
-    private function resolveOperationsParameter(Request $request): ?string
-    {
-        if (!in_array($request->getContentTypeFormat(), ['form', 'multipart'], true)) {
-            return null;
-        }
-
-        $requestParameters = $request->request->all();
-        $operations = $requestParameters['operations'] ?? null;
-
-        return is_string($operations) ? $operations : null;
-    }
-
-    /**
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function resolveQueryStringPayload(Request $request): ?array
-    {
-        $payload = $request->query->all();
-        /** @var array<array-key, array|string|int|float|bool|null> $payload */
-        return $this->normalizeGraphQlPayload($payload);
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $payload
-     *
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function normalizeGraphQlPayload(array $payload): ?array
-    {
-        $normalized = [];
-        foreach (['operationName', 'query'] as $fieldName) {
-            $value = $payload[$fieldName] ?? null;
-            if (is_string($value)) {
-                $normalized[$fieldName] = $value;
-            }
-        }
-
-        $variables = $payload['variables'] ?? null;
-        $normalizedVariables = $this->normalizeVariables($variables);
-        if ($normalizedVariables !== null) {
-            $normalized['variables'] = $normalizedVariables;
-        }
-
-        return $normalized === [] ? null : $normalized;
-    }
-
-    /**
-     * @param array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null $basePayload
-     * @param array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null $overlayPayload
-     *
-     * @return array{operationName?: string, query?: string, variables?: array<array-key, array|string|int|float|bool|null>}|null
-     */
-    private function mergeGraphQlPayload(?array $basePayload, ?array $overlayPayload): ?array
-    {
-        if ($basePayload === null) {
-            return $overlayPayload;
-        }
-
-        if ($overlayPayload === null) {
-            return $basePayload;
-        }
-
-        $mergedPayload = $basePayload;
-        foreach (['operationName', 'query'] as $fieldName) {
-            if (array_key_exists($fieldName, $overlayPayload)) {
-                $mergedPayload[$fieldName] = $overlayPayload[$fieldName];
-            }
-        }
-
-        if (array_key_exists('variables', $overlayPayload)) {
-            $mergedPayload['variables'] = $overlayPayload['variables'];
-        }
-
-        return $mergedPayload;
-    }
-
-    /**
-     * @return array<array-key, array|string|int|float|bool|null>|null
-     */
-    private function normalizeVariables(mixed $variables): ?array
-    {
-        if (is_string($variables)) {
-            try {
-                $variables = $this->jsonEncoder->decode($variables, JsonEncoder::FORMAT);
-            } catch (NotEncodableValueException) {
-                return null;
-            }
-        }
-
-        if (!is_array($variables)) {
-            return null;
-        }
-
-        /** @var array<array-key, array|string|int|float|bool|null> $variables */
-        return $this->normalizeVariableArray($variables);
-    }
-
-    /**
-     * @param array<array-key, array|string|int|float|bool|null> $variables
-     *
-     * @return array<array-key, array|string|int|float|bool|null>
-     */
-    private function normalizeVariableArray(array $variables): array
-    {
-        $normalized = [];
-        foreach ($variables as $key => $value) {
-            if (is_array($value)) {
-                $normalized[$key] = $this->normalizeVariableArray($value);
-                continue;
-            }
-
-            if (is_string($value) || is_int($value) || is_float($value) || is_bool($value) || $value === null) {
-                $normalized[$key] = $value;
-            }
-        }
-
-        return $normalized;
-    }
-
-    private function isRawGraphQlPost(Request $request): bool
-    {
-        if ($request->getContentTypeFormat() === 'graphql') {
-            return true;
-        }
-
-        $contentType = $request->headers->get('CONTENT_TYPE', '');
-        $mimeType = explode(';', strtolower($contentType))[0];
-
-        return $mimeType === 'application/graphql';
+        return $this->graphQlPayloadResolver->resolveVariables($request);
     }
 
     private function resolveGraphQlQueryInspection(
         Request $request
     ): ?ApiRateLimitGraphQlQueryInspection {
         $payload = $request->getContent();
-        $decoded = $this->resolveGraphQlPayload($request);
+        $decoded = $this->graphQlPayloadResolver->resolve($request);
         if ($decoded === null) {
             return $this->graphQlQueryInspector->inspect($payload, null);
         }

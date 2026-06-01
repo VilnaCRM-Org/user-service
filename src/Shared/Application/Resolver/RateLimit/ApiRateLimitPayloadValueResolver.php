@@ -169,8 +169,11 @@ final readonly class ApiRateLimitPayloadValueResolver
     /**
      * @param list<string> $keys
      */
-    private function resolveTopLevelFormPayloadValue(Request $request, string $rawPayload, array $keys): ?string
-    {
+    private function resolveTopLevelFormPayloadValue(
+        Request $request,
+        string $rawPayload,
+        array $keys
+    ): ?string {
         $formPayload = $request->request->all();
         if ($formPayload === []) {
             parse_str($rawPayload, $formPayload);

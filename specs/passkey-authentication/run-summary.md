@@ -274,13 +274,15 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-01 22:24:19 +0300
-  after the passkey sign-in rate-limit hardening with 20,502 nodes and 35,923
-  edges. The refreshed graph includes
+  and recorded in `graphify-out/graph.json` on 2026-06-02 00:23:25 +0300
+  after the passkey sign-in rate-limit hardening, Infection survivor fix, and
+  resolver extraction with 20,641 nodes and 68,972 edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
   `PasskeyProductionReadinessListenerTestCase.php`, the split
-  `PasskeyReadiness*Test.php` nodes, the GraphQL rate-limit resolver
+  `PasskeyReadiness*Test.php` nodes,
+  `ApiRateLimitGraphQlPayloadResolver.php`,
+  `ApiRateLimitGraphQlObjectFieldResolver.php`, the GraphQL rate-limit resolver
   collaborators, and the expanded rate-limit unit/integration tests.
   Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
@@ -646,6 +648,38 @@ workspace; GitHub Actions is the source of full-suite verification after push.
 - Targeted passkey/repository/rate-limit unit tests after AI review fixes: 195 tests, 484 assertions.
 - Passkey application Infection slice after CI fix: 183 mutations generated, 183 killed; MSI 100%, covered MSI 100%.
 - Changed-source Infection run after CI fix: 446 mutations generated, 446 killed; MSI 100%, covered MSI 100%.
+- PR #286 Infection survivor remediation on 2026-06-01: the GraphQL auth
+  target resolver no longer has equivalent early-return/merge/normalization
+  survivor shapes. Payload extraction/normalization moved to
+  `ApiRateLimitGraphQlPayloadResolver`, GraphQL AST object-field lookup moved to
+  `ApiRateLimitGraphQlObjectFieldResolver`, and oversized tests were split while
+  keeping `phpmd.tests.xml` unchanged. Unit coverage now asserts form
+  `operations` `operationName` overlay precedence, ignored `text/plain`
+  operations, JSON string variable normalization after a nested variable, raw
+  GraphQL body precedence over query-string payloads, MIME-only
+  `application/graphql` detection, case-insensitive raw GraphQL MIME handling,
+  non-string top-level input/email rejection, and REST passkey sign-in option
+  email trim/lowercase behavior. Fresh file-scoped Infection passed for
+  `ApiRateLimitGraphQlAuthTargetResolver.php`: 108 mutations generated, 107
+  killed, 1 timed out, MSI 100%, mutation code coverage 100%, covered code MSI
+  100%. The affected survivor slice also passed for
+  `ApiRateLimitAuthTargetResolver.php`,
+  `ApiRateLimitClientIdentityResolver.php`,
+  `ApiRateLimitGraphQlVariableValueResolver.php`, and
+  `ApiRateLimitPayloadValueResolver.php`: 297 generated, 297 killed, MSI 100%.
+  Final verification passed `docker compose exec -T -e APP_ENV=test php
+  bin/console lint:container`, focused split PHPUnit at 98 tests / 301
+  assertions, full `make unit-tests` at 2,579 tests / 7,644 assertions with
+  100% lines/methods/classes, `make psalm` with no errors, changed-file
+  PHP-CS-Fixer dry run with 0 fixable files, `git diff --check`, and full
+  `make infection` with 5,491 mutations generated, 5,488 killed, 3 timed out,
+  MSI 100%, mutation code coverage 100%, and covered code MSI 100%.
+  `make phpinsights` passed with source scores Code 100, Complexity 97.0,
+  Architecture 100, Style 100 and test scores Code 100, Complexity 97.8,
+  Architecture 100, Style 100; the source scorer still reports the non-blocking
+  configured complexity item
+  `ApiRateLimitGraphQlPayloadResolver::mergeGraphQlPayload` at cyclomatic
+  complexity 7.
 
 ## Local CI Note
 

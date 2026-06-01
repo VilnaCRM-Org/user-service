@@ -213,8 +213,10 @@ final readonly class ApiRateLimitGraphQlVariableValueResolver
     /**
      * @param list<string> $keys
      */
-    private function findDirectNamedObjectFieldValue(ObjectValueNode $value, array $keys): ?ValueNode
-    {
+    private function findDirectNamedObjectFieldValue(
+        ObjectValueNode $value,
+        array $keys
+    ): ?ValueNode {
         foreach ($value->fields as $field) {
             if (in_array($field->name->value, $keys, true)) {
                 return $field->value;

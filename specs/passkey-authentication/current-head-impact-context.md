@@ -23,17 +23,20 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest clean local refresh completed on 2026-06-01 22:24:19 +0300
-after the passkey sign-in rate-limit hardening and produced 20,502 nodes and
-35,923 edges. This committed evidence file can move in a later docs-only commit;
-the final BMAD sidecar report records the exact reviewed PR SHA.
+committed. The latest clean local refresh completed on 2026-06-02 00:23:25 +0300
+after the passkey sign-in rate-limit hardening, Infection survivor fix, and
+resolver extraction, and produced 20,641 nodes and 68,972 edges. This committed
+evidence file can move in a later docs-only commit; the final BMAD sidecar
+report records the exact reviewed PR SHA.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`
 - `src/User/Application/EventListener/PasskeyGraphQlRequestResolver.php`
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlAuthTargetResolver.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlPayloadResolver.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlFieldValueResolver.php`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlObjectFieldResolver.php`
 - `src/Shared/Application/Resolver/RateLimit/ApiRateLimitGraphQlVariableValueResolver.php`
 - `tests/Unit/User/Application/EventListener/PasskeyProductionReadinessListenerTestCase.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessListenerTest.php`
@@ -45,6 +48,9 @@ The refreshed graph includes:
 The latest strict BMAD report includes graph counts and reviewed-head context in
 its log directory for the exact head it reviews. The graph impact context is
 recorded in that report rather than a separate committed graph-impact file.
+The latest resolver extraction moves GraphQL payload extraction and
+normalization into `ApiRateLimitGraphQlPayloadResolver`, and moves direct/nested
+GraphQL AST object-field lookup into `ApiRateLimitGraphQlObjectFieldResolver`.
 
 ## Post-Graph Changed Files
 
@@ -191,6 +197,7 @@ Runtime GraphQL rate-limit path:
   -> REST `/api/passkeys/(signup|register)/(options|complete)`
   -> registration limiter keyed by client IP
   -> `ApiRateLimitGraphQlAuthTargetResolver`
+  -> `ApiRateLimitGraphQlPayloadResolver`
   -> GraphQL passkey sign-up and authenticated registration mutations
   -> registration limiter keyed by client IP
   -> `ApiRateLimitGraphQlQueryInspector`
@@ -198,6 +205,7 @@ Runtime GraphQL rate-limit path:
   -> `ApiRateLimitGraphQlQueryInspection`
   -> `ApiRateLimitGraphQlRootFields`
   -> `ApiRateLimitGraphQlFieldValueResolver`
+  -> `ApiRateLimitGraphQlObjectFieldResolver`
   -> `ApiRateLimitGraphQlVariableValueResolver`
   -> `ApiRateLimitNestedPayloadStringResolver`
 - `ApiRateLimitPayloadValueResolver`

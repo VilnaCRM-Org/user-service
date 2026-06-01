@@ -114,6 +114,39 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($fallback, $resolver->resolve($request, ['key_a', 'key_b', 'key_c']));
     }
 
+    public function testResolveTopLevelIgnoresNonStringValues(): void
+    {
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/users',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['email' => 42], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertNull($resolver->resolveTopLevel($request, ['email']));
+    }
+
+    public function testResolveTopLevelReturnsTrimmedValueFromRawFormBody(): void
+    {
+        $email = $this->faker->email();
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/users',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/x-www-form-urlencoded'],
+            sprintf(" email=%s \n", rawurlencode($email))
+        );
+
+        self::assertSame($email, $resolver->resolveTopLevel($request, ['email']));
+    }
+
     public function testResolveReturnsValueFromNestedJsonBody(): void
     {
         $email = $this->faker->email();
