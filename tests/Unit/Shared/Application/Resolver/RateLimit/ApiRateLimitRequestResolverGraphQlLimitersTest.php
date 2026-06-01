@@ -249,6 +249,25 @@ GRAPHQL,
         );
     }
 
+    public function testInvalidRawGraphQlPasskeySigninCompleteFallbackDoesNotUseEmailLimiter(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            self::GRAPHQL_PATH,
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp],
+            sprintf('not valid GraphQL passkeySignInCompleteUser credential email %s', $this->faker->email())
+        );
+
+        self::assertSame(
+            $this->signInIpLimiters($clientIp),
+            $this->resolver->resolveEndpointLimiters($request)
+        );
+    }
+
     public function testResolveEndpointLimitersSkipsGraphQlAuthWhenQueryPayloadIsNotString(): void
     {
         $request = Request::create(
