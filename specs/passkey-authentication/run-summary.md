@@ -123,9 +123,9 @@ Browser ceremony tested SHA:
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 Current PR head bridge scope: source-impact bridge through the current PR head
-under BMAD review. Latest pushed pre-remediation head:
-`d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`; the strict BMAD gate records the
-exact reviewed head with `git rev-parse HEAD`.
+under BMAD review. The strict BMAD gate records the exact reviewed head with
+`git rev-parse HEAD` in each review log; pushed follow-up commits refresh this
+bridge through automated tests, graph context, and PR check evidence.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
@@ -215,7 +215,7 @@ config/services.yaml`, `bin/console lint:container`,
   `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
 - Current-head graph evidence was refreshed with Graphify
   (`uvx --from graphifyy graphify update . --force --no-cluster`) and recorded
-  in `graphify-out/graph.json` with 20,305 nodes and 165,829 edges. Relationship
+  in `graphify-out/graph.json` with 20,345 nodes and 230,796 edges. Relationship
   notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
@@ -410,11 +410,14 @@ Status: current focused verification plus historical automated evidence for
 earlier remediation commits. Full post-push CI is provided by GitHub Actions for
 each pushed PR head.
 
-Strict BMAD FR/NFR remediation on 2026-06-01 added
-`tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`,
+Strict BMAD FR/NFR remediation on 2026-06-01 added a split
+`tests/Integration/Auth/PasskeyGraphQL*` integration suite,
 `tests/Shared/Auth/Support/ControllableCommandBus.php`, test-container wiring,
-targeted test-quality config, current-head browser evidence, current-head K6
-evidence, and matching documentation updates. The new integration suite executes
+current-head browser evidence, current-head K6 evidence, and matching
+documentation updates. The follow-up quality fix removed the temporary
+PHPInsights carve-outs by replacing the 800-line GraphQL passkey test with
+focused option, completion-response, and completion-failure test classes plus a
+shared base test case. The new integration suite executes
 `/api/graphql` passkey mutations for:
 
 - `passkeySignUpOptionsUser` success, invalid-email validation, and
@@ -436,13 +439,17 @@ evidence, and matching documentation updates. The new integration suite executes
   challenge, or public-key payload values in partial response data.
 
 Focused GraphQL validation passed after clearing stale Symfony test cache:
-`docker compose exec -T php ./vendor/bin/phpunit tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`
+`docker compose exec -T php ./vendor/bin/phpunit tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`
 passed 13 tests / 176 assertions.
 Targeted PHP Insights validation for the new GraphQL test/support files passed
-Code 100, Complexity 100, Architecture 100, and Style 100. The test quality
-config keeps disallowed `mixed`, style, and type checks active while following
-the existing exclusion pattern for long scenario-style integration tests.
-Targeted Psalm validation for the same files reported no errors.
+Code 100, Complexity 100, Architecture 100, and Style 100 without excluding the
+new passkey GraphQL tests from complexity or function-length rules.
+The broader CI-equivalent `make phpinsights` target also passed after the split:
+PHPMD reported no source or test violations, PHPInsights reported Code 100,
+Architecture 100, Style 100, and green complexity thresholds. Targeted Psalm
+validation for the same files reported no errors, and full `make psalm` reported
+no errors after adding a narrow DI-constructor suppression for the test-only
+`ControllableCommandBus`.
 
 Passkey load validation passed for all option scenarios with smoke, average,
 stress, and spike enabled in the same K6 invocation:

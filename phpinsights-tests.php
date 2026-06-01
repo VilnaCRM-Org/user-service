@@ -85,7 +85,6 @@ return [
             'exclude' => [
                 'src/Shared/Application/Validator/InitialsValidator.php',
                 'src/Shared/Application/Validator/PasswordValidator.php',
-                'tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php',
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
                 'tests/Integration/User/Infrastructure/Repository/CachePerformanceTest.php',
             ],
@@ -93,7 +92,6 @@ return [
         FunctionLengthSniff::class => [
             'exclude' => [
                 'tests/Unit/User/Infrastructure/Repository/CachedUserRepositoryTest.php',
-                'tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php',
                 'tests/Unit/User/Application/EventSubscriber/ConfirmationEmailSendEventSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/EmailChangedEventSubscriberTest.php',
                 'tests/Unit/User/Application/EventSubscriber/UserRegisteredEventSubscriberTest.php',

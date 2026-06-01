@@ -72,7 +72,8 @@ Evidence and standards:
 
 - REST and GraphQL contracts expose the same ceremony sequence: options first,
   browser WebAuthn call, completion second.
-- `PasskeyGraphQLAuthEndpointsIntegrationTest` executes `/api/graphql`
+- The split `PasskeyGraphQLAuth*` / `PasskeyGraphQLCompletion*` integration
+  tests execute `/api/graphql`
   sign-up, sign-in, and authenticated registration options mutations, including
   validation/conflict and privacy-preserving known/unknown sign-in response
   shapes.
@@ -140,9 +141,9 @@ Evidence and standards:
 - REST contracts are documented in API Platform YAML and generated OpenAPI.
 - GraphQL mutations use the existing `AuthPayload` surface and API Platform's
   `Iterable` scalar for nested browser credential JSON.
-- `PasskeyGraphQLAuthEndpointsIntegrationTest` verifies the GraphQL mutation
-  names, runtime response envelope, `publicKey` scalar payloads, completion
-  response shapes, unauthenticated registration rejection, wrong-user challenge
+- The split GraphQL passkey integration tests verify the mutation names,
+  runtime response envelope, `publicKey` scalar payloads, completion response
+  shapes, unauthenticated registration rejection, wrong-user challenge
   rejection, duplicate credential conflict, and reused challenge rejection
   through `/api/graphql`.
 - The same suite asserts completion command mapping for challenge id,
@@ -223,10 +224,12 @@ Evidence and standards:
 - Unit, integration, Behat/API access, OpenAPI/Spectral/Schemathesis, mutation,
   and K6 option-ceremony checks are repeatable through make targets.
 - Passkey GraphQL runtime behavior is covered by
-  `tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`; a
-  test-only command bus decorator is used only where a browser-created
-  WebAuthn attestation/assertion would otherwise be required for deterministic
-  completion response serialization.
+  `tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php`,
+  `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`, and
+  `tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`; a
+  test-only command bus decorator is used only where a browser-created WebAuthn
+  attestation/assertion would otherwise be required for deterministic completion
+  response serialization.
 - Load scripts use stable public APIs and deterministic scenario selection.
 - Browser completion remains browser controlled because the authenticator is the
   security boundary; sanitized transcript files provide immutable evidence for

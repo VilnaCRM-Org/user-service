@@ -16,7 +16,7 @@ Previous strict-gate graph artifact reported as stale before this remediation:
 This file records current-head relationship evidence for the post-graph changes.
 The local Graphify artifact was regenerated with
 `uvx --from graphifyy graphify update . --force --no-cluster`, producing
-`graphify-out/graph.json` with 20,305 nodes and 165,829 edges. Generated
+`graphify-out/graph.json` with 20,345 nodes and 230,796 edges. Generated
 `graphify-out/` artifacts are local review evidence and are not committed. The
 strict BMAD gate also generates a fresh `codebase-graph-impact-context.md` in
 its log directory for the exact head it reviews.
@@ -78,13 +78,17 @@ The strict FR/NFR remediation on 2026-06-01 additionally changed:
 - `specs/passkey-authentication/nfr-catalog-evidence.md`
 - `specs/passkey-authentication/passkey-load-run-20260601T022759Z.sanitized.md`
 - `specs/passkey-authentication/run-summary.md`
-- `tests/Integration/Auth/PasskeyGraphQLAuthEndpointsIntegrationTest.php`
+- `tests/Integration/Auth/PasskeyGraphQLAuthIntegrationTestCase.php`
+- `tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php`
+- `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`
+- `tests/Integration/Auth/PasskeyGraphQLCompletionResponseTest.php`
 - `tests/Shared/Auth/Support/ControllableCommandBus.php`
 
 This delta adds `/api/graphql` passkey ceremony integration coverage, records
 current-head passkey K6 smoke/average/stress/spike evidence, and records a
-current-head Chrome DevTools virtual-authenticator browser rerun without
-changing production runtime services.
+current-head Chrome DevTools virtual-authenticator browser rerun, removes the
+temporary PHPInsights exclusions, and adds a DI-wired test command-bus
+decorator without changing production runtime services.
 
 ## Relationship Edges
 
@@ -133,11 +137,11 @@ Passkey ceremony path:
 - GraphQL passkey mutations use the same passkey application command handlers
   after API Platform resolver dispatch. The new rate-limit AST inspection runs
   before resolver dispatch and only determines limiter target keys.
-- The new `PasskeyGraphQLAuthEndpointsIntegrationTest` exercises the GraphQL
-  passkey mutation envelope through `/api/graphql`; the test-only
-  `ControllableCommandBus` delegates to the real command bus unless a specific
-  test injects deterministic completion results for WebAuthn browser-only
-  response-shape coverage.
+- The split `PasskeyGraphQLAuth*` / `PasskeyGraphQLCompletion*` integration
+  tests exercise the GraphQL passkey mutation envelope through `/api/graphql`;
+  the test-only `ControllableCommandBus` delegates to the real command bus
+  unless a specific test injects deterministic completion results for WebAuthn
+  browser-only response-shape coverage.
 
 Deterministic 2FA recovery-code testability path:
 
