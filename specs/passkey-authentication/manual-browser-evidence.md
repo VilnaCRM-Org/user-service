@@ -10,8 +10,10 @@ credential private material, TOTP secrets, and recovery-code values.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
-- Current source bridge SHA:
-  `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`
+- Current source bridge scope: source-impact bridge from the browser-tested
+  ceremony through the current PR head under BMAD review. The latest pushed
+  pre-remediation head was `d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`; the
+  strict BMAD gate records the exact reviewed head with `git rev-parse HEAD`.
 - Application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Origin: `https://localhost:65443`
@@ -84,6 +86,36 @@ OpenAPI success response schemas. No passkey completion handler behavior changed
 in that commit. Focused unit and integration verification at the bridge SHA
 asserted that browser-safe signup options now include `residentKey=required` and
 `requireResidentKey=true`.
+
+## Current PR Head Bridge
+
+The browser ceremony was not rerun on the current PR head. This section is a
+source-impact bridge from the browser-tested ceremony and the
+`b6ced150d8eacd4e2d59e099e6c72f043c8c875b` bridge through the current PR head
+under BMAD review.
+
+Changes from `b6ced150d8eacd4e2d59e099e6c72f043c8c875b` to
+the current PR head are limited to documentation, BMAD/local-coder setup,
+passkey option load-test evidence, GraphQL rate-limit AST inspection and tests,
+memory coverage inventory, OpenAPI response schema evidence, deterministic
+recovery-code factory testability, strict BMAD parser-adapter remediation, and
+evidence-only updates. The REST browser ceremony paths used by this evidence
+remain the same passkey processors, command handlers, WebAuthn JSON
+transformer, credential validators, challenge claiming, credential persistence,
+token issuance, and existing 2FA pending-session behavior.
+
+The new GraphQL rate-limit parser path applies to `POST /api/graphql` limiter
+target detection before API Platform handles the mutation. It does not change
+REST `/api/passkeys/*` request or response bodies, RP ID/origin validation,
+attestation/assertion verification, challenge TTL/claim semantics, credential
+counter updates, or token/2FA response construction. The recovery-code factory
+change keeps the same random-code contract and adds deterministic unit coverage
+for biased-byte rejection.
+
+Current-head automated evidence for the post-bridge changes is listed in
+`specs/passkey-authentication/run-summary.md`, including focused GraphQL
+rate-limit unit/integration tests, changed-source Infection evidence, PHP
+Insights, Psalm, and diff hygiene checks.
 
 ## Expiration Run
 

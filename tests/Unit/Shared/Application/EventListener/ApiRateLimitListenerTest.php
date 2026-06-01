@@ -9,6 +9,7 @@ use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlDocumentResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
@@ -58,7 +59,9 @@ final class ApiRateLimitListenerTest extends UnitTestCase
 
     public function testThrowsLogicExceptionWhenLimiterNotConfigured(): void
     {
-        $listener = $this->createListener([]);
+        $listener = $this->createListener([
+            'global_api_anonymous' => $this->createLimiterFactoryMock('ip:127.0.0.1', true),
+        ]);
         $event = $this->createRequestEvent('/api/users', 'POST');
 
         $this->expectException(LogicException::class);
@@ -67,10 +70,10 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         $listener($event);
     }
 
-    public function testGlobalLimiterRejectsAfterEndpointLimiterPasses(): void
+    public function testGlobalLimiterRejectsBeforeEndpointLimiterResolution(): void
     {
         $listener = $this->createListener([
-            'registration' => $this->createLimiterFactoryMock('ip:127.0.0.1', true),
+            'registration' => $this->createNeverCalledFactory(),
             'global_api_anonymous' => $this->createLimiterFactoryMock(
                 'ip:127.0.0.1',
                 false,
@@ -85,7 +88,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         $this->assertSame(429, $response->getStatusCode());
     }
 
-    public function testAppliesEndpointLimiterThenGlobalAnonymousLimiter(): void
+    public function testAppliesGlobalAnonymousLimiterThenEndpointLimiter(): void
     {
         $registrationLimiter = $this->createLimiterFactoryMock(
             expectedKey: 'ip:127.0.0.1',
@@ -110,12 +113,12 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     public function testReturnsProblemResponseWhenEndpointLimiterRejects(): void
     {
         $listener = $this->createListener([
+            'global_api_anonymous' => $this->createLimiterFactoryMock('ip:127.0.0.1', true),
             'registration' => $this->createLimiterFactoryMock(
                 'ip:127.0.0.1',
                 false,
                 new DateTimeImmutable('+60 seconds')
             ),
-            'global_api_anonymous' => $this->createNeverCalledFactory(),
         ]);
         $event = $this->createRequestEvent('/api/users', 'POST');
         $listener($event);
@@ -344,7 +347,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         return new ApiRateLimitClientIdentityResolver(
             new ApiRateLimitPayloadValueResolver(
                 $this->createJsonSerializer(),
-                new ApiRateLimitGraphQlQueryInspector()
+                new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
             ),
             $jwtConverter,
         );
@@ -355,7 +358,7 @@ final class ApiRateLimitListenerTest extends UnitTestCase
     ): ApiRateLimitGraphQlAuthTargetResolver {
         return new ApiRateLimitGraphQlAuthTargetResolver(
             $clientIdentityResolver,
-            new ApiRateLimitGraphQlQueryInspector()
+            new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
         );
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlDocumentResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspection;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
 use PHPUnit\Framework\TestCase;
@@ -116,7 +117,9 @@ GRAPHQL,
         string $query,
         ?string $operationName
     ): ?ApiRateLimitGraphQlQueryInspection {
-        return (new ApiRateLimitGraphQlQueryInspector())->inspect($query, $operationName);
+        return (new ApiRateLimitGraphQlQueryInspector(
+            new ApiRateLimitGraphQlDocumentResolver()
+        ))->inspect($query, $operationName);
     }
 
     private function inputObjectDefaultQuery(): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlDocumentResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -186,7 +187,7 @@ GRAPHQL;
     {
         return new ApiRateLimitPayloadValueResolver(
             $this->createJsonSerializer(),
-            new ApiRateLimitGraphQlQueryInspector()
+            new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
         );
     }
 

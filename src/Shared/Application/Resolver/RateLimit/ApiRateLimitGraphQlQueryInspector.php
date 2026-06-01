@@ -7,31 +7,23 @@ namespace App\Shared\Application\Resolver\RateLimit;
 use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\Parser;
 
-/**
- * @SuppressWarnings(PHPMD.StaticAccess)
- */
 final readonly class ApiRateLimitGraphQlQueryInspector
 {
+    public function __construct(
+        private ApiRateLimitGraphQlDocumentResolver $graphQlDocumentResolver,
+    ) {
+    }
+
     public function inspect(
         string $query,
         ?string $operationName
     ): ?ApiRateLimitGraphQlQueryInspection {
-        $document = $this->parseDocument($query);
+        $document = $this->graphQlDocumentResolver->resolve($query);
 
         return $document === null
             ? null
             : $this->findOperationInspection($document, $operationName);
-    }
-
-    private function parseDocument(string $query): ?DocumentNode
-    {
-        try {
-            return Parser::parse($query);
-        } catch (\Throwable) {
-            return null;
-        }
     }
 
     private function findOperationInspection(

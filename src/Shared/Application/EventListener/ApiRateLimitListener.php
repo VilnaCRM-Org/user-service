@@ -36,14 +36,16 @@ final readonly class ApiRateLimitListener
             return;
         }
 
+        $globalTarget = $this->requestMatcher->resolveGlobalLimiter($request);
+        if (!$this->consumeLimiter($event, $globalTarget['name'], $globalTarget['key'])) {
+            return;
+        }
+
         foreach ($this->requestMatcher->resolveEndpointLimiters($request) as $target) {
             if (!$this->consumeLimiter($event, $target['name'], $target['key'])) {
                 return;
             }
         }
-
-        $globalTarget = $this->requestMatcher->resolveGlobalLimiter($request);
-        $this->consumeLimiter($event, $globalTarget['name'], $globalTarget['key']);
     }
 
     private function consumeLimiter(

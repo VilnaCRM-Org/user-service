@@ -115,11 +115,17 @@ Browser ceremony tested SHA:
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`.
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
+Current PR head bridge scope: source-impact bridge through the current PR head
+under BMAD review. Latest pushed pre-remediation head:
+`d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`; the strict BMAD gate records the
+exact reviewed head with `git rev-parse HEAD`.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
 Durable sanitized browser transcript:
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`.
+Current-head graph and relationship evidence:
+`specs/passkey-authentication/current-head-impact-context.md`.
 
 - Serializer repro workspace identity: `git rev-parse HEAD` returned
   `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`.
@@ -188,6 +194,48 @@ config/services.yaml`, `bin/console lint:container`,
   GraphQL sign-up mutations to the registration limiter and passkey GraphQL
   sign-in mutations to the sign-in IP/email limiters. Focused verification:
   `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
+- Current-head graph evidence was refreshed with Graphify
+  (`uvx --from graphifyy graphify update . --force --no-cluster`) and recorded
+  in `graphify-out/graph.json` with 20,236 nodes and 35,311 edges. Relationship
+  notes were added in
+  `specs/passkey-authentication/current-head-impact-context.md` for
+  post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
+  test, documentation, dependency, and strict BMAD parser-adapter changes.
+  Generated `graphify-out/` artifacts are local review evidence and are not
+  committed.
+- Current-head manual-browser bridge evidence was added to
+  `specs/passkey-authentication/manual-browser-evidence.md`. It does not claim a
+  browser rerun on the current PR head; it records the source-impact reason the
+  post-bridge GraphQL rate-limit, deterministic recovery-code, strict parser
+  adapter, and evidence-only changes do not alter the REST WebAuthn ceremony
+  behavior.
+- BMAD strict remediation on 2026-06-01 removed the forbidden PHPMD
+  static-access suppression from `ApiRateLimitGraphQlQueryInspector` by
+  extracting Webonyx document parsing to the injected
+  `ApiRateLimitGraphQlDocumentResolver`. The same remediation consumes the
+  global API limiter before endpoint-specific limiter resolution, so anonymous
+  GraphQL parsing work is behind the cheap global throttle as well as the
+  existing 64KB request-body cap and Webonyx parser recursion limit. Focused
+  verification after clearing stale Symfony test cache passed:
+  `ApiRateLimitGraphQlQueryInspectionTest`,
+  `ApiRateLimitGraphQlQueryInspectionDefaultValueTest`,
+  `ApiRateLimitPayloadValueResolverTest`,
+  `ApiRateLimitPayloadValueResolverInvalidGraphQlFallbackTest`,
+  `ApiRateLimitRequestResolverGraphQlLimitersTest`,
+  `ApiRateLimitRequestResolverGraphQlFragmentLimitersTest`,
+  `ApiRateLimitListenerIntegrationTest`, and `ApiRateLimitListenerTest`: 100
+  tests / 312 assertions.
+- Static and quality verification for the strict remediation passed on
+  2026-06-01 UTC: `make phpmd` reported 0 source violations and 0 test
+  violations; `make phpinsights` reported source Code 100, Complexity 97.2,
+  Architecture 100, Style 100 and tests Code 100, Complexity 97.8,
+  Architecture 100, Style 100; `make psalm` reported no errors; `git diff
+  --check` and `git diff --cached --check` passed.
+- Focused mutation verification for the GraphQL rate-limit parser path passed:
+  100 PHPUnit coverage tests / 312 assertions, then Infection generated 148
+  mutants for `ApiRateLimitListener` plus the GraphQL parser/resolver path, with
+  121 killed and 27 timed out. MSI, mutation code coverage, and covered code MSI
+  were all 100%.
 
 ## Mandatory Skill Gate
 

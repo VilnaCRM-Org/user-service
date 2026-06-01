@@ -9,8 +9,10 @@ evidence required for BMAD FR/NFR sign-off.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
-- Current source bridge SHA:
-  `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`
+- Current source bridge scope: source-impact bridge from the browser-tested
+  ceremony through the current PR head under BMAD review. The latest pushed
+  pre-remediation head was `d7b6e4cae5dc744df3c4cfb460a7d1c39da4611e`; the
+  strict BMAD gate records the exact reviewed head with `git rev-parse HEAD`.
 - Environment URL: `https://localhost:65443`
 - Browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -26,6 +28,12 @@ evidence required for BMAD FR/NFR sign-off.
   expiration run challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`; focused PHPUnit and
   configuration commands listed in `run-summary.md`
 - Overall result: Pass
+
+Current PR head note: the browser scenarios below were not rerun on the current
+PR head. The current-head bridge is captured in
+`specs/passkey-authentication/manual-browser-evidence.md` and is based on
+source-impact review plus automated coverage for changes after
+`b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 
 ## Preconditions
 
