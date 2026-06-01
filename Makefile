@@ -381,7 +381,6 @@ new-logs: ## Show live logs
 
 start: ## Start docker
 	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
-	$(MAKE) build-k6-docker
 	$(MAKE) build-spectral-docker
 
 start-memory-tests: ## Start only services required for memory leak tests

@@ -41,7 +41,7 @@ for (( i=0; i<clientPoolSize; i++ )); do
     fi
 
     # Create new client
-    if ! eval "${SYMFONY}" league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" --redirect-uri "${clientRedirectUri}"; then
+    if ! eval "${SYMFONY}" league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" --redirect-uri "${clientRedirectUri}" --grant-type client_credentials; then
         echo "Error: Failed to create client ${poolClientID}."
         exit 1
     fi

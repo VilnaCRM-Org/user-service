@@ -1,8 +1,10 @@
+import { b64encode } from 'k6/encoding';
 import http from 'k6/http';
 import counter from 'k6/x/counter';
+
+import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 import ScenarioUtils from '../../utils/scenarioUtils.js';
 import Utils from '../../utils/utils.js';
-import MailCatcherUtils from '../../utils/mailCatcherUtils.js';
 
 const scenarioName = 'oauth';
 
@@ -14,6 +16,15 @@ const oauthClientPoolSize = 20;
 
 function resolvePooledCredential(baseValue, poolIndex) {
   return poolIndex === 0 ? baseValue : `${baseValue}-${poolIndex}`;
+}
+
+function getJsonHeaderWithBasicAuth(clientId, clientSecret) {
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${b64encode(`${clientId}:${clientSecret}`)}`,
+    },
+  };
 }
 
 export const options = scenarioUtils.getOptions();
@@ -29,15 +40,17 @@ export default function getAccessToken() {
 
   const payload = JSON.stringify({
     grant_type: grantType,
-    client_id: clientId,
-    client_secret: clientSecret,
   });
 
-  const response = http.post(`${utils.getBaseUrl()}/oauth/token`, payload, utils.getJsonHeader());
+  const response = http.post(
+    `${utils.getBaseUrl()}/oauth/token`,
+    payload,
+    getJsonHeaderWithBasicAuth(clientId, clientSecret)
+  );
 
   utils.checkResponse(response, 'is status 200', res => res.status === 200);
 }
 
-export function teardown(data) {
+export function teardown() {
   mailCatcherUtils.clearMessages();
 }
