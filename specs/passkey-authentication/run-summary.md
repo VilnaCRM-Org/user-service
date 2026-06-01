@@ -274,8 +274,8 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-01 20:47:15 +0300
-  after the workflow and BMAD-runner changes with 22,647 nodes and 623,199
+  and recorded in `graphify-out/graph.json` on 2026-06-01 21:04:03 +0300
+  after the workflow and BMAD-runner changes with 20,436 nodes and 35,747
   edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
