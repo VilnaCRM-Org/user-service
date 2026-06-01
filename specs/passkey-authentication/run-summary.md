@@ -22,7 +22,7 @@ Issue #221: add passkey-based authentication support for sign-in and sign-up.
   `_bmad/ directory present`, `ralph_loop.sh present and has content`,
   `.ralph/lib/ directory present`, `_bmad/COMMANDS.md present`,
   `_bmad/lite/create-prd.md present`, and `version marker matches:
-  v2.11.0`.
+v2.11.0`.
 - Before transition, `bmalph -C . status --json` reported Phase 3
   `Solutioning`, status `planning`, artifact directory `docs/planning`, found
   `architecture.md`, `epics.md`, `implementation-readiness.md`, and `prd.md`,
