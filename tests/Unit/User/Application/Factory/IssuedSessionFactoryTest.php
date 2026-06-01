@@ -124,7 +124,7 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         );
     }
 
-    public function testCreateLogsLookupAndSessionRollbackFailuresAndPreservesIssuanceFailure(): void
+    public function testCreateLogsLookupAndSessionRollbackFailures(): void
     {
         $failure = new RuntimeException('JWT signing failed.');
         $lookupFailure = new RuntimeException('Refresh token lookup failed.');
@@ -151,15 +151,9 @@ final class IssuedSessionFactoryTest extends UnitTestCase
      */
     private function arrangeAccessTokenFailureRollback(RuntimeException $failure): array
     {
-        $userId = $this->faker->uuid();
-        $sessionId = $this->faker->uuid();
-        $issuedAt = new DateTimeImmutable();
-        $session = $this->createMock(AuthSession::class);
+        [$userId, $sessionId, $issuedAt, $session, $user] = $this->createFailureFixtures();
         $refreshToken = $this->createMock(AuthRefreshToken::class);
-        $user = $this->createMock(User::class);
 
-        $user->method('getId')->willReturn($userId);
-        $session->method('getId')->willReturn($sessionId);
         $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
         $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
         $this->expectSessionRollback($sessionId, $session, $refreshToken);
@@ -174,16 +168,10 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         RuntimeException $failure,
         RuntimeException $rollbackFailure
     ): array {
-        $userId = $this->faker->uuid();
-        $sessionId = $this->faker->uuid();
-        $issuedAt = new DateTimeImmutable();
-        $session = $this->createMock(AuthSession::class);
+        [$userId, $sessionId, $issuedAt, $session, $user] = $this->createFailureFixtures();
         $refreshToken = $this->createMock(AuthRefreshToken::class);
         $secondRefreshToken = $this->createMock(AuthRefreshToken::class);
-        $user = $this->createMock(User::class);
 
-        $user->method('getId')->willReturn($userId);
-        $session->method('getId')->willReturn($sessionId);
         $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
         $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
         $this->expectFailingTokenRollback(
@@ -206,15 +194,9 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         RuntimeException $lookupFailure,
         RuntimeException $sessionDeleteFailure
     ): array {
-        $userId = $this->faker->uuid();
-        $sessionId = $this->faker->uuid();
-        $issuedAt = new DateTimeImmutable();
-        $session = $this->createMock(AuthSession::class);
+        [$userId, $sessionId, $issuedAt, $session, $user] = $this->createFailureFixtures();
         $refreshToken = $this->createMock(AuthRefreshToken::class);
-        $user = $this->createMock(User::class);
 
-        $user->method('getId')->willReturn($userId);
-        $session->method('getId')->willReturn($sessionId);
         $this->arrangeSessionCreation($sessionId, $userId, $issuedAt, false, $session);
         $this->arrangeFailingAccessTokenCreation($userId, $refreshToken, $failure);
         $this->expectFailingLookupAndSessionRollback(
@@ -223,9 +205,36 @@ final class IssuedSessionFactoryTest extends UnitTestCase
             $lookupFailure,
             $sessionDeleteFailure
         );
-        $this->expectRollbackFailureLog($sessionId, $failure, [$lookupFailure, $sessionDeleteFailure]);
+        $this->expectRollbackFailureLog(
+            $sessionId,
+            $failure,
+            [$lookupFailure, $sessionDeleteFailure]
+        );
 
         return [$user, $issuedAt];
+    }
+
+    /**
+     * @return array{
+     *     string,
+     *     string,
+     *     DateTimeImmutable,
+     *     AuthSession&MockObject,
+     *     User&MockObject
+     * }
+     */
+    private function createFailureFixtures(): array
+    {
+        $userId = $this->faker->uuid();
+        $sessionId = $this->faker->uuid();
+        $issuedAt = new DateTimeImmutable();
+        $session = $this->createMock(AuthSession::class);
+        $user = $this->createMock(User::class);
+
+        $user->method('getId')->willReturn($userId);
+        $session->method('getId')->willReturn($sessionId);
+
+        return [$userId, $sessionId, $issuedAt, $session, $user];
     }
 
     private function arrangeFailingAccessTokenCreation(
@@ -286,35 +295,71 @@ final class IssuedSessionFactoryTest extends UnitTestCase
         RuntimeException $failure,
         array $rollbackFailures
     ): void {
-        $rollbackExceptionClasses = array_map(
-            static fn (RuntimeException $exception): string => $exception::class,
-            $rollbackFailures
-        );
-        $rollbackExceptionMessages = array_map(
-            static fn (RuntimeException $exception): string => $exception->getMessage(),
-            $rollbackFailures
-        );
-
         $this->logger->expects($this->once())
             ->method('error')
             ->with(
                 'Session issuance rollback failed',
-                $this->callback(static function (array $context) use (
+                $this->identicalTo($this->rollbackFailureLogContext(
                     $sessionId,
                     $failure,
-                    $rollbackFailures,
-                    $rollbackExceptionClasses,
-                    $rollbackExceptionMessages
-                ): bool {
-                    return $context['session_id'] === $sessionId
-                        && $context['issuance_exception_class'] === $failure::class
-                        && $context['rollback_failure_count'] === count($rollbackFailures)
-                        && $context['rollback_exception_classes'] === $rollbackExceptionClasses
-                        && $context['rollback_exception_messages'] === $rollbackExceptionMessages
-                        && $context['rollback_exceptions'] === $rollbackFailures
-                        && $context['exception'] === $rollbackFailures[0];
-                })
+                    $rollbackFailures
+                ))
             );
+    }
+
+    /**
+     * @param list<RuntimeException> $rollbackFailures
+     *
+     * @return array{
+     *     session_id: string,
+     *     issuance_exception_class: class-string<RuntimeException>,
+     *     rollback_failure_count: int,
+     *     rollback_exception_classes: list<class-string<RuntimeException>>,
+     *     rollback_exception_messages: list<string>,
+     *     rollback_exceptions: list<RuntimeException>,
+     *     exception: RuntimeException
+     * }
+     */
+    private function rollbackFailureLogContext(
+        string $sessionId,
+        RuntimeException $failure,
+        array $rollbackFailures
+    ): array {
+        return [
+            'session_id' => $sessionId,
+            'issuance_exception_class' => $failure::class,
+            'rollback_failure_count' => count($rollbackFailures),
+            'rollback_exception_classes' => $this->exceptionClasses($rollbackFailures),
+            'rollback_exception_messages' => $this->exceptionMessages($rollbackFailures),
+            'rollback_exceptions' => $rollbackFailures,
+            'exception' => $rollbackFailures[0],
+        ];
+    }
+
+    /**
+     * @param list<RuntimeException> $exceptions
+     *
+     * @return list<class-string<RuntimeException>>
+     */
+    private function exceptionClasses(array $exceptions): array
+    {
+        return array_map(
+            static fn (RuntimeException $exception): string => $exception::class,
+            $exceptions
+        );
+    }
+
+    /**
+     * @param list<RuntimeException> $exceptions
+     *
+     * @return list<string>
+     */
+    private function exceptionMessages(array $exceptions): array
+    {
+        return array_map(
+            static fn (RuntimeException $exception): string => $exception->getMessage(),
+            $exceptions
+        );
     }
 
     private function expectFailingLookupAndSessionRollback(

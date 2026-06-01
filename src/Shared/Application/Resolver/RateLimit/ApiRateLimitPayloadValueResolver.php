@@ -221,7 +221,7 @@ final readonly class ApiRateLimitPayloadValueResolver
         array $keys
     ): ?string {
         foreach ($keys as $key) {
-            $pattern = '/\b' . preg_quote($key, '/') . '\s*:\s*\$([A-Za-z_][A-Za-z0-9_]*)\b/';
+            $pattern = '/\b' . preg_quote($key, '/') . '\s*:\s*\$([A-Za-z_]\w*)\b/';
             if (preg_match($pattern, $query, $matches) !== 1) {
                 continue;
             }
