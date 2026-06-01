@@ -316,7 +316,7 @@ abstract class PasskeyGraphQLAuthIntegrationTestCase extends IntegrationTestCase
     {
         $plainPassword = $this->faker->password(12, 20);
         $user = $this->userFactory->create(
-            $this->faker->unique()->safeEmail(),
+            sprintf('%s@example.test', $this->faker->uuid()),
             strtoupper($this->faker->lexify('??')),
             $plainPassword,
             $this->uuidTransformer->transformFromString($this->faker->uuid())
