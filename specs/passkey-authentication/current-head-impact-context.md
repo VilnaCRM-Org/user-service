@@ -253,7 +253,7 @@ Load-test CI path:
   -> `docker-compose.load-tests.yml` isolated stack
   -> `make setup-load-test-db`
   -> collections and standard MongoDB indexes, with search-index processing
-     skipped because this service has no mapped search indexes
+  skipped because this service has no mapped search indexes
   -> `tests/Load/run-load-tests.sh`
   -> smoke, average, stress, and spike profiles for
   `passkeySignupOptions`, `passkeySigninOptions`, and

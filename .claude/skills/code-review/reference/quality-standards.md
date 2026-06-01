@@ -43,15 +43,15 @@ make ci  # MUST show "✅ CI checks successfully passed!"
 
 **Invoke the appropriate skill** based on failure type:
 
-| Failure                | Invoke Skill              |
-| ---------------------- | ------------------------- |
-| Complexity issues      | `complexity-management`   |
-| Architecture violation | `deptrac-fixer`           |
-| Test failures          | `testing-workflow`        |
-| Requirement matrix gap | `testing-workflow`        |
-| Flaky-test risk        | `testing-workflow`        |
+| Failure                | Invoke Skill                                   |
+| ---------------------- | ---------------------------------------------- |
+| Complexity issues      | `complexity-management`                        |
+| Architecture violation | `deptrac-fixer`                                |
+| Test failures          | `testing-workflow`                             |
+| Requirement matrix gap | `testing-workflow`                             |
+| Flaky-test risk        | `testing-workflow`                             |
 | Quality attribute gap  | `quality-standards` plus relevant domain skill |
-| See complete mapping   | `quality-standards` skill |
+| See complete mapping   | `quality-standards` skill                      |
 
 ## PR Review-Specific Scenarios
 
