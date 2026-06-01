@@ -18,8 +18,9 @@ use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * @phpstan-type JsonScalar bool|float|int|string|null
- * @phpstan-type JsonObject array<string, mixed>
- * @phpstan-type JsonBody array<string, mixed>
+ * @phpstan-type JsonValue JsonScalar|array<array-key, JsonScalar|array<array-key, JsonScalar>>
+ * @phpstan-type JsonObject array<string, JsonValue>
+ * @phpstan-type JsonBody array<string, JsonValue>
  * @phpstan-type JsonResponse array{response: Response, body: JsonBody}
  */
 final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
@@ -96,46 +97,53 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
     {
         $owner = $this->createUser($this->faker->unique()->safeEmail());
         $otherUser = $this->createUser($this->faker->unique()->safeEmail());
+        $payload = $this->createRegistrationCompletePayload($owner);
+
+        $this->assertRegistrationCompleteFails(
+            $otherUser,
+            $payload,
+            'Invalid or expired passkey challenge.'
+        );
+        $this->assertRegistrationCompleteFails(
+            $owner,
+            $payload,
+            'Invalid passkey credential.'
+        );
+    }
+
+    /**
+     * @return JsonBody
+     */
+    private function createRegistrationCompletePayload(User $owner): array
+    {
         $options = $this->requestEmptyJsonObject(
             '/api/passkeys/register/options',
             $this->createAuthenticatedHeaders($owner->getId())
         );
-        $challengeId = $this->requireStringKey($options['body'], 'challenge_id');
-        $payload = [
-            'challengeId' => $challengeId,
+
+        return [
+            'challengeId' => $this->requireStringKey($options['body'], 'challenge_id'),
             'credential' => $this->createCredentialInput(),
             'label' => $this->faker->words(2, true),
         ];
+    }
 
-        $wrongUserResponse = $this->requestJson(
+    /**
+     * @param JsonBody $payload
+     */
+    private function assertRegistrationCompleteFails(
+        User $user,
+        array $payload,
+        string $detail
+    ): void {
+        $response = $this->requestJson(
             '/api/passkeys/register/complete',
             $payload,
-            $this->createAuthenticatedHeaders($otherUser->getId())
+            $this->createAuthenticatedHeaders($user->getId())
         );
 
-        $this->assertSame(
-            Response::HTTP_UNAUTHORIZED,
-            $wrongUserResponse['response']->getStatusCode()
-        );
-        $this->assertSame(
-            'Invalid or expired passkey challenge.',
-            $wrongUserResponse['body']['detail'] ?? null
-        );
-
-        $ownerResponse = $this->requestJson(
-            '/api/passkeys/register/complete',
-            $payload,
-            $this->createAuthenticatedHeaders($owner->getId())
-        );
-
-        $this->assertSame(
-            Response::HTTP_UNAUTHORIZED,
-            $ownerResponse['response']->getStatusCode()
-        );
-        $this->assertSame(
-            'Invalid passkey credential.',
-            $ownerResponse['body']['detail'] ?? null
-        );
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response['response']->getStatusCode());
+        $this->assertSame($detail, $response['body']['detail'] ?? null);
     }
 
     /**

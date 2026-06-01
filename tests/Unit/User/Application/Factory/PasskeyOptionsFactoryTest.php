@@ -16,18 +16,9 @@ use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
-
-use function array_column;
-
 use Cose\Algorithms;
 use DateTimeImmutable;
-
-use const JSON_THROW_ON_ERROR;
-
 use PHPUnit\Framework\MockObject\MockObject;
-
-use function strlen;
-
 use Webauthn\AuthenticatorSelectionCriteria;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -170,7 +161,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
                 Algorithms::COSE_ALGORITHM_ES256,
                 Algorithms::COSE_ALGORITHM_RS256,
             ],
-            array_column($publicKey['pubKeyCredParams'], 'alg')
+            \array_column($publicKey['pubKeyCredParams'], 'alg')
         );
     }
 
@@ -244,7 +235,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
 
     private function assertChallengeHasThirtyTwoBytes(PasskeyChallenge $challenge): void
     {
-        self::assertSame(32, strlen($this->encoding->decode($challenge->getChallenge())));
+        self::assertSame(32, \strlen($this->encoding->decode($challenge->getChallenge())));
     }
 
     private function createCredential(string $credentialId): PasskeyCredential
@@ -253,7 +244,7 @@ final class PasskeyOptionsFactoryTest extends UnitTestCase
             $this->faker->uuid(),
             $this->userId,
             $credentialId,
-            json_encode(['record' => $this->faker->boolean()], JSON_THROW_ON_ERROR),
+            json_encode(['record' => $this->faker->boolean()], \JSON_THROW_ON_ERROR),
             $this->faker->words(2, true),
             new DateTimeImmutable()
         );

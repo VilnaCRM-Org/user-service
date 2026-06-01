@@ -12,13 +12,7 @@ use App\User\Application\Factory\PasskeyWebauthnFactoryInterface;
 use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Application\Transformer\PasskeyJsonTransformer;
 use App\User\Domain\Entity\PasskeyCredential;
-
-use function array_map;
-
 use DateTimeImmutable;
-
-use const JSON_THROW_ON_ERROR;
-
 use ReflectionProperty;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
@@ -283,7 +277,7 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
         $steps = $this->readPrivateProperty($manager, 'steps');
         self::assertIsArray($steps);
 
-        $stepClasses = array_map(static fn (object $step): string => $step::class, $steps);
+        $stepClasses = \array_map(static fn (object $step): string => $step::class, $steps);
         self::assertContains(CheckAllowedOrigins::class, $stepClasses);
         self::assertNotContains(CheckOrigin::class, $stepClasses);
     }
@@ -317,7 +311,7 @@ final class PasskeyJsonTransformerTest extends UnitTestCase
             'type' => 'webauthn.get',
             'challenge' => $this->encoding->encode($this->faker->sha256()),
             'origin' => 'https://localhost',
-        ], JSON_THROW_ON_ERROR);
+        ], \JSON_THROW_ON_ERROR);
     }
 
     private function createAuthenticatorData(): string

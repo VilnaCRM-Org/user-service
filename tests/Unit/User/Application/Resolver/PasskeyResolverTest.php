@@ -119,95 +119,6 @@ final class PasskeyResolverTest extends UnitTestCase
         );
     }
 
-    public function testResolveRegistrationForUserClaimsChallengeForCurrentUser(): void
-    {
-        $challenge = $this->createRegistrationChallenge($this->userId);
-        $this->challengeRepository->expects($this->once())
-            ->method('claimActiveForUser')
-            ->with(
-                $this->challengeId,
-                PasskeyChallenge::PURPOSE_REGISTRATION,
-                $this->userId,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
-            ->willReturnCallback(static function (
-                string $id,
-                string $purpose,
-                string $userId,
-                DateTimeImmutable $consumedAt
-            ) use ($challenge): PasskeyChallenge {
-                $challenge->consume($consumedAt);
-
-                return $challenge;
-            });
-
-        self::assertSame(
-            $challenge,
-            $this->createChallengeResolver()->resolveRegistrationForUser(
-                $this->challengeId,
-                $this->userId
-            )
-        );
-        self::assertTrue($challenge->isConsumed());
-    }
-
-    public function testResolveRegistrationClaimsRegistrationChallenge(): void
-    {
-        $challenge = $this->createRegistrationChallenge($this->userId);
-        $this->challengeRepository->expects($this->once())
-            ->method('claimActive')
-            ->with(
-                $this->challengeId,
-                PasskeyChallenge::PURPOSE_REGISTRATION,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
-            ->willReturn($challenge);
-
-        self::assertSame(
-            $challenge,
-            $this->createChallengeResolver()->resolveRegistration($this->challengeId)
-        );
-    }
-
-    public function testResolveRegistrationForUserRejectsMissingUserBoundClaim(): void
-    {
-        $this->challengeRepository->expects($this->once())
-            ->method('claimActiveForUser')
-            ->with(
-                $this->challengeId,
-                PasskeyChallenge::PURPOSE_REGISTRATION,
-                $this->otherUserId,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
-            ->willReturn(null);
-
-        $this->expectInvalidChallenge();
-
-        $this->createChallengeResolver()->resolveRegistrationForUser(
-            $this->challengeId,
-            $this->otherUserId
-        );
-    }
-
-    public function testAssertBelongsToUserAllowsOwner(): void
-    {
-        $challenge = $this->createRegistrationChallenge($this->userId);
-
-        $this->createChallengeResolver()->assertBelongsToUser($challenge, $this->userId);
-
-        self::assertSame($this->userId, $challenge->getUserId());
-    }
-
-    public function testAssertBelongsToUserRejectsAnotherUser(): void
-    {
-        $this->expectInvalidChallenge();
-
-        $this->createChallengeResolver()->assertBelongsToUser(
-            $this->createRegistrationChallenge($this->userId),
-            $this->otherUserId
-        );
-    }
-
     public function testResolveForUserReturnsCredentialOwnedByUser(): void
     {
         $credential = $this->createCredential($this->userId);
@@ -398,21 +309,6 @@ final class PasskeyResolverTest extends UnitTestCase
                 $this->displayName,
                 $userId === self::DEFAULT_VALUE ? $this->userId : $userId
             )
-        );
-    }
-
-    private function createRegistrationChallenge(string $userId): PasskeyChallenge
-    {
-        $createdAt = new DateTimeImmutable();
-
-        return new PasskeyChallenge(
-            $this->challengeId,
-            PasskeyChallenge::PURPOSE_REGISTRATION,
-            $this->challenge,
-            $this->optionsJson(),
-            $createdAt,
-            $createdAt->modify('+5 minutes'),
-            new PasskeyChallengeContext($this->email, userId: $userId)
         );
     }
 

@@ -17,9 +17,6 @@ use App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver;
 use App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver;
 use App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver;
 use App\User\Application\Validator\MutationInputValidator;
-
-use function array_merge;
-
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -37,7 +34,7 @@ final class PasskeyAuthMutationResolverConstructionTest extends UnitTestCase
      */
     private function createResolvers(): array
     {
-        return array_merge(
+        return \array_merge(
             $this->createSignUpResolvers(),
             $this->createSignInResolvers(),
             $this->createRegistrationResolvers()

@@ -30,6 +30,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->never())->method('persist');
         $documentManager->expects($this->never())->method('flush');
+        $documentManager->expects($this->never())->method('detach');
 
         $manager = new AccessTokenManager($documentManager, false);
 
@@ -62,13 +63,28 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
         $this->assertSame($accessToken, $manager->find($identifier));
     }
 
-    public function testSavePersistsAccessTokenWhenPersistenceEnabled(): void
+    public function testSaveDetachesClientCredentialsAccessTokenWhenPersistenceEnabled(): void
     {
-        $accessToken = $this->makeAccessToken();
+        $accessToken = $this->makeAccessToken(null);
 
         $documentManager = $this->createMock(DocumentManager::class);
         $documentManager->expects($this->once())->method('persist')->with($accessToken);
         $documentManager->expects($this->once())->method('flush');
+        $documentManager->expects($this->once())->method('detach')->with($accessToken);
+
+        $manager = new AccessTokenManager($documentManager, true);
+
+        $manager->save($accessToken);
+    }
+
+    public function testSaveKeepsUserBoundAccessTokenManagedWhenPersistenceEnabled(): void
+    {
+        $accessToken = $this->makeAccessToken($this->faker->uuid());
+
+        $documentManager = $this->createMock(DocumentManager::class);
+        $documentManager->expects($this->once())->method('persist')->with($accessToken);
+        $documentManager->expects($this->once())->method('flush');
+        $documentManager->expects($this->never())->method('detach');
 
         $manager = new AccessTokenManager($documentManager, true);
 
@@ -117,7 +133,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
         $this->assertSame([$tokenAId, $tokenBId], $captures['remove']['in']['identifier']);
     }
 
-    private function makeAccessToken(): AccessToken
+    private function makeAccessToken(?string $userIdentifier = 'test-user'): AccessToken
     {
         $client = new Client(
             $this->faker->company(),
@@ -129,7 +145,7 @@ final class AccessTokenManagerTest extends OAuthInfrastructureTestCase
             $this->faker->lexify('token_????????'),
             new DateTimeImmutable('+1 hour'),
             $client,
-            $this->faker->optional()->userName(),
+            $userIdentifier,
             [new Scope($this->faker->lexify('scope_????'))]
         );
     }

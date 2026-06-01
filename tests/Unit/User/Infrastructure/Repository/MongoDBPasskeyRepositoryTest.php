@@ -97,7 +97,6 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
     public function testChallengeRepositoryClaimsActiveChallengeForUserAtomically(): void
     {
         $challenge = $this->createChallenge(PasskeyChallenge::PURPOSE_REGISTRATION);
-        $claimedAt = new DateTimeImmutable();
         $this->expectRegistryFor(PasskeyChallenge::class);
         $repository = $this->createChallengeRepositoryWithClaimResult(
             1,
@@ -116,7 +115,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
                 $this->challengeId,
                 PasskeyChallenge::PURPOSE_REGISTRATION,
                 $this->userId,
-                $claimedAt
+                new DateTimeImmutable()
             )
         );
     }
@@ -201,7 +200,7 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
 
     /**
      * @param list<string>     $expectedFields
-     * @param list<mixed>|null $expectedEquals
+     * @param list<string|null>|null $expectedEquals
      */
     private function createChallengeRepositoryWithClaimResult(
         int $updateResult,
@@ -226,23 +225,32 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
             $expectedFields,
             $expectedEquals
         );
-        if ($challenge instanceof PasskeyChallenge) {
-            $repository->expects($this->once())
-                ->method('find')
-                ->with($this->challengeId)
-                ->willReturn($challenge);
-        } else {
-            $repository->expects($this->never())->method('find');
-        }
+        $this->expectChallengeLookup($repository, $challenge);
 
         self::assertInstanceOf(MongoDBPasskeyChallengeRepository::class, $repository);
 
         return $repository;
     }
 
+    private function expectChallengeLookup(
+        MongoDBPasskeyChallengeRepository&MockObject $repository,
+        ?PasskeyChallenge $challenge
+    ): void {
+        if ($challenge instanceof PasskeyChallenge) {
+            $repository->expects($this->once())
+                ->method('find')
+                ->with($this->challengeId)
+                ->willReturn($challenge);
+
+            return;
+        }
+
+        $repository->expects($this->never())->method('find');
+    }
+
     /**
-     * @param list<string> $expectedFields
-     * @param list<mixed>  $expectedEquals
+     * @param list<string>      $expectedFields
+     * @param list<string|null> $expectedEquals
      */
     private function stubChallengeClaimQuery(
         Builder $queryBuilder,
@@ -254,6 +262,26 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $fieldNames = [];
         $equalsValues = [];
         $queryBuilder->expects($this->once())->method('updateOne')->willReturnSelf();
+        $this->stubChallengeFieldCapture($queryBuilder, $fieldNames);
+        $this->stubChallengeEqualsCapture($queryBuilder, $equalsValues);
+        $queryBuilder->method('gte')->willReturnSelf();
+        $queryBuilder->method('set')->willReturnSelf();
+        $queryBuilder->method('getQuery')->willReturn($query);
+        $this->stubChallengeClaimExecution(
+            $query,
+            $fieldNames,
+            $equalsValues,
+            $expectedFields,
+            $expectedEquals,
+            $updateResult
+        );
+    }
+
+    /**
+     * @param list<string> $fieldNames
+     */
+    private function stubChallengeFieldCapture(Builder $queryBuilder, array &$fieldNames): void
+    {
         $queryBuilder->method('field')
             ->willReturnCallback(
                 static function (string $field) use (&$fieldNames, $queryBuilder): Builder {
@@ -262,20 +290,46 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
                     return $queryBuilder;
                 }
             );
+    }
+
+    /**
+     * @param list<string|null> $equalsValues
+     */
+    private function stubChallengeEqualsCapture(Builder $queryBuilder, array &$equalsValues): void
+    {
         $queryBuilder->method('equals')
             ->willReturnCallback(
-                static function (mixed $value) use (&$equalsValues, $queryBuilder): Builder {
+                static function (?string $value) use (&$equalsValues, $queryBuilder): Builder {
                     $equalsValues[] = $value;
 
                     return $queryBuilder;
                 }
             );
-        $queryBuilder->method('gte')->willReturnSelf();
-        $queryBuilder->method('set')->willReturnSelf();
-        $queryBuilder->method('getQuery')->willReturn($query);
+    }
+
+    /**
+     * @param list<string>      $fieldNames
+     * @param list<string|null> $equalsValues
+     * @param list<string>      $expectedFields
+     * @param list<string|null> $expectedEquals
+     */
+    private function stubChallengeClaimExecution(
+        Query $query,
+        array &$fieldNames,
+        array &$equalsValues,
+        array $expectedFields,
+        array $expectedEquals,
+        int $updateResult
+    ): void {
         $query->method('execute')
             ->willReturnCallback(
-                static function () use (&$fieldNames, &$equalsValues, $expectedFields, $expectedEquals, $updateResult): int {
+                static function () use (
+                    &$fieldNames,
+                    &$equalsValues,
+                    $expectedFields,
+                    $expectedEquals,
+                    $updateResult
+                ): int {
                     self::assertSame($expectedFields, $fieldNames);
                     self::assertSame($expectedEquals, $equalsValues);
 

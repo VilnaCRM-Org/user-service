@@ -13,7 +13,6 @@
         <ignoreFiles>
             <directory name="vendor"/>
             <directory name="tests/CLI"/>
-            <directory name="tests/Load/node_modules"/>
         </ignoreFiles>
     </projectFiles>
     <plugins>

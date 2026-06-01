@@ -43,6 +43,10 @@ final class AccessTokenManager implements AccessTokenManagerInterface
 
         $this->documentManager->persist($accessToken);
         $this->documentManager->flush();
+
+        if ($accessToken->getUserIdentifier() === null) {
+            $this->documentManager->detach($accessToken);
+        }
     }
 
     /**

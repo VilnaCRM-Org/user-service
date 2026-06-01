@@ -26,8 +26,10 @@ final readonly class PasskeyChallengeResolver
         return $this->resolveActive($challengeId, PasskeyChallenge::PURPOSE_REGISTRATION);
     }
 
-    public function resolveRegistrationForUser(string $challengeId, string $userId): PasskeyChallenge
-    {
+    public function resolveRegistrationForUser(
+        string $challengeId,
+        string $userId
+    ): PasskeyChallenge {
         $now = new DateTimeImmutable();
         $challenge = $this->challengeRepository->claimActiveForUser(
             $challengeId,

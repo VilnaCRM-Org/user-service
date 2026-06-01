@@ -40,9 +40,6 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\ValueObject\PasskeyChallengeContext;
 use DateTimeImmutable;
-
-use const JSON_THROW_ON_ERROR;
-
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -500,7 +497,7 @@ final class PasskeyProcessorTest extends UnitTestCase
             $this->fixture['challengeId'],
             PasskeyChallenge::PURPOSE_AUTHENTICATION,
             $this->faker->sha256(),
-            json_encode(['challenge' => $this->faker->sha256()], JSON_THROW_ON_ERROR),
+            json_encode(['challenge' => $this->faker->sha256()], \JSON_THROW_ON_ERROR),
             $createdAt,
             $createdAt->modify('+5 minutes'),
             new PasskeyChallengeContext($this->fixture['email'], userId: $this->fixture['userId'])
@@ -529,7 +526,7 @@ final class PasskeyProcessorTest extends UnitTestCase
             $this->faker->uuid(),
             $this->fixture['userId'],
             $this->fixture['credentialId'],
-            json_encode(['record' => $this->faker->boolean()], JSON_THROW_ON_ERROR),
+            json_encode(['record' => $this->faker->boolean()], \JSON_THROW_ON_ERROR),
             $this->fixture['label'],
             new DateTimeImmutable()
         );
