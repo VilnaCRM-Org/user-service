@@ -296,6 +296,7 @@ for spike.
 Use these documented targets when validating the passkey runtime path:
 
 ```bash
+make load-tests
 make smoke-load-tests
 make average-load-tests
 make stress-load-tests
@@ -304,6 +305,16 @@ make execute-load-tests-script scenario=passkeySignupOptions
 make execute-load-tests-script scenario=passkeySigninOptions
 make execute-load-tests-script scenario=passkeyRegistrationOptions
 ```
+
+The load-test make targets start the isolated load-test stack and run
+`make setup-load-test-db` before executing k6. The setup creates collections and
+standard MongoDB indexes, skips search-index processing because this service has
+no mapped search indexes, seeds the OAuth client, and ensures JWT keys exist.
+Pull-request CI runs `make load-tests`, which includes smoke, average, stress,
+and spike profiles for the passkey option scenarios.
+The load-test compose file defaults to `MONGODB_VERSION=8.0`; local hosts that
+cannot run MongoDB 8 can pass the Make override, for example
+`make MONGODB_VERSION=7.0 load-tests`, without changing the target.
 
 Full sign-up, registration, and sign-in completion require browser-created
 WebAuthn attestation or assertion payloads. k6 does not provide an authenticator,
@@ -374,7 +385,7 @@ Strict BMAD remediation evidence collected on 2026-06-01 UTC:
 | `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms |
 
 The run used isolated Compose project `user-service-pr286-passkey-load`, the
-MongoDB 7 load-test override, and `make setup-load-test-db` before executing
+MongoDB 7 load-test override, and the load-test database setup before executing
 `tests/Load/execute-load-test.sh <scenario> true true true true` for each
 passkey scenario.
 

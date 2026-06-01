@@ -14,6 +14,8 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         'createUser',
         'passkeySignUpOptionsUser',
         'passkeySignUpCompleteUser',
+        'passkeyRegistrationOptionsUser',
+        'passkeyRegistrationCompleteUser',
     ];
     private const SIGNIN_MUTATIONS = [
         'signInUser',

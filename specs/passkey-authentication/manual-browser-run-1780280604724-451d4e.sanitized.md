@@ -15,9 +15,9 @@ recovery-code values.
 - Authenticator: Chrome DevTools virtual CTAP2 authenticators with resident
   keys, user verification, and automatic presence simulation enabled
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
-  strict BMAD gate re-records the final reviewed commit in its generated
-  context.
+- Reviewed PR head bridge: the browser transcript is source-impact bridged to
+  the active PR head; the strict BMAD report records the exact pushed SHA
+  reviewed after each remediation commit.
 - Source scope: browser/WebAuthn observations were collected at the runtime
   source base commit above. Later production changes before the reviewed PR head
   include `IssuedSessionFactory` rollback-failure logging, a legacy GraphQL

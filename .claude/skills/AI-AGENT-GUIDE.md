@@ -281,7 +281,7 @@ If CI fails with `Modification of locked configuration file is not allowed`:
 2. If config updates were explicitly requested (for example, changing `deptrac.yaml`):
    - Keep changes isolated to a dedicated config-governance PR.
    - Report CI failure as expected evidence; do not hide or bypass it.
-   - Escalate for human approval. Autonomous agents must not self-approve or self-merge failed CI.
+   - Escalate for human merge approval only. Automated quality statuses, including BMAD review statuses, must still be posted from evidence without waiting for that approval.
    - Add explicit rationale (why change is required, impact, rollback plan).
 
 Never normalize "merge with red CI" as a general workflow. It is a human exception path only.

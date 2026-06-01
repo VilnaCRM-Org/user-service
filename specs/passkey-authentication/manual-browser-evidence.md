@@ -14,9 +14,9 @@ credential private material, TOTP secrets, and recovery-code values.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
-  strict BMAD gate re-records the final reviewed commit in its generated
-  context.
+- Reviewed PR head bridge: the browser transcript is source-impact bridged to
+  the active PR head; the strict BMAD report records the exact pushed SHA
+  reviewed after each remediation commit.
 - Historical application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Historical origin: `https://localhost:65443`
@@ -105,9 +105,9 @@ Raw local JSON evidence:
 Runtime source base commit:
 `69af2cf13c46f797da7076bff272fa7736e01ce9`.
 
-Reviewed PR head bridged by this artifact:
-`19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the strict BMAD gate re-records
-the final reviewed commit in its generated context.
+Reviewed PR head bridged by this artifact: the browser transcript is
+source-impact bridged to the active PR head; the strict BMAD report records the
+exact pushed SHA reviewed after each remediation commit.
 
 Post-run production source changes through the current PR-head evidence set:
 

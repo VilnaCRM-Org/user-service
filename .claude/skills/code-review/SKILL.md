@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Systematically retrieve and address PR code review comments using make pr-comments. Use when handling code review feedback or addressing PR comments.
+description: Systematically retrieve and address PR code review comments and run strict BMAD-style FR/NFR quality review. Use when handling code review feedback, reviewing a PR, validating FR/NFR coverage, checking QA test completeness, scoring system quality attributes, or addressing PR comments.
 ---
 
 # Code Review Workflow Skill
@@ -11,23 +11,25 @@ description: Systematically retrieve and address PR code review comments using m
 - Need systematic approach to address feedback
 - Ready to implement reviewer suggestions
 - Need to maintain quality standards during review implementation
+- Need strict BMAD-style FR/NFR, QA coverage, flaky-test, and system quality attribute review
 
 ## Task (Function)
 
-Systematically retrieve, categorize, and address all PR code review comments while maintaining quality standards.
+Systematically retrieve, categorize, and address all PR code review comments while maintaining quality standards and strict FR/NFR evidence.
 
-**Success Criteria**: `make pr-comments` shows 0 unresolved AND `make ci` shows "✅ CI checks successfully passed!"
+**Success Criteria**: `make pr-comments` shows 0 unresolved, strict FR/NFR and quality-attribute scorecards have no unresolved FAIL/WARN items, every FR/NFR has automated test or CI evidence, and `make ci` shows "✅ CI checks successfully passed!"
 
 ## Workflow Overview
 
 ```mermaid
-AI Review Loop → PR Comments → Categorize → Apply by Priority → Verify → Run CI → Done
+Strict FR/NFR Gate → AI Review Loop → PR Comments → Categorize → Fix → Verify Coverage/CI → Report
 ```
 
 ## Quick Start
 
 ```bash
 # 0. Run autonomous AI review + fix loop (Codex default, Claude optional)
+cat .claude/skills/code-review/reference/fr-nfr-quality-gate.md
 make ai-review-loop
 
 # 1. Get comments
@@ -46,6 +48,23 @@ make ci  # Must show "✅ CI checks successfully passed!"
 ```
 
 ## Execution Steps
+
+### Step -1: Run Strict BMAD FR/NFR Review Gate
+
+Before addressing PR comments manually, run the strict review protocol in
+[fr-nfr-quality-gate.md](reference/fr-nfr-quality-gate.md). This is mandatory
+for every PR review, even when the user only asks to resolve comments.
+
+The gate must:
+
+- Post/update GitHub status context `BMAD FR/NFR Review Gate` at start and completion when a PR is available.
+- Load PR diff, changed files, relevant specs/docs, existing tests, CI workflows, and current-head codebase graph evidence when present. Stale graph evidence must fail the graph context unless replaced by a current graph run or explicit current-head code-search impact evidence.
+- Extract every FR and NFR from PRD, stories, architecture, run summaries, issue text, PR description, and reviewer comments.
+- Generate positive, negative, edge, security, performance, operability, compatibility, and regression test cases for every FR/NFR.
+- Verify every generated case is covered by automated tests, CI checks, mutation tests, contract tests, or load tests. Manual evidence is supporting context only and cannot replace automation.
+- Review flaky-test risk and require deterministic test data, isolated state, bounded timing, and no ordering dependency.
+- Score every applicable system quality attribute from the reference list and suggest mandatory improvements for WARN/FAIL scores.
+- Fail the review when any applicable FR/NFR lacks automated or CI-backed coverage, any changed behavior is only manually checked, any critical quality attribute is WARN/FAIL without a fix, or any reviewer/comment/CI blocker remains.
 
 ### Step 0: Run Autonomous AI Review Loop
 
@@ -97,6 +116,17 @@ make pr-comments FORMAT=json  # JSON output
 
 **Output**: All unresolved comments with file/line, author, timestamp, URL
 
+When reviewing a GitHub PR directly, also run:
+
+```bash
+gh pr view <PR> --json url,headRefOid,baseRefName,body,files,reviews,reviewThreads,statusCheckRollup
+gh pr checks <PR>
+```
+
+Set `BMAD FR/NFR Review Gate` to `pending` on the current head SHA before
+reviewing, then set it to `success` only after the strict gate and verification
+pass. Set it to `failure` if actionable strict-gate findings remain.
+
 ### Step 2: Categorize Comments
 
 | Type                   | Identifier                  | Priority | Action                               |
@@ -106,6 +136,10 @@ make pr-comments FORMAT=json  # JSON output
 | Architecture Concern   | Class naming, file location | High     | Invoke appropriate skill             |
 | Question               | Ends with "?"               | Medium   | Answer inline or via code change     |
 | General Feedback       | Discussion, recommendation  | Low      | Consider and improve                 |
+
+Merge explicit review comments with strict FR/NFR gate findings. Treat each
+gate finding as actionable unless code, test, spec, or CI evidence proves it is
+false.
 
 ### Step 3: Verify Architecture & Organization
 
@@ -164,6 +198,9 @@ For code changes (suggestions, prompts, new files), invoke verification skills:
 make pr-comments  # Should show zero unresolved comments
 ```
 
+Re-run the strict BMAD FR/NFR gate after fixes. It must find no new actionable
+issues before final reporting.
+
 ### Step 6: Run Quality Checks
 
 **MANDATORY**: Run comprehensive CI checks after implementing all changes:
@@ -185,11 +222,26 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **DO NOT** finish the task until `make ci` shows: `✅ CI checks successfully passed!`
 
+### Step 7: Publish Review Result
+
+When a GitHub PR exists:
+
+1. Confirm the PR head SHA still matches the reviewed SHA.
+2. Post the strict review report as a PR comment.
+3. Update `BMAD FR/NFR Review Gate` on that same SHA to `pending` while expected remote checks are running, `failure` while any expected check or gate finding fails, and `success` only after the strict gate and all expected automated checks pass.
+4. Clearly separate BMAD gate status from repository merge-policy facts. Do not wait for human/codeowner approvals before posting the BMAD result.
+
 ## Constraints (Parameters)
 
 **NEVER**:
 
 - Skip the autonomous AI review loop (`make ai-review-loop`) without justification
+- Skip the strict BMAD FR/NFR review gate
+- Mark a PR clean while any applicable FR/NFR lacks automated or CI-backed evidence
+- Treat 100% line coverage as enough when positive/negative/edge cases are missing
+- Ignore flaky-test risk, nondeterministic data, time/order dependency, race risk, or weak assertions
+- Omit the system quality attribute scorecard
+- Post a passing GitHub status before checking the current PR head SHA
 - Skip committable suggestions
 - Batch unrelated changes in one commit
 - Ignore LLM prompts from reviewers
@@ -202,6 +254,11 @@ make ci  # Must output "✅ CI checks successfully passed!"
 
 **ALWAYS**:
 
+- Run the strict BMAD FR/NFR gate before and after fixes
+- Derive a test-case matrix from all FRs and NFRs, then map each case to evidence
+- Use codebase graph/context evidence when available to find downstream impact
+- Score system quality attributes and require improvement suggestions for WARN/FAIL
+- Post GitHub status updates for PR review start and final result when a PR is available
 - Run `make ai-review-loop` before manually addressing PR comments
 - Apply suggestions exactly as provided
 - Commit each suggestion separately with URL reference
@@ -232,6 +289,15 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 
 ## Verification Checklist
 
+- [ ] Strict BMAD FR/NFR gate run against the current PR head
+- [ ] GitHub `BMAD FR/NFR Review Gate` status posted/updated for current head when PR exists
+- [ ] FR/NFR list extracted from specs, docs, issues, PR description, and changed behavior
+- [ ] Positive/negative/edge/security/performance/operability test matrix generated
+- [ ] Each FR/NFR test case mapped to automated test, CI check, mutation/contract/load evidence; manual evidence recorded only as supporting context
+- [ ] Missing coverage implemented or recorded as blocking suggestion
+- [ ] Flaky-test risks checked and fixed or recorded as blocking
+- [ ] System quality attribute scorecard completed for every listed attribute
+- [ ] Codebase graph impact reviewed when graph evidence exists
 - [ ] Autonomous AI review loop run via `make ai-review-loop` (or skipped with justification)
 - [ ] All PR comments retrieved via `make pr-comments`
 - [ ] Comments categorized by type (suggestion/prompt/architecture/question/feedback)

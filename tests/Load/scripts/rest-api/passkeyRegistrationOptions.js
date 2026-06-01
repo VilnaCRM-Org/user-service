@@ -18,8 +18,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 export const options = scenarioUtils.getOptions();
 
 export default function passkeyRegistrationOptions() {
-  const user = users[counter.up() % users.length];
-  utils.checkUserIsDefined(user);
+  const user = insertUsersUtils.pickUser(users, counter.up());
 
   const response = http.post(
     `${utils.getBaseUrl()}/passkeys/register/options`,

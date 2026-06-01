@@ -119,9 +119,9 @@ reset_round_state() {
     "${composeCmd[@]}" exec -T "$loadTestLockoutRedisService" redis-cli FLUSHALL >/dev/null
   fi
   "${composeCmd[@]}" exec -T -e APP_ENV=load_test "$loadTestPhpService" \
-    bin/console doctrine:mongodb:schema:drop >/dev/null 2>&1 || true
+    bin/console doctrine:mongodb:schema:drop --skip-search-indexes >/dev/null 2>&1 || true
   "${composeCmd[@]}" exec -T -e APP_ENV=load_test "$loadTestPhpService" \
-    bin/console doctrine:mongodb:schema:create >/dev/null
+    bin/console doctrine:mongodb:schema:create --skip-search-indexes >/dev/null
   "${composeCmd[@]}" exec -T -e APP_ENV=load_test "$loadTestPhpService" \
     bin/console app:seed-test-oauth-client >/dev/null
 

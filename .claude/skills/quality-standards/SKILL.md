@@ -1,6 +1,6 @@
 ---
 name: quality-standards
-description: Overview of protected quality thresholds and quick reference for all quality tools. Use when you need to understand quality metrics, run comprehensive quality checks, or learn which specialized skill to use. For specific issues, use dedicated skills (deptrac-fixer for Deptrac, complexity-management for PHPInsights, testing-workflow for coverage).
+description: Overview of protected quality thresholds, FR/NFR quality evidence, and quick reference for all quality tools. Use when you need to understand quality metrics, run comprehensive quality checks, score system quality attributes, verify CI/test coverage for requirements, or learn which specialized skill to use. For specific issues, use dedicated skills (deptrac-fixer for Deptrac, complexity-management for PHPInsights, testing-workflow for coverage).
 ---
 
 # Quality Standards Skill
@@ -8,19 +8,29 @@ description: Overview of protected quality thresholds and quick reference for al
 ## Context (Input)
 
 - Need to understand protected quality thresholds
+- Need to verify FR/NFR coverage and system quality attributes
 - Running comprehensive quality checks before commit
 - Determining which specialized skill to use for specific issues
 - Quick reference for quality tool commands
 
 ## Task (Function)
 
-Understand quality metrics and route to appropriate specialized skill for fixes.
+Understand quality metrics, FR/NFR quality evidence, system quality attributes,
+and route to appropriate specialized skill for fixes.
 
 **Success Criteria**: Know which skill to use for your specific quality issue.
 
 ## Protected Quality Thresholds
 
 **CRITICAL**: These thresholds are protected and must NEVER be lowered.
+
+Green numeric thresholds are necessary but not sufficient. A PR also needs
+requirement-level evidence: each applicable FR/NFR must have positive,
+negative, and edge coverage mapped to automated tests, CI checks, mutation,
+contract, or load/performance evidence. Manual evidence is supporting context
+only and cannot replace automation. Use
+[code-review/reference/fr-nfr-quality-gate.md](../code-review/reference/fr-nfr-quality-gate.md)
+for the mandatory scorecard.
 
 ### PHPInsights (Source Code)
 
@@ -50,6 +60,20 @@ Understand quality metrics and route to appropriate specialized skill for fixes.
 | Psalm     | Security Issues | 0        | Fix tainted flows                                                                           |
 | Infection | MSI             | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
 | PHPUnit   | Coverage        | 100%     | [testing-workflow](../testing-workflow/SKILL.md)                                            |
+
+## Requirement Coverage Gate
+
+For PR review and release readiness, require:
+
+- Complete FR/NFR extraction from specs, stories, architecture, docs, PR description, and changed behavior.
+- Positive, negative, edge, security, performance, operability, compatibility, and regression cases for each requirement.
+- Evidence mapping for every case.
+- Explicit report of missing coverage as blocking review findings.
+- Flaky-test review for all changed tests.
+- System quality attribute scorecard for all attributes listed in the strict gate reference.
+
+Do not accept "line coverage is 100%" as proof of behavior coverage unless the
+FR/NFR matrix shows the actual cases and assertions.
 
 ## Quick Reference Commands
 
@@ -128,6 +152,13 @@ When quality checks fail, use the appropriate specialized skill:
   - Unit/Integration/E2E failures
   - Mutation testing (Infection)
   - Test coverage < 100%
+  - FR/NFR matrix gaps
+  - Flaky-test risk
+
+- **System quality attribute WARN/FAIL** → [code-review](../code-review/SKILL.md) plus the relevant specialized skill
+  - Missing evidence for quality attributes
+  - Unscored applicable attributes
+  - Improvement suggestions required by strict review
 
 ### Workflow Integration
 
@@ -170,6 +201,9 @@ Based on failure type, use appropriate skill:
 | "Class not found"          | code-organization        |
 | "Namespace mismatch"       | code-organization        |
 | "tests failed"             | testing-workflow         |
+| "requirement matrix gap"   | testing-workflow         |
+| "flaky test"               | testing-workflow         |
+| "quality attribute"        | code-review              |
 | "Psalm found errors"       | Fix type errors directly |
 | "escaped mutants"          | testing-workflow         |
 
@@ -187,6 +221,9 @@ Repeat until: "✅ CI checks successfully passed!"
 
 - Lower quality thresholds in config files (`phpinsights.php`, `infection.json5`, etc.)
 - Skip failing checks to "save time"
+- Skip FR/NFR coverage mapping for PR review
+- Skip system quality attribute scoring for PR review
+- Treat manual evidence as enough to close an applicable FR/NFR automation gap
 - Commit code without all CI checks passing
 - Modify `deptrac.yaml` to allow violations (fix code, not config)
 - Disable security checks
@@ -198,6 +235,8 @@ Repeat until: "✅ CI checks successfully passed!"
 - Run `make ci` before creating commits
 - Use specialized skills for specific quality issues
 - Maintain 100% test coverage
+- Maintain requirement-level test evidence, not only line coverage
+- Require deterministic tests and fix flaky-test risks
 - Keep cyclomatic complexity low (target: < 5 per method)
 - Respect hexagonal architecture boundaries
 
@@ -239,6 +278,8 @@ After using this skill:
 - [ ] Ready to execute specialized skill workflow
 - [ ] Understand which threshold applies to the failure
 - [ ] Know the command to re-run the check after fixes
+- [ ] FR/NFR coverage matrix has no gaps for reviewed changes
+- [ ] System quality attributes are scored or explicitly marked N/A with reasons
 
 ## Related Skills
 

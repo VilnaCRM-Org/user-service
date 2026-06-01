@@ -73,6 +73,38 @@ GRAPHQL,
         $this->assertGraphQlLimiters($query, $clientIp, $this->registrationLimiters($clientIp));
     }
 
+    public function testResolveEndpointLimitersForGraphQlPasskeyRegistrationOptions(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $query = <<<'GRAPHQL'
+mutation {
+  passkeyRegistrationOptionsUser(input: {}) {
+    user { challengeId }
+  }
+}
+GRAPHQL;
+
+        $this->assertGraphQlLimiters($query, $clientIp, $this->registrationLimiters($clientIp));
+    }
+
+    public function testResolveEndpointLimitersForGraphQlPasskeyRegistrationComplete(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation {
+  passkeyRegistrationCompleteUser(input: { challengeId: "%s" }) {
+    user { passkeyId }
+  }
+}
+GRAPHQL,
+            $challengeId
+        );
+
+        $this->assertGraphQlLimiters($query, $clientIp, $this->registrationLimiters($clientIp));
+    }
+
     public function testResolveEndpointLimitersForGraphQlSignIn(): void
     {
         $clientIp = $this->faker->ipv4();
@@ -263,6 +295,8 @@ GRAPHQL,
             'passkeySignUpCompleteUser',
             'passkeySignInOptionsUser',
             'passkeySignInCompleteUser',
+            'passkeyRegistrationOptionsUser',
+            'passkeyRegistrationCompleteUser',
         ] as $fieldName) {
             self::assertStringContainsString(sprintf('%s(input:', $fieldName), $spec);
         }

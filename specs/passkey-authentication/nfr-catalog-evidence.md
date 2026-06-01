@@ -56,11 +56,21 @@ Suggested repeatable validation targets:
 - `make execute-load-tests-script scenario=passkeySigninOptions`
 - `make execute-load-tests-script scenario=passkeyRegistrationOptions`
 
+These make targets start the isolated load-test stack and run
+`make setup-load-test-db` before k6. The setup creates collections and standard
+MongoDB indexes, skips search-index processing because this service has no
+mapped search indexes, seeds the OAuth client, and ensures JWT keys exist.
+Pull-request CI runs `make load-tests`, so smoke, average, stress, and spike
+profiles are gated remotely for the passkey option scenarios.
+The load-test compose file defaults to `MONGODB_VERSION=8.0`; local hosts that
+cannot run MongoDB 8 can pass the Make override, for example
+`make MONGODB_VERSION=7.0 load-tests`, without changing the target.
+
 An earlier cold run without the repository load-test database setup failed the
 signup stress threshold at p99 `6.14s`. The fix was procedural: run the existing
-`make setup-load-test-db` preparation so schema, indexes, OAuth client, and JWT
-fixtures match the documented load-test preconditions, then rerun all passkey
-profiles.
+`make setup-load-test-db` preparation so collections, standard indexes, OAuth
+client, and JWT fixtures match the documented load-test preconditions, then
+rerun all passkey profiles.
 
 ## Usability
 
@@ -178,10 +188,13 @@ Evidence and standards:
 - Authenticated registration requires `ROLE_USER`; sign-in completion cannot
   authenticate unknown users or users without matching passkey credentials.
 - Public passkey endpoints participate in the API rate-limit resolver.
-- Passkey GraphQL sign-up mutations are mapped to the same registration
-  limiter, and passkey GraphQL sign-in mutations are mapped to the same sign-in
-  IP/email limiters, so GraphQL does not bypass the REST endpoint-specific
-  abuse controls.
+- REST passkey sign-up and authenticated registration endpoints are mapped to
+  the registration limiter; REST passkey sign-in endpoints are mapped to the
+  sign-in IP/email limiters.
+- Passkey GraphQL sign-up and authenticated registration mutations are mapped
+  to the same registration limiter, and passkey GraphQL sign-in mutations are
+  mapped to the same sign-in IP/email limiters, so GraphQL does not bypass the
+  REST endpoint-specific abuse controls.
 - API-level GraphQL tests cover invalid email, existing email, invalid
   credential JSON, challenge replay, wrong-user registration completion, and
   duplicate credential conflict without relying on manual evidence for

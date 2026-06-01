@@ -13,9 +13,9 @@ evidence required for BMAD FR/NFR sign-off.
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
   authenticators at runtime source base
   `69af2cf13c46f797da7076bff272fa7736e01ce9`.
-- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
-  strict BMAD gate re-records the final reviewed commit in its generated
-  context.
+- Reviewed PR head bridge: the browser transcript is source-impact bridged to
+  the active PR head; the strict BMAD report records the exact pushed SHA
+  reviewed after each remediation commit.
 - Historical environment URL: `https://localhost:65443`
 - Historical browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -59,9 +59,9 @@ browser evidence. Details are captured in
 - Tester: Codex
 - Execution date/time (UTC): `2026-06-01T02:23:28.150Z`
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Reviewed PR head bridge: `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the
-  strict BMAD gate re-records the final reviewed commit in its generated
-  context.
+- Reviewed PR head bridge: the browser transcript is source-impact bridged to
+  the active PR head; the strict BMAD report records the exact pushed SHA
+  reviewed after each remediation commit.
 - Environment URL: `http://localhost:19081`
 - Browser and version: Google Chrome headless through Chrome DevTools Protocol
 - Operating system/device: local Linux workspace

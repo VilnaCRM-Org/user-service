@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 # ---------------------------------------------------------------------------
 # AI Review Loop — runs AI review agents, applies fixes, verifies with CI.
@@ -59,6 +59,11 @@ codex_cmd="${AI_REVIEW_CODEX_CMD:-codex}"
 claude_cmd="${AI_REVIEW_CLAUDE_CMD:-claude}"
 review_sandbox="${AI_REVIEW_REVIEW_SANDBOX:-read-only}"
 fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
+github_status_enabled="${AI_REVIEW_GITHUB_STATUS:-true}"
+github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
+github_repo=""
+github_head_sha=""
+github_pr_url=""
 
 codex_flags=()
 [[ -n "${AI_REVIEW_CODEX_FLAGS:-}" ]] && read -r -a codex_flags <<< "$AI_REVIEW_CODEX_FLAGS"
@@ -137,6 +142,58 @@ if ! git rev-parse --verify "$review_base" >/dev/null 2>&1; then
   fi
 fi
 
+# --- GitHub status reporting ---------------------------------------------
+
+detect_github_pr() {
+  if [[ "$github_status_enabled" != "true" ]]; then
+    return
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "Warning: gh is unavailable; BMAD GitHub status updates disabled." >&2
+    github_status_enabled=false
+    return
+  fi
+
+  github_repo="$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)"
+  github_head_sha="$(gh pr view --json headRefOid --jq .headRefOid 2>/dev/null || true)"
+  github_pr_url="$(gh pr view --json url --jq .url 2>/dev/null || true)"
+
+  if [[ -z "$github_repo" || -z "$github_head_sha" || -z "$github_pr_url" ]]; then
+    echo "Warning: Unable to detect GitHub PR; BMAD status updates disabled." >&2
+    github_status_enabled=false
+  fi
+}
+
+post_github_status() {
+  local state="$1"
+  local description="$2"
+
+  if [[ "$github_status_enabled" != "true" ]]; then
+    return
+  fi
+
+  if ! gh api "repos/$github_repo/statuses/$github_head_sha" \
+    -f state="$state" \
+    -f context="$github_status_context" \
+    -f description="$description" \
+    -f target_url="$github_pr_url" >/dev/null; then
+    echo "Warning: Failed to post BMAD GitHub status: $state" >&2
+  fi
+}
+
+fail_unexpected() {
+  local exit_code=$?
+
+  trap - ERR
+  post_github_status "failure" "Strict BMAD review loop failed before completion."
+  exit "$exit_code"
+}
+
+detect_github_pr
+post_github_status "pending" "Strict BMAD FR/NFR review running; human approvals are not gate inputs."
+trap fail_unexpected ERR
+
 # --- Prompt builders ------------------------------------------------------
 # Prompts use {BASE_REF} as a placeholder. Diffs are NOT embedded — agents
 # read the codebase directly using their built-in tools (git, file reads,
@@ -177,6 +234,238 @@ parse_status_line() {
   echo "UNKNOWN"
 }
 
+parse_marker_value() {
+  local file="$1"
+  local marker="$2"
+  local line
+
+  line="$(grep -E "^[[:space:]]*${marker}:" "$file" | head -n 1 || true)"
+  if [[ -z "$line" ]]; then
+    return 1
+  fi
+
+  echo "$line" \
+    | sed -E "s/^[[:space:]]*${marker}:[[:space:]]*//; s/[[:space:]]+$//" \
+    | tr -d '\r'
+}
+
+strict_marker_state() {
+  local file="$1"
+  local marker
+  local value
+  local state="PASS"
+
+  local required_pass_markers=(
+    STATUS
+    FR_NFR_SCORECARD
+    TEST_CASE_MATRIX
+    AUTO_TEST_COVERAGE
+    CI_COVERAGE
+    FLAKY_TEST_RISK
+    SYSTEM_QUALITY_ATTRIBUTES_SCORECARD
+    WHOLE_CODEBASE_IMPACT
+    GRAPH_IMPACT_CONTEXT
+    GITHUB_COMPLETION_GATE
+  )
+
+  for marker in "${required_pass_markers[@]}"; do
+    if ! value="$(parse_marker_value "$file" "$marker")"; then
+      echo "Strict marker missing: $marker" >&2
+      state="FAIL"
+      continue
+    fi
+
+    case "$value" in
+      PASS)
+        ;;
+      PENDING_REMOTE)
+        if [[ "$marker" == "CI_COVERAGE" ]]; then
+          echo "Strict marker $marker is $value; waiting for remote CI." >&2
+          if [[ "$state" == "PASS" ]]; then
+            state="PENDING"
+          fi
+        else
+          echo "Strict marker $marker is $value, expected PASS." >&2
+          state="FAIL"
+        fi
+        ;;
+      PENDING_REMOTE_CI)
+        if [[ "$marker" == "GITHUB_COMPLETION_GATE" ]]; then
+          echo "Strict marker $marker is $value; waiting for remote CI." >&2
+          if [[ "$state" == "PASS" ]]; then
+            state="PENDING"
+          fi
+        else
+          echo "Strict marker $marker is $value, expected PASS." >&2
+          state="FAIL"
+        fi
+        ;;
+      *)
+        echo "Strict marker $marker is $value, expected PASS." >&2
+        state="FAIL"
+        ;;
+    esac
+  done
+
+  echo "$state"
+}
+
+validate_strict_markers() {
+  [[ "$(strict_marker_state "$1")" == "PASS" ]]
+}
+
+strict_failure_is_remote_pending() {
+  local file="$1"
+  local marker
+  local value
+  local has_pending=false
+  local ok=true
+
+  local required_markers=(
+    STATUS
+    FR_NFR_SCORECARD
+    TEST_CASE_MATRIX
+    AUTO_TEST_COVERAGE
+    CI_COVERAGE
+    FLAKY_TEST_RISK
+    SYSTEM_QUALITY_ATTRIBUTES_SCORECARD
+    WHOLE_CODEBASE_IMPACT
+    GRAPH_IMPACT_CONTEXT
+    GITHUB_COMPLETION_GATE
+  )
+
+  for marker in "${required_markers[@]}"; do
+    if ! value="$(parse_marker_value "$file" "$marker")"; then
+      ok=false
+      continue
+    fi
+
+    case "$marker:$value" in
+      STATUS:FAIL|STATUS:PASS)
+        ;;
+      CI_COVERAGE:PENDING_REMOTE|GITHUB_COMPLETION_GATE:PENDING_REMOTE_CI)
+        has_pending=true
+        ;;
+      *:PASS)
+        ;;
+      *)
+        ok=false
+        ;;
+    esac
+  done
+
+  [[ "$ok" == true && "$has_pending" == true ]]
+}
+
+exit_with_status() {
+  local exit_code="$1"
+  local state="$2"
+  local description="$3"
+
+  post_github_status "$state" "$description"
+  exit "$exit_code"
+}
+
+append_fail_log() {
+  local agent="$1"
+  local review_log="$2"
+  local ts="$3"
+
+  fail_log="${fail_log:-$log_dir/review-fail-iter${iter}-${ts}.md}"
+  { echo "=== Agent: $agent ==="; cat "$review_log"; echo; } >> "$fail_log"
+}
+
+append_pending_log() {
+  local agent="$1"
+  local review_log="$2"
+  local ts="$3"
+
+  pending_log="${pending_log:-$log_dir/review-pending-iter${iter}-${ts}.md}"
+  { echo "=== Agent: $agent ==="; cat "$review_log"; echo; } >> "$pending_log"
+}
+
+mark_review_status() {
+  local agent="$1"
+  local review_log="$2"
+  local ts="$3"
+  local status="$4"
+  local marker_state
+
+  case "$status" in
+    PASS)
+      marker_state="$(strict_marker_state "$review_log")"
+      case "$marker_state" in
+        PASS)
+          ;;
+        PENDING)
+          echo "Agent $agent produced STATUS: PASS but strict BMAD markers are waiting for remote CI." >&2
+          all_pass=false
+          any_pending=true
+          append_pending_log "$agent" "$review_log" "$ts"
+          ;;
+        *)
+          echo "Warning: Agent $agent produced STATUS: PASS but strict BMAD markers are not passing; treating as FAIL." >&2
+          all_pass=false
+          any_fail=true
+          append_fail_log "$agent" "$review_log" "$ts"
+          ;;
+      esac
+      ;;
+    FAIL)
+      all_pass=false
+      if strict_failure_is_remote_pending "$review_log"; then
+        any_pending=true
+        append_pending_log "$agent" "$review_log" "$ts"
+      else
+        any_fail=true
+        append_fail_log "$agent" "$review_log" "$ts"
+      fi
+      ;;
+  esac
+}
+
+run_fix_if_needed() {
+  local fix_ts
+  local fix_log
+
+  fix_ts=$(date +%Y%m%d_%H%M%S)
+  fix_log="$log_dir/fix-${fix_agent}-iter${iter}-${fix_ts}.md"
+  run_fix "$fix_agent" "$fix_log" "$fail_log" "$ci_log"
+  cp "$fix_log" "$log_dir/fix-latest.md"
+
+  ci_log="$log_dir/ci-iter${iter}-${fix_ts}.log"
+  if ! bash -c "$verify_cmd" >"$ci_log" 2>&1; then
+    echo "Warning: Verification failed (see $ci_log)." >&2
+    last_verify_ok=false
+  else
+    last_verify_ok=true
+  fi
+}
+
+handle_review_result() {
+  if [[ "$all_pass" == true ]]; then
+    if [[ "$last_verify_ok" != true ]]; then
+      echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
+      exit_with_status 1 "failure" "Strict BMAD review passed, but local verification failed."
+    fi
+    echo "AI review PASS." >&2
+    exit_with_status 0 "success" "Strict BMAD FR/NFR review and local verification passed."
+  fi
+
+  if [[ "$any_fail" != true && "$any_pending" == true ]]; then
+    echo "AI review pending remote CI; no local fixes to apply." >&2
+    cp "$pending_log" "$log_dir/review-latest.md" 2>/dev/null || true
+    exit_with_status 2 "pending" "Strict BMAD review passed locally; expected remote CI is still pending."
+  fi
+
+  post_github_status "pending" "Strict BMAD review found findings; fix loop running."
+}
+
+fail_max_iterations() {
+  echo "Reached AI_REVIEW_MAX_ITER=$max_iter without PASS." >&2
+  exit_with_status 1 "failure" "Strict BMAD review still has findings after max fix iterations."
+}
+
 # --- Agent runners --------------------------------------------------------
 
 run_review() {
@@ -184,9 +473,10 @@ run_review() {
   local output_file="$2"
   local prompt
 
+  prompt="$(build_review_prompt)"
+
   case "$agent" in
     codex)
-      prompt="$(build_review_prompt)"
       printf "%s" "$prompt" \
         | "$codex_cmd" exec \
             ${codex_flags[@]+"${codex_flags[@]}"} \
@@ -195,9 +485,9 @@ run_review() {
           >"${output_file}.log" 2>&1
       ;;
     claude)
-      "$claude_cmd" -p "/review" \
+      "$claude_cmd" -p "$prompt" \
         ${claude_flags[@]+"${claude_flags[@]}"} \
-        --append-system-prompt "After completing the review, your FIRST line of output MUST be exactly STATUS: PASS or STATUS: FAIL. Then list any issues found." \
+        --append-system-prompt "After completing the review, your FIRST line of output MUST be exactly STATUS: PASS or STATUS: FAIL and include every strict BMAD marker from the prompt." \
         --output-format text \
         >"$output_file" 2>"${output_file}.log"
       ;;
@@ -238,12 +528,14 @@ last_verify_ok=true
 
 while :; do
   if [[ "$max_iter" -ne 0 && "$iter" -gt "$max_iter" ]]; then
-    echo "Reached AI_REVIEW_MAX_ITER=$max_iter without PASS." >&2
-    exit 1
+    fail_max_iterations
   fi
 
   all_pass=true
+  any_fail=false
+  any_pending=false
   fail_log=""
+  pending_log=""
 
   for agent in "${agents[@]}"; do
     ts=$(date +%Y%m%d_%H%M%S)
@@ -257,39 +549,14 @@ while :; do
       status="FAIL"
     fi
 
-    if [[ "$status" == "FAIL" ]]; then
-      all_pass=false
-      fail_log="${fail_log:-$log_dir/review-fail-iter${iter}-${ts}.md}"
-      { echo "=== Agent: $agent ==="; cat "$review_log"; echo; } >> "$fail_log"
-    fi
+    mark_review_status "$agent" "$review_log" "$ts" "$status"
   done
 
-  cp "${fail_log:-$log_dir/review-latest-${agents[-1]}.md}" \
+  cp "${fail_log:-${pending_log:-$log_dir/review-latest-${agents[-1]}.md}}" \
     "$log_dir/review-latest.md" 2>/dev/null || true
 
-  if [[ "$all_pass" == true ]]; then
-    if [[ "$last_verify_ok" != true ]]; then
-      echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
-      exit 1
-    fi
-    echo "AI review PASS." >&2
-    exit 0
-  fi
-
-  # --- Fix phase ---
-  fix_ts=$(date +%Y%m%d_%H%M%S)
-  fix_log="$log_dir/fix-${fix_agent}-iter${iter}-${fix_ts}.md"
-  run_fix "$fix_agent" "$fix_log" "$fail_log" "$ci_log"
-  cp "$fix_log" "$log_dir/fix-latest.md"
-
-  # --- Verify phase ---
-  ci_log="$log_dir/ci-iter${iter}-${fix_ts}.log"
-  if ! bash -c "$verify_cmd" >"$ci_log" 2>&1; then
-    echo "Warning: Verification failed (see $ci_log)." >&2
-    last_verify_ok=false
-  else
-    last_verify_ok=true
-  fi
+  handle_review_result
+  run_fix_if_needed
 
   iter=$((iter + 1))
 done

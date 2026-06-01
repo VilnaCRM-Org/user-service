@@ -116,6 +116,40 @@ GRAPHQL, $email, $initials),
         $this->assertRateLimitResponse($response);
     }
 
+    public function testRestPasskeyRegistrationOptionsUsesRegistrationLimiter(): void
+    {
+        $this->exhaustLimiter(
+            'registration',
+            'ip:127.0.0.1',
+            $this->resolveLimit('REGISTRATION_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $response = $this->handleJsonRequest(
+            '/api/passkeys/register/options',
+            Request::METHOD_POST,
+            json_encode([], JSON_THROW_ON_ERROR),
+            $this->createAuthenticatedHeader()
+        );
+
+        $this->assertRateLimitResponse($response);
+    }
+
+    public function testGraphQlPasskeyRegistrationUsesRegistrationLimiter(): void
+    {
+        $this->exhaustLimiter(
+            'registration',
+            'ip:127.0.0.1',
+            $this->resolveLimit('REGISTRATION_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $response = $this->handleJsonRequest(
+            '/api/graphql',
+            Request::METHOD_POST,
+            $this->createPasskeyRegistrationOptionsGraphQlPayload(),
+            $this->createAuthenticatedHeader()
+        );
+
+        $this->assertRateLimitResponse($response);
+    }
+
     public function testGraphQlPasskeySigninUsesSignInEmailLimiter(): void
     {
         $email = $this->faker->safeEmail();
@@ -235,6 +269,32 @@ GRAPHQL, $decoyEmail),
             'variables' => ['e' => $email],
             'email' => $this->faker->safeEmail(),
         ], JSON_THROW_ON_ERROR);
+    }
+
+    private function createPasskeyRegistrationOptionsGraphQlPayload(): string
+    {
+        return json_encode([
+            'query' => <<<'GRAPHQL'
+mutation {
+  passkeyRegistrationOptionsUser(input: {}) {
+    user { challengeId }
+  }
+}
+GRAPHQL,
+        ], JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @return array{HTTP_AUTHORIZATION: string}
+     */
+    private function createAuthenticatedHeader(): array
+    {
+        return [
+            'HTTP_AUTHORIZATION' => sprintf(
+                'Bearer %s',
+                $this->createBearerTokenForUser($this->faker->uuid())
+            ),
+        ];
     }
 
     /**

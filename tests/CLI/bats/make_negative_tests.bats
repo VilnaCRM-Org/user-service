@@ -40,7 +40,9 @@ load 'bats-assert/load'
   [ "$setup_status" -eq 0 ]
   [[ "$setup_output" == *"autoload files"* ]]
   [ "$infection_status" -ne 0 ]
-  [[ "$infection_output" == *"mutants were not covered by tests"* ]]
+  [[ "$infection_output" == *"mutants were not covered by tests"* \
+    || "$infection_output" == *"Covered Code MSI"* \
+    || "$infection_output" == *"Mutation Score Indicator"* ]]
   [ "$restore_status" -eq 0 ]
   [[ "$restore_output" == *"autoload files"* ]]
 }

@@ -158,9 +158,8 @@ Browser ceremony tested SHA:
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`.
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
-Current PR head bridge scope: source-impact bridge through
-`19694b53eae36aa952ea96389f2e2a2e37fc9fed`. The strict BMAD gate re-records
-the exact reviewed commit in its generated context after the final remediation
+Current PR head bridge scope: source-impact bridge to the active PR head. The
+strict BMAD report records the exact pushed SHA reviewed after each remediation
 commit. This bridge keeps the manual browser run tied to its runtime source
 base, then covers later source deltas through automated tests, graph context,
 and PR check evidence. The post-`109e7538` delta removes sign-up
@@ -235,8 +234,9 @@ config/services.yaml`, `bin/console lint:container`,
   `specs/passkey-authentication/nfr-catalog-evidence.md`.
 - Current PR passkey option-ceremony smoke/average/stress/spike evidence
   collected on 2026-06-01 UTC passed the configured thresholds after
-  `make setup-load-test-db` prepared schema, indexes, OAuth client, and JWT
-  fixtures for isolated Compose project `user-service-pr286-passkey-load`:
+  `make setup-load-test-db` prepared collections, standard indexes, OAuth
+  client, and JWT fixtures for isolated Compose project
+  `user-service-pr286-passkey-load`:
   `passkeySignupOptions` checks `100%`, p99 smoke `48.21ms`, average
   `78.89ms`, stress `89.48ms`, spike `165.49ms`; `passkeySigninOptions` checks
   `100%`, p99 smoke `357.2ms`, average `67.77ms`, stress `115.23ms`, spike
@@ -248,11 +248,15 @@ config/services.yaml`, `bin/console lint:container`,
 - A prior passkey load run without the repository load-test DB setup found a
   real NFR/precondition failure: `passkeySignupOptions` stress p99 was `6.14s`,
   above the `3000ms` threshold. The fix was to run the documented
-  `make setup-load-test-db` preparation and rerun all passkey profiles.
-- NFR follow-up closed the passkey GraphQL rate-limit gap by mapping passkey
-  GraphQL sign-up mutations to the registration limiter and passkey GraphQL
-  sign-in mutations to the sign-in IP/email limiters. Focused verification:
-  `ApiRateLimitListenerIntegrationTest` passed 9 tests / 109 assertions.
+  load-test database preparation and rerun all passkey profiles. The load-test
+  make targets now run that setup internally, and pull-request CI runs
+  `make load-tests` instead of smoke-only K6.
+- NFR follow-up closed the passkey rate-limit gap by mapping REST and GraphQL
+  authenticated registration paths to the registration limiter, keeping passkey
+  sign-up on the registration limiter, and keeping passkey sign-in on the
+  sign-in IP/email limiters. Focused verification:
+  `ApiRateLimitListenerIntegrationTest` includes explicit REST and GraphQL
+  registration-limiter exhaustion coverage.
 - BMAD FR/NFR remediation after the final strict review added explicit passkey
   GraphQL mutation descriptions in `AuthPayload.yaml`, updated the generated
   GraphQL SDL, and added
@@ -270,9 +274,12 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` with 22,598 nodes and 524,469
-  edges. The refreshed graph includes the production-readiness listener and
-  unit-test nodes. Relationship notes were added in
+  and recorded in `graphify-out/graph.json` on 2026-06-01 20:22:11 +0300
+  with 22,647 nodes and 590,280 edges. The refreshed graph includes
+  `PasskeyGraphQlRequestResolver.php`,
+  `PasskeyProductionReadinessListener.php`,
+  `PasskeyProductionReadinessListenerTestCase.php`, and the split
+  `PasskeyReadiness*Test.php` nodes. Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
   test, documentation, dependency, and strict BMAD parser-adapter changes.
@@ -375,8 +382,8 @@ Latest browser rerun: 2026-06-01T02:23:28.150Z against
 `http://localhost:19081` at runtime source base commit
 `69af2cf13c46f797da7076bff272fa7736e01ce9`, using Google Chrome headless
 through Chrome DevTools Protocol with virtual CTAP2 authenticators. Reviewed PR
-head bridge through `19694b53eae36aa952ea96389f2e2a2e37fc9fed`; the strict
-BMAD gate re-records the final reviewed commit in its generated context.
+head bridge is source-impact based for the active PR head; the strict BMAD
+report records the exact pushed SHA reviewed after each remediation commit.
 Sanitized transcript:
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
@@ -536,7 +543,7 @@ stress, and spike enabled in the same K6 invocation:
 | `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms |
 
 The load run used isolated Compose project `user-service-pr286-passkey-load`,
-MongoDB 7 override, `make setup-load-test-db`, then
+the `make MONGODB_VERSION=7.0` load-test override, the load-test database setup, then
 `tests/Load/execute-load-test.sh <scenario> true true true true`.
 
 - Current focused integration verification:

@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
+use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
+use App\User\Domain\Entity\PasskeyChallenge;
+use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
 /**
  * @phpstan-type JsonScalar bool|float|int|string|null
@@ -18,6 +24,11 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
 {
     private HttpKernelInterface $httpKernel;
+    private UserFactoryInterface $userFactory;
+    private UserRepositoryInterface $userRepository;
+    private PasswordHasherFactoryInterface $passwordHasherFactory;
+    private UuidTransformer $uuidTransformer;
+    private DocumentManager $documentManager;
 
     #[\Override]
     protected function setUp(): void
@@ -27,6 +38,13 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $kernel = $this->container->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
         $this->httpKernel = $kernel;
+        $this->userFactory = $this->container->get(UserFactoryInterface::class);
+        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
+        $this->passwordHasherFactory = $this->container->get(
+            PasswordHasherFactoryInterface::class
+        );
+        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
+        $this->documentManager = $this->container->get(DocumentManager::class);
     }
 
     public function testSignupOptionsReturnsBrowserSafeWebauthnJson(): void
@@ -47,6 +65,30 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $publicKey = $response['body']['public_key'] ?? null;
         $this->assertIsArray($publicKey);
         $this->assertBrowserSafePublicKey($publicKey);
+    }
+
+    public function testSignupOptionsRejectsExistingEmailWithoutCreatingChallenge(): void
+    {
+        $email = strtolower($this->faker->unique()->safeEmail());
+        $this->createUser($email);
+
+        $response = $this->requestJson(
+            '/api/passkeys/signup/options',
+            [
+                'email' => $email,
+                'initials' => strtoupper($this->faker->lexify('??')),
+                'displayName' => $this->faker->name(),
+            ]
+        );
+
+        $this->assertSame(Response::HTTP_CONFLICT, $response['response']->getStatusCode());
+        $this->assertStringStartsWith(
+            'application/problem+json',
+            (string) $response['response']->headers->get('Content-Type')
+        );
+        $this->assertSame('Email is already registered.', $response['body']['detail'] ?? null);
+        $this->assertArrayNotHasKey('challenge_id', $response['body']);
+        $this->assertNoSignupChallengeWasCreatedForEmail($email);
     }
 
     /**
@@ -80,6 +122,34 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $this->assertNotSame('', $value);
 
         return $value;
+    }
+
+    private function createUser(string $email): void
+    {
+        $plainPassword = $this->faker->password(12, 20);
+        $user = $this->userFactory->create(
+            $email,
+            strtoupper($this->faker->lexify('??')),
+            $plainPassword,
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user::class);
+        $user->setPassword($passwordHasher->hash($plainPassword, null));
+        $this->userRepository->save($user);
+    }
+
+    private function assertNoSignupChallengeWasCreatedForEmail(string $email): void
+    {
+        $count = (int) $this->documentManager
+            ->createQueryBuilder(PasskeyChallenge::class)
+            ->field('purpose')->equals(PasskeyChallenge::PURPOSE_SIGNUP)
+            ->field('email')->equals(strtolower(trim($email)))
+            ->count()
+            ->getQuery()
+            ->execute();
+
+        $this->assertSame(0, $count);
     }
 
     /**

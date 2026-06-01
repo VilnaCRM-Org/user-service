@@ -4,10 +4,9 @@ Generated: 2026-06-01 UTC
 
 Base ref: `refs/remotes/origin/main`
 
-Current PR head bridge scope for this evidence refresh:
-`19694b53eae36aa952ea96389f2e2a2e37fc9fed`. The BMAD gate-generated
-`codebase-graph-impact-context.md` re-confirms the exact reviewed commit when
-the gate runs after the final remediation commit.
+Current PR head bridge scope for this evidence refresh: the browser transcript
+is source-impact bridged to the active PR head, and the strict BMAD report
+records the exact pushed SHA reviewed after each remediation commit.
 
 Previous strict-gate graph artifact reported as stale before this remediation
 and retained here only as historical context:
@@ -24,17 +23,21 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest local refresh produced 22,598 nodes and 524,469 edges.
+committed. The latest local refresh completed on 2026-06-01 20:22:11 +0300
+and produced 22,647 nodes and 590,280 edges.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`
+- `src/User/Application/EventListener/PasskeyGraphQlRequestResolver.php`
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`
+- `tests/Unit/User/Application/EventListener/PasskeyProductionReadinessListenerTestCase.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessListenerTest.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlBlockingTest.php`
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlResolutionTest.php`
 
-The strict BMAD gate also generates a fresh `codebase-graph-impact-context.md`
-in its log directory for the exact head it reviews.
+The latest strict BMAD report includes graph counts and reviewed-head context in
+its log directory for the exact head it reviews. The graph impact context is
+recorded in that report rather than a separate committed graph-impact file.
 
 ## Post-Graph Changed Files
 
@@ -140,12 +143,36 @@ The production-readiness remediation adds:
 - `tests/Integration/Auth/GraphQLAuthSupportTest.php` generated GraphQL
   description regression coverage
 
+The final strict skill/coverage remediation adds:
+
+- `.claude/skills/code-review/reference/fr-nfr-quality-gate.md`, stricter
+  `code-review`, `testing-workflow`, `quality-standards`, BMAD QA, and BMAD
+  adversarial-review instructions for FR/NFR extraction, automated coverage,
+  flaky-test review, expected CI checks, graph impact, quality attributes, and
+  no human-approval dependency for BMAD status.
+- `scripts/ai-review-prompts/review.md` and `fix.md` updates so the AI review
+  loop runs the same strict gate and executes validation commands itself.
+- `.github/workflows/load-tests.yml` and `Makefile` changes so pull-request K6
+  runs `make load-tests`, and load-test targets rebuild load-test database state
+  before smoke/average/stress/spike execution.
+- Passkey rate-limit resolver updates so REST and GraphQL authenticated
+  registration paths use the registration limiter.
+- K6 passkey sign-in and registration scripts use the shared seeded-user
+  selector to avoid empty-fixture modulo failures.
+- Focused unit and integration coverage for REST/GraphQL passkey registration
+  rate limiting and REST existing-email signup rejection without challenge
+  persistence.
+
 ## Relationship Edges
 
 Runtime GraphQL rate-limit path:
 
 - `ApiRateLimitRequestResolver`
+  -> REST `/api/passkeys/(signup|register)/(options|complete)`
+  -> registration limiter keyed by client IP
   -> `ApiRateLimitGraphQlAuthTargetResolver`
+  -> GraphQL passkey sign-up and authenticated registration mutations
+  -> registration limiter keyed by client IP
   -> `ApiRateLimitGraphQlQueryInspector`
   -> `ApiRateLimitGraphQlDocumentResolver`
   -> `ApiRateLimitGraphQlQueryInspection`
@@ -218,6 +245,19 @@ Production-readiness path:
   -> URL-selected GraphQL `operationName` detection for multi-operation requests
   -> RFC 7807 `503` JSON response while `prod` traffic is disabled or
   monitoring readiness is false
+
+Load-test CI path:
+
+- `.github/workflows/load-tests.yml`
+  -> `make load-tests`
+  -> `docker-compose.load-tests.yml` isolated stack
+  -> `make setup-load-test-db`
+  -> collections and standard MongoDB indexes, with search-index processing
+     skipped because this service has no mapped search indexes
+  -> `tests/Load/run-load-tests.sh`
+  -> smoke, average, stress, and spike profiles for
+  `passkeySignupOptions`, `passkeySigninOptions`, and
+  `passkeyRegistrationOptions`
 - `PasskeyReadiness*Test`
   -> non-prod allowance
   -> subrequest skip

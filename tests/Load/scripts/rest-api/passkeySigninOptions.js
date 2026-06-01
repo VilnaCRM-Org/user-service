@@ -18,8 +18,7 @@ const users = insertUsersUtils.loadInsertedUsers();
 export const options = scenarioUtils.getOptions();
 
 export default function passkeySigninOptions() {
-  const user = users[counter.up() % users.length];
-  utils.checkUserIsDefined(user);
+  const user = insertUsersUtils.pickUser(users, counter.up());
 
   const payload = JSON.stringify({
     email: user.email,

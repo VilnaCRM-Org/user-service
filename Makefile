@@ -260,8 +260,8 @@ setup-load-test-db: ## Create database for load testing purposes
 	$(SYMFONY_LOAD_TEST_ENV) c:c
 	$(SYMFONY_LOAD_TEST_ENV_NODEBUG) c:c
 	@echo "Recreating MongoDB schema for load testing..."
-	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
-	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop --skip-search-indexes 2>&1 || true
+	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create --skip-search-indexes
 	@echo "Ensuring JWT keypair exists for load-test environment..."
 	$(SYMFONY_LOAD_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
@@ -274,26 +274,31 @@ LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T ph
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/run-load-tests.sh
 
@@ -315,6 +320,7 @@ memory-load-soak-tests-full: build-k6-docker ## Run exhaustive worker-mode smoke
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 

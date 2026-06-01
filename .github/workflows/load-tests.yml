@@ -18,11 +18,5 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Start application
-        run: make start
-
-      - name: Setup test db
-        run: make setup-load-test-db
-
       - name: Run load tests
-        run: make smoke-load-tests
+        run: make load-tests

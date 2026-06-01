@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitRequestResolver
 {
+    private const PASSKEY_REGISTRATION_PATH_PATTERN =
+        '#^/api/passkeys/(signup|register)/(options|complete)$#';
     private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
     private const RECOVERY_CODES_PATH = '/api/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
@@ -155,7 +157,7 @@ final readonly class ApiRateLimitRequestResolver
         if (
             $method === 'POST'
             && (preg_match('#^/api/users(?:\.[^/]+)?$#', $path) === 1
-                || preg_match('#^/api/passkeys/signup/(options|complete)$#', $path) === 1)
+                || preg_match(self::PASSKEY_REGISTRATION_PATH_PATTERN, $path) === 1)
         ) {
             return ['name' => 'registration', 'key' => $this->buildIpKey($request)];
         }
