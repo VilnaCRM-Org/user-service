@@ -230,7 +230,7 @@ config/services.yaml`, `bin/console lint:container`,
   violations; `make phpinsights` reported source Code 100, Complexity 97.2,
   Architecture 100, Style 100 and tests Code 100, Complexity 97.8,
   Architecture 100, Style 100; `make psalm` reported no errors; `git diff
-  --check` and `git diff --cached --check` passed.
+--check` and `git diff --cached --check` passed.
 - Focused mutation verification for the GraphQL rate-limit parser path passed:
   100 PHPUnit coverage tests / 312 assertions, then Infection generated 148
   mutants for `ApiRateLimitListener` plus the GraphQL parser/resolver path, with
