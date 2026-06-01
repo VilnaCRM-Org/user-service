@@ -4,13 +4,13 @@
 
 ### Files Changed
 
-| File | Change | Lines |
-|------|--------|-------|
-| `infrastructure/docker/php/init-aws.sh` | `awslocal` → `aws` × 3 | 3 changed |
-| `docker-compose.override.yml` | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, remove `localstack_data` volume mount and declaration | 6 changed |
-| `docker-compose.load-tests.yml` | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, simplify health check grep | 5 changed |
-| `docker-compose.memory-tests.yml` | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, simplify health check grep | 5 changed |
-| `docker-compose.schemathesis.yml` | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs` | 3 changed |
+| File                                    | Change                                                                                                    | Lines     |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- | --------- |
+| `infrastructure/docker/php/init-aws.sh` | `awslocal` → `aws` × 3                                                                                    | 3 changed |
+| `docker-compose.override.yml`           | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, remove `localstack_data` volume mount and declaration | 6 changed |
+| `docker-compose.load-tests.yml`         | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, simplify health check grep                            | 5 changed |
+| `docker-compose.memory-tests.yml`       | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`, simplify health check grep                            | 5 changed |
+| `docker-compose.schemathesis.yml`       | Image, add `FLOCI_HOSTNAME`, remove `SERVICES=sqs`                                                        | 3 changed |
 
 **Total: 5 files, ~22 line changes (insertions + deletions)**
 

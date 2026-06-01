@@ -53,11 +53,7 @@ services:
     volumes:
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -fsS http://localhost:4566/_localstack/health',
-        ]
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:4566/_localstack/health']
       interval: 5s
       timeout: 3s
       retries: 20

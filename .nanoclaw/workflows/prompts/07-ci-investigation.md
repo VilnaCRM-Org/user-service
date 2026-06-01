@@ -16,13 +16,17 @@
 ## Required Sections in ci.md
 
 ### 1. PR Summary
+
 Title, branch, base branch, author, URL.
 
 ### 2. Check Status Overview
+
 Table: check name → status → conclusion → duration. Mark failing checks clearly.
 
 ### 3. Failure Analysis
+
 For each failing job:
+
 - Job name and workflow file
 - Failure category: test failure / lint error / type error / build failure / infra issue / timeout
 - Key error lines (copy the most relevant 10–20 lines from the log)
@@ -31,9 +35,11 @@ For each failing job:
 - Estimated effort: trivial / small / medium / large
 
 ### 4. Fix Priority Order
+
 Numbered list: in what order should the fixes be applied? Start with the most blocking.
 
 ### 5. Checks to Ignore
+
 List any checks that failed for reasons unrelated to this PR (flaky tests, infra issues, unrelated branch failures).
 
 ## Investigation Process

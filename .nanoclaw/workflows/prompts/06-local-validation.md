@@ -15,17 +15,20 @@
 ## Process
 
 Run:
+
 ```
 dev-cycle.sh validate <task-folder>
 ```
 
 The script runs validation commands in this priority order:
+
 1. `make ci` (primary gate — up to 3 fix attempts)
 2. Remaining detected commands (`make test`, `make phpstan`, `make psalm`, `make cs-check`, etc.)
 
 ## On Failure
 
 For each failed command, capture in `validation.md`:
+
 1. The command and its exit code
 2. The last 30 lines of output
 3. Your diagnosis of the root cause
@@ -43,6 +46,7 @@ Do not guess at fixes. Read the error output carefully before acting.
 ## Acceptance Criteria Verification
 
 After all commands pass, manually verify each acceptance criterion from `spec.md`:
+
 - For each criterion, state how it was verified (test name, manual check, log line, etc.)
 
 ## Quality Gates

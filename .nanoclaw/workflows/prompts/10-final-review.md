@@ -38,31 +38,40 @@ For each item, state: PASS / FAIL / N/A + brief evidence.
 Write this document as if handing off to a reviewer who has no prior context.
 
 ### Task Summary
+
 One paragraph: what was the task and why did it need to be done?
 
 ### Implementation Summary
+
 What approach was taken? Key design decisions and why.
 
 ### Changed Files
+
 Table: file path → change type → one-line description.
 
 ### Validation Commands Run
+
 List every command run, with pass/fail status.
 
 ### Validation Status
+
 Overall: PASSED / FAILED (with details if failed)
 
 ### CI Status
+
 Overall: PASSED / FAILED / NOT CHECKED (with job breakdown if failed)
 
 ### PR Comments Handled
+
 Table: comment ID → status (implemented / deferred / needs-decision) → brief note.
 Write "N/A" if no PR comments were addressed.
 
 ### Unresolved Risks
+
 Any remaining open questions, deferred items, or known limitations.
 
 ### Recommended Commit Message
+
 ```
 <type>(<scope>): <subject>
 
@@ -72,6 +81,7 @@ Any remaining open questions, deferred items, or known limitations.
 ```
 
 ### Recommended PR Response
+
 Draft response to post in the PR: summarize what was done, what was deferred and why, and what reviewers should focus on.
 
 ## Quality Gates

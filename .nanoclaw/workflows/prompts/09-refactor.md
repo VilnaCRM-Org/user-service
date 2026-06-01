@@ -18,14 +18,18 @@
 ## Process
 
 ### Step 1 — Process clear items
+
 For each action item with status `clear`:
+
 1. Read the referenced file and the comment.
 2. Make the minimal change that satisfies the comment.
 3. Append to `implementation-log.md` (file changed, comment ID, what was done).
 4. If the change touches logic: run targeted validation immediately (e.g., `make phpunit`).
 
 ### Step 2 — Document ambiguous items
+
 For each action item with status `ambiguous`:
+
 - Add to `needs-human-decision.md`:
   - Comment ID, reviewer, comment text
   - Why it is ambiguous
@@ -34,15 +38,20 @@ For each action item with status `ambiguous`:
 - Do not implement. Do not guess.
 
 ### Step 3 — Document spec/architecture conflicts
+
 For each item that conflicts with `spec.md` or an architecture boundary:
+
 - Add to `needs-human-decision.md` with full context.
 - Do not implement without explicit approval.
 
 ### Step 4 — Full validation
+
 After all clear items are processed:
+
 ```
 dev-cycle.sh validate <task-folder>
 ```
+
 If `make ci` exists, it must pass before declaring refactor complete.
 
 ## Hard Constraints (same as implementation phase)

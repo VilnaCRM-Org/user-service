@@ -10,11 +10,13 @@
 ## Action
 
 Run:
+
 ```
 dev-cycle.sh start "<task description>"
 ```
 
 The script will:
+
 1. Detect the repo root
 2. Capture git state (branch, HEAD commit, status)
 3. Create `.ai/tasks/<timestamp-slug>/` with all artifact skeletons

@@ -43,6 +43,7 @@ Replace `awslocal` with `aws` on all 3 queue creation lines. In `latest-compat`,
 ```
 
 **Notes:**
+
 - `SERVICES=sqs` dropped — Floci translates it but it's unnecessary noise
 - `FLOCI_HOSTNAME=localstack` is required so SQS `QueueUrl` values in responses use `localstack` (the compose service name) instead of `localhost`
 - `localstack_data` volume mount removed — Floci does not use `/var/lib/localstack`; queues are ephemeral and recreated by init script

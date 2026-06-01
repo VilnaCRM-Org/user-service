@@ -6,16 +6,16 @@ The project uses `localstack/localstack:3.4.0` solely for SQS emulation in local
 
 ## Current State
 
-| Aspect | Value |
-|--------|-------|
-| Image | `localstack/localstack:3.4.0` |
-| Services used | SQS only |
-| Port | `4566` |
-| Init mechanism | `awslocal` CLI via `infrastructure/docker/php/init-aws.sh` mounted to `/etc/localstack/init/ready.d/` |
-| Health check | `curl -fsS http://localhost:4566/_localstack/health \| grep -q '"sqs": "running"'` |
-| Queues created | `send-email`, `failed-emails`, `insert-user` |
-| SQS transports | `send-email`, `failed-send-email`, `insert-user-batch`, `domain-events`, `failed-domain-events` |
-| Account ID in DSN | `000000000000` (LocalStack default) |
+| Aspect                 | Value                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Image                  | `localstack/localstack:3.4.0`                                                                                                        |
+| Services used          | SQS only                                                                                                                             |
+| Port                   | `4566`                                                                                                                               |
+| Init mechanism         | `awslocal` CLI via `infrastructure/docker/php/init-aws.sh` mounted to `/etc/localstack/init/ready.d/`                                |
+| Health check           | `curl -fsS http://localhost:4566/_localstack/health \| grep -q '"sqs": "running"'`                                                   |
+| Queues created         | `send-email`, `failed-emails`, `insert-user`                                                                                         |
+| SQS transports         | `send-email`, `failed-send-email`, `insert-user-batch`, `domain-events`, `failed-domain-events`                                      |
+| Account ID in DSN      | `000000000000` (LocalStack default)                                                                                                  |
 | Compose files affected | `docker-compose.override.yml`, `docker-compose.load-tests.yml`, `docker-compose.memory-tests.yml`, `docker-compose.schemathesis.yml` |
 
 ## Target State
@@ -48,31 +48,34 @@ Replace `localstack/localstack:3.4.0` with `floci/floci:latest-compat` (recommen
 
 ## Compatibility Matrix
 
-| Feature | LocalStack 3.4.0 | floci:latest | floci:latest-compat | Risk |
-|---------|-----------------|--------------|---------------------|------|
-| SQS `SendMessage` | ✓ | Expected ✓ | Expected ✓ | Low |
-| SQS `ReceiveMessage` | ✓ | Expected ✓ | Expected ✓ | Low |
-| SQS `DeleteMessage` | ✓ | Expected ✓ | Expected ✓ | Low |
-| SQS `CreateQueue` | ✓ | Expected ✓ | Expected ✓ | Low |
-| `auto_setup: true` | ✓ | Unknown | Unknown | Medium |
-| `awslocal` CLI in container | ✓ | ✗ | Unknown | **High** |
-| `/_localstack/health` endpoint | ✓ | ✗ | ✗ | **High** |
-| Init mount path `/etc/localstack/init/ready.d/` | ✓ | ✗ | ✗ | **High** |
-| Account ID `000000000000` in URLs | ✓ | Unknown | Unknown | Medium |
-| `sslmode=disable` DSN param | ✓ (ignored) | Unknown | Unknown | Low |
+| Feature                                         | LocalStack 3.4.0 | floci:latest | floci:latest-compat | Risk     |
+| ----------------------------------------------- | ---------------- | ------------ | ------------------- | -------- |
+| SQS `SendMessage`                               | ✓                | Expected ✓   | Expected ✓          | Low      |
+| SQS `ReceiveMessage`                            | ✓                | Expected ✓   | Expected ✓          | Low      |
+| SQS `DeleteMessage`                             | ✓                | Expected ✓   | Expected ✓          | Low      |
+| SQS `CreateQueue`                               | ✓                | Expected ✓   | Expected ✓          | Low      |
+| `auto_setup: true`                              | ✓                | Unknown      | Unknown             | Medium   |
+| `awslocal` CLI in container                     | ✓                | ✗            | Unknown             | **High** |
+| `/_localstack/health` endpoint                  | ✓                | ✗            | ✗                   | **High** |
+| Init mount path `/etc/localstack/init/ready.d/` | ✓                | ✗            | ✗                   | **High** |
+| Account ID `000000000000` in URLs               | ✓                | Unknown      | Unknown             | Medium   |
+| `sslmode=disable` DSN param                     | ✓ (ignored)      | Unknown      | Unknown             | Low      |
 
 ## Risk Assessment
 
 ### High Risks
+
 1. **`awslocal` CLI not in Floci**: `init-aws.sh` uses `awslocal sqs create-queue`. Must verify whether `floci:latest-compat` bundles this tool. If not, rewrite using `aws --endpoint-url http://floci:4566 sqs create-queue --queue-name <n>`.
 2. **Health check**: `/_localstack/health` is LocalStack-specific. Must find Floci equivalent (e.g., TCP check, simple HTTP 200 probe, or `curl http://floci:4566`).
 3. **Init hook path**: LocalStack's `/etc/localstack/init/ready.d/` auto-execution does not exist in Floci. Queue creation needs an alternative: `command:` entrypoint override, or a startup shell wrapper.
 
 ### Medium Risks
+
 4. **Account ID**: All DSNs embed `000000000000`. Floci must accept this or be configured to match.
 5. **`auto_setup: true`**: Symfony auto-creates queues via `CreateQueue`. Must be confirmed working against Floci before removing from init script.
 
 ### Low Risks
+
 6. **Port 4566**: Same default — no DSN changes.
 7. **`SERVICES=sqs`**: Floci-only env var, can be dropped.
 8. **Image size/startup**: Expected ~20 MB vs ~500 MB improvement.

@@ -8,39 +8,40 @@ Every task produces a complete paper trail of decisions, analysis, and validatio
 
 ## Prerequisites
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| `bash` ≥ 4 | Script runtime | system |
-| `git` | Version control | system |
-| `gh` | GitHub CLI — CI checks, PR comments | `brew install gh` / `apt install gh` / [cli.github.com](https://cli.github.com) |
-| `make` | Build targets | system |
-| `composer` | PHP dependency management | [getcomposer.org](https://getcomposer.org) |
-| `docker` + `docker compose` | Container runtime for `make ci` | [docs.docker.com](https://docs.docker.com/get-docker/) |
-| `jq` | JSON parsing (optional, improves output) | `brew install jq` / `apt install jq` |
+| Tool                        | Purpose                                  | Install                                                                         |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------- |
+| `bash` ≥ 4                  | Script runtime                           | system                                                                          |
+| `git`                       | Version control                          | system                                                                          |
+| `gh`                        | GitHub CLI — CI checks, PR comments      | `brew install gh` / `apt install gh` / [cli.github.com](https://cli.github.com) |
+| `make`                      | Build targets                            | system                                                                          |
+| `composer`                  | PHP dependency management                | [getcomposer.org](https://getcomposer.org)                                      |
+| `docker` + `docker compose` | Container runtime for `make ci`          | [docs.docker.com](https://docs.docker.com/get-docker/)                          |
+| `jq`                        | JSON parsing (optional, improves output) | `brew install jq` / `apt install jq`                                            |
 
 ---
 
 ## The 11 Phases
 
-| # | Phase | Description |
-|---|-------|-------------|
-| 01 | Task Intake | Capture task description and baseline git state; create task folder |
-| 02 | Specification | Produce unambiguous spec: problem, behavior, acceptance criteria, test strategy |
-| 03 | Impact Analysis | Map every impacted file, module, migration risk, and CI job |
-| 04 | Implementation Plan | Step-by-step plan: files to change, tests to add, validation commands, rollback |
-| 05 | Implementation | Execute the plan exactly — no scope creep, no secrets, no push |
-| 06 | Local Validation | Run all validation gates; max 3 fix attempts for `make ci` |
-| 07 | CI Investigation | Diagnose failing CI jobs; produce fix priority list |
-| 08 | PR Comments | Classify every PR comment; produce action plan (no implementation) |
-| 09 | Refactor | Implement clear PR comments; document ambiguous ones; re-validate |
-| 10 | Final Review | Full review checklist + `final-summary.md` ready for handoff |
-| 11 | Done | All gates passed, summary written, ready to merge |
+| #   | Phase               | Description                                                                     |
+| --- | ------------------- | ------------------------------------------------------------------------------- |
+| 01  | Task Intake         | Capture task description and baseline git state; create task folder             |
+| 02  | Specification       | Produce unambiguous spec: problem, behavior, acceptance criteria, test strategy |
+| 03  | Impact Analysis     | Map every impacted file, module, migration risk, and CI job                     |
+| 04  | Implementation Plan | Step-by-step plan: files to change, tests to add, validation commands, rollback |
+| 05  | Implementation      | Execute the plan exactly — no scope creep, no secrets, no push                  |
+| 06  | Local Validation    | Run all validation gates; max 3 fix attempts for `make ci`                      |
+| 07  | CI Investigation    | Diagnose failing CI jobs; produce fix priority list                             |
+| 08  | PR Comments         | Classify every PR comment; produce action plan (no implementation)              |
+| 09  | Refactor            | Implement clear PR comments; document ambiguous ones; re-validate               |
+| 10  | Final Review        | Full review checklist + `final-summary.md` ready for handoff                    |
+| 11  | Done                | All gates passed, summary written, ready to merge                               |
 
 ---
 
 ## CLI Reference
 
 ### `start "<description>"`
+
 Begin a new task. Creates `.ai/tasks/<timestamp-slug>/` with all artifact files.
 
 ```bash
@@ -49,6 +50,7 @@ dev-cycle.sh start "add email verification endpoint"
 ```
 
 ### `spec <task-folder>`
+
 Phase 02. Print the spec prompt and required sections.
 
 ```bash
@@ -56,6 +58,7 @@ dev-cycle.sh spec .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `impact <task-folder>`
+
 Phase 03. Dump repo context (Makefile, composer.json, Docker files, CI workflows, test dirs) and print the impact analysis prompt.
 
 ```bash
@@ -63,6 +66,7 @@ dev-cycle.sh impact .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `plan <task-folder>`
+
 Phase 04. Verify prior phases exist, print the plan prompt.
 
 ```bash
@@ -70,6 +74,7 @@ dev-cycle.sh plan .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `implement <task-folder>`
+
 Phase 05. Print safety reminder and implementation prompt.
 
 ```bash
@@ -77,6 +82,7 @@ dev-cycle.sh implement .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `validate <task-folder>`
+
 Phase 06. Detect and run all available validation commands. Max 3 fix attempts for `make ci`.
 
 ```bash
@@ -84,6 +90,7 @@ dev-cycle.sh validate .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `ci <task-folder> <pr-number-or-url>`
+
 Phase 07. Fetch CI check results and failed job data. Store raw data under `.ai/ci/pr-<N>/`.
 
 ```bash
@@ -92,6 +99,7 @@ dev-cycle.sh ci .ai/tasks/20240101-120000-add-email-verification https://github.
 ```
 
 ### `pr-comments <task-folder> <pr-number-or-url>`
+
 Phase 08. Fetch and group PR review and issue comments. Store raw data under `.ai/reviews/pr-<N>/`.
 
 ```bash
@@ -99,6 +107,7 @@ dev-cycle.sh pr-comments .ai/tasks/20240101-120000-add-email-verification 42
 ```
 
 ### `refactor <task-folder> <pr-number-or-url>`
+
 Phase 09. Implement clear PR comments, document ambiguous ones, run full validation.
 
 ```bash
@@ -106,6 +115,7 @@ dev-cycle.sh refactor .ai/tasks/20240101-120000-add-email-verification 42
 ```
 
 ### `review <task-folder>`
+
 Phase 10. Run final review checklist, produce `review.md` and `final-summary.md`.
 
 ```bash
@@ -113,6 +123,7 @@ dev-cycle.sh review .ai/tasks/20240101-120000-add-email-verification
 ```
 
 ### `full "<description>"`
+
 Convenience shortcut: runs `start` → `spec` → `impact` → `plan`, then pauses.
 Use when you want all planning phases done before you begin implementation.
 
@@ -175,6 +186,7 @@ dev-cycle.sh full "refactor auth middleware for session compliance"
 ## Recommended Daily Workflow
 
 **Starting a new task:**
+
 ```bash
 # 1. Plan (phases 01–04)
 dev-cycle.sh full "your task description here"
@@ -194,6 +206,7 @@ dev-cycle.sh review .ai/tasks/<slug>
 ```
 
 **After a PR is open:**
+
 ```bash
 # Investigate CI failures
 dev-cycle.sh ci .ai/tasks/<slug> <pr-number>
@@ -236,6 +249,7 @@ These constraints are enforced at the script level and in every prompt:
 ## Auditing
 
 Every task folder under `.ai/tasks/` is a complete audit trail:
+
 - What was planned and why (`task.md`, `spec.md`, `plan.md`)
 - What was done and how (`implementation-log.md`)
 - That it was validated (`validation.md`)

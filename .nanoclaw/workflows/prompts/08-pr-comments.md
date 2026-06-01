@@ -19,16 +19,20 @@
 Group comments by:
 
 ### By File
+
 For each file mentioned in comments: list the comments, line reference, reviewer, and content.
 
 ### By Reviewer
+
 For each reviewer: summarize their main concerns.
 
 ### Classification Table
-| # | File | Line | Reviewer | Summary | Category | Status |
-|---|------|------|----------|---------|----------|--------|
+
+| #   | File | Line | Reviewer | Summary | Category | Status |
+| --- | ---- | ---- | -------- | ------- | -------- | ------ |
 
 **Category options:**
+
 - `style` — formatting, naming, cosmetic
 - `correctness` — functional bug or logic error
 - `architecture` — structural or boundary concern
@@ -41,7 +45,9 @@ For each reviewer: summarize their main concerns.
 ## pr-action-plan.md structure
 
 ### Required Action Items
+
 For each comment requiring a code change:
+
 - ID (e.g., `RC-001`)
 - File and line
 - Reviewer and comment summary
@@ -50,12 +56,15 @@ For each comment requiring a code change:
 - Severity: `blocking` | `suggested` | `nit`
 
 ### Ambiguous Items
+
 List comments where the intent or correct fix is unclear. Do not attempt these.
 
 ### Conflicts with Spec/Architecture
+
 List any comment that would contradict `spec.md` or cross an architecture boundary. These require human decision before acting.
 
 ### Already-Resolved Items
+
 List comments that were addressed during the original implementation (with evidence).
 
 ## Quality Gates

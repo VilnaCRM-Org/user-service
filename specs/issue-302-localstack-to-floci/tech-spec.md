@@ -44,15 +44,16 @@ endpoint, so no `--endpoint-url` flag is required.
 
 **All four compose files** — identical pattern per file:
 
-| Change | Reason |
-|--------|--------|
-| `image: floci/floci:latest-compat` | Drop-in replacement; compat bundles AWS CLI |
-| Add `FLOCI_HOSTNAME=localstack` | Queue URLs must embed service name, not `localhost` |
-| Remove `SERVICES=sqs` | Floci runs all services; env var is LocalStack-specific noise |
-| Remove `localstack_data:/var/lib/localstack` volume | Floci does not use this path; queues are ephemeral and recreated by init script |
+| Change                                                 | Reason                                                                                                                                                        |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `image: floci/floci:latest-compat`                     | Drop-in replacement; compat bundles AWS CLI                                                                                                                   |
+| Add `FLOCI_HOSTNAME=localstack`                        | Queue URLs must embed service name, not `localhost`                                                                                                           |
+| Remove `SERVICES=sqs`                                  | Floci runs all services; env var is LocalStack-specific noise                                                                                                 |
+| Remove `localstack_data:/var/lib/localstack` volume    | Floci does not use this path; queues are ephemeral and recreated by init script                                                                               |
 | Simplify health-check grep (load/memory compose files) | `"sqs": "running"` pattern is LocalStack-specific; Floci serves `/_localstack/health` but with a different response body — plain HTTP 200 probe is sufficient |
 
 Floci compatibility guarantees that make zero further changes necessary:
+
 - `/_localstack/health` is served (LocalStack parity mode, on by default)
 - `/etc/localstack/init/ready.d/` is read at startup
 - `FLOCI_DEFAULT_ACCOUNT_ID` defaults to `000000000000`

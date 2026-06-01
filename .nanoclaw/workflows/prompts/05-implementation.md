@@ -36,12 +36,15 @@
 ## Step N — <step name>
 
 **Files changed:**
+
 - `path/to/file.php` — <one-line reason>
 
 **Commands run:**
+
 - `make ...` — exit 0
 
 **Unresolved questions / deviations:**
+
 - <any notes>
 ```
 
