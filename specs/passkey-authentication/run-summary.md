@@ -668,7 +668,7 @@ workspace; GitHub Actions is the source of full-suite verification after push.
   `ApiRateLimitGraphQlVariableValueResolver.php`, and
   `ApiRateLimitPayloadValueResolver.php`: 297 generated, 297 killed, MSI 100%.
   Final verification passed `docker compose exec -T -e APP_ENV=test php
-  bin/console lint:container`, focused split PHPUnit at 98 tests / 301
+bin/console lint:container`, focused split PHPUnit at 98 tests / 301
   assertions, full `make unit-tests` at 2,579 tests / 7,644 assertions with
   100% lines/methods/classes, `make psalm` with no errors, changed-file
   PHP-CS-Fixer dry run with 0 fixable files, `git diff --check`, and full
