@@ -53,7 +53,9 @@ coverage-html/
 
 ###> bats-core ###
 /tests/CLI/bats/test_helper/
+/tests/CLI/bats/bats-support
 /tests/CLI/bats/bats-support/
+/tests/CLI/bats/bats-assert
 /tests/CLI/bats/bats-assert/
 ###< bats-core ###
 
