@@ -23,8 +23,9 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest local refresh completed on 2026-06-01 20:22:11 +0300
-and produced 22,647 nodes and 590,280 edges.
+committed. The latest local refresh completed on 2026-06-01 20:47:15 +0300
+at PR head `87fa1a696092101b5b0734ea5295d16389faa925` and produced
+22,647 nodes and 623,199 edges.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`
@@ -83,6 +84,19 @@ The strict BMAD suppression-remediation delta adds the injected
 endpoint-specific GraphQL target resolution, updates rate-limit construction
 tests, applies passkey test coding-standard grouping fixes, and refreshes
 current-head BMAD evidence files.
+
+The final no-approval BMAD runner hardening on 2026-06-01 additionally changed:
+
+- `.github/workflows/load-tests.yml`
+- `scripts/ai-review-loop.sh`
+- `scripts/ai-review-prompts/review.md`
+
+This delta restricts the load-test workflow token to `contents: read`, pins the
+checkout action used by the changed load-test workflow, disables persisted
+checkout credentials, requires strict BMAD marker output from Codex reviews, and
+allows detached automation worktrees to pass `AI_REVIEW_GITHUB_PR` or
+`AI_REVIEW_PR_NUMBER` so the runner can post PR status updates without relying
+on human approval or local branch-name inference.
 
 The strict FR/NFR remediation on 2026-06-01 additionally changed:
 
@@ -249,6 +263,10 @@ Production-readiness path:
 Load-test CI path:
 
 - `.github/workflows/load-tests.yml`
+  -> workflow token permissions restricted to `contents: read`
+  -> checkout action pinned to
+  `actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5`
+  -> checkout credentials are not persisted
   -> `make load-tests`
   -> `docker-compose.load-tests.yml` isolated stack
   -> `make setup-load-test-db`

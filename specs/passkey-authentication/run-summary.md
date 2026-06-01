@@ -274,17 +274,19 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-01 20:22:11 +0300
-  with 22,647 nodes and 590,280 edges. The refreshed graph includes
+  and recorded in `graphify-out/graph.json` on 2026-06-01 20:47:15 +0300
+  at PR head `87fa1a696092101b5b0734ea5295d16389faa925` with 22,647 nodes
+  and 623,199 edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
   `PasskeyProductionReadinessListenerTestCase.php`, and the split
   `PasskeyReadiness*Test.php` nodes. Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,
-  test, documentation, dependency, and strict BMAD parser-adapter changes.
-  Generated `graphify-out/` artifacts are local review evidence and are not
-  committed.
+  test, documentation, dependency, strict BMAD parser-adapter changes, load-test
+  workflow permission hardening, strict BMAD marker-output enforcement, and
+  detached-worktree PR status update support. Generated `graphify-out/`
+  artifacts are local review evidence and are not committed.
 - Browser/WebAuthn evidence was rerun on 2026-06-01 UTC with Google Chrome
   headless through Chrome DevTools Protocol and virtual CTAP2 authenticators at
   runtime source base `69af2cf13c46f797da7076bff272fa7736e01ce9`. It verified
