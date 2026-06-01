@@ -195,6 +195,30 @@ post_github_status() {
   fi
 }
 
+refresh_github_pr_head() {
+  local current_head_sha
+  local current_pr_url
+
+  if [[ "$github_status_enabled" != "true" ]]; then
+    return 0
+  fi
+
+  if [[ -n "$github_repo" && -n "$github_pr_number" ]]; then
+    current_head_sha="$(gh pr view "$github_pr_number" --repo "$github_repo" --json headRefOid --jq .headRefOid 2>/dev/null || true)"
+    current_pr_url="$(gh pr view "$github_pr_number" --repo "$github_repo" --json url --jq .url 2>/dev/null || true)"
+  else
+    current_head_sha="$(gh pr view --json headRefOid --jq .headRefOid 2>/dev/null || true)"
+    current_pr_url="$(gh pr view --json url --jq .url 2>/dev/null || true)"
+  fi
+
+  if [[ -z "$current_head_sha" || -z "$current_pr_url" ]]; then
+    return 1
+  fi
+
+  github_head_sha="$current_head_sha"
+  github_pr_url="$current_pr_url"
+}
+
 fail_unexpected() {
   local exit_code=$?
 
@@ -379,6 +403,32 @@ exit_with_status() {
   exit "$exit_code"
 }
 
+validate_success_status_target() {
+  local local_head
+  local worktree_status
+
+  if [[ "$github_status_enabled" != "true" ]]; then
+    return
+  fi
+
+  if ! refresh_github_pr_head; then
+    echo "AI review PASS, but current PR head could not be verified." >&2
+    exit_with_status 2 "pending" "Strict BMAD review passed locally; current PR head could not be verified."
+  fi
+
+  worktree_status="$(git status --porcelain --untracked-files=all)"
+  if [[ -n "$worktree_status" ]]; then
+    echo "AI review PASS, but the working tree has uncommitted changes." >&2
+    exit_with_status 1 "failure" "Strict BMAD review passed locally, but fixes are uncommitted."
+  fi
+
+  local_head="$(git rev-parse HEAD)"
+  if [[ "$github_head_sha" != "$local_head" ]]; then
+    echo "AI review PASS, but local HEAD $local_head does not match current PR head $github_head_sha." >&2
+    exit_with_status 2 "pending" "Strict BMAD review passed locally; push local HEAD and wait for current-head CI."
+  fi
+}
+
 append_fail_log() {
   local agent="$1"
   local review_log="$2"
@@ -461,6 +511,7 @@ handle_review_result() {
       echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
       exit_with_status 1 "failure" "Strict BMAD review passed, but local verification failed."
     fi
+    validate_success_status_target
     echo "AI review PASS." >&2
     exit_with_status 0 "success" "Strict BMAD FR/NFR review and local verification passed."
   fi

@@ -22,6 +22,10 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         'passkeySignInOptionsUser',
         'passkeySignInCompleteUser',
     ];
+    private const SIGNIN_EMAIL_MUTATIONS = [
+        'signInUser',
+        'passkeySignInOptionsUser',
+    ];
 
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
@@ -114,6 +118,10 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
         ?ApiRateLimitGraphQlQueryInspection $inspection
     ): array {
         if ($inspection === null) {
+            if ($this->countMutations($request, self::SIGNIN_EMAIL_MUTATIONS, null) === 0) {
+                return [];
+            }
+
             $email = $this->clientIdentityResolver->resolveSignInEmail($request);
 
             return $email === null ? [] : [$email];
@@ -121,7 +129,7 @@ final readonly class ApiRateLimitGraphQlAuthTargetResolver
 
         return $this->normalizeEmails($inspection->findStringValuesForMutationFields(
             $this->resolveGraphQlVariables($request),
-            self::SIGNIN_MUTATIONS,
+            self::SIGNIN_EMAIL_MUTATIONS,
             ['email'],
         ));
     }

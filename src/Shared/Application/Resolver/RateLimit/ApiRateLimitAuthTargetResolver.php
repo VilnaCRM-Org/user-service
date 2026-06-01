@@ -60,6 +60,10 @@ final readonly class ApiRateLimitAuthTargetResolver
             ['name' => 'signin_ip', 'key' => $this->buildIpKey($request)],
         ];
 
+        if (!$this->isSignInEmailPath($path)) {
+            return $targets;
+        }
+
         $email = $this->clientIdentityResolver->resolveSignInEmail($request);
         if ($email !== null) {
             $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
@@ -76,6 +80,18 @@ final readonly class ApiRateLimitAuthTargetResolver
                 self::SIGNIN_PATH,
                 self::PASSKEY_SIGNIN_OPTIONS_PATH,
                 self::PASSKEY_SIGNIN_COMPLETE_PATH,
+            ],
+            true
+        );
+    }
+
+    private function isSignInEmailPath(string $path): bool
+    {
+        return in_array(
+            $path,
+            [
+                self::SIGNIN_PATH,
+                self::PASSKEY_SIGNIN_OPTIONS_PATH,
             ],
             true
         );

@@ -105,6 +105,30 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         self::assertSame('ip:' . $clientIp, $result[0]['key']);
     }
 
+    public function testResolvePasskeySignInCompleteIgnoresCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $resolver = $this->createAuthTargetResolver();
+        $request = Request::create(
+            '/api/passkeys/signin/complete',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'challengeId' => $this->faker->uuid(),
+                'credential' => ['email' => $this->faker->email()],
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $result = $resolver->resolve($request);
+
+        self::assertSame([
+            ['name' => 'signin_ip', 'key' => 'ip:' . $clientIp],
+        ], $result);
+    }
+
     public function testResolveSignInLimitersUsesDefaultIpWhenClientIpIsNull(): void
     {
         $resolver = $this->createAuthTargetResolver();

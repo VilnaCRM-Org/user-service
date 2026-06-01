@@ -282,6 +282,29 @@ GRAPHQL,
         $this->assertGraphQlLimiters($query, $clientIp, $this->signInIpLimiters($clientIp));
     }
 
+    public function testGraphQlPasskeySigninCompleteIgnoresCredentialEmail(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $challengeId = $this->faker->uuid();
+        $email = $this->faker->email();
+        $query = sprintf(
+            <<<'GRAPHQL'
+mutation {
+  passkeySignInCompleteUser(input: {
+    challengeId: "%s"
+    credential: { email: "%s" }
+  }) {
+    user { accessToken }
+  }
+}
+GRAPHQL,
+            $challengeId,
+            $email
+        );
+
+        $this->assertGraphQlLimiters($query, $clientIp, $this->signInIpLimiters($clientIp));
+    }
+
     public function testGeneratedGraphQlSpecExposesAuthFieldNamesCoveredByRateLimiter(): void
     {
         $spec = file_get_contents(dirname(__DIR__, 6) . '/.github/graphql-spec/spec');

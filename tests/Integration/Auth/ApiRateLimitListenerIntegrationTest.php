@@ -188,6 +188,43 @@ GRAPHQL, $email),
         $this->assertRateLimitResponse($response);
     }
 
+    public function testRestPasskeySigninCompleteIgnoresCredentialEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', strtolower(trim($email))),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = json_encode([
+            'challengeId' => $this->faker->uuid(),
+            'credential' => ['email' => $email],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest(
+            '/api/passkeys/signin/complete',
+            Request::METHOD_POST,
+            $content
+        );
+
+        $this->assertNotSame(429, $response->getStatusCode());
+    }
+
+    public function testGraphQlPasskeySigninCompleteIgnoresCredentialEmailLimiter(): void
+    {
+        $email = $this->faker->safeEmail();
+        $this->exhaustLimiter(
+            'signin_email',
+            sprintf('email:%s', strtolower(trim($email))),
+            $this->resolveLimit('SIGNIN_EMAIL_RATE_LIMIT_MAX_REQUESTS', 5)
+        );
+        $content = $this->createPasskeySigninCompleteGraphQlPayload($email);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertNotSame(429, $response->getStatusCode());
+    }
+
     public function testTwoFactorSetupLimiterUsesJwtSubjectAndReturns429(): void
     {
         $userId = '8be90127-9840-4235-a6da-39b8debfb260';
@@ -268,6 +305,22 @@ GRAPHQL, $decoyEmail),
             'operationName' => 'Real',
             'variables' => ['e' => $email],
             'email' => $this->faker->safeEmail(),
+        ], JSON_THROW_ON_ERROR);
+    }
+
+    private function createPasskeySigninCompleteGraphQlPayload(string $email): string
+    {
+        return json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation {
+  passkeySignInCompleteUser(input: {
+    challengeId: "%s"
+    credential: { email: "%s" }
+  }) {
+    user { accessToken }
+  }
+}
+GRAPHQL, $this->faker->uuid(), $email),
         ], JSON_THROW_ON_ERROR);
     }
 
