@@ -28,6 +28,35 @@ Second line:
 - If PASS: "0 issues."
 - If FAIL: "Issues:" followed by a numbered list (1., 2., 3.) of concrete problems.
 
+After the issue list, include this exact strict marker block. Do not omit or
+rename any marker. Use STATUS: PASS only when every marker is PASS. If the only
+non-PASS markers are current-head remote CI/check completion markers, use
+STATUS: FAIL and set those markers to PENDING_REMOTE / PENDING_REMOTE_CI so the
+runner keeps the GitHub status pending instead of applying local fixes.
+
+```text
+FR_NFR_SCORECARD: PASS|FAIL
+TEST_CASE_MATRIX: PASS|FAIL
+AUTO_TEST_COVERAGE: PASS|FAIL
+CI_COVERAGE: PASS|FAIL|PENDING_REMOTE
+FLAKY_TEST_RISK: PASS|FAIL
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS|FAIL
+WHOLE_CODEBASE_IMPACT: PASS|FAIL
+GRAPH_IMPACT_CONTEXT: PASS|FAIL
+GITHUB_COMPLETION_GATE: PASS|FAIL|PENDING_REMOTE_CI
+```
+
+Then include concise report sections for:
+
+- Reviewed SHA and PR URL.
+- FR/NFR counts and generated test-case matrix coverage.
+- Findings with severity, requirement/NFR, evidence, expected fix, and verification.
+- Test evidence by suite/command, including mutation/coverage/contract/load checks where applicable.
+- Expected current-head GitHub check summary, separated from human approval state.
+- Flaky-test risk review.
+- System quality attribute scorecard.
+- Graph/code-search whole-codebase impact evidence.
+
 Each issue must include:
 
 - File path
