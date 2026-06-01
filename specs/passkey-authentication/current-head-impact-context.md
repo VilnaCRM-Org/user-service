@@ -78,6 +78,8 @@ The strict FR/NFR remediation on 2026-06-01 additionally changed:
 - `specs/passkey-authentication/nfr-catalog-evidence.md`
 - `specs/passkey-authentication/passkey-load-run-20260601T022759Z.sanitized.md`
 - `specs/passkey-authentication/run-summary.md`
+- `src/Shared/Application/Resolver/RateLimit/ApiRateLimitPayloadValueResolver.php`
+- `src/User/Application/Factory/IssuedSessionFactory.php`
 - `tests/Integration/Auth/PasskeyGraphQLAuthIntegrationTestCase.php`
 - `tests/Integration/Auth/PasskeyGraphQLAuthOptionsIntegrationTest.php`
 - `tests/Integration/Auth/PasskeyGraphQLCompletionFailureTest.php`
@@ -86,11 +88,14 @@ The strict FR/NFR remediation on 2026-06-01 additionally changed:
 - `tests/Unit/Shared/Auth/Support/ControllableCommandBusTest.php`
 
 This delta adds `/api/graphql` passkey ceremony integration coverage, records
-current-head passkey K6 smoke/average/stress/spike evidence, and records a
-current-head Chrome DevTools virtual-authenticator browser rerun, removes the
-temporary PHPInsights exclusions, and adds a DI-wired test command-bus
-decorator with direct unit coverage without changing production runtime
-services.
+current-head passkey K6 smoke/average/stress/spike evidence, records a
+Chrome DevTools virtual-authenticator browser rerun at runtime source base
+`69af2cf13c46f797da7076bff272fa7736e01ce9`, removes the temporary PHPInsights
+exclusions, and adds a DI-wired test command-bus decorator with direct unit
+coverage. Later production edits before reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64` are limited to
+`IssuedSessionFactory` rollback-failure logging and a legacy GraphQL
+rate-limit regex fallback in `ApiRateLimitPayloadValueResolver`.
 
 ## Relationship Edges
 
@@ -136,6 +141,10 @@ Passkey ceremony path:
   -> challenge claim
   -> credential repository
   -> issued session or existing 2FA pending-session behavior
+- `IssuedSessionFactory`
+  -> successful session token response unchanged after the browser rerun
+  -> rollback-failure logging only when downstream token issuance throws
+  -> unit coverage for rollback cleanup and rollback-failure log context
 - GraphQL passkey mutations use the same passkey application command handlers
   after API Platform resolver dispatch. The new rate-limit AST inspection runs
   before resolver dispatch and only determines limiter target keys.
@@ -160,7 +169,9 @@ Deterministic 2FA recovery-code testability path:
   REST passkey WebAuthn ceremony paths are unchanged by the rate-limit parser
   extraction. GraphQL passkey options, validation, completion serialization,
   replay, wrong-user, and duplicate-conflict paths now have API-level
-  integration coverage.
+  integration coverage. `IssuedSessionFactory` only changed rollback-failure
+  logging after token issuance failures; the successful passkey completion
+  session response and pending-2FA branch are unchanged by that post-run edit.
 - Architecture and layer boundaries: all changed rate-limit collaborators are
   in `Shared/Application/Resolver/RateLimit`; Domain remains framework-free.
 - Domain model: no passkey Domain entity/value-object behavior changed after
@@ -186,7 +197,7 @@ Deterministic 2FA recovery-code testability path:
   and API-level passkey GraphQL mutation execution.
 - Documentation: `docs/passkey-authentication.md`, `docs/performance.md`,
   `nfr-catalog-evidence.md`, this impact context, and `run-summary.md` carry
-  the current-head evidence and remaining manual actions.
+  current-head automated evidence plus the manual browser source-impact bridge.
 - Operations and observability: global limiter consumption now happens before
   endpoint-specific limiter resolution, which protects GraphQL AST target
   parsing with the cheap global throttle. This changes limiter consumption
@@ -204,10 +215,16 @@ Historical manual browser evidence was executed at
 `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6` with a prior source bridge at
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 
-Current-head browser/WebAuthn evidence was rerun on 2026-06-01 UTC against
+Browser/WebAuthn evidence was rerun on 2026-06-01 UTC against
 `http://localhost:19081` with Google Chrome headless through Chrome DevTools
-Protocol and virtual CTAP2 authenticators. The durable sanitized artifact is
+Protocol and virtual CTAP2 authenticators at runtime source base
+`69af2cf13c46f797da7076bff272fa7736e01ce9`. The durable sanitized artifact is
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
+The artifact is bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64` by the production-change analysis
+above and by current automated coverage for session rollback and GraphQL
+rate-limit extraction. No post-run source change altered browser-specific
+WebAuthn ceremony code.
 
 ## Quality Remediation
 

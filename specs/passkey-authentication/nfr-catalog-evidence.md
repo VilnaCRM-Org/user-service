@@ -85,7 +85,10 @@ Evidence and standards:
 - Sign-in options intentionally omit credential descriptors, reducing privacy
   risk and frontend branching.
 - Manual browser evidence records successful signup, enrollment, sign-in, 2FA
-  parity, replay rejection, and expiry behavior on the current runtime source.
+  parity, replay rejection, and expiry behavior at runtime source base
+  `69af2cf13c46f797da7076bff272fa7736e01ce9`; the evidence is bridged to
+  reviewed PR head `109e753876270bfe82864b65014702a16d023f64` by the
+  source-impact analysis in `manual-browser-evidence.md`.
 
 ## Maintainability
 
@@ -260,6 +263,10 @@ Evidence and standards:
   verification.
 - Manual browser evidence and automated tests are linked from
   `specs/passkey-authentication/run-summary.md`.
-- Current-head browser evidence was rerun on 2026-06-01 with Chrome DevTools
-  virtual CTAP2 authenticators and is recorded in
-  `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
+- Browser evidence was rerun on 2026-06-01 with Chrome DevTools virtual CTAP2
+  authenticators at runtime source base
+  `69af2cf13c46f797da7076bff272fa7736e01ce9` and is recorded in
+  `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
+  the bridge to reviewed PR head
+  `109e753876270bfe82864b65014702a16d023f64` is documented in
+  `specs/passkey-authentication/manual-browser-evidence.md`.

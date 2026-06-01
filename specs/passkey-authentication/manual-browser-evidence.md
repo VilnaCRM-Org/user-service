@@ -10,10 +10,12 @@ credential private material, TOTP secrets, and recovery-code values.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
-- Current-head rerun: 2026-06-01T02:23:28.150Z against
+- Latest browser rerun: 2026-06-01T02:23:28.150Z against
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
-  authenticators. The strict BMAD gate records the exact reviewed head with
-  `git rev-parse HEAD`.
+  authenticators at runtime source base
+  `69af2cf13c46f797da7076bff272fa7736e01ce9`.
+- Reviewed PR head bridged by source-impact analysis:
+  `109e753876270bfe82864b65014702a16d023f64`.
 - Historical application URL: `https://localhost:65443`
 - RP ID: `localhost`
 - Historical origin: `https://localhost:65443`
@@ -87,7 +89,7 @@ in that commit. Focused unit and integration verification at the bridge SHA
 asserted that browser-safe signup options now include `residentKey=required` and
 `requireResidentKey=true`.
 
-## Current PR Head Browser Rerun
+## June 1 Browser Rerun And PR-Head Bridge
 
 Sanitized run id: `1780280604724-451d4e`.
 
@@ -100,15 +102,39 @@ Raw local JSON evidence:
 `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
 
 Runtime source base commit:
-`69af2cf13c46f797da7076bff272fa7736e01ce9`. Subsequent remediation edits are
-tests, test-container wiring, and evidence docs only.
+`69af2cf13c46f797da7076bff272fa7736e01ce9`.
 
-The current-head rerun used Google Chrome headless through Chrome DevTools
-Protocol with virtual CTAP2 authenticators, resident keys, user verification,
-and automatic presence simulation enabled. It targeted API origin
+Reviewed PR head bridged by this artifact:
+`109e753876270bfe82864b65014702a16d023f64`.
+
+Post-run production source changes before the reviewed PR head:
+
+1. `src/User/Application/Factory/IssuedSessionFactory.php` adds rollback-failure
+   logging and keeps throwing the original session issuance exception. This
+   changes only the failed cleanup path after token issuance throws; it does not
+   change WebAuthn option generation, browser credential verification, challenge
+   claim, credential persistence, successful access/refresh token response
+   fields, or the existing pending-2FA response shape used by passkey sign-in.
+   Current automated coverage in
+   `tests/Unit/User/Application/Factory/IssuedSessionFactoryTest.php` covers the
+   rollback and rollback-failure logging paths.
+2. `src/Shared/Application/Resolver/RateLimit/ApiRateLimitPayloadValueResolver.php`
+   narrows a legacy GraphQL variable-name fallback regex implementation to the
+   equivalent PCRE `\w` token after an ASCII first character. This code path is
+   used only when GraphQL AST inspection returns `null`; it affects rate-limit
+   target extraction, not the browser/WebAuthn ceremony, completion handlers,
+   session payload serialization, or persisted passkey state. Current automated
+   coverage in the rate-limit resolver tests covers GraphQL variable extraction,
+   invalid GraphQL fallback, selected operation scoping, aliases, fragments, and
+   decoy payload fields.
+
+The browser rerun used Google Chrome headless through Chrome DevTools Protocol
+with virtual CTAP2 authenticators, resident keys, user verification, and
+automatic presence simulation enabled. It targeted API origin
 `http://localhost:19081` and RP ID `localhost`.
 
-Observed current-head scenarios:
+Observed browser scenarios at runtime source base
+`69af2cf13c46f797da7076bff272fa7736e01ce9`:
 
 1. New-email signup ceremony returned a challenge id, RP ID `localhost`,
    `residentKey=required`, `2fa=false`, and access/refresh token fields after
@@ -127,11 +153,15 @@ Observed current-head scenarios:
    access or refresh token fields.
 8. Expiration rejection returned HTTP 401 and no access token.
 
+The source-impact bridge to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64` is therefore limited to automated
+session rollback, GraphQL rate-limit extraction, and documentation evidence.
 Strict BMAD remediation on 2026-06-01 also added API-level `/api/graphql`
 integration tests for passkey mutations, with deterministic completion
 serialization coverage through the test-only command bus decorator and real
 resolver coverage for options, validation, privacy shape, replay, wrong-user,
-and duplicate-conflict behavior.
+and duplicate-conflict behavior. No post-run source change altered a
+browser-specific WebAuthn API contract.
 
 ## Expiration Run
 

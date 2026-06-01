@@ -116,7 +116,7 @@ The BMAD stages were executed in the main session:
 - Current Cubic review findings were addressed: `none` attestation support is registered, authentication result creation no longer publishes side effects from the factory, sign-in options no longer expose credential descriptors, unknown-email passkey completion follows the generic invalid-credential path, sign-in observes existing 2FA policy, and signup completion rolls back persisted user/credential state on downstream failures.
 - GraphQL passkey mutations were added for sign-up, sign-in, and authenticated registration using the existing `AuthPayload` mutation surface.
 - BMAD FR/NFR remediation updated sign-up options so existing emails are rejected before challenge creation, documented the `409` signup-options response in API Platform/OpenAPI, aligned frontend documentation with that behavior, and added manual/required-check evidence without fabricating browser authenticator results.
-- Current-head browser evidence found a live WebAuthn serialization wiring bug:
+- Browser evidence refresh found a live WebAuthn serialization wiring bug:
   the application container autowired Symfony's default serializer into
   `PasskeyJsonTransformer`, causing passkey options to fail on random binary
   challenges with `Malformed UTF-8 characters`. The transformer service now
@@ -134,14 +134,16 @@ The BMAD stages were executed in the main session:
   missing API-level `/api/graphql` passkey ceremony tests, missing
   average/stress/spike K6 evidence for passkey option scenarios, and stale
   browser/WebAuthn evidence. The remediation added deterministic GraphQL
-  integration coverage, reran the current runtime source with Chrome DevTools
-  virtual authenticators, and reran all passkey K6 profiles after the load-test
+  integration coverage, reran the browser/WebAuthn ceremony with Chrome
+  DevTools virtual authenticators at runtime source base
+  `69af2cf13c46f797da7076bff272fa7736e01ce9`, bridged that artifact to the
+  reviewed PR head, and reran all passkey K6 profiles after the load-test
   database setup.
 
 ## Current-Head Remediation Evidence
 
-Status: source fixes plus browser/authenticator evidence bridged to the current
-source-tested SHA.
+Status: source fixes plus browser/authenticator evidence bridged to reviewed PR
+head `109e753876270bfe82864b65014702a16d023f64`.
 
 Verifier: Codex.
 Date: 2026-05-25 UTC.
@@ -152,9 +154,10 @@ Browser ceremony tested SHA:
 Discoverable-credential/OpenAPI source-tested SHA:
 `b6ced150d8eacd4e2d59e099e6c72f043c8c875b`.
 Current PR head bridge scope: source-impact bridge through the current PR head
-under BMAD review. The strict BMAD gate records the exact reviewed head with
-`git rev-parse HEAD` in each review log; pushed follow-up commits refresh this
-bridge through automated tests, graph context, and PR check evidence.
+under BMAD review. For the latest manual-browser evidence blocker, the reviewed
+head is `109e753876270bfe82864b65014702a16d023f64`; pushed follow-up commits
+refresh this bridge through automated tests, graph context, and PR check
+evidence.
 Manual checklist: `specs/passkey-authentication/manual-test-checklist.md`.
 Sanitized browser evidence:
 `specs/passkey-authentication/manual-browser-evidence.md`.
@@ -251,14 +254,22 @@ config/services.yaml`, `bin/console lint:container`,
   test, documentation, dependency, and strict BMAD parser-adapter changes.
   Generated `graphify-out/` artifacts are local review evidence and are not
   committed.
-- Current-head browser/WebAuthn evidence was rerun on 2026-06-01 UTC with
-  Google Chrome headless through Chrome DevTools Protocol and virtual CTAP2
-  authenticators. It verified new-email signup, existing-email rejection,
-  replay rejection, passkey sign-in before 2FA, authenticated registration, 2FA
-  setup/parity, passkey sign-in after 2FA, and expiration rejection. Durable
-  sanitized evidence is in
+- Browser/WebAuthn evidence was rerun on 2026-06-01 UTC with Google Chrome
+  headless through Chrome DevTools Protocol and virtual CTAP2 authenticators at
+  runtime source base `69af2cf13c46f797da7076bff272fa7736e01ce9`. It verified
+  new-email signup, existing-email rejection, replay rejection, passkey sign-in
+  before 2FA, authenticated registration, 2FA setup/parity, passkey sign-in
+  after 2FA, and expiration rejection. Durable sanitized evidence is in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
   raw local JSON is `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`.
+  The bridge to reviewed PR head
+  `109e753876270bfe82864b65014702a16d023f64` accounts for later production
+  changes in `IssuedSessionFactory` rollback-failure logging and
+  `ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing.
+  Neither change alters browser WebAuthn option generation,
+  credential/assertion verification, challenge claim semantics, successful
+  session response shape, pending-2FA response shape, or persisted passkey
+  credential state.
 - BMAD strict remediation on 2026-06-01 removed the forbidden PHPMD
   static-access suppression from `ApiRateLimitGraphQlQueryInspector` by
   extracting Webonyx document parsing to the injected
@@ -331,11 +342,11 @@ Browser/authenticator: Google Chrome/HeadlessChrome 148 with Chrome DevTools
 virtual CTAP2 authenticators, resident keys enabled, user verification enabled,
 automatic presence simulation enabled.
 
-Current-head rerun: 2026-06-01T02:23:28.150Z against
+Latest browser rerun: 2026-06-01T02:23:28.150Z against
 `http://localhost:19081` at runtime source base commit
 `69af2cf13c46f797da7076bff272fa7736e01ce9`, using Google Chrome headless
-through Chrome DevTools Protocol with virtual CTAP2 authenticators. Sanitized
-transcript:
+through Chrome DevTools Protocol with virtual CTAP2 authenticators. Reviewed PR
+head bridge: `109e753876270bfe82864b65014702a16d023f64`. Sanitized transcript:
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
 ### Scenario 1: Passkey Sign-Up Rejects Existing Email
@@ -442,7 +453,7 @@ each pushed PR head.
 Strict BMAD FR/NFR remediation on 2026-06-01 added a split
 `tests/Integration/Auth/PasskeyGraphQL*` integration suite,
 `tests/Shared/Auth/Support/ControllableCommandBus.php`, test-container wiring,
-current-head browser evidence, current-head K6 evidence, and matching
+source-impact bridged browser evidence, current-head K6 evidence, and matching
 documentation updates. The follow-up quality fix removed the temporary
 PHPInsights carve-outs by replacing the 800-line GraphQL passkey test with
 focused option, completion-response, and completion-failure test classes plus a

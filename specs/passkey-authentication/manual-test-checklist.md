@@ -9,10 +9,12 @@ evidence required for BMAD FR/NFR sign-off.
 - Execution date/time (UTC): 2026-05-25 01:36 UTC
 - Tested commit SHA: `c0e6fe896143ecbeb26e0e54796c5eb38f3746e6`
 - Repro SHA: `58a46bd848e5b9cff70e11e7dc8593c3f1d734f4`
-- Current-head rerun: 2026-06-01T02:23:28.150Z against
+- Latest browser rerun: 2026-06-01T02:23:28.150Z against
   `http://localhost:19081`, using Chrome DevTools virtual CTAP2
-  authenticators. The strict BMAD gate records the exact reviewed head with
-  `git rev-parse HEAD`.
+  authenticators at runtime source base
+  `69af2cf13c46f797da7076bff272fa7736e01ce9`.
+- Reviewed PR head bridged by source-impact analysis:
+  `109e753876270bfe82864b65014702a16d023f64`.
 - Historical environment URL: `https://localhost:65443`
 - Historical browser and version: Google Chrome / HeadlessChrome 148
 - Operating system/device: local Linux workspace
@@ -26,24 +28,33 @@ evidence required for BMAD FR/NFR sign-off.
   `specs/passkey-authentication/manual-browser-evidence.md`; durable sanitized
   transcript in
   `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`;
-  current-head sanitized browser run id `1780280604724-451d4e`; current-head
+  latest sanitized browser run id `1780280604724-451d4e`; source-impact bridged
   transcript in
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`;
-  raw current-head JSON in `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`;
+  raw local JSON in `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`;
   expiration run challenge `01KSECHK4BX8HYP4Z2ZE66SXP2`; focused PHPUnit and
   configuration commands listed in `run-summary.md`
 - Overall result: Pass
 
-Current PR head note: the browser scenarios below were rerun on the current
-runtime source with Chrome DevTools virtual authenticators. Details are captured
-in `specs/passkey-authentication/manual-browser-evidence.md` and
+Current PR head note: the browser scenarios below were rerun at runtime source
+base `69af2cf13c46f797da7076bff272fa7736e01ce9` with Chrome DevTools virtual
+authenticators and are bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`. The bridge accounts for the later
+production changes in `IssuedSessionFactory` rollback-failure logging and
+`ApiRateLimitPayloadValueResolver` legacy GraphQL rate-limit fallback parsing;
+neither changes browser WebAuthn option generation, credential/assertion
+verification, challenge claim semantics, successful session response shape,
+pending-2FA response shape, or persisted passkey credential state. Details are
+captured in `specs/passkey-authentication/manual-browser-evidence.md` and
 `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`.
 
-## Current-Head Rerun Template
+## Latest Browser Rerun And PR-Head Bridge Template
 
 - Tester: Codex
 - Execution date/time (UTC): `2026-06-01T02:23:28.150Z`
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
+- Reviewed PR head bridged by source-impact analysis:
+  `109e753876270bfe82864b65014702a16d023f64`
 - Environment URL: `http://localhost:19081`
 - Browser and version: Google Chrome headless through Chrome DevTools Protocol
 - Operating system/device: local Linux workspace
@@ -56,7 +67,9 @@ in `specs/passkey-authentication/manual-browser-evidence.md` and
   `specs/passkey-authentication/manual-browser-run-1780280604724-451d4e.sanitized.md`
 - Overall result: Pass
 
-Current-head rerun status: completed.
+Latest browser rerun status: completed at the runtime source base commit.
+Current PR head bridge status: completed through source-impact analysis and
+automated coverage for the post-run production changes.
 
 ## Story 1.1 BMALPH Implementation-Transition Evidence
 
@@ -137,7 +150,8 @@ Observed result: browser run id `1779672967201-kekp2o` created baseline account
 same email returned `409` and did not return a `challenge_id`. Automated
 coverage in `PasskeyRegistrationCommandHandlerTest::testStartSignupRejectsExistingEmail`
 asserts no challenge id is generated and no challenge is saved for this path.
-Current-head run id `1780280604724-451d4e` also returned HTTP `409` and no
+June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`, also returned HTTP `409` and no
 challenge id for existing-email signup rejection.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
@@ -169,9 +183,10 @@ for `manual-signup-1779672967201-kekp2o@example.test`, created a credential with
 `navigator.credentials.create()`, submitted `credential.toJSON()` to
 `/api/passkeys/signup/complete`, and received access and refresh tokens with
 `2fa_enabled=false`.
-Current-head run id `1780280604724-451d4e` also returned a challenge id,
-RP ID `localhost`, `residentKey=required`, `2fa=false`, and access/refresh token
-fields after browser credential creation and signup completion.
+June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`, also returned a challenge id,
+RP ID `localhost`, `residentKey=required`, `2fa=false`, and access/refresh
+token fields after browser credential creation and signup completion.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,
@@ -198,7 +213,8 @@ Observed result: browser run id `1779672967201-kekp2o` used the issued bearer
 token, requested authenticated registration options, created a second credential
 on a second virtual authenticator, and `/api/passkeys/register/complete` returned
 a credential id.
-Current-head run id `1780280604724-451d4e` also returned a registration
+June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`, also returned a registration
 challenge id, an `excludeCredentials` array, `residentKey=required`, and a
 credential id after browser credential creation and registration completion.
 
@@ -228,10 +244,11 @@ Observed result: browser run id `1779672967201-kekp2o` enabled TOTP with
 `/api/2fa/setup` and `/api/2fa/confirm`, receiving 8 recovery codes. A later
 passkey sign-in returned `2fa_enabled=true` and a `pending_session_id`, and did
 not return access or refresh tokens.
-Current-head run id `1780280604724-451d4e` also returned empty
-`allowCredentials`, `userVerification=required`, `2fa=false`, and tokens before
-2FA; after TOTP setup/confirm it returned `2fa=true`, a pending session id, and
-no access or refresh token fields.
+June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`, also returned empty
+`allowCredentials`, `userVerification=required`, `2fa=false`, and tokens
+before 2FA; after TOTP setup/confirm it returned `2fa=true`, a pending session
+id, and no access or refresh token fields.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,
 `specs/passkey-authentication/manual-browser-run-1779672967201-kekp2o.sanitized.md`,
@@ -261,7 +278,8 @@ detail `Invalid or expired passkey challenge.` and no access token. Automated
 repository coverage verifies atomic challenge claim returns no challenge when no
 record is updated, and rollback coverage verifies failed signup completion does
 not keep additional credential state.
-Current-head run id `1780280604724-451d4e` also returned HTTP `401` and no
+June 1 run id `1780280604724-451d4e`, bridged to reviewed PR head
+`109e753876270bfe82864b65014702a16d023f64`, also returned HTTP `401` and no
 access token for replay rejection and expiration rejection.
 
 Artifacts: `specs/passkey-authentication/manual-browser-evidence.md`,

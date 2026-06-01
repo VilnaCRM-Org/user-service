@@ -1,6 +1,6 @@
 # Passkey Manual Browser Run 1780280604724-451d4e
 
-This transcript is a durable, sanitized artifact for the current-head
+This transcript is a durable, sanitized artifact for the 2026-06-01
 browser/WebAuthn run summarized in `manual-browser-evidence.md`. It excludes
 bearer tokens, refresh tokens, credential private material, TOTP secrets, and
 recovery-code values.
@@ -15,8 +15,16 @@ recovery-code values.
 - Authenticator: Chrome DevTools virtual CTAP2 authenticators with resident
   keys, user verification, and automatic presence simulation enabled
 - Runtime source base commit: `69af2cf13c46f797da7076bff272fa7736e01ce9`
-- Source scope: production/runtime source at the base commit above. Subsequent
-  remediation edits are tests, test-container wiring, and evidence docs only.
+- Reviewed PR head bridged by source-impact analysis:
+  `109e753876270bfe82864b65014702a16d023f64`
+- Source scope: browser/WebAuthn observations were collected at the runtime
+  source base commit above. Later production changes before the reviewed PR head
+  are limited to `IssuedSessionFactory` rollback-failure logging and a legacy
+  GraphQL rate-limit regex fallback in
+  `ApiRateLimitPayloadValueResolver`; neither changes browser option
+  generation, WebAuthn credential/assertion verification, passkey challenge
+  claim semantics, successful session response shape, pending-2FA response
+  shape, or persisted passkey credential state.
 - Raw local JSON evidence:
   `/home/kravtsov/tmp/pr286-manual-webauthn-current.json`
 
@@ -39,6 +47,10 @@ recovery-code values.
 - The run exercised real browser WebAuthn APIs through Chrome DevTools virtual
   authenticators, not only HTTP stubs.
 - The run used RP ID `localhost` and API origin `http://localhost:19081`.
-- The evidence proves the current runtime source still satisfies sign-up,
-  replay rejection, sign-in, authenticated registration, 2FA parity, and expiry
-  behavior after the strict BMAD remediation.
+- The run proves the runtime source base satisfies sign-up, replay rejection,
+  sign-in, authenticated registration, 2FA parity, and expiry behavior after
+  strict BMAD remediation.
+- The bridge to reviewed PR head
+  `109e753876270bfe82864b65014702a16d023f64` relies on current automated
+  coverage for the later session rollback and GraphQL rate-limit changes; no
+  later source change touched browser-specific WebAuthn ceremony code.
