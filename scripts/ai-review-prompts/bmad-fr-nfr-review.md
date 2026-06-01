@@ -263,11 +263,11 @@ Required review process:
     paths, edge cases, regression coverage, security/data-loss risks, and no
     lowered quality thresholds.
 11. Check GitHub completion using the supplied PR number or by detecting the PR
-   for the current branch. If a PR cannot be identified, remote GitHub state
-   cannot be queried, or review-thread/check state cannot be verified, fail
-   closed. Human approval is not required for the BMAD review to run or pass;
-   fail only on unresolved active review threads, requested-changes reviews,
-   mismatched PR head, draft PR state, or non-passing applicable checks.
+    for the current branch. If a PR cannot be identified, remote GitHub state
+    cannot be queried, or review-thread/check state cannot be verified, fail
+    closed. Human approval is not required for the BMAD review to run or pass;
+    fail only on unresolved active review threads, requested-changes reviews,
+    mismatched PR head, draft PR state, or non-passing applicable checks.
 12. Check the CI gate separately. Local verification is supporting evidence, but
     it does not replace GitHub check evidence for an open PR. If required
     checks are configured, verify those required checks. If the repository
