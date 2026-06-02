@@ -76,7 +76,7 @@ final class MongoDBPasskeyChallengeRepository extends ServiceDocumentRepository 
             ->updateOne()
             ->field('id')->equals($id)
             ->field('purpose')->equals($purpose)
-            ->field('expiresAt')->gte($consumedAt)
+            ->field('expiresAt')->gt($consumedAt)
             ->field('consumedAt')->equals(null);
 
         if ($userId !== null) {

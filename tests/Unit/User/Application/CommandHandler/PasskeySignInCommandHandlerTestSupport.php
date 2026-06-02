@@ -88,7 +88,6 @@ final readonly class PasskeySignInCommandHandlerTestSupport
             new PasskeyUserResolver($this->userRepository),
             $this->credentialValidator,
             $this->credentialRepository,
-            $this->challengeRepository,
             new PasskeyTwoFactorHandler(
                 $this->pendingTwoFactorRepository,
                 new PendingTwoFactorFactory(),

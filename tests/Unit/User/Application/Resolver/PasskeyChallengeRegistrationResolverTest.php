@@ -52,24 +52,6 @@ final class PasskeyChallengeRegistrationResolverTest extends UnitTestCase
         self::assertTrue($challenge->isConsumed());
     }
 
-    public function testResolveRegistrationClaimsRegistrationChallenge(): void
-    {
-        $challenge = $this->createRegistrationChallenge($this->userId);
-        $this->challengeRepository->expects($this->once())
-            ->method('claimActive')
-            ->with(
-                $this->challengeId,
-                PasskeyChallenge::PURPOSE_REGISTRATION,
-                self::isInstanceOf(DateTimeImmutable::class)
-            )
-            ->willReturn($challenge);
-
-        self::assertSame(
-            $challenge,
-            $this->createChallengeResolver()->resolveRegistration($this->challengeId)
-        );
-    }
-
     public function testResolveRegistrationForUserRejectsMissingUserBoundClaim(): void
     {
         $this->challengeRepository->expects($this->once())

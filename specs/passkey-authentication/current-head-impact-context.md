@@ -23,11 +23,12 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest clean local refresh completed on 2026-06-02 00:23:25 +0300
-after the passkey sign-in rate-limit hardening, Infection survivor fix, and
-resolver extraction, and produced 20,641 nodes and 68,972 edges. This committed
-evidence file can move in a later docs-only commit; the final BMAD sidecar
-report records the exact reviewed PR SHA.
+committed. The latest clean local refresh completed on 2026-06-02 03:52:04 +0300
+after the passkey sign-in rate-limit hardening, Infection survivor fix,
+resolver extraction, quality/load-test fixes, BMAD readiness-order review, and
+post-claim passkey cleanup hardening, and produced 20,759 nodes and 367,790
+edges. This committed evidence file can move in a later docs-only commit; the
+final BMAD sidecar report records the exact reviewed PR SHA.
 The refreshed graph includes:
 
 - `scripts/normalize-graphql-passkey-descriptions.php`

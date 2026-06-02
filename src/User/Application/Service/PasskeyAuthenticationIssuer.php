@@ -36,7 +36,7 @@ final readonly class PasskeyAuthenticationIssuer
             $issuedAt
         );
 
-        $this->publishSignedIn($user, $result, $ipAddress, $userAgent, $rememberMe);
+        $this->publishSignedIn($user, $result, $ipAddress, $userAgent);
 
         return $result;
     }
@@ -45,8 +45,7 @@ final readonly class PasskeyAuthenticationIssuer
         User $user,
         PasskeyAuthenticationResult $result,
         string $ipAddress,
-        string $userAgent,
-        bool $rememberMe
+        string $userAgent
     ): void {
         try {
             $this->signInPublisher->publishSignedIn(
@@ -55,7 +54,7 @@ final readonly class PasskeyAuthenticationIssuer
                 $result->getSessionId(),
                 $ipAddress,
                 $userAgent,
-                $rememberMe
+                false
             );
         } catch (Throwable $exception) {
             $this->logger->warning('Passkey sign-in event dispatch failed.', [

@@ -126,7 +126,9 @@ if [[ -z "$base_branch" ]]; then
 fi
 
 review_base="$base_branch"
-if [[ "$base_branch" != */* ]]; then
+if git rev-parse --verify "$base_branch" >/dev/null 2>&1; then
+  review_base="$base_branch"
+elif [[ "$base_branch" != */* ]]; then
   if git show-ref --verify --quiet "refs/heads/$base_branch"; then
     review_base="$base_branch"
   else

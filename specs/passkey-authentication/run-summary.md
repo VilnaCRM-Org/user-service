@@ -274,9 +274,11 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-02 00:23:25 +0300
-  after the passkey sign-in rate-limit hardening, Infection survivor fix, and
-  resolver extraction with 20,641 nodes and 68,972 edges. The refreshed graph includes
+  and recorded in `graphify-out/graph.json` on 2026-06-02 03:52:04 +0300
+  after the passkey sign-in rate-limit hardening, Infection survivor fix,
+  resolver extraction, quality/load-test fixes, BMAD readiness-order review,
+  and post-claim passkey cleanup hardening with 20,759 nodes and 367,790
+  edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
   `PasskeyProductionReadinessListenerTestCase.php`, the split

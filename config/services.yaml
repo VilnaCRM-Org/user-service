@@ -189,7 +189,7 @@ services:
       $productionTrafficEnabled: '%env(bool:PASSKEY_PRODUCTION_TRAFFIC_ENABLED)%'
       $productionMonitoringReady: '%env(bool:PASSKEY_PRODUCTION_MONITORING_READY)%'
     tags:
-      - { name: kernel.event_listener, event: kernel.request, priority: 125 }
+      - { name: kernel.event_listener, event: kernel.request, priority: 110 }
 
   App\User\Application\EventListener\PasskeyGraphQlRequestResolver:
     arguments:

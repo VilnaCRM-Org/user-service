@@ -36,7 +36,10 @@ final readonly class CompletePasskeyRegistrationCommandHandler implements Comman
             new DateTimeImmutable()
         );
         $this->credentialResolver->saveUnique($credential);
-        $this->challengeResolver->delete($challenge);
+        $this->challengeResolver->deleteBestEffort(
+            $challenge,
+            'Passkey registration challenge cleanup failed.'
+        );
 
         $command->setResponse($credential);
     }

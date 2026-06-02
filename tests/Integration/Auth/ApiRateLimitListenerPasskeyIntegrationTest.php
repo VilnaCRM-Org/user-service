@@ -4,10 +4,40 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Auth;
 
+use App\Shared\Application\EventListener\ApiRateLimitListener;
+use App\User\Application\EventListener\PasskeyProductionReadinessListener;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 final class ApiRateLimitListenerPasskeyIntegrationTest extends ApiRateLimitListenerTestCase
 {
+    public function testGlobalLimiterRunsBeforePasskeyProductionGraphQlReadiness(): void
+    {
+        $this->assertRequestListenerRunsBefore(
+            ApiRateLimitListener::class,
+            PasskeyProductionReadinessListener::class
+        );
+        $this->exhaustLimiter(
+            'global_api_anonymous',
+            'ip:127.0.0.1',
+            $this->resolveLimit('GLOBAL_API_ANONYMOUS_RATE_LIMIT_MAX_REQUESTS', 100)
+        );
+        $content = json_encode([
+            'query' => sprintf(<<<'GRAPHQL'
+mutation {
+  passkeySignInOptionsUser(input: { email: "%s" }) {
+    user { challengeId }
+  }
+}
+GRAPHQL, $this->faker->safeEmail()),
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->handleJsonRequest('/api/graphql', Request::METHOD_POST, $content);
+
+        $this->assertRateLimitResponse($response);
+    }
+
     public function testGraphQlPasskeySignupUsesRegistrationLimiter(): void
     {
         $email = $this->faker->safeEmail();
@@ -231,5 +261,58 @@ mutation Passkey($input: passkeySignInOptionsUserInput!) {
   passkeySignInOptionsUser(input: $input) { user { challengeId } }
 }
 GRAPHQL;
+    }
+
+    /**
+     * @param class-string $earlierListenerClass
+     * @param class-string $laterListenerClass
+     */
+    private function assertRequestListenerRunsBefore(
+        string $earlierListenerClass,
+        string $laterListenerClass
+    ): void {
+        $dispatcher = $this->container->get('event_dispatcher');
+        $this->assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
+
+        $positions = $this->resolveRequestListenerPositions($dispatcher);
+
+        $this->assertArrayHasKey($earlierListenerClass, $positions);
+        $this->assertArrayHasKey($laterListenerClass, $positions);
+        $this->assertLessThan(
+            $positions[$laterListenerClass],
+            $positions[$earlierListenerClass],
+            sprintf(
+                '%s must run before %s for GraphQL passkey readiness.',
+                $earlierListenerClass,
+                $laterListenerClass
+            )
+        );
+    }
+
+    /**
+     * @return array<class-string, int>
+     */
+    private function resolveRequestListenerPositions(EventDispatcherInterface $dispatcher): array
+    {
+        $positions = [];
+        foreach ($dispatcher->getListeners(KernelEvents::REQUEST) as $position => $listener) {
+            $listenerClass = $this->resolveListenerClass($listener);
+            if ($listenerClass !== null) {
+                $positions[$listenerClass] = $position;
+            }
+        }
+
+        return $positions;
+    }
+
+    private function resolveListenerClass(callable $listener): ?string
+    {
+        if (is_array($listener)) {
+            $target = $listener[0] ?? null;
+
+            return is_object($target) ? $target::class : null;
+        }
+
+        return is_object($listener) ? $listener::class : null;
     }
 }

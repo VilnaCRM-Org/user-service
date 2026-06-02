@@ -157,7 +157,10 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
 
     private function createCompleteSignUpHandler(): CompletePasskeySignUpCommandHandler
     {
-        $challengeResolver = new PasskeyChallengeResolver($this->challengeRepository);
+        $challengeResolver = new PasskeyChallengeResolver(
+            $this->challengeRepository,
+            $this->factories->logger
+        );
 
         return new CompletePasskeySignUpCommandHandler(
             $challengeResolver,
@@ -196,7 +199,7 @@ final readonly class PasskeyRegistrationCommandHandlerTestSupport
     private function createCompleteRegistrationHandler(): CompletePasskeyRegistrationCommandHandler
     {
         return new CompletePasskeyRegistrationCommandHandler(
-            new PasskeyChallengeResolver($this->challengeRepository),
+            new PasskeyChallengeResolver($this->challengeRepository, $this->factories->logger),
             $this->credentialValidator,
             new PasskeyCredentialFactory($this->idFactory),
             new PasskeyCredentialResolver($this->credentialRepository)

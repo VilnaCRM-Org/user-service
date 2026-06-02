@@ -264,7 +264,8 @@ final class MongoDBPasskeyRepositoryTest extends MongoDBRepositoryTestCase
         $queryBuilder->expects($this->once())->method('updateOne')->willReturnSelf();
         $this->stubChallengeFieldCapture($queryBuilder, $fieldNames);
         $this->stubChallengeEqualsCapture($queryBuilder, $equalsValues);
-        $queryBuilder->method('gte')->willReturnSelf();
+        $queryBuilder->expects($this->once())->method('gt')->willReturnSelf();
+        $queryBuilder->expects($this->never())->method('gte');
         $queryBuilder->method('set')->willReturnSelf();
         $queryBuilder->method('getQuery')->willReturn($query);
         $this->stubChallengeClaimExecution(

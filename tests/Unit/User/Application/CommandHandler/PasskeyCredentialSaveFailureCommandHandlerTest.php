@@ -456,7 +456,7 @@ final class PasskeyCredentialSaveFailureCommandHandlerTest extends UnitTestCase
             $this->objects->token('sessionId'),
             $this->objects->user('ipAddress'),
             $this->objects->user('userAgent'),
-            true
+            false
         );
     }
 }

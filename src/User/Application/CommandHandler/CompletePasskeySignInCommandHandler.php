@@ -14,19 +14,19 @@ use App\User\Application\Service\PasskeyTwoFactorHandler;
 use App\User\Application\Validator\PasskeyCredentialValidatorInterface;
 use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
-use App\User\Domain\Repository\PasskeyChallengeRepositoryInterface;
 use App\User\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use DateTimeImmutable;
 
 final readonly class CompletePasskeySignInCommandHandler implements CommandHandlerInterface
 {
+    private const CLEANUP_FAILURE_MESSAGE = 'Passkey sign-in challenge cleanup failed.';
+
     public function __construct(
         private PasskeyChallengeResolver $challengeResolver,
         private PasskeyCredentialResolver $credentialResolver,
         private PasskeyUserResolver $userResolver,
         private PasskeyCredentialValidatorInterface $credentialValidator,
         private PasskeyCredentialRepositoryInterface $credentialRepository,
-        private PasskeyChallengeRepositoryInterface $challengeRepository,
         private PasskeyTwoFactorHandler $twoFactorHandler,
         private PasskeyAuthenticationIssuer $authenticationIssuer
     ) {
@@ -35,15 +35,12 @@ final readonly class CompletePasskeySignInCommandHandler implements CommandHandl
     public function __invoke(CompletePasskeySignInCommand $command): void
     {
         $challenge = $this->challengeResolver->resolveAuthentication($command->challengeId);
-        $storedCredential = $this->resolveStoredCredential(
-            $command->credential,
-            $challenge->getUserId()
-        );
+        $userId = $challenge->getUserId();
+        $storedCredential = $this->resolveStoredCredential($command->credential, $userId);
         $user = $this->userResolver->resolveCredentialOwner($storedCredential->getUserId());
         $now = $this->verifyAndMarkUsed($challenge, $command->credential, $storedCredential);
         $rememberMe = $challenge->isRememberMe();
-
-        $this->challengeRepository->delete($challenge);
+        $this->challengeResolver->deleteBestEffort($challenge, self::CLEANUP_FAILURE_MESSAGE);
 
         if ($user->isTwoFactorEnabled()) {
             $command->setResponse($this->twoFactorHandler->handle($user, $rememberMe, $now));
