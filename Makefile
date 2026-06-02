@@ -10,6 +10,8 @@ LOAD_TEST_API_HOST ?= localhost
 LOAD_TEST_API_PORT ?= 18081
 LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
 LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
+LOAD_TEST_RECOVERY_AFTER_SCENARIOS ?= cachePerformance
+LOAD_TEST_RECOVERY_SETTLE_SECONDS ?= 5
 MEMORY_SOAK_ROUNDS ?= 6
 MEMORY_SOAK_WARMUP_ROUNDS ?= 2
 MEMORY_SOAK_SETTLE_SECONDS ?= 5
@@ -22,6 +24,7 @@ SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
 DOCKER_COMPOSE_LOAD_TEST = LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_MAILCATCHER_SMTP_PORT=$(LOAD_TEST_MAILCATCHER_SMTP_PORT) LOAD_TEST_MAILCATCHER_HTTP_PORT=$(LOAD_TEST_MAILCATCHER_HTTP_PORT) $(DOCKER_COMPOSE) -p $(LOAD_TEST_COMPOSE_PROJECT) -f docker-compose.load-tests.yml
+LOAD_TEST_RUNTIME_RECOVERY_ENV = LOAD_TEST_RECOVERY_AFTER_SCENARIOS="$(LOAD_TEST_RECOVERY_AFTER_SCENARIOS)" LOAD_TEST_RECOVERY_SETTLE_SECONDS="$(LOAD_TEST_RECOVERY_SETTLE_SECONDS)"
 DOCKER_COMPOSE_SCHEMATHESIS = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.schemathesis.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
@@ -281,7 +284,7 @@ smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
 	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
-	tests/Load/run-smoke-load-tests.sh
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
@@ -289,7 +292,7 @@ average-load-tests: build-k6-docker ## Run load tests with average load
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
 	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
-	tests/Load/run-average-load-tests.sh
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
@@ -297,7 +300,7 @@ stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
 	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
-	tests/Load/run-stress-load-tests.sh
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
@@ -305,7 +308,7 @@ spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
 	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
-	tests/Load/run-spike-load-tests.sh
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
@@ -313,7 +316,7 @@ load-tests: build-k6-docker ## Run load tests
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
 	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
 	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
-	tests/Load/run-load-tests.sh
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-load-tests.sh
 
 memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load tests and fail on leak signals
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack

@@ -18,6 +18,7 @@ if [ ! -f "$configFile" ]; then
 fi
 
 delayBetweenScenarios=${LOAD_TEST_DELAY_BETWEEN_SCENARIOS:-}
+recoveryAfterScenarios=${LOAD_TEST_RECOVERY_AFTER_SCENARIOS:-}
 
 if [ -z "$delayBetweenScenarios" ]; then
   delayBetweenScenarios=$(
@@ -35,9 +36,33 @@ fi
 mapfile -t loadTestScenarios < <(./tests/Load/get-load-test-scenarios.sh)
 scenarioCount=${#loadTestScenarios[@]}
 
+scenarioRequiresRuntimeRecovery() {
+  local candidate=$1
+  local scenarioName
+
+  IFS=',' read -r -a recoveryScenarios <<< "$recoveryAfterScenarios"
+
+  for scenarioName in "${recoveryScenarios[@]}"; do
+    scenarioName=${scenarioName//[[:space:]]/}
+
+    if [ "$scenarioName" = "$candidate" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 for scenarioIndex in "${!loadTestScenarios[@]}"; do
   scenario=${loadTestScenarios[$scenarioIndex]}
   ./tests/Load/execute-load-test.sh "$scenario" "$runSmoke" "$runAverage" "$runStress" "$runSpike" "$htmlPrefix"
+
+  if [ -n "$recoveryAfterScenarios" ] \
+    && [ $((scenarioIndex + 1)) -lt "$scenarioCount" ] \
+    && scenarioRequiresRuntimeRecovery "$scenario"; then
+    echo "Recovering load-test runtime after scenario: $scenario"
+    ./tests/Load/recover-load-test-runtime.sh
+  fi
 
   if [ "$delayBetweenScenarios" -gt 0 ] && [ $((scenarioIndex + 1)) -lt "$scenarioCount" ]; then
     sleep "$delayBetweenScenarios"
