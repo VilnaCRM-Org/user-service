@@ -19,6 +19,7 @@ fi
 
 delayBetweenScenarios=${LOAD_TEST_DELAY_BETWEEN_SCENARIOS:-}
 recoveryAfterScenarios=${LOAD_TEST_RECOVERY_AFTER_SCENARIOS:-}
+resetBeforeScenarios=${LOAD_TEST_RESET_BEFORE_SCENARIOS:-}
 
 if [ -z "$delayBetweenScenarios" ]; then
   delayBetweenScenarios=$(
@@ -53,8 +54,31 @@ scenarioRequiresRuntimeRecovery() {
   return 1
 }
 
+scenarioRequiresStateReset() {
+  local candidate=$1
+  local scenarioName
+
+  IFS=',' read -r -a resetScenarios <<< "$resetBeforeScenarios"
+
+  for scenarioName in "${resetScenarios[@]}"; do
+    scenarioName=${scenarioName//[[:space:]]/}
+
+    if [ "$scenarioName" = "$candidate" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 for scenarioIndex in "${!loadTestScenarios[@]}"; do
   scenario=${loadTestScenarios[$scenarioIndex]}
+
+  if [ -n "$resetBeforeScenarios" ] && scenarioRequiresStateReset "$scenario"; then
+    echo "Resetting load-test data stores before scenario: $scenario"
+    ./tests/Load/reset-load-test-state.sh
+  fi
+
   ./tests/Load/execute-load-test.sh "$scenario" "$runSmoke" "$runAverage" "$runStress" "$runSpike" "$htmlPrefix"
 
   if [ -n "$recoveryAfterScenarios" ] \

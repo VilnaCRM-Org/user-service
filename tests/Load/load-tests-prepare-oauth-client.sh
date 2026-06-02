@@ -26,6 +26,39 @@ clientID=$2
 clientSecret=$3
 clientRedirectUri=$4
 clientPoolSize=20
+commandRetries=${LOAD_TEST_OAUTH_CLIENT_COMMAND_RETRIES:-3}
+commandRetryDelaySeconds=${LOAD_TEST_OAUTH_CLIENT_COMMAND_RETRY_DELAY_SECONDS:-2}
+
+if [[ ! "$commandRetries" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: LOAD_TEST_OAUTH_CLIENT_COMMAND_RETRIES must be a positive integer." >&2
+    exit 1
+fi
+
+if [[ ! "$commandRetryDelaySeconds" =~ ^[0-9]+$ ]]; then
+    echo "Error: LOAD_TEST_OAUTH_CLIENT_COMMAND_RETRY_DELAY_SECONDS must be a non-negative integer." >&2
+    exit 1
+fi
+
+run_symfony_command() {
+    local command
+    local attempt=1
+
+    command=$(printf '%q ' "$@")
+
+    while true; do
+        if eval "${SYMFONY} ${command}"; then
+            return 0
+        fi
+
+        if [ "$attempt" -ge "$commandRetries" ]; then
+            return 1
+        fi
+
+        echo "Retrying Symfony command after failure: $*"
+        sleep "$((commandRetryDelaySeconds * attempt))"
+        attempt=$((attempt + 1))
+    done
+}
 
 for (( i=0; i<clientPoolSize; i++ )); do
     poolClientID="${clientID}"
@@ -36,12 +69,12 @@ for (( i=0; i<clientPoolSize; i++ )); do
     fi
 
     # Delete existing client if it exists
-    if ! eval "${SYMFONY}" league:oauth2-server:delete-client "${poolClientID}"; then
+    if ! run_symfony_command league:oauth2-server:delete-client "${poolClientID}"; then
         echo "Warning: Failed to delete client ${poolClientID}. Proceeding to create a new one."
     fi
 
     # Create new client
-    if ! eval "${SYMFONY}" league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" --redirect-uri "${clientRedirectUri}" --grant-type client_credentials; then
+    if ! run_symfony_command league:oauth2-server:create-client "${clientName}" "${poolClientID}" "${poolClientSecret}" --redirect-uri "${clientRedirectUri}" --grant-type client_credentials; then
         echo "Error: Failed to create client ${poolClientID}."
         exit 1
     fi
