@@ -6,6 +6,7 @@ PROJECT       = user-service
 GIT_AUTHOR    = Kravalg
 LOAD_TEST_CONFIG = tests/Load/config.prod.json
 LOAD_TEST_COMPOSE_PROJECT ?= $(PROJECT)-load-tests
+LOAD_TEST_API_HOST ?= localhost
 LOAD_TEST_API_PORT ?= 18081
 LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
 LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
@@ -271,57 +272,71 @@ setup-load-test-db: ## Create database for load testing purposes
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
 LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
+LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES = $(DOCKER_COMPOSE_LOAD_TEST) restart php && $(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+LOAD_TEST_WAIT_OAUTH_CLIENT_POOL = LOAD_TEST_API_HOST=$(LOAD_TEST_API_HOST) LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) bash tests/Load/wait-for-oauth-client-pool.sh "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))"
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/run-load-tests.sh
 
 memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load tests and fail on leak signals
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	$(DOCKER_COMPOSE_LOAD_TEST) restart php
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$(MEMORY_SOAK_SCENARIOS)" tests/Load/run-worker-memory-soak.sh
 
 memory-load-soak-tests-full: build-k6-docker ## Run exhaustive worker-mode smoke load tests across every load scenario
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	$(DOCKER_COMPOSE_LOAD_TEST) restart php
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$$(./tests/Load/get-worker-memory-soak-scenarios.sh | paste -sd, -)" tests/Load/run-worker-memory-soak.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests

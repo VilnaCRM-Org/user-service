@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-use App\Tests\Unit\Shared\Infrastructure\Serializer\ContextAssertingJsonDecode;
+use App\Tests\Unit\Shared\Infrastructure\Serializer\ContextAssertingSerializer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Infrastructure\Repository\LoadTestUsersFileRepository;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Serializer;
 
 final class LoadTestUsersFileRepositoryTest extends UnitTestCase
 {
@@ -65,16 +62,11 @@ final class LoadTestUsersFileRepositoryTest extends UnitTestCase
         ];
         $json = \json_encode($users, \JSON_THROW_ON_ERROR);
         \file_put_contents($this->usersFilePath(), $json);
-        $serializer = new Serializer([], [
-            new JsonEncoder(
-                new JsonEncode(),
-                new ContextAssertingJsonDecode(
-                    $json,
-                    [JsonDecode::ASSOCIATIVE => true],
-                    $users
-                )
-            ),
-        ]);
+        $serializer = new ContextAssertingSerializer(
+            $json,
+            [JsonDecode::ASSOCIATIVE => true],
+            $users
+        );
 
         $repository = new LoadTestUsersFileRepository($serializer, $this->tempDir);
 

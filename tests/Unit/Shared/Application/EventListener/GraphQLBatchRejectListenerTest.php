@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\GraphQLBatchRejectListener;
-use App\Tests\Unit\Shared\Infrastructure\Serializer\ContextAssertingJsonDecode;
+use App\Tests\Unit\Shared\Infrastructure\Serializer\ContextAssertingSerializer;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,9 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @covers \App\Shared\Application\EventListener\GraphQLBatchRejectListener
@@ -150,21 +148,16 @@ final class GraphQLBatchRejectListenerTest extends UnitTestCase
         );
     }
 
-    private function createBatchDecodingSerializer(string $body): Serializer
+    private function createBatchDecodingSerializer(string $body): SerializerInterface
     {
-        return new Serializer([], [
-            new JsonEncoder(
-                new JsonEncode(),
-                new ContextAssertingJsonDecode(
-                    $body,
-                    [JsonDecode::ASSOCIATIVE => true],
-                    [
-                        ['query' => '{ __typename }'],
-                        ['query' => '{ __typename }'],
-                    ]
-                )
-            ),
-        ]);
+        return new ContextAssertingSerializer(
+            $body,
+            [JsonDecode::ASSOCIATIVE => true],
+            [
+                ['query' => '{ __typename }'],
+                ['query' => '{ __typename }'],
+            ]
+        );
     }
 
     private function assertBadRequestResponse(RequestEvent $event): void
