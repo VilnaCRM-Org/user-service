@@ -274,10 +274,10 @@ config/services.yaml`, `bin/console lint:container`,
   subrequests, and non-passkey GraphQL traffic.
 - Current-head graph evidence was refreshed with Graphify
   (`/home/kravtsov/.cache/uv/archive-v0/5ZCKDI9OgasHyZPzNKgqk/bin/graphify update . --force --no-cluster`)
-  and recorded in `graphify-out/graph.json` on 2026-06-02 03:52:04 +0300
+  and recorded in `graphify-out/graph.json` on 2026-06-02 04:46:30 +0300
   after the passkey sign-in rate-limit hardening, Infection survivor fix,
   resolver extraction, quality/load-test fixes, BMAD readiness-order review,
-  and post-claim passkey cleanup hardening with 20,759 nodes and 367,790
+  and post-claim passkey cleanup hardening with 20,759 nodes and 434,402
   edges. The refreshed graph includes
   `PasskeyGraphQlRequestResolver.php`,
   `PasskeyProductionReadinessListener.php`,
@@ -285,7 +285,16 @@ config/services.yaml`, `bin/console lint:container`,
   `PasskeyReadiness*Test.php` nodes,
   `ApiRateLimitGraphQlPayloadResolver.php`,
   `ApiRateLimitGraphQlObjectFieldResolver.php`, the GraphQL rate-limit resolver
-  collaborators, and the expanded rate-limit unit/integration tests.
+  collaborators, the expanded rate-limit unit/integration tests,
+  `CompletePasskeyRegistrationCommandHandler.php`,
+  `CompletePasskeySignInCommandHandler.php`,
+  `PasskeyChallengeResolver.php`,
+  `PasskeyAuthenticationIssuer.php`,
+  `MongoDBPasskeyChallengeRepository.php`,
+  `PasskeyPostClaimCleanupCommandHandlerTest.php`,
+  `PasskeyRegistrationCommandHandlerTest.php`,
+  `ApiRateLimitListenerPasskeyIntegrationTest.php`,
+  `scripts/ai-review-loop.sh`, and `tests/CLI/bats/make_negative_tests.bats`.
   Relationship notes were added in
   `specs/passkey-authentication/current-head-impact-context.md` for
   post-`c889013e4402ab30060b2bb9dd6cb968fe96783c` rate-limit, recovery-code,

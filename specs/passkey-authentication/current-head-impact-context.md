@@ -23,10 +23,10 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest clean local refresh completed on 2026-06-02 03:52:04 +0300
+committed. The latest clean local refresh completed on 2026-06-02 04:46:30 +0300
 after the passkey sign-in rate-limit hardening, Infection survivor fix,
 resolver extraction, quality/load-test fixes, BMAD readiness-order review, and
-post-claim passkey cleanup hardening, and produced 20,759 nodes and 367,790
+post-claim passkey cleanup hardening, and produced 20,759 nodes and 434,402
 edges. This committed evidence file can move in a later docs-only commit; the
 final BMAD sidecar report records the exact reviewed PR SHA.
 The refreshed graph includes:
@@ -45,10 +45,29 @@ The refreshed graph includes:
 - `tests/Unit/User/Application/EventListener/PasskeyReadinessGraphQlResolutionTest.php`
 - `tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolverGraphQlLimitersTest.php`
 - `tests/Integration/Auth/ApiRateLimitListenerIntegrationTest.php`
+- `src/User/Application/CommandHandler/CompletePasskeyRegistrationCommandHandler.php`
+- `src/User/Application/CommandHandler/CompletePasskeySignInCommandHandler.php`
+- `src/User/Application/Resolver/PasskeyChallengeResolver.php`
+- `src/User/Application/Service/PasskeyAuthenticationIssuer.php`
+- `src/User/Infrastructure/Repository/MongoDBPasskeyChallengeRepository.php`
+- `tests/Unit/User/Application/CommandHandler/PasskeyPostClaimCleanupCommandHandlerTest.php`
+- `tests/Unit/User/Application/CommandHandler/PasskeyRegistrationCommandHandlerTest.php`
+- `tests/Integration/Auth/ApiRateLimitListenerPasskeyIntegrationTest.php`
+- `scripts/ai-review-loop.sh`
+- `tests/CLI/bats/make_negative_tests.bats`
 
 The latest strict BMAD report includes graph counts and reviewed-head context in
 its log directory for the exact head it reviews. The graph impact context is
 recorded in that report rather than a separate committed graph-impact file.
+The final graph-backed review links the post-claim cleanup path through
+`CompletePasskeyRegistrationCommandHandler`, `CompletePasskeySignInCommandHandler`,
+and `PasskeyChallengeResolver::deleteBestEffort`; the direct passkey sign-in
+event flag through `PasskeyAuthenticationIssuer` and the command-handler
+publisher assertions; the strict challenge expiry boundary through
+`MongoDBPasskeyChallengeRepository`; the rate-limit/readiness ordering through
+`config/services.yaml` and `ApiRateLimitListenerPasskeyIntegrationTest`; and the
+no-approval BMAD runner/Bats fixes through `scripts/ai-review-loop.sh` and
+`tests/CLI/bats/make_negative_tests.bats`.
 The latest resolver extraction moves GraphQL payload extraction and
 normalization into `ApiRateLimitGraphQlPayloadResolver`, and moves direct/nested
 GraphQL AST object-field lookup into `ApiRateLimitGraphQlObjectFieldResolver`.
@@ -109,7 +128,10 @@ checkout action used by the changed load-test workflow, disables persisted
 checkout credentials, requires strict BMAD marker output from Codex reviews, and
 allows detached automation worktrees to pass `AI_REVIEW_GITHUB_PR` or
 `AI_REVIEW_PR_NUMBER` so the runner can post PR status updates without relying
-on human approval or local branch-name inference.
+on human approval or local branch-name inference. The final strict rerun also
+keeps exact valid local base refs such as `HEAD` intact before falling back to
+`origin/<branch>`, which preserves the Bats coverage for detached no-approval
+review worktrees.
 
 The strict FR/NFR remediation on 2026-06-01 additionally changed:
 
