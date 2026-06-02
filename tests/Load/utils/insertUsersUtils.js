@@ -1,3 +1,4 @@
+import { sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 import http from 'k6/http';
 
@@ -7,6 +8,19 @@ export default class InsertUsersUtils {
     this.config = utils.getConfig();
     this.scenarioName = scenarioName;
     this.additionalUsersRatio = 1.1;
+    this.seedRequestConcurrency = this.parsePositiveInteger(
+      this.utils.getEnv('LOAD_TEST_SEED_REQUEST_CONCURRENCY'),
+      5
+    );
+    this.seedRequestRetries = this.parseNonNegativeInteger(
+      this.utils.getEnv('LOAD_TEST_SEED_REQUEST_RETRIES'),
+      3
+    );
+    this.seedRetryDelaySeconds = this.parsePositiveNumber(
+      this.utils.getEnv('LOAD_TEST_SEED_RETRY_DELAY_SECONDS'),
+      2
+    );
+    this.seedRequestTimeout = this.utils.getEnv('LOAD_TEST_SEED_REQUEST_TIMEOUT') ?? '120s';
     this.smokeConfig = this.config.endpoints[scenarioName].smoke;
     this.averageConfig = this.config.endpoints[scenarioName].average;
     this.stressConfig = this.config.endpoints[scenarioName].stress;
@@ -65,38 +79,47 @@ export default class InsertUsersUtils {
     return [batch, userPasswords];
   }
 
-  *requestGenerator(numberOfRequest, batchSize, serviceToken) {
-    for (let i = 0; i < numberOfRequest; i++) {
-      const [batch, userPasswords] = this.prepareUserBatch(batchSize);
+  prepareRequest(userCount, serviceToken) {
+    const [batch, userPasswords] = this.prepareUserBatch(userCount);
 
-      const payload = JSON.stringify({
-        users: batch,
-      });
+    const payload = JSON.stringify({
+      users: batch,
+    });
 
-      const request = {
+    return {
+      request: {
         method: 'POST',
         url: `${this.utils.getBaseHttpUrl()}/batch`,
         body: payload,
-        params: this.utils.getJsonHeaderWithAuth(serviceToken),
-      };
+        params: {
+          ...this.utils.getJsonHeaderWithAuth(serviceToken),
+          timeout: this.seedRequestTimeout,
+        },
+      },
+      passwords: userPasswords,
+      userCount,
+    };
+  }
 
-      yield [request, userPasswords];
+  *requestGenerator(numberOfUsers, batchSize, serviceToken) {
+    let remainingUsers = numberOfUsers;
+
+    while (remainingUsers > 0) {
+      const userCount = Math.min(batchSize, remainingUsers);
+      remainingUsers -= userCount;
+
+      yield this.prepareRequest(userCount, serviceToken);
     }
   }
 
   prepareRequestBatch(numberOfUsers, batchSize, serviceToken) {
-    const numberOfRequests = Math.ceil(numberOfUsers / batchSize);
-    const generator = this.requestGenerator(numberOfRequests, batchSize, serviceToken);
+    const generator = this.requestGenerator(numberOfUsers, batchSize, serviceToken);
     const requestBatch = [];
+    let nextRequest = generator.next();
 
-    for (let requestIndex = 0; requestIndex < numberOfRequests; requestIndex++) {
-      const { value, done } = generator.next();
-      if (done) break;
-      const [request, passwords] = value;
-      requestBatch.push({
-        request,
-        passwords,
-      });
+    while (!nextRequest.done) {
+      requestBatch.push(nextRequest.value);
+      nextRequest = generator.next();
     }
 
     return requestBatch;
@@ -111,30 +134,91 @@ export default class InsertUsersUtils {
     const configuredBatchSize = this.config.endpoints.createUserBatch?.batchSize ?? 10;
     const safeBatchSize = configuredBatchSize > 0 ? configuredBatchSize : 10;
     const batchSize = Math.min(safeBatchSize, numberOfUsers);
-    const users = [];
     const pendingRequests = this.prepareRequestBatch(numberOfUsers, batchSize, serviceToken);
-    const responses = http.batch(pendingRequests.map(({ request }) => request));
+    const users = [];
 
-    responses.forEach((response, index) => {
-      const batchRequest = pendingRequests[index];
-
-      if (response.status === 200 || response.status === 201) {
-        try {
-          JSON.parse(response.body).forEach(user => {
-            user.password = batchRequest.passwords[user.email];
-            users.push(user);
-          });
-        } catch (parseError) {
-          throw new Error(`Failed to parse batch response: ${response.body}`);
-        }
-
-        return;
-      }
-
-      throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
-    });
+    for (let index = 0; index < pendingRequests.length; index += this.seedRequestConcurrency) {
+      const chunk = pendingRequests.slice(index, index + this.seedRequestConcurrency);
+      users.push(...this.insertRequestChunk(chunk, serviceToken));
+    }
 
     return users;
+  }
+
+  insertRequestChunk(requests, serviceToken) {
+    let pendingRequests = requests;
+    const users = [];
+
+    for (let attempt = 0; attempt <= this.seedRequestRetries; attempt++) {
+      const failedRequests = [];
+      const responses = http.batch(pendingRequests.map(({ request }) => request));
+
+      responses.forEach((response, index) => {
+        const batchRequest = pendingRequests[index];
+
+        if (response.status === 200 || response.status === 201) {
+          users.push(...this.parseCreatedUsers(response, batchRequest.passwords));
+
+          return;
+        }
+
+        if (this.isRetryableResponse(response) && attempt < this.seedRequestRetries) {
+          failedRequests.push(this.prepareRequest(batchRequest.userCount, serviceToken));
+
+          return;
+        }
+
+        throw new Error(`Batch request failed with status ${response.status}: ${response.body}`);
+      });
+
+      if (failedRequests.length === 0) {
+        return users;
+      }
+
+      pendingRequests = failedRequests;
+      sleep(this.seedRetryDelaySeconds * (attempt + 1));
+    }
+
+    return users;
+  }
+
+  parseCreatedUsers(response, passwords) {
+    try {
+      return JSON.parse(response.body).map(user => {
+        user.password = passwords[user.email];
+
+        return user;
+      });
+    } catch (parseError) {
+      throw new Error(`Failed to parse batch response: ${response.body}`);
+    }
+  }
+
+  isRetryableResponse(response) {
+    return (
+      response.status === 0 ||
+      response.status === 408 ||
+      response.status === 429 ||
+      response.status >= 500
+    );
+  }
+
+  parsePositiveInteger(value, defaultValue) {
+    const parsed = Number.parseInt(value, 10);
+
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+  }
+
+  parseNonNegativeInteger(value, defaultValue) {
+    const parsed = Number.parseInt(value, 10);
+
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : defaultValue;
+  }
+
+  parsePositiveNumber(value, defaultValue) {
+    const parsed = Number.parseFloat(value);
+
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
   }
 
   countRequestForRampingRate(startRps, targetRps, duration) {
