@@ -81,7 +81,7 @@
     "sort-packages": true,
     "platform": {
       "php": "8.4.4",
-      "ext-mongodb": "1.21.1"
+      "ext-mongodb": "2.3.0"
     }
   },
   "autoload": {
