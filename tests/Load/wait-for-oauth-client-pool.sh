@@ -1,24 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ -z "${1:-}" ]; then
-  echo "Error: clientID not provided."
-  exit 1
-fi
-
-if [ -z "${2:-}" ]; then
-  echo "Error: clientSecret not provided."
-  exit 1
-fi
-
-clientID=$1
-clientSecret=$2
+configFile=${LOAD_TEST_CONFIG_FILE:-tests/Load/config.prod.json}
+clientID=${LOAD_TEST_OAUTH_CLIENT_ID:-$(jq -r '.endpoints.oauth.clientID' "$configFile")}
+clientSecret=${LOAD_TEST_OAUTH_CLIENT_SECRET:-$(jq -r '.endpoints.oauth.clientSecret' "$configFile")}
 clientPoolSize=${LOAD_TEST_OAUTH_CLIENT_POOL_SIZE:-20}
 apiHost=${LOAD_TEST_API_HOST:-localhost}
 apiPort=${LOAD_TEST_API_PORT:-18081}
 timeoutSeconds=${LOAD_TEST_OAUTH_READY_TIMEOUT:-90}
 tokenUrl="http://${apiHost}:${apiPort}/api/oauth/token"
 deadline=$((SECONDS + timeoutSeconds))
+
+if [ -z "$clientID" ] || [ "$clientID" = "null" ]; then
+  echo "Error: clientID not configured."
+  exit 1
+fi
+
+if [ -z "$clientSecret" ] || [ "$clientSecret" = "null" ]; then
+  echo "Error: clientSecret not configured."
+  exit 1
+fi
 
 resolve_pooled_credential() {
   local baseValue=$1

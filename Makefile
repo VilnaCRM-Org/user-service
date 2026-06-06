@@ -283,7 +283,7 @@ all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e t
 
 LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
 LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES = $(DOCKER_COMPOSE_LOAD_TEST) restart php && $(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
-LOAD_TEST_WAIT_OAUTH_CLIENT_POOL = LOAD_TEST_API_HOST=$(LOAD_TEST_API_HOST) LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) bash tests/Load/wait-for-oauth-client-pool.sh "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))"
+LOAD_TEST_WAIT_OAUTH_CLIENT_POOL = LOAD_TEST_API_HOST=$(LOAD_TEST_API_HOST) LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_CONFIG_FILE="$(LOAD_TEST_CONFIG)" bash tests/Load/wait-for-oauth-client-pool.sh
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
