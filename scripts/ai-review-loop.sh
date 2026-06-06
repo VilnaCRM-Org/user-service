@@ -337,7 +337,32 @@ github_checks_summary_jq() {
 }
 
 github_pr_state_jq() {
-  printf '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | map(if . == null then "" else tostring end) | join("\u001f")'
+  printf '[.number, .isDraft, .reviewDecision, .mergeStateStatus, .mergeable, .url, .headRefOid] | map(if . == null then "" else tostring end) | join("\u001f")'
+}
+
+require_github_pr_mergeable_for_pass() {
+  local merge_state_status="$1"
+  local mergeable="$2"
+  local context="$3"
+
+  if [[ -z "$merge_state_status" || -z "$mergeable" ]]; then
+    echo "Warning: GitHub PR mergeability state is incomplete for $context." >&2
+    return 1
+  fi
+
+  case "$merge_state_status" in
+    DIRTY|UNKNOWN)
+      echo "Warning: GitHub PR mergeStateStatus blocks $context: $merge_state_status." >&2
+      return 1
+      ;;
+  esac
+
+  case "$mergeable" in
+    CONFLICTING|UNKNOWN)
+      echo "Warning: GitHub PR mergeable state blocks $context: $mergeable." >&2
+      return 1
+      ;;
+  esac
 }
 
 require_clean_worktree_for_github_pass() {
@@ -407,6 +432,87 @@ parse_status_line() {
   echo "UNKNOWN"
 }
 
+review_pass_has_zero_issues_line() {
+  local file="$1"
+  local second_line
+
+  second_line="$(sed -n '2p' "$file")"
+  second_line="${second_line%$'\r'}"
+
+  if [[ "$second_line" != "0 issues." ]]; then
+    echo "Warning: PASS output second line must be exactly: 0 issues." >&2
+    return 1
+  fi
+
+  return 0
+}
+
+normalize_issues_content_line() {
+  local line="$1"
+
+  printf "%s" "$line" \
+    | sed 's/\r$//;s/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
+review_pass_has_empty_issues_section() {
+  local file="$1"
+  local section_content line normalized
+  local is_heading=true
+
+  section_content="$(review_section_content "$file" "Issues")"
+  [[ -z "$section_content" ]] && return 0
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$is_heading" == "true" ]]; then
+      is_heading=false
+      line="$(printf "%s" "$line" | sed 's/\r$//;s/^[[:space:]]*//;s/[[:space:]]*$//;s/^#+[[:space:]]*//;s/^\*\*//;s/^Issues:\*\*[[:space:]]*//;s/^Issues:[[:space:]]*//;s/\*\*[[:space:]]*$//')"
+    fi
+
+    normalized="$(normalize_issues_content_line "$line")"
+    [[ -z "$normalized" ]] && continue
+
+    echo "Warning: PASS output Issues section must be empty." >&2
+    return 1
+  done <<< "$section_content"
+
+  return 0
+}
+
+normalize_required_fixes_content_line() {
+  local line="$1"
+
+  printf "%s" "$line" \
+    | sed 's/\r$//;s/^[[:space:]]*//;s/[[:space:]]*$//;s/^[-*][[:space:]]*//;s/[[:space:]]*$//'
+}
+
+review_required_fixes_are_empty() {
+  local file="$1"
+  local section_content line normalized
+  local is_heading=true
+
+  section_content="$(review_section_content "$file" "Required Fixes")"
+  [[ -z "$section_content" ]] && return 0
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$is_heading" == "true" ]]; then
+      is_heading=false
+      line="$(printf "%s" "$line" | sed 's/\r$//;s/^[[:space:]]*//;s/[[:space:]]*$//;s/^#+[[:space:]]*//;s/^\*\*//;s/^Required Fixes:\*\*[[:space:]]*//;s/^Required Fixes:[[:space:]]*//;s/\*\*[[:space:]]*$//')"
+    fi
+
+    normalized="$(normalize_required_fixes_content_line "$line")"
+    [[ -z "$normalized" ]] && continue
+
+    case "$normalized" in
+      None|None.|none|none.) continue ;;
+    esac
+
+    echo "Warning: PASS output Required Fixes section must be empty or None." >&2
+    return 1
+  done <<< "$section_content"
+
+  return 0
+}
+
 review_has_required_gate_markers() {
   local file="$1"
   local marker normalized_output
@@ -438,7 +544,7 @@ review_section_content() {
       sub(/\*\*[[:space:]]*$/, "", heading)
     }
     heading ~ "^(#+[[:space:]]*)?" section ":" { in_section = 1; print; next }
-    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|System Quality Attributes Scorecard|Whole-Codebase Impact Analysis|Graph Impact Context|Test Case Matrix|Automated Test And CI Coverage|Flaky Test Risk|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Required Fixes):/ { exit }
+    in_section && heading ~ /^(#+[[:space:]]*)?(Requirement Scorecard|NFR Catalog Scorecard|Expanded Quality Scorecard|System Quality Attributes Scorecard|Whole-Codebase Impact Analysis|Graph Impact Context|Test Case Matrix|Automated Test And CI Coverage|Flaky Test Risk|Manual Test Evidence|QA Verification|GitHub Completion Gate|CI Gate|Issues|Required Fixes):/ { exit }
     in_section { print }
   ' "$file"
 }
@@ -850,7 +956,7 @@ review_has_scorecard_evidence() {
 review_has_github_ci_corroboration() {
   local pr_view_cmd=(gh pr view)
   local pr_checks_cmd=(gh pr checks)
-  local pr_summary check_summary checks_status is_draft review_decision check_count check_blockers
+  local pr_summary check_summary is_draft review_decision merge_state_status mergeable check_count check_blockers
   local pr_number_detected pr_url pr_head_oid local_head_oid
   local owner repo pr_path unresolved_threads query page_summary page_unresolved has_next cursor
   local checks_summary_jq
@@ -868,13 +974,13 @@ review_has_github_ci_corroboration() {
   fi
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
-    --json number,isDraft,reviewDecision,url,headRefOid \
+    --json number,isDraft,reviewDecision,mergeStateStatus,mergeable,url,headRefOid \
     --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR state for BMAD gate." >&2
     return 1
   fi
 
-  IFS=$'\037' read -r pr_number_detected is_draft review_decision pr_url pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r pr_number_detected is_draft review_decision merge_state_status mergeable pr_url pr_head_oid <<< "$pr_summary"
 
   if [[ -z "$pr_number_detected" || -z "$pr_url" || -z "$pr_head_oid" ]]; then
     echo "Warning: GitHub PR state is incomplete for BMAD gate." >&2
@@ -896,30 +1002,27 @@ review_has_github_ci_corroboration() {
     echo "Warning: GitHub review decision has requested changes: ${review_decision:-UNKNOWN}" >&2
     return 1
   fi
+  require_github_pr_mergeable_for_pass "$merge_state_status" "$mergeable" "BMAD gate" || return 1
 
   checks_summary_jq="$(github_checks_summary_jq)"
 
-  if check_summary="$("${pr_checks_cmd[@]}" \
+  if ! check_summary="$("${pr_checks_cmd[@]}" \
     --required \
     --json name,bucket \
     --jq "$checks_summary_jq" 2>/dev/null)"; then
-    checks_status=0
-  else
-    checks_status=$?
+    echo "Warning: Unable to query GitHub required PR checks for BMAD gate." >&2
+    return 1
   fi
 
-  if ((checks_status == 0)); then
-    IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
-  else
-    check_count=0
-    check_blockers=""
-  fi
-
+  IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
   if [[ "$check_count" =~ ^[0-9]+$ ]] && ((check_count > 0)); then
     if [[ -n "$check_blockers" ]]; then
       echo "Warning: GitHub required PR checks are not fully passing: $check_blockers" >&2
       return 1
     fi
+  elif ! [[ "$check_count" =~ ^[0-9]+$ ]]; then
+    echo "Warning: GitHub required PR check rollup is invalid." >&2
+    return 1
   elif check_summary="$("${pr_checks_cmd[@]}" \
     --json name,bucket \
     --jq "$checks_summary_jq" 2>/dev/null)"; then
@@ -997,7 +1100,7 @@ review_has_github_ci_corroboration() {
 
 review_has_github_preflight_context() {
   local pr_view_cmd=(gh pr view)
-  local pr_summary pr_number_detected is_draft _review_decision pr_url pr_head_oid local_head_oid
+  local pr_summary pr_number_detected is_draft _review_decision _merge_state_status _mergeable pr_url pr_head_oid local_head_oid
 
   if ! command -v gh >/dev/null 2>&1; then
     echo "Warning: GitHub preflight requires gh CLI." >&2
@@ -1009,13 +1112,13 @@ review_has_github_preflight_context() {
   fi
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
-    --json number,isDraft,reviewDecision,url,headRefOid \
+    --json number,isDraft,reviewDecision,mergeStateStatus,mergeable,url,headRefOid \
     --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR state for BMAD preflight." >&2
     return 1
   fi
 
-  IFS=$'\037' read -r pr_number_detected is_draft _review_decision pr_url pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r pr_number_detected is_draft _review_decision _merge_state_status _mergeable pr_url pr_head_oid <<< "$pr_summary"
 
   if [[ -z "$pr_number_detected" || -z "$pr_url" || -z "$pr_head_oid" ]]; then
     echo "Warning: GitHub PR state is incomplete for BMAD preflight." >&2
@@ -1047,6 +1150,8 @@ run_verify() {
 github_pr_number=""
 github_pr_url=""
 github_pr_head_oid=""
+github_pr_merge_state_status=""
+github_pr_mergeable=""
 github_owner=""
 github_repo=""
 
@@ -1064,13 +1169,13 @@ load_github_pr_context() {
   fi
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
-    --json number,isDraft,reviewDecision,url,headRefOid \
+    --json number,isDraft,reviewDecision,mergeStateStatus,mergeable,url,headRefOid \
     --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR context for BMAD result publishing." >&2
     return 1
   fi
 
-  IFS=$'\037' read -r github_pr_number is_draft review_decision github_pr_url github_pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r github_pr_number is_draft review_decision github_pr_merge_state_status github_pr_mergeable github_pr_url github_pr_head_oid <<< "$pr_summary"
   if [[ -z "$github_pr_number" || -z "$github_pr_url" || -z "$github_pr_head_oid" ]]; then
     echo "Warning: GitHub PR context is incomplete for BMAD result publishing." >&2
     return 1
@@ -1228,6 +1333,14 @@ publish_gate_result() {
       && ! require_clean_worktree_for_github_pass; then
       return 1
     fi
+    if { is_enabled "$post_github_status" || is_enabled "$post_pr_comment"; } \
+      && ! load_github_pr_context; then
+      return 1
+    fi
+    if { is_enabled "$post_github_status" || is_enabled "$post_pr_comment"; } \
+      && ! require_github_pr_mergeable_for_pass "$github_pr_merge_state_status" "$github_pr_mergeable" "BMAD result publishing"; then
+      return 1
+    fi
     if ! post_github_commit_status "$state" "$description"; then
       echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
       publish_ok=false
@@ -1373,6 +1486,19 @@ while :; do
     if [[ "$status" == "UNKNOWN" ]]; then
       echo "Warning: Agent $agent did not produce STATUS line; treating as FAIL." >&2
       status="FAIL"
+    fi
+
+    if [[ "$status" == "PASS" ]]; then
+      if ! review_pass_has_zero_issues_line "$review_log"; then
+        gate_failure_reason="PASS output missing exact 0 issues line"
+        status="FAIL"
+      elif ! review_required_fixes_are_empty "$review_log"; then
+        gate_failure_reason="PASS output has required fixes"
+        status="FAIL"
+      elif ! review_pass_has_empty_issues_section "$review_log"; then
+        gate_failure_reason="PASS output has issues"
+        status="FAIL"
+      fi
     fi
 
     if [[ "$status" == "PASS" ]] && is_enabled "$require_gate_markers"; then

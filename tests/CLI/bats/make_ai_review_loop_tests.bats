@@ -222,6 +222,46 @@ setup() {
   cd "$BATS_TEST_DIRNAME/../../.."
 }
 
+write_codex_stub_with_report() {
+  local bin_dir="$1"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+
+  if [[ -z "$output_file" ]]; then
+    echo "missing --output-last-message argument" >&2
+    exit 2
+  fi
+
+  cp "$CODEX_REVIEW_REPORT" "$output_file"
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+}
+
 write_successful_bmad_gh_stub() {
   local bin_dir="$1"
 
@@ -245,12 +285,14 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     exit 2
   fi
   review_decision="${GH_REVIEW_DECISION-REVIEW_REQUIRED}"
+  merge_state_status="${GH_MERGE_STATE_STATUS-CLEAN}"
+  mergeable="${GH_MERGEABLE-MERGEABLE}"
   head_oid="$(git rev-parse HEAD)"
   if [[ "$*" == *"headRefName"* ]]; then
-    printf '287\037false\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$review_decision" "$head_oid"
+    printf '287\037false\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037%s\n' "$review_decision" "$head_oid" "$merge_state_status"
     exit 0
   fi
-  printf '287\037false\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$review_decision" "$head_oid"
+  printf '287\037false\037%s\037%s\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$review_decision" "$merge_state_status" "$mergeable" "$head_oid"
   exit 0
 fi
 
@@ -259,6 +301,9 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
   if [[ "$*" != *"--required"* ]]; then
     echo "required check query must use gh pr checks --required" >&2
     exit 2
+  fi
+  if [[ "${GH_REQUIRED_CHECKS_FAIL-false}" == "true" ]]; then
+    exit 1
   fi
   printf '3\037\n'
   exit 0
@@ -302,7 +347,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -353,7 +398,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -404,7 +449,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -451,7 +496,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -502,7 +547,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -549,7 +594,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -719,6 +764,197 @@ EOF
   assert_output --partial "AI review PASS."
 }
 
+@test "ai-review-loop accepts PASS with numbered non-issue evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/pass-with-numbered-evidence.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+
+Requirement Scorecard:
+1. FR-01 evidence: 5/5 PASS
+2. NFR-01 evidence: 5/5 PASS
+
+Required Fixes:
+None.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+}
+
+@test "ai-review-loop rejects PASS without exact zero issues line" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/contradictory-pass.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+Issues:
+1. File path: scripts/ai-review-loop.sh
+   Short description: PASS output still lists an issue.
+   Expected fix: Return FAIL when issues are present.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: PASS output second line must be exactly: 0 issues."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "ai-review-loop rejects PASS with zero issues line and later Issues section" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/pass-with-late-issues.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+
+Issues:
+1. File path: scripts/ai-review-loop.sh
+   Short description: PASS output still lists an issue after zero issues.
+   Expected fix: Return FAIL when issues are present.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: PASS output Issues section must be empty."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "ai-review-loop rejects PASS with bulleted Issues section" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/pass-with-bulleted-issues.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+
+Issues:
+- File path: scripts/ai-review-loop.sh
+  Short description: PASS output still lists a bulleted issue after zero issues.
+  Expected fix: Return FAIL when issues are present.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: PASS output Issues section must be empty."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "ai-review-loop rejects PASS with unnumbered Issues section" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/pass-with-unnumbered-issues.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+
+Issues:
+File path: scripts/ai-review-loop.sh
+Short description: PASS output still lists an unnumbered issue after zero issues.
+Expected fix: Return FAIL when issues are present.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: PASS output Issues section must be empty."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "ai-review-loop rejects PASS with populated Required Fixes" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local report_file="${BATS_TEST_TMPDIR}/pass-with-required-fixes.md"
+  mkdir -p "$bin_dir"
+
+  cat > "$report_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+
+Required Fixes:
+1. File path: scripts/ai-review-loop.sh
+   Short description: Required Fixes contradict PASS.
+   Expected fix: Return FAIL until Required Fixes is empty.
+STATUS
+  write_codex_stub_with_report "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    CODEX_REVIEW_REPORT="$report_file" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_VERIFY_ON_PASS=false \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: PASS output Required Fixes section must be empty or None."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
 @test "ai-review-loop accepts strict PASS without trailing newline" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   mkdir -p "$bin_dir"
@@ -744,7 +980,7 @@ if [[ "${1:-}" == "exec" ]]; then
   done
 
   cat >/dev/null
-  printf 'STATUS: PASS' > "$output_file"
+  printf 'STATUS: PASS\n0 issues.' > "$output_file"
   exit 0
 fi
 
@@ -3925,6 +4161,81 @@ SCRIPT
   assert_output --partial "AI review PASS."
 }
 
+@test "bmad-fr-nfr-review-gate fails closed when required check query fails" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_REQUIRED_CHECKS_FAIL=true \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: Unable to query GitHub required PR checks for BMAD gate."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "bmad-fr-nfr-review-gate rejects PASS when GitHub merge state is dirty" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_MERGE_STATE_STATUS=DIRTY \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: GitHub PR mergeStateStatus blocks BMAD gate: DIRTY."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
+@test "bmad-fr-nfr-review-gate rejects PASS when GitHub mergeability is conflicting" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_MERGEABLE=CONFLICTING \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: GitHub PR mergeable state blocks BMAD gate: CONFLICTING."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
 @test "bmad-fr-nfr-review-gate publishes PR comment and success GitHub status after PASS" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
@@ -4433,7 +4744,7 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
     exit 0
   fi
-  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
+  printf '287\037false\037REVIEW_REQUIRED\037CLEAN\037MERGEABLE\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
