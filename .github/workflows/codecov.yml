@@ -18,7 +18,7 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Start application
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: /tmp/coverage.xml

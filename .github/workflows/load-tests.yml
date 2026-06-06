@@ -31,7 +31,7 @@ jobs:
 
       - name: Setup Docker
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: docker/setup-docker-action@v4
+        uses: docker/setup-docker-action@e43656e248c0bd0647d3f5c195d116aacf6fcaf4
 
       - name: Run load tests
         if: ${{ github.actor != 'dependabot[bot]' }}

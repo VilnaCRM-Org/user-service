@@ -16,14 +16,14 @@ jobs:
       - name: Generate token with necessary permissions
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: generate_token
-        uses: tibdex/github-app-token@v2
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
         with:
           app_id: ${{ secrets.VILNACRM_APP_ID }}
           private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
 
       - name: Checkout code
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           token: ${{ github.actor != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
           fetch-depth: 0
@@ -31,7 +31,7 @@ jobs:
       - name: Import GPG key
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -84,7 +84,7 @@ jobs:
       - name: Run Super-Linter
         if: ${{ github.actor != 'dependabot[bot]' }}
         continue-on-error: true
-        uses: super-linter/super-linter@v7.1.0
+        uses: super-linter/super-linter@b92721f792f381cedc002ecdbb9847a15ece5bb8
         env:
           FILTER_REGEX_EXCLUDE: '^\\.github/openapi-spec/'
           VALIDATE_JAVASCRIPT_ES: true
@@ -105,7 +105,7 @@ jobs:
         env:
           GPG_TTY: ${{ env.GPG_TTY }}
           GPG_PASSPHRASE: ${{ env.GPG_PASSPHRASE }}
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403
         with:
           branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
           commit_message: 'chore(#${{ github.event.number }}): fix linting issues'

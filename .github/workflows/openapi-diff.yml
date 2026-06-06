@@ -13,12 +13,12 @@ jobs:
         if: github.actor == 'dependabot[bot]'
         run: echo "Skipping OpenAPI diff for Dependabot PR"
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           ref: ${{ github.event.pull_request.head.ref }}
@@ -30,7 +30,7 @@ jobs:
       - name: Cache Composer packages
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: composer-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -47,27 +47,27 @@ jobs:
 
       - name: Commit changes
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5
         with:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
 
       - name: Check out head branch
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           path: head
 
       - name: Check out master branch
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: main
           path: base
 
       - name: Run OpenAPI Diff (from HEAD revision)
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: docker://openapitools/openapi-diff:latest
+        uses: docker://openapitools/openapi-diff@sha256:9b5bfb7ff04710ac605b1f8d12706b536682ff80c178a4db6b744024b93fccf5
         with:
           args: '/github/workspace/head/.github/openapi-spec/spec.yaml /github/workspace/base/.github/openapi-spec/spec.yaml'
 

@@ -15,9 +15,9 @@ jobs:
 
       - name: Checkout code
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}

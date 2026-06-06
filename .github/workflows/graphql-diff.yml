@@ -21,19 +21,19 @@ jobs:
       - name: Generate token with necessary permissions
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: generate_token
-        uses: tibdex/github-app-token@v2
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
         with:
           app_id: ${{ secrets.VILNACRM_APP_ID }}
           private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - name: Checkout Repository
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
         with:
           token: ${{ github.actor != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
           ref: ${{ github.event.pull_request.head.ref }}
@@ -57,14 +57,14 @@ jobs:
 
       - name: Commit changes
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5
         with:
           add: '.github/graphql-spec/spec'
           message: 'feat(#${{ github.event.number }}): generate graphql spec'
 
       - name: GraphQL Inspector
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: kamilkisiela/graphql-inspector@release-1701263349990
+        uses: kamilkisiela/graphql-inspector@91cefc9d934ccac1b4be9f26f44b6f533c300247
         with:
           schema: 'master:.github/graphql-spec/spec'
         env:
