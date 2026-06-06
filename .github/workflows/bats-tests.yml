@@ -4,13 +4,18 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   bats_core_tests:
     runs-on: ubuntu-latest
     name: Run Bats Core Tests
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Docker
         uses: docker/setup-docker-action@v4
@@ -29,9 +34,9 @@ jobs:
         uses: bats-core/bats-action@2.0.0
 
       - name: Install Bats plugins
-        run: mkdir -p tests/CLI/bats/test_helper && cd tests/CLI/bats/test_helper &&
-          git clone https://github.com/bats-core/bats-support.git &&
-          git clone https://github.com/bats-core/bats-assert.git
+        run: |
+          git clone --depth 1 https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
         run: make bats
