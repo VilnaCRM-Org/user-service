@@ -1030,8 +1030,7 @@ review_has_github_preflight_context() {
     return 1
   fi
   if [[ "$is_draft" == "true" ]]; then
-    echo "Warning: GitHub PR is still draft." >&2
-    return 1
+    echo "Info: GitHub PR is draft; final BMAD PASS still requires a ready PR." >&2
   fi
 
   return 0

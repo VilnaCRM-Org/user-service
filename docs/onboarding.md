@@ -167,7 +167,7 @@ Additionally, we use:
 ### Code Reviews & Approvals
 
 - Before marking a PR ready, run `make ci` and then `make ai-review-loop`.
-- For PRs with BMAD specs, also run `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate` and resolve every score below 5/5, including expanded quality and whole-codebase impact scores.
+- For draft PRs with BMAD specs, run `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate` to surface and resolve every score below 5/5, including expanded quality and whole-codebase impact scores. After marking the PR ready, rerun the same gate for final `STATUS: PASS`; final completion still requires a non-draft PR.
 - All PRs require approval from **@kravalg** and **coderabbit ai** before merging.
 
 ---

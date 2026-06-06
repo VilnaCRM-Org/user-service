@@ -37,6 +37,12 @@ If you created or modified a **NEW feature**, you MUST execute **every** skill i
 - `structurizr-architecture-sync`
 - `testing-workflow`
 
+**Conditional BMAD skill:**
+
+- `bmad-fr-nfr-review-gate` when BMAD specs exist for the implemented work. Run
+  `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`; if no
+  BMAD specs exist, record **"Not applicable"** with the concrete reason.
+
 ## Quick Decision Tree
 
 ```
