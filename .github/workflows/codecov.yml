@@ -11,24 +11,33 @@ on:
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping Codecov report for Dependabot PR"
+
       - name: Checkout Repository
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: actions/checkout@v3
 
       - name: Start application
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make start
 
       - name: Setup test database
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make setup-test-db
 
       - name: Run unit tests and collect coverage
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make coverage-xml
 
       - name: Copy coverage.xml to workspace
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: cp coverage/coverage.xml /tmp/coverage.xml
 
       - name: Check if coverage.xml exists
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: |
           if [ ! -f /tmp/coverage.xml ]; then
             echo "coverage.xml does not exist and cannot be uploaded."
@@ -36,6 +45,7 @@ jobs:
           fi
 
       - name: Upload coverage to Codecov
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

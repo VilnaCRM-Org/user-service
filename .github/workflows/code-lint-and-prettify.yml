@@ -7,8 +7,14 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    if: ${{ !contains(toLower(github.actor), 'dependabot') }}
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping lint checks for Dependabot PR"
+
       - name: Generate token with necessary permissions
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         id: generate_token
         uses: tibdex/github-app-token@v2
         with:
@@ -16,12 +22,14 @@ jobs:
           private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
 
       - name: Checkout code
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.generate_token.outputs.token }}
+          token: ${{ !contains(toLower(github.actor), 'dependabot') && steps.generate_token.outputs.token || github.token }}
           fetch-depth: 0
 
       - name: Import GPG key
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         id: import-gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -33,6 +41,7 @@ jobs:
           git_tag_gpgsign: true
 
       - name: Configure GPG for automated signing
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: |
           export GPG_TTY=$(tty)
           echo "GPG_TTY=$GPG_TTY" >> $GITHUB_ENV
@@ -65,12 +74,15 @@ jobs:
           EOF
           chmod +x ~/.gnupg/gpg-wrapper.sh
           git config --global gpg.program ~/.gnupg/gpg-wrapper.sh
+
       - name: Test GPG signing
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: |
           echo "Testing GPG signing..."
           echo "test message" | ~/.gnupg/gpg-wrapper.sh --armor --detach-sign > /dev/null 2>&1 && echo "✅ GPG signing works" || echo "❌ GPG signing failed"
 
       - name: Run Super-Linter
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         continue-on-error: true
         uses: super-linter/super-linter@v7.1.0
         env:
@@ -86,12 +98,10 @@ jobs:
           VALIDATE_JAVASCRIPT_PRETTIER: true
           FIX_JAVASCRIPT_PRETTIER: true
           VALIDATE_ALL_CODEBASE: true
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GITHUB_TOKEN: ${{ !contains(toLower(github.actor), 'dependabot') && steps.generate_token.outputs.token || github.token }}
 
       - name: Commit and push linting fixes
-        if: >
-          github.event_name == 'pull_request' && github.ref_name !=
-          github.event.repository.default_branch
+        if: ${{ !contains(toLower(github.actor), 'dependabot') && github.event_name == 'pull_request' && github.ref_name != github.event.repository.default_branch }}
         env:
           GPG_TTY: ${{ env.GPG_TTY }}
           GPG_PASSPHRASE: ${{ env.GPG_PASSPHRASE }}
