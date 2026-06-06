@@ -8,15 +8,24 @@ jobs:
   infection:
     name: Infection
     runs-on: ubuntu-latest
-    env:
-      COMPOSE_PROJECT_NAME: user-service-infection
-      COMPOSE_FILE: docker-compose.yml:docker-compose.memory-tests.yml
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping Infection for Dependabot PR"
 
-      - name: Start application
-        run: make start
+      - name: Checkout code
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        uses: actions/checkout@v3
+
+      - uses: shivammathur/setup-php@v2
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Install Dependencies
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Run infection
-        run: make infection
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: CI=1 make infection

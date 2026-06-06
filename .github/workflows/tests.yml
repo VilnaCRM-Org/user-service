@@ -9,13 +9,20 @@ jobs:
     name: PHPUnit
     runs-on: ubuntu-latest
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping PHPUnit for Dependabot PR"
+
       - name: Checkout Repository
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: actions/checkout@v3
 
       - name: Start application
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make start
 
       - name: Setup test db
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make setup-test-db
 
       - name: Assert passkey readiness
@@ -25,12 +32,15 @@ jobs:
         run: make passkey-ci-production-readiness
 
       - name: Execute Unit and Integration tests
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make tests-with-coverage
 
       - name: Copy coverage report to host
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: docker cp user-service-php-1:/coverage/coverage.xml /tmp
 
       - name: Upload code coverage to Codecov
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

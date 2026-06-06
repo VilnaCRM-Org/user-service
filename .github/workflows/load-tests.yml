@@ -19,10 +19,20 @@ jobs:
       FRANKENPHP_LOOP_MAX: '-1'
 
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping load tests for Dependabot PR"
+
       - name: Checkout Repository
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           persist-credentials: false
 
+      - name: Setup Docker
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        uses: docker/setup-docker-action@v4
+
       - name: Run load tests
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make load-tests

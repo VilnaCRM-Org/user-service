@@ -8,13 +8,28 @@ jobs:
   schemathesis:
     name: Schemathesis
     runs-on: ubuntu-latest
-
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping Schemathesis for Dependabot PR"
+
       - name: Checkout Repository
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         uses: actions/checkout@v4
 
+      - uses: shivammathur/setup-php@v2
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Install Dependencies
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
       - name: Start Application
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make start
 
       - name: Run Schemathesis Validation
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
         run: make schemathesis-validate
