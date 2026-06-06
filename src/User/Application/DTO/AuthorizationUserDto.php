@@ -51,6 +51,7 @@ final readonly class AuthorizationUserDto implements
         return $this->confirmed;
     }
 
+    #[\Override]
     public function eraseCredentials(): void
     {
     }

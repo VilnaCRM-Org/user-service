@@ -26,6 +26,7 @@ final readonly class ServicePrincipal implements UserInterface
         return $this->roles;
     }
 
+    #[\Override]
     public function eraseCredentials(): void
     {
     }
