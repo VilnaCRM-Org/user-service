@@ -1,5 +1,7 @@
 # Load environment variables from .env.test
 include .env.test
+export OAUTH_ENCRYPTION_KEY
+export TWO_FACTOR_ENCRYPTION_KEY
 
 # Parameters
 PROJECT       = user-service
@@ -457,15 +459,13 @@ passkey-test-readiness: ## Assert passkey readiness prerequisites against the te
 	@$(SYMFONY_TEST_ENV) app:passkey:assert-production-readiness
 
 passkey-ci-production-readiness: ## Assert passkey readiness in prod mode with CI-safe production env values
-	@oauth_key="$$(openssl rand -hex 32)"; \
-	two_factor_key="$$(openssl rand -base64 32)"; \
-	$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
-		-e OAUTH_ENCRYPTION_KEY="$$oauth_key" \
-		-e TWO_FACTOR_ENCRYPTION_KEY="$$two_factor_key" \
-		php bin/console doctrine:mongodb:schema:update --skip-search-indexes; \
-	$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
-		-e OAUTH_ENCRYPTION_KEY="$$oauth_key" \
-		-e TWO_FACTOR_ENCRYPTION_KEY="$$two_factor_key" \
+	@$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY \
+		-e TWO_FACTOR_ENCRYPTION_KEY \
+		php bin/console doctrine:mongodb:schema:update --skip-search-indexes
+	@$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY \
+		-e TWO_FACTOR_ENCRYPTION_KEY \
 		php bin/console app:passkey:assert-production-readiness
 
 update-public-suffix-list: ## Refresh the passkey Public Suffix List data from the official source
