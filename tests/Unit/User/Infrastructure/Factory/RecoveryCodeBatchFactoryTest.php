@@ -11,6 +11,7 @@ use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Infrastructure\Factory\RecoveryCodeBatchFactory;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
@@ -141,7 +142,7 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         $this->stubRecoveryCodeCreation();
         $this->factory = $this->createFactory(static fn (int $_length): string => '');
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Random byte generator returned no bytes.');
 
         $this->factory->create($user);
@@ -155,7 +156,7 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
             static fn (int $length): string => str_repeat("\xFC", $length)
         );
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Random byte generator did not produce usable bytes.');
 
         $this->factory->create($user);
