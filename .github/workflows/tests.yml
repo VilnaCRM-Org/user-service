@@ -10,31 +10,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
         run: echo "Skipping PHPUnit for Dependabot PR"
 
       - name: Checkout Repository
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@v4
 
       - name: Start application
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Setup test db
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make setup-test-db
 
       - name: Execute Unit and Integration tests
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make tests-with-coverage
 
       - name: Copy coverage report to host
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: docker cp user-service-php-1:/coverage/coverage.xml /tmp
 
       - name: Upload code coverage to Codecov
-        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
