@@ -11,7 +11,8 @@ info:
     url: 'https://creativecommons.org/publicdomain/zero/1.0/'
   version: 1.0.0
 servers:
-  - url: 'https://api.vilnacrm.com'
+  -
+    url: 'https://api.vilnacrm.com'
     description: ''
 paths:
   /api/2fa/confirm:
@@ -47,7 +48,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Confirm two-factor authentication setup'
       description: 'Validates TOTP code, enables 2FA, generates recovery codes, and revokes other sessions.'
       parameters: []
@@ -72,7 +73,7 @@ paths:
       responses:
         '204':
           description: '2FA disabled successfully'
-          content: {}
+          content: {  }
         '401':
           description: 'Invalid code or authentication required'
         '403':
@@ -100,7 +101,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Disable two-factor authentication'
       description: 'Verifies TOTP or recovery code, disables 2FA, clears secret, and deletes all recovery codes.'
       parameters: []
@@ -150,7 +151,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Regenerate recovery codes'
       description: 'Invalidates all existing recovery codes and generates 8 new ones. Requires recent authentication (sudo mode).'
       parameters: []
@@ -200,7 +201,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Set up two-factor authentication'
       description: 'Generates a TOTP secret and provisioning URI for the authenticated user.'
       parameters: []
@@ -256,11 +257,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -287,7 +284,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Complete authenticated passkey registration'
       description: 'Verifies WebAuthn attestation and stores the passkey for the authenticated user.'
       parameters: []
@@ -327,12 +324,10 @@ paths:
                 public_key:
                   challenge: base64url-challenge
                   rp: { name: VilnaCRM, id: localhost }
-                  user:
-                    { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
+                  user: { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
                   pubKeyCredParams: [{ type: public-key, alg: -7 }]
                   excludeCredentials: []
-                  authenticatorSelection:
-                    { userVerification: required, residentKey: required, requireResidentKey: true }
+                  authenticatorSelection: { userVerification: required, residentKey: required, requireResidentKey: true }
                   timeout: 60000
         '401':
           description: 'Authentication required'
@@ -351,11 +346,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -382,7 +373,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Start authenticated passkey registration'
       description: 'Creates WebAuthn public key creation options for the authenticated user.'
       parameters: []
@@ -411,25 +402,8 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - {
-                      type: object,
-                      required: [2fa_enabled, access_token, refresh_token],
-                      properties:
-                        {
-                          2fa_enabled: { type: boolean, enum: [false] },
-                          access_token: { type: string },
-                          refresh_token: { type: string },
-                        },
-                    }
-                  - {
-                      type: object,
-                      required: [2fa_enabled, pending_session_id],
-                      properties:
-                        {
-                          2fa_enabled: { type: boolean, enum: [true] },
-                          pending_session_id: { type: string },
-                        },
-                    }
+                  - { type: object, required: [2fa_enabled, access_token, refresh_token], properties: { 2fa_enabled: { type: boolean, enum: [false] }, access_token: { type: string }, refresh_token: { type: string } } }
+                  - { type: object, required: [2fa_enabled, pending_session_id], properties: { 2fa_enabled: { type: boolean, enum: [true] }, pending_session_id: { type: string } } }
               example:
                 2fa_enabled: false
                 access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
@@ -453,11 +427,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -484,7 +454,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Complete passkey sign in'
       description: 'Verifies WebAuthn assertion, updates the stored credential counter, and issues tokens.'
       parameters: []
@@ -544,11 +514,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -575,7 +541,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Start passkey sign in'
       description: 'Creates WebAuthn public key request options for username-first passkey sign in.'
       parameters: []
@@ -637,11 +603,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -668,7 +630,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Complete passkey sign-up'
       description: 'Verifies WebAuthn attestation, creates the account, stores the passkey, and issues tokens.'
       parameters: []
@@ -708,11 +670,9 @@ paths:
                 public_key:
                   challenge: base64url-challenge
                   rp: { name: VilnaCRM, id: localhost }
-                  user:
-                    { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
+                  user: { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
                   pubKeyCredParams: [{ type: public-key, alg: -7 }]
-                  authenticatorSelection:
-                    { userVerification: required, residentKey: required, requireResidentKey: true }
+                  authenticatorSelection: { userVerification: required, residentKey: required, requireResidentKey: true }
                   timeout: 60000
         '409':
           description: 'Email is already registered'
@@ -733,11 +693,7 @@ paths:
                   type: { type: string, example: /errors/passkey-production-readiness }
                   title: { type: string, example: 'Service Unavailable' }
                   status: { type: integer, example: 503 }
-                  detail:
-                    {
-                      type: string,
-                      example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.',
-                    }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
               example:
                 type: /errors/passkey-production-readiness
                 title: 'Service Unavailable'
@@ -764,7 +720,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Start passkey sign-up'
       description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
       parameters: []
@@ -818,7 +774,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Sign in with email and password'
       description: 'Authenticates user credentials and returns access/refresh tokens or a pending 2FA session.'
       parameters: []
@@ -870,7 +826,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Complete two-factor sign in'
       description: 'Validates pending 2FA session and TOTP code, then issues access and refresh tokens.'
       parameters: []
@@ -895,7 +851,7 @@ paths:
       responses:
         '204':
           description: 'Signed out successfully'
-          content: {}
+          content: {  }
         '400':
           description: 'Invalid request payload'
         '401':
@@ -921,7 +877,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Sign out (logout) from current session'
       description: 'Revokes the current session and all associated refresh tokens, clears the session cookie.'
       parameters: []
@@ -946,7 +902,7 @@ paths:
       responses:
         '204':
           description: 'Signed out from all sessions successfully'
-          content: {}
+          content: {  }
         '400':
           description: 'Invalid request payload'
         '401':
@@ -974,7 +930,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Sign out from all sessions (all devices)'
       description: 'Revokes all sessions and refresh tokens for the authenticated user, clears the session cookie.'
       parameters: []
@@ -1026,7 +982,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Refresh access token'
       description: 'Exchanges a valid refresh token for new access and refresh tokens (token rotation).'
       parameters: []
@@ -1051,7 +1007,7 @@ paths:
       responses:
         '204':
           description: 'Health check passed with no content to return.'
-          content: {}
+          content: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1073,7 +1029,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Retrieves a HealthCheck resource.'
       description: 'Retrieves a HealthCheck resource.'
       parameters: []
@@ -1149,11 +1105,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Start social OAuth flow'
       description: 'Creates an OAuth state record, sets the flow-binding cookie, and redirects the client to the selected provider.'
       parameters:
-        - name: provider
+        -
+          name: provider
           in: path
           description: 'Supported social OAuth provider.'
           required: true
@@ -1183,25 +1140,8 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - {
-                      type: object,
-                      properties:
-                        {
-                          2fa_enabled: { type: boolean, enum: [false] },
-                          access_token: { type: string },
-                          refresh_token: { type: string },
-                        },
-                      required: [2fa_enabled, access_token, refresh_token],
-                    }
-                  - {
-                      type: object,
-                      properties:
-                        {
-                          2fa_enabled: { type: boolean, enum: [true] },
-                          pending_session_id: { type: string },
-                        },
-                      required: [2fa_enabled, pending_session_id],
-                    }
+                  - { type: object, properties: { 2fa_enabled: { type: boolean, enum: [false] }, access_token: { type: string }, refresh_token: { type: string } }, required: [2fa_enabled, access_token, refresh_token] }
+                  - { type: object, properties: { 2fa_enabled: { type: boolean, enum: [true] }, pending_session_id: { type: string } }, required: [2fa_enabled, pending_session_id] }
               example:
                 2fa_enabled: false
                 access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
@@ -1315,11 +1255,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Handle social OAuth callback'
       description: 'Consumes the OAuth state, exchanges the provider code, requires the flow-binding cookie from the initiate redirect, and returns either tokens or a pending 2FA session.'
       parameters:
-        - name: provider
+        -
+          name: provider
           in: path
           description: 'Supported social OAuth provider.'
           required: true
@@ -1334,7 +1275,8 @@ paths:
           style: simple
           explode: false
           example: github
-        - name: code
+        -
+          name: code
           in: query
           description: 'Authorization code received from the provider.'
           required: true
@@ -1344,7 +1286,8 @@ paths:
           style: form
           explode: true
           example: provider-code-123
-        - name: state
+        -
+          name: state
           in: query
           description: 'OAuth state value received from the provider.'
           required: true
@@ -1354,7 +1297,8 @@ paths:
           style: form
           explode: true
           example: state-123
-        - name: oauth_flow_binding
+        -
+          name: oauth_flow_binding
           in: cookie
           description: 'Short-lived flow-binding cookie created by the initiate endpoint.'
           required: true
@@ -1382,7 +1326,7 @@ paths:
           description: 'Redirect to the provided redirect URI with authorization code.'
           content:
             application/json:
-              example: {}
+              example: {  }
           headers:
             Location:
               description: 'The URI to redirect to for user authorization'
@@ -1408,7 +1352,7 @@ paths:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
                 hint: 'Check that all required parameters have been provided'
-          headers: {}
+          headers: {  }
         '401':
           description: 'Invalid client credentials'
           content:
@@ -1424,7 +1368,7 @@ paths:
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1446,11 +1390,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Start OAuth authorization flow'
       description: 'Redirects the resource owner to grant access and returns an authorization code.'
       parameters:
-        - name: response_type
+        -
+          name: response_type
           in: query
           description: 'Response type'
           required: true
@@ -1464,7 +1409,8 @@ paths:
           style: form
           explode: true
           example: code
-        - name: client_id
+        -
+          name: client_id
           in: query
           description: 'Client ID'
           required: true
@@ -1476,7 +1422,8 @@ paths:
           style: form
           explode: true
           example: dc0bc6323f16fecd4224a3860ca894c5
-        - name: redirect_uri
+        -
+          name: redirect_uri
           in: query
           description: 'Redirect uri'
           required: true
@@ -1488,7 +1435,8 @@ paths:
           style: form
           explode: true
           example: 'https://example.com'
-        - name: scope
+        -
+          name: scope
           in: query
           description: Scope
           required: false
@@ -1500,7 +1448,8 @@ paths:
           style: form
           explode: true
           example: 'profile email'
-        - name: state
+        -
+          name: state
           in: query
           description: State
           required: false
@@ -1541,7 +1490,7 @@ paths:
                 expires_in: 3600
                 access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdW
                 refresh_token: df9b4ae7ce2e1e8f2a3c1b4d
-          headers: {}
+          headers: {  }
         '400':
           description: 'Unsupported grant type'
           content:
@@ -1560,7 +1509,7 @@ paths:
                 error: unsupported_grant_type
                 error_description: 'The authorization grant type is not supported by the authorization server.'
                 hint: 'Check that all required parameters have been provided'
-          headers: {}
+          headers: {  }
         '401':
           description: 'Invalid client credentials'
           content:
@@ -1576,7 +1525,7 @@ paths:
               example:
                 error: invalid_client
                 error_description: 'Client authentication failed'
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1598,7 +1547,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Exchange authorization data for tokens'
       description: 'Exchanges an authorization code, password credentials, or refresh token for OAuth access and refresh tokens.'
       requestBody:
@@ -1673,20 +1622,15 @@ paths:
                 type: array
                 items:
                   type: object
-                  properties:
-                    {
-                      confirmed: { type: boolean },
-                      email: { type: string },
-                      initials: { type: string },
-                      id: { type: string },
-                    }
+                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
                   required: [confirmed, email, initials, id]
               example:
-                - confirmed: false
+                -
+                  confirmed: false
                   email: user@example.com
                   initials: 'Name Surname'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
-          headers: {}
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -1708,7 +1652,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -1730,7 +1674,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1752,11 +1696,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Retrieves the collection of User resources.'
       description: 'Retrieves the collection of User resources.'
       parameters:
-        - name: page
+        -
+          name: page
           in: query
           description: 'The collection page number'
           required: false
@@ -1768,7 +1713,8 @@ paths:
             minimum: 1
           style: form
           explode: true
-        - name: itemsPerPage
+        -
+          name: itemsPerPage
           in: query
           description: 'The number of items per page'
           required: false
@@ -1781,7 +1727,8 @@ paths:
             maximum: 100
           style: form
           explode: true
-        - name: partial
+        -
+          name: partial
           in: query
           description: 'Enable or disable partial pagination'
           required: false
@@ -1817,7 +1764,7 @@ paths:
                 email: create-user@example.com
                 initials: 'Create User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca70
-          headers: {}
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -1839,7 +1786,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -1863,13 +1810,9 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  - {
-                      propertyPath: some_property,
-                      message: 'This value should not be blank.',
-                      code: c1051bb4-d103-4f74-8988-acbcafc7fdc3,
-                    }
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -1891,7 +1834,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Creates a User resource.'
       description: 'Creates a User resource.'
       parameters: []
@@ -1939,20 +1882,15 @@ paths:
                 type: array
                 items:
                   type: object
-                  properties:
-                    {
-                      confirmed: { type: boolean },
-                      email: { type: string },
-                      initials: { type: string },
-                      id: { type: string },
-                    }
+                  properties: { confirmed: { type: boolean }, email: { type: string }, initials: { type: string }, id: { type: string } }
                   required: [confirmed, email, initials, id]
               example:
-                - confirmed: false
+                -
+                  confirmed: false
                   email: batch-user-one@example.com
                   initials: 'Batch User One'
                   id: 018dd6ba-e901-7a8c-b27d-65d122caca71
-          headers: {}
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -1974,7 +1912,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -1996,7 +1934,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -2020,13 +1958,9 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  - {
-                      propertyPath: some_property,
-                      message: 'This value should not be blank.',
-                      code: c1051bb4-d103-4f74-8988-acbcafc7fdc3,
-                    }
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2048,7 +1982,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Creates a User resource.'
       description: 'Creates a User resource.'
       parameters: []
@@ -2064,31 +1998,15 @@ paths:
                   type: array
                   minItems: 1
                   uniqueItems: true
-                  items:
-                    {
-                      type: object,
-                      required: [email, initials, password],
-                      properties:
-                        {
-                          email: { type: string, format: email, maxLength: 255 },
-                          initials: { type: string, maxLength: 255, pattern: '^(?!\d).*\S.*$' },
-                          password:
-                            {
-                              type: string,
-                              minLength: 8,
-                              maxLength: 64,
-                              pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$',
-                            },
-                        },
-                      additionalProperties: false,
-                      unevaluatedProperties: false,
-                    }
+                  items: { type: object, required: [email, initials, password], properties: { email: { type: string, format: email, maxLength: 255 }, initials: { type: string, maxLength: 255, pattern: '^(?!\d).*\S.*$' }, password: { type: string, minLength: 8, maxLength: 64, pattern: '^(?=.*[0-9])(?=.*[A-Z]).{8,64}$' } }, additionalProperties: false, unevaluatedProperties: false }
             example:
               users:
-                - email: batch-user-one@example.com
+                -
+                  email: batch-user-one@example.com
                   initials: 'Batch User One'
                   password: BatchPass1!
-                - email: batch-user-two@example.com
+                -
+                  email: batch-user-two@example.com
                   initials: 'Batch User Two'
                   password: BatchPass2!
         required: true
@@ -2102,8 +2020,8 @@ paths:
           description: 'User confirmed'
           content:
             application/json:
-              example: {}
-          headers: {}
+              example: {  }
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -2125,13 +2043,13 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '404':
           description: 'Token not found or expired'
           content:
             application/problem+json:
-              example: {}
-          headers: {}
+              example: {  }
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -2155,13 +2073,9 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  - {
-                      propertyPath: some_property,
-                      message: 'This value should not be blank.',
-                      code: c1051bb4-d103-4f74-8988-acbcafc7fdc3,
-                    }
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2183,7 +2097,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Confirms the User'
       description: 'Confirms the User'
       parameters: []
@@ -2228,7 +2142,7 @@ paths:
                 email: user@example.com
                 initials: 'Name Surname'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6b
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -2250,7 +2164,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -2272,7 +2186,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2294,11 +2208,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Retrieves a User resource.'
       description: 'Retrieves a User resource.'
       parameters:
-        - name: id
+        -
+          name: id
           in: path
           description: 'User identifier'
           required: true
@@ -2337,7 +2252,7 @@ paths:
                 email: update-user@example.com
                 initials: 'Update User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
-          headers: {}
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -2359,7 +2274,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -2381,7 +2296,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -2403,7 +2318,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
-          headers: {}
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -2427,13 +2342,9 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  - {
-                      propertyPath: some_property,
-                      message: 'This value should not be blank.',
-                      code: c1051bb4-d103-4f74-8988-acbcafc7fdc3,
-                    }
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
-          headers: {}
+          headers: {  }
         '429':
           description: 'Too many requests'
           content:
@@ -2455,7 +2366,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2477,11 +2388,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Replaces the User resource.'
       description: 'Replaces the User resource.'
       parameters:
-        - name: id
+        -
+          name: id
           in: path
           description: 'User identifier'
           required: true
@@ -2534,8 +2446,8 @@ paths:
       responses:
         '204':
           description: 'User resource deleted'
-          content: {}
-          headers: {}
+          content: {  }
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -2557,7 +2469,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -2579,7 +2491,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2601,11 +2513,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Removes the User resource.'
       description: 'Removes the User resource.'
       parameters:
-        - name: id
+        -
+          name: id
           in: path
           description: 'User identifier'
           required: true
@@ -2644,7 +2557,7 @@ paths:
                 email: update-user@example.com
                 initials: 'Update User'
                 id: 018dd6ba-e901-7a8c-b27d-65d122caca6c
-          headers: {}
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -2666,7 +2579,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -2688,7 +2601,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -2710,7 +2623,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
-          headers: {}
+          headers: {  }
         '422':
           description: 'Validation error'
           content:
@@ -2734,13 +2647,9 @@ paths:
                 title: 'An error occurred'
                 detail: 'some_property: This value should not be blank.'
                 violations:
-                  - {
-                      propertyPath: some_property,
-                      message: 'This value should not be blank.',
-                      code: c1051bb4-d103-4f74-8988-acbcafc7fdc3,
-                    }
+                  - { propertyPath: some_property, message: 'This value should not be blank.', code: c1051bb4-d103-4f74-8988-acbcafc7fdc3 }
                 status: 422
-          headers: {}
+          headers: {  }
         '429':
           description: 'Too many requests'
           content:
@@ -2762,7 +2671,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2784,11 +2693,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Updates the User resource.'
       description: 'Updates the User resource.'
       parameters:
-        - name: id
+        -
+          name: id
           in: path
           description: 'User identifier'
           required: true
@@ -2841,8 +2751,8 @@ paths:
           description: 'Email was send again'
           content:
             application/json:
-              example: {}
-          headers: {}
+              example: {  }
+          headers: {  }
         '400':
           description: 'Bad request'
           content:
@@ -2864,7 +2774,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'The input data is misformatted.'
                 status: 400
-          headers: {}
+          headers: {  }
         '401':
           description: Unauthorized
           content:
@@ -2886,7 +2796,7 @@ paths:
                 title: Unauthorized
                 status: 401
                 detail: 'Authentication required.'
-          headers: {}
+          headers: {  }
         '404':
           description: 'User not found'
           content:
@@ -2908,7 +2818,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'User not found'
                 status: 404
-          headers: {}
+          headers: {  }
         '429':
           description: 'Too many requests'
           content:
@@ -2930,7 +2840,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Cannot send new email till 2024-01-24T12:43:01+00:00'
                 status: 429
-          headers: {}
+          headers: {  }
         '415':
           description: 'Unsupported media type'
           content:
@@ -2952,7 +2862,7 @@ paths:
                 title: 'Unsupported Media Type'
                 detail: 'The "Content-Type" header must exist.'
                 status: 415
-          headers: {}
+          headers: {  }
         '500':
           description: 'Internal server error'
           content:
@@ -2974,11 +2884,12 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Resends confirmation email'
       description: 'Resends confirmation email'
       parameters:
-        - name: id
+        -
+          name: id
           in: path
           description: 'User identifier'
           required: true
@@ -2997,7 +2908,7 @@ paths:
           application/json:
             schema:
               type: object
-              properties: {}
+              properties: {  }
         required: false
   /api/reset-password:
     post:
@@ -3007,7 +2918,7 @@ paths:
       responses:
         '204':
           description: 'Password reset request accepted'
-          content: {}
+          content: {  }
         '400':
           description: 'Invalid request payload'
         '404':
@@ -3037,7 +2948,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Request a password reset'
       description: 'Initiates a password reset process by sending a reset token to the provided email address.'
       parameters: []
@@ -3076,7 +2987,7 @@ paths:
       responses:
         '204':
           description: 'Password reset confirmed'
-          content: {}
+          content: {  }
         '400':
           description: 'Invalid or expired password reset token'
         '404':
@@ -3104,7 +3015,7 @@ paths:
                 title: 'An error occurred'
                 detail: 'Something went wrong'
                 status: 500
-          headers: {}
+          headers: {  }
       summary: 'Confirm a password reset'
       description: 'Completes the password reset process by validating the reset token and setting a new password.'
       parameters: []
@@ -3533,12 +3444,16 @@ components:
       type: object
     HealthCheck.jsonld:
       allOf:
-        - $ref: '#/components/schemas/HydraItemBaseSchema'
-        - type: object
+        -
+          $ref: '#/components/schemas/HydraItemBaseSchema'
+        -
+          type: object
     HydraCollectionBaseSchema:
       allOf:
-        - $ref: '#/components/schemas/HydraCollectionBaseSchemaNoPagination'
-        - type: object
+        -
+          $ref: '#/components/schemas/HydraCollectionBaseSchemaNoPagination'
+        -
+          type: object
           properties:
             view:
               type: object
@@ -3596,8 +3511,10 @@ components:
       properties:
         '@context':
           oneOf:
-            - type: string
-            - type: object
+            -
+              type: string
+            -
+              type: object
               properties:
                 '@vocab':
                   type: string
@@ -3746,8 +3663,10 @@ components:
           $ref: '#/components/schemas/UuidInterface.graphql-output'
     User.jsonld-output:
       allOf:
-        - $ref: '#/components/schemas/HydraItemBaseSchema'
-        - type: object
+        -
+          $ref: '#/components/schemas/HydraItemBaseSchema'
+        -
+          type: object
           properties:
             confirmed:
               type: boolean
@@ -3763,11 +3682,11 @@ components:
       type: object
     UuidInterface.jsonld-output:
       type: object
-  responses: {}
-  parameters: {}
-  examples: {}
-  requestBodies: {}
-  headers: {}
+  responses: {  }
+  parameters: {  }
+  examples: {  }
+  requestBodies: {  }
+  headers: {  }
   securitySchemes:
     OAuth2:
       type: oauth2
@@ -3784,16 +3703,22 @@ components:
       scheme: basic
       description: 'HTTP Basic authentication for OAuth client credentials.'
 security:
-  - OAuth2: []
+  -
+    OAuth2: []
 tags:
-  - name: Authentication
+  -
+    name: Authentication
     description: 'Authentication and two-factor endpoints'
-  - name: HealthCheck
+  -
+    name: HealthCheck
     description: 'Service health monitoring endpoints'
-  - name: OAuth
+  -
+    name: OAuth
     description: 'OAuth 2.0 authorization and token endpoints'
-  - name: User
+  -
+    name: User
     description: 'User account management operations'
-  - name: 'User reset password'
+  -
+    name: 'User reset password'
     description: 'Password reset workflows'
-webhooks: {}
+webhooks: {  }
