@@ -45,8 +45,7 @@ EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NOTTY = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
 EXEC_PHP_PROD_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=prod -e APP_DEBUG=0 php
-PASSKEY_CI_PRODUCTION_ENV = -e APP_ENV=prod -e APP_DEBUG=0 -e PASSKEY_RP_ID=example.com -e PASSKEY_RP_NAME=VilnaCRM -e PASSKEY_ALLOWED_ORIGINS=https://example.com -e PASSKEY_TIMEOUT_SECONDS=300 -e PASSKEY_CHALLENGE_TTL_SECONDS=300 -e PASSKEY_PRODUCTION_TRAFFIC_ENABLED=false -e PASSKEY_PRODUCTION_MONITORING_READY=false -e OAUTH_ENCRYPTION_KEY=def00000ae8c5d8c5a0d6f5e6e5e6e5e6e5e6e5e6e5e6e5e6e5e6e5e -e OAUTH_ENCRYPTION_KEY_TYPE=plain -e TWO_FACTOR_ENCRYPTION_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
-EXEC_PHP_PASSKEY_CI_PROD_ENV = $(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) php
+PASSKEY_CI_PRODUCTION_ENV = -e APP_ENV=prod -e APP_DEBUG=0 -e PASSKEY_RP_ID=example.com -e PASSKEY_RP_NAME=VilnaCRM -e PASSKEY_ALLOWED_ORIGINS=https://example.com -e PASSKEY_TIMEOUT_SECONDS=300 -e PASSKEY_CHALLENGE_TTL_SECONDS=300 -e PASSKEY_PRODUCTION_TRAFFIC_ENABLED=false -e PASSKEY_PRODUCTION_MONITORING_READY=false -e OAUTH_ENCRYPTION_KEY_TYPE=plain
 EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
 EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
@@ -55,7 +54,6 @@ SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
 SYMFONY_PROD_ENV_NODEBUG = $(EXEC_PHP_PROD_ENV_NODEBUG) bin/console
-SYMFONY_PASSKEY_CI_PROD_ENV = $(EXEC_PHP_PASSKEY_CI_PROD_ENV) bin/console
 SYMFONY_LOAD_TEST_ENV = $(EXEC_PHP_LOAD_TEST_ENV) bin/console
 SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
@@ -459,8 +457,16 @@ passkey-test-readiness: ## Assert passkey readiness prerequisites against the te
 	@$(SYMFONY_TEST_ENV) app:passkey:assert-production-readiness
 
 passkey-ci-production-readiness: ## Assert passkey readiness in prod mode with CI-safe production env values
-	@$(SYMFONY_PASSKEY_CI_PROD_ENV) doctrine:mongodb:schema:update --skip-search-indexes
-	@$(SYMFONY_PASSKEY_CI_PROD_ENV) app:passkey:assert-production-readiness
+	@oauth_key="$$(openssl rand -hex 32)"; \
+	two_factor_key="$$(openssl rand -base64 32)"; \
+	$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY="$$oauth_key" \
+		-e TWO_FACTOR_ENCRYPTION_KEY="$$two_factor_key" \
+		php bin/console doctrine:mongodb:schema:update --skip-search-indexes; \
+	$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY="$$oauth_key" \
+		-e TWO_FACTOR_ENCRYPTION_KEY="$$two_factor_key" \
+		php bin/console app:passkey:assert-production-readiness
 
 update-public-suffix-list: ## Refresh the passkey Public Suffix List data from the official source
 	curl -fsSL https://publicsuffix.org/list/public_suffix_list.dat -o config/passkey/public_suffix_list.dat
