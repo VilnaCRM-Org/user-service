@@ -370,6 +370,8 @@ services:
       $allowedOrigins: '%env(string:PASSKEY_ALLOWED_ORIGINS)%'
       $timeoutSeconds: '%env(int:PASSKEY_TIMEOUT_SECONDS)%'
       $challengeTtlSeconds: '%env(int:PASSKEY_CHALLENGE_TTL_SECONDS)%'
+      $appEnv: '%kernel.environment%'
+      $publicSuffixListPath: '%kernel.project_dir%/config/passkey/public_suffix_list.dat'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:

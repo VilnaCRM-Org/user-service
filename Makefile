@@ -44,6 +44,9 @@ GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NOTTY = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
+EXEC_PHP_PROD_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=prod -e APP_DEBUG=0 php
+PASSKEY_CI_PRODUCTION_ENV = -e APP_ENV=prod -e APP_DEBUG=0 -e PASSKEY_RP_ID=example.com -e PASSKEY_RP_NAME=VilnaCRM -e PASSKEY_ALLOWED_ORIGINS=https://example.com -e PASSKEY_TIMEOUT_SECONDS=300 -e PASSKEY_CHALLENGE_TTL_SECONDS=300 -e PASSKEY_PRODUCTION_TRAFFIC_ENABLED=false -e PASSKEY_PRODUCTION_MONITORING_READY=false -e OAUTH_ENCRYPTION_KEY=def00000ae8c5d8c5a0d6f5e6e5e6e5e6e5e6e5e6e5e6e5e6e5e6e5e -e OAUTH_ENCRYPTION_KEY_TYPE=plain -e TWO_FACTOR_ENCRYPTION_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+EXEC_PHP_PASSKEY_CI_PROD_ENV = $(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) php
 EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
 EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
@@ -51,6 +54,8 @@ EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=loa
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
+SYMFONY_PROD_ENV_NODEBUG = $(EXEC_PHP_PROD_ENV_NODEBUG) bin/console
+SYMFONY_PASSKEY_CI_PROD_ENV = $(EXEC_PHP_PASSKEY_CI_PROD_ENV) bin/console
 SYMFONY_LOAD_TEST_ENV = $(EXEC_PHP_LOAD_TEST_ENV) bin/console
 SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
@@ -445,6 +450,21 @@ reset-db: ## Recreate the database schema for ephemeral test runs
 	@$(SYMFONY) app:seed-schemathesis-data
 	@echo "✅ Database reset complete"
 
+passkey-production-readiness: ## Update MongoDB indexes and assert passkey production readiness prerequisites
+	@echo "Updating MongoDB indexes for passkey production readiness..."
+	@$(SYMFONY_PROD_ENV_NODEBUG) doctrine:mongodb:schema:update --skip-search-indexes
+	@$(SYMFONY_PROD_ENV_NODEBUG) app:passkey:assert-production-readiness
+
+passkey-test-readiness: ## Assert passkey readiness prerequisites against the test schema
+	@$(SYMFONY_TEST_ENV) app:passkey:assert-production-readiness
+
+passkey-ci-production-readiness: ## Assert passkey readiness in prod mode with CI-safe production env values
+	@$(SYMFONY_PASSKEY_CI_PROD_ENV) doctrine:mongodb:schema:update --skip-search-indexes
+	@$(SYMFONY_PASSKEY_CI_PROD_ENV) app:passkey:assert-production-readiness
+
+update-public-suffix-list: ## Refresh the passkey Public Suffix List data from the official source
+	curl -fsSL https://publicsuffix.org/list/public_suffix_list.dat -o config/passkey/public_suffix_list.dat
+
 coverage-html: ## Create the code coverage report with PHPUnit
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/phpunit --coverage-html=coverage/html
 
@@ -523,6 +543,8 @@ ci-mutation:
 
 ci-tests-and-openapi:
 	@$(MAKE) setup-test-db
+	@$(MAKE) passkey-test-readiness
+	@$(MAKE) passkey-ci-production-readiness
 	@$(MAKE) unit-tests
 	@$(MAKE) integration-tests
 	@$(MAKE) behat
@@ -552,10 +574,13 @@ ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has
 	if ! make phpmd; then failed_checks="$$failed_checks\n❌ PHPMD quality analysis"; fi; \
 	echo "9️⃣  Running code quality analysis with PHPInsights..."; \
 	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
-	echo "🔟  Validating architecture with Deptrac..."; \
-	if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
-	echo "1️⃣1️⃣ Running complete test suite (unit, integration, e2e)..."; \
-	if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
+		echo "🔟  Validating architecture with Deptrac..."; \
+		if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
+		echo "1️⃣1️⃣ Running complete test suite (unit, integration, e2e)..."; \
+		if ! make setup-test-db; then failed_checks="$$failed_checks\n❌ test database setup"; fi; \
+		if ! make passkey-test-readiness; then failed_checks="$$failed_checks\n❌ passkey readiness"; fi; \
+		if ! make passkey-ci-production-readiness; then failed_checks="$$failed_checks\n❌ production passkey readiness"; fi; \
+		if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
 	if ! make integration-tests; then failed_checks="$$failed_checks\n❌ integration tests"; fi; \
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
 	echo "1️⃣2️⃣ Running mutation testing with Infection..."; \

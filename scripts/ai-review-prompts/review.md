@@ -15,10 +15,10 @@ Mandatory BMAD review gate:
 - Load PR diff, PR description, linked issues/docs/specs/run summaries, changed tests, CI workflows, current check rollup, and current-head codebase graph evidence when present. Stale graph evidence fails the graph context unless replaced by a current graph run or explicit current-head code-search impact evidence.
 - Extract every functional requirement (FR), non-functional requirement (NFR), and inferred changed-behavior requirement supported by the diff/docs.
 - Generate positive, negative, edge, regression, security, performance, operability, compatibility, and data-protection cases for every applicable FR/NFR.
-- Map every case to automated tests, CI checks, mutation/coverage, contract/spec validation, load/performance evidence, or an explicit manual exception.
+- Map every case to automated tests, CI checks, mutation/coverage, contract/spec validation, or load/performance evidence. Record manual evidence separately as supporting context only; manual exceptions do not satisfy `AUTO_TEST_COVERAGE` or `CI_COVERAGE` and must remain findings with risk, owner, and follow-up.
 - Treat uncovered applicable cases, missing CI gates, stale SHA evidence, unresolved current-diff review comments, or flaky-test risk as blocking findings. Outdated unresolved threads are historical context unless code search proves the issue still exists on the reviewed SHA.
-- Review whole-codebase impact using graph evidence or code search across entry points, listeners, resolvers, handlers, config, generated specs, docs, CI jobs, and downstream callers.
-- Score every system quality attribute listed in the strict gate as PASS, WARN, FAIL, or N/A. WARN/FAIL must include a concrete fix or mandatory follow-up.
+- Review whole-codebase impact using current-head graph evidence and code search across entry points, listeners, resolvers, handlers, config, generated specs, docs, CI jobs, and downstream callers. Search for graph artifacts/tooling first; if graph context is missing, mark `GRAPH_IMPACT_CONTEXT: MISSING` and do not pass the review.
+- Score every system quality attribute listed in the strict gate as `0-5` or `N/A`. Each score needs evidence; every score below `5` needs a concrete improvement suggestion or evidence that no practical PR-scope improvement exists. Applicable security-related attributes below `5` are blockers unless explicitly out of scope and tracked.
 - Enforce the expected PR check allowlist from the strict gate even if branch protection reports no required contexts.
 
 Output format (MUST follow exactly):
@@ -42,20 +42,27 @@ CI_COVERAGE: PASS|FAIL|PENDING_REMOTE
 FLAKY_TEST_RISK: PASS|FAIL
 SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS|FAIL
 WHOLE_CODEBASE_IMPACT: PASS|FAIL
-GRAPH_IMPACT_CONTEXT: PASS|FAIL
+GRAPH_IMPACT_CONTEXT: PASS|MISSING|FAIL
 GITHUB_COMPLETION_GATE: PASS|FAIL|PENDING_REMOTE_CI
 ```
 
-Then include concise report sections for:
+Then include concise report sections with these exact headings and table headers:
 
-- Reviewed SHA and PR URL.
-- FR/NFR counts and generated test-case matrix coverage.
-- Findings with severity, requirement/NFR, evidence, expected fix, and verification.
-- Test evidence by suite/command, including mutation/coverage/contract/load checks where applicable.
-- Expected current-head GitHub check summary, separated from human approval state.
-- Flaky-test risk review.
-- System quality attribute scorecard.
-- Graph/code-search whole-codebase impact evidence.
+- `Reviewed SHA and PR URL:`
+- `FR/NFR counts: FRs: <n>; NFRs: <n>; generated cases: <n>; covered cases: <n>; uncovered cases: <n>; findings fixed: <n>.`
+- `Findings table:` followed by `| Severity | File/Line | Requirement/NFR | Evidence | Fix | Verification |`
+- `Test evidence table:` followed by `| Suite/Command | Evidence | Result |`
+- `Current-head GitHub check summary:` followed by `| Check | State | Evidence |`
+- `Flaky-test risk review:`
+- `System quality attribute scorecard:` followed by `| Attribute | Score | Evidence | Improvement/Fix | Blocker |`
+  - Include explicit rows for critical/security attributes and this mandatory
+    grouped row so automation can verify every remaining attribute was
+    considered:
+    `| all remaining listed attributes | N/A | <reason> | <fix> | <blocker> |`.
+- `Graph/code-search whole-codebase impact evidence:`
+
+`GRAPH_IMPACT_CONTEXT` only accepts `PASS`, `MISSING`, or `FAIL`; `MISSING`
+and `FAIL` are failing states.
 
 Each issue must include:
 

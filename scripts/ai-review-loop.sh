@@ -62,9 +62,12 @@ fix_sandbox="${AI_REVIEW_FIX_SANDBOX:-workspace-write}"
 github_status_enabled="${AI_REVIEW_GITHUB_STATUS:-true}"
 github_status_context="${AI_REVIEW_GITHUB_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
 github_pr_number="${AI_REVIEW_GITHUB_PR:-${AI_REVIEW_PR_NUMBER:-}}"
+default_github_required_checks="PHPUnit,Behat,K6,Infection,Schemathesis,Spectral Lint,Openapi-diff@GraphQL spec backward comparability,openapi-diff@openapi-diff,Psalm,PHP Insights checks,Deptrac,lint,symfony-checks,Run Bats Core Tests,Cache Integration Tests,Memory leak tests,test-and-report,qlty check,qlty fmt,CodeRabbit,security/snyk (Kravalg)"
+github_required_checks_raw="${AI_REVIEW_REQUIRED_CHECKS:-$default_github_required_checks}"
 github_repo=""
 github_head_sha=""
 github_pr_url=""
+current_head_github_checks_result="pass"
 
 codex_flags=()
 [[ -n "${AI_REVIEW_CODEX_FLAGS:-}" ]] && read -r -a codex_flags <<< "$AI_REVIEW_CODEX_FLAGS"
@@ -221,6 +224,160 @@ refresh_github_pr_head() {
   github_pr_url="$current_pr_url"
 }
 
+github_pr_check_rows() {
+  local pr_args=()
+
+  if [[ -n "$github_pr_number" ]]; then
+    pr_args+=("$github_pr_number")
+  fi
+
+  if [[ -n "$github_repo" ]]; then
+    pr_args+=(--repo "$github_repo")
+  fi
+
+  gh pr checks "${pr_args[@]}" \
+    --json name,workflow,state,bucket \
+    --jq '.[] | [.name, (.workflow // "-"), .state, .bucket] | @tsv'
+}
+
+normalize_github_check_value() {
+  echo "$1" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | tr '[:upper:]' '[:lower:]'
+}
+
+github_check_is_successful() {
+  local state="$1"
+  local bucket="$2"
+  local normalized_state
+  local normalized_bucket
+
+  normalized_state="$(echo "$state" | tr '[:lower:]' '[:upper:]')"
+  normalized_bucket="$(normalize_github_check_value "$bucket")"
+
+  [[ "$normalized_bucket" == "pass" || "$normalized_state" == "PASS" || "$normalized_state" == "SUCCESS" ]]
+}
+
+github_check_is_pending() {
+  local state="$1"
+  local bucket="$2"
+  local normalized_state
+  local normalized_bucket
+
+  normalized_state="$(echo "$state" | tr '[:lower:]' '[:upper:]')"
+  normalized_bucket="$(normalize_github_check_value "$bucket")"
+
+  [[ "$normalized_bucket" == "pending" || "$normalized_state" =~ ^(PENDING|QUEUED|IN_PROGRESS|WAITING|REQUESTED|EXPECTED)$ ]]
+}
+
+github_required_check_was_seen() {
+  local required_check="$1"
+  local checks="$2"
+  local required_name
+  local required_workflow=""
+  local normalized_required_name
+  local normalized_required_workflow=""
+  local check_name
+  local check_workflow
+  local check_state
+  local check_bucket
+  local normalized_check_name
+  local normalized_check_workflow
+
+  if [[ "$required_check" == *@* ]]; then
+    required_name="${required_check%%@*}"
+    required_workflow="${required_check#*@}"
+    normalized_required_workflow="$(normalize_github_check_value "$required_workflow")"
+  else
+    required_name="$required_check"
+  fi
+
+  normalized_required_name="$(normalize_github_check_value "$required_name")"
+
+  while IFS=$'\t' read -r check_name check_workflow check_state check_bucket; do
+    [[ -z "$check_name" ]] && continue
+    normalized_check_name="$(normalize_github_check_value "$check_name")"
+    normalized_check_workflow="$(normalize_github_check_value "$check_workflow")"
+    [[ "$normalized_check_workflow" == "-" ]] && normalized_check_workflow=""
+
+    if [[ "$normalized_check_name" == "$normalized_required_name" ]] \
+      && { [[ -z "$normalized_required_workflow" ]] || [[ "$normalized_check_workflow" == "$normalized_required_workflow" ]]; }; then
+      return 0
+    fi
+  done <<< "$checks"
+
+  return 1
+}
+
+validate_current_head_github_checks() {
+  local checks
+  local check_name
+  local check_workflow
+  local check_state
+  local check_bucket
+  local ok=true
+  local any_pending_check=false
+  local required_check
+  local normalized_github_status_context
+  local -a required_checks=()
+
+  if [[ "$github_status_enabled" != "true" ]]; then
+    return 0
+  fi
+
+  current_head_github_checks_result="pass"
+
+  if ! checks="$(github_pr_check_rows 2>/dev/null)"; then
+    echo "Current-head GitHub checks could not be retrieved." >&2
+    current_head_github_checks_result="pending"
+    return 1
+  fi
+
+  if [[ -z "$checks" ]]; then
+    echo "Current-head GitHub checks are missing." >&2
+    current_head_github_checks_result="pending"
+    return 1
+  fi
+
+  normalized_github_status_context="$(normalize_github_check_value "$github_status_context")"
+
+  while IFS=$'\t' read -r check_name check_workflow check_state check_bucket; do
+    [[ -z "$check_name" ]] && continue
+    if [[ "$(normalize_github_check_value "$check_name")" == "$normalized_github_status_context" ]]; then
+      continue
+    fi
+
+    if ! github_check_is_successful "$check_state" "$check_bucket"; then
+      echo "Current-head GitHub check is not passing: $check_name ($check_state)." >&2
+      ok=false
+      if github_check_is_pending "$check_state" "$check_bucket"; then
+        any_pending_check=true
+        [[ "$current_head_github_checks_result" != "fail" ]] && current_head_github_checks_result="pending"
+      else
+        current_head_github_checks_result="fail"
+      fi
+    fi
+  done <<< "$checks"
+
+  if [[ -n "$github_required_checks_raw" ]]; then
+    IFS=',' read -r -a required_checks <<< "$github_required_checks_raw"
+    for required_check in "${required_checks[@]}"; do
+      required_check="$(echo "$required_check" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+      [[ -z "$required_check" ]] && continue
+
+      if ! github_required_check_was_seen "$required_check" "$checks"; then
+        echo "Current-head GitHub check is missing: $required_check." >&2
+        ok=false
+        if [[ "$any_pending_check" == true ]]; then
+          [[ "$current_head_github_checks_result" != "fail" ]] && current_head_github_checks_result="pending"
+        else
+          current_head_github_checks_result="fail"
+        fi
+      fi
+    done
+  fi
+
+  [[ "$ok" == true ]]
+}
+
 fail_unexpected() {
   local exit_code=$?
 
@@ -353,6 +510,341 @@ validate_strict_markers() {
   [[ "$(strict_marker_state "$1")" == "PASS" ]]
 }
 
+report_has_required_content() {
+  local file="$1"
+  local attribute
+  local field
+  local literal
+  local pattern
+  local ok=true
+  local quality_row
+  local -a quality_fields
+
+  local required_literals=(
+    "Reviewed SHA and PR URL:"
+    "Findings table:"
+    "| Severity | File/Line | Requirement/NFR | Evidence | Fix | Verification |"
+    "Test evidence table:"
+    "| Suite/Command | Evidence | Result |"
+    "Current-head GitHub check summary:"
+    "| Check | State | Evidence |"
+    "Flaky-test risk review:"
+    "System quality attribute scorecard:"
+    "| Attribute | Score | Evidence | Improvement/Fix | Blocker |"
+    "Graph/code-search whole-codebase impact evidence:"
+  )
+
+  local required_patterns=(
+    "FR/NFR counts: FRs: [0-9]+; NFRs: [0-9]+; generated cases: [0-9]+; covered cases: [0-9]+; uncovered cases: [0-9]+; findings fixed: [0-9]+\\."
+  )
+
+  local required_quality_attributes=(
+    accountability
+    accuracy
+    correctness
+    auditability
+    confidentiality
+    integrity
+    availability
+    compatibility
+    deployability
+    efficiency
+    interoperability
+    reliability
+    resilience
+    responsiveness
+    maintainability
+    observability
+    operability
+    performance
+    safety
+    scalability
+    securability
+    "standards compliance"
+    survivability
+    testability
+    traceability
+    vulnerability
+  )
+
+  for literal in "${required_literals[@]}"; do
+    if ! grep -Fiq "$literal" "$file"; then
+      echo "Strict review report missing required content: $literal" >&2
+      ok=false
+    fi
+  done
+
+  for pattern in "${required_patterns[@]}"; do
+    if ! grep -Eiq "$pattern" "$file"; then
+      echo "Strict review report missing required content pattern: $pattern" >&2
+      ok=false
+    fi
+  done
+
+  for attribute in "${required_quality_attributes[@]}"; do
+    pattern="\\|[[:space:]]*${attribute}[[:space:]]*\\|[[:space:]]*(0|1|2|3|4|5|N/A)[[:space:]]*\\|[^|]+\\|[^|]+\\|[^|]+\\|"
+    quality_row="$(grep -Ei "$pattern" "$file" | head -n 1 || true)"
+    if [[ -z "$quality_row" ]]; then
+      echo "Strict review report missing quality attribute row: $attribute" >&2
+      ok=false
+      continue
+    fi
+
+    IFS='|' read -r -a quality_fields <<< "$quality_row"
+    for field in 3 4 5; do
+      if [[ -z "${quality_fields[$field]:-}" || ! "${quality_fields[$field]}" =~ [^[:space:]] ]]; then
+        echo "Strict review report quality attribute row has an empty required field: $attribute" >&2
+        ok=false
+      fi
+    done
+  done
+
+  pattern="\\|[[:space:]]*all remaining listed attributes[[:space:]]*\\|[[:space:]]*N/A[[:space:]]*\\|[^|]+\\|[^|]+\\|[^|]+\\|"
+  quality_row="$(grep -Ei "$pattern" "$file" | head -n 1 || true)"
+  if [[ -z "$quality_row" ]]; then
+    echo "Strict review report missing grouped N/A row for remaining quality attributes." >&2
+    ok=false
+  else
+    IFS='|' read -r -a quality_fields <<< "$quality_row"
+    for field in 3 4 5; do
+      if [[ -z "${quality_fields[$field]:-}" || ! "${quality_fields[$field]}" =~ [^[:space:]] ]]; then
+        echo "Strict review report grouped N/A row has an empty required field." >&2
+        ok=false
+      fi
+    done
+  fi
+
+  if ! quality_scorecard_is_consistent "$file"; then
+    ok=false
+  fi
+
+  if ! findings_table_has_required_locations "$file"; then
+    ok=false
+  fi
+
+  [[ "$ok" == true ]]
+}
+
+quality_scorecard_is_consistent() {
+  local file="$1"
+  local line
+  local attribute
+  local blocker
+  local improvement
+  local normalized_blocker
+  local normalized_improvement
+  local score
+  local normalized_score
+  local normalized_attribute
+  local in_scorecard=false
+  local ok=true
+  local table_line
+  local -a quality_fields
+
+  while IFS= read -r line; do
+    if [[ "$line" == "System quality attribute scorecard:"* ]]; then
+      in_scorecard=true
+      continue
+    fi
+
+    if [[ "$in_scorecard" != true ]]; then
+      continue
+    fi
+
+    if [[ "$line" == "Graph/code-search whole-codebase impact evidence:"* ]]; then
+      break
+    fi
+
+    table_line="$(echo "$line" | sed -E 's/^[[:space:]]+//')"
+    [[ "$table_line" != \|* ]] && continue
+    [[ "$table_line" == *"| Attribute |"* ]] && continue
+    [[ "$table_line" =~ ^\|[[:space:]-]+\| ]] && continue
+
+    IFS='|' read -r -a quality_fields <<< "$table_line"
+    attribute="$(echo "${quality_fields[1]:-}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    score="$(echo "${quality_fields[2]:-}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    improvement="$(echo "${quality_fields[4]:-}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    blocker="$(echo "${quality_fields[5]:-}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    normalized_attribute="$(echo "$attribute" | tr '[:upper:]' '[:lower:]')"
+    normalized_improvement="$(echo "$improvement" | tr '[:upper:]' '[:lower:]')"
+    normalized_blocker="$(echo "$blocker" | tr '[:upper:]' '[:lower:]')"
+    normalized_score="$(echo "$score" | tr '[:lower:]' '[:upper:]')"
+
+    [[ -z "$attribute" || "$normalized_attribute" == "all remaining listed attributes" ]] && continue
+
+    case "$normalized_score" in
+      0|1|2|3)
+        echo "Strict review report quality attribute score below pass threshold: $attribute ($score)." >&2
+        ok=false
+        ;;
+      4)
+        if quality_attribute_requires_security_max_score "$normalized_attribute"; then
+          if ! quality_security_exception_is_tracked "$normalized_improvement" "$normalized_blocker"; then
+            echo "Strict review report security quality attribute below strict threshold: $attribute ($score)." >&2
+            ok=false
+          fi
+        elif ! quality_improvement_is_substantive "$normalized_improvement"; then
+          echo "Strict review report quality attribute score 4 lacks a concrete improvement statement: $attribute." >&2
+          ok=false
+        fi
+        ;;
+      5)
+        ;;
+      N/A)
+        if quality_attribute_requires_security_max_score "$normalized_attribute"; then
+          if ! quality_security_exception_is_tracked "$normalized_improvement" "$normalized_blocker"; then
+            echo "Strict review report security quality attribute cannot be N/A in a passing report: $attribute." >&2
+            ok=false
+          fi
+        fi
+        ;;
+    esac
+  done < "$file"
+
+  [[ "$ok" == true ]]
+}
+
+quality_improvement_is_substantive() {
+  local normalized_improvement="$1"
+
+  case "$normalized_improvement" in
+    ""|"none"|"none."|"n/a"|"n/a."|"na"|"na."|"no"|"no.")
+      return 1
+      ;;
+  esac
+
+  [[ "$normalized_improvement" =~ (improv|fix|tighten|add|implement|track|no[[:space:]-]+practical|not[[:space:]-]+practical) ]]
+}
+
+quality_security_exception_is_tracked() {
+  local normalized_improvement="$1"
+  local normalized_blocker="$2"
+  local normalized_text="$normalized_improvement $normalized_blocker"
+
+  [[ "$normalized_text" =~ (out[[:space:]-]+of[[:space:]-]+scope|outside[[:space:]-]+pr[[:space:]-]+scope) ]] \
+    && [[ "$normalized_text" =~ track ]] \
+    && [[ "$normalized_text" =~ owner ]] \
+    && [[ "$normalized_text" =~ risk ]]
+}
+
+quality_attribute_requires_security_max_score() {
+  case "$1" in
+    accountability|auditability|availability|confidentiality|integrity|safety|securability|survivability|vulnerability)
+      return 0
+      ;;
+  esac
+
+  return 1
+}
+
+findings_table_has_required_locations() {
+  local file="$1"
+  local line
+  local in_findings=false
+  local location
+  local normalized_location
+  local normalized_line
+  local normalized_severity
+  local ok=true
+  local severity
+  local table_line
+
+  while IFS= read -r line; do
+    if [[ "$line" == "Findings table:"* ]]; then
+      in_findings=true
+      continue
+    fi
+
+    if [[ "$in_findings" != true ]]; then
+      continue
+    fi
+
+    if [[ "$line" == "Test evidence table:"* ]]; then
+      break
+    fi
+
+    table_line="$(echo "$line" | sed -E 's/^[[:space:]]+//')"
+    [[ "$table_line" != \|* ]] && continue
+    [[ "$table_line" == *"| Severity |"* ]] && continue
+    [[ "$table_line" =~ ^\|[[:space:]-]+\| ]] && continue
+
+    severity="$(echo "$table_line" | cut -d '|' -f 2 | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    normalized_severity="$(echo "$severity" | tr '[:upper:]' '[:lower:]')"
+    normalized_line="$(echo "$table_line" | tr '[:upper:]' '[:lower:]')"
+
+    case "$normalized_severity" in
+      ""|"none"|"n/a"|"na")
+        continue
+        ;;
+      "pending remote"|"pending remote ci"|"remote"|"remote ci"|"remote check")
+        if [[ "$normalized_line" == *"remote"* && "$normalized_line" =~ (ci|check|current-head) ]]; then
+          continue
+        fi
+        ;;
+    esac
+
+    location="$(echo "$table_line" | cut -d '|' -f 3 | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    normalized_location="$(echo "$location" | tr '[:upper:]' '[:lower:]')"
+    case "$normalized_location" in
+      ""|"none"|"n/a"|"na")
+        echo "Strict review report actionable finding is missing File/Line evidence." >&2
+        ok=false
+        ;;
+    esac
+  done < "$file"
+
+  [[ "$ok" == true ]]
+}
+
+report_has_actionable_findings() {
+  local file="$1"
+  local line
+  local in_findings=false
+  local severity
+  local normalized_severity
+  local normalized_line
+  local table_line
+
+  while IFS= read -r line; do
+    if [[ "$line" == "Findings table:"* ]]; then
+      in_findings=true
+      continue
+    fi
+
+    if [[ "$in_findings" != true ]]; then
+      continue
+    fi
+
+    if [[ "$line" == "Test evidence table:"* ]]; then
+      break
+    fi
+
+    table_line="$(echo "$line" | sed -E 's/^[[:space:]]+//')"
+    [[ "$table_line" != \|* ]] && continue
+    [[ "$table_line" == *"| Severity |"* ]] && continue
+    [[ "$table_line" =~ ^\|[[:space:]-]+\| ]] && continue
+
+    severity="$(echo "$table_line" | cut -d '|' -f 2 | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    normalized_severity="$(echo "$severity" | tr '[:upper:]' '[:lower:]')"
+    normalized_line="$(echo "$table_line" | tr '[:upper:]' '[:lower:]')"
+
+    case "$normalized_severity" in
+      ""|"none"|"n/a"|"na")
+        continue
+        ;;
+      "pending remote"|"pending remote ci"|"remote"|"remote ci"|"remote check")
+        if [[ "$normalized_line" == *"remote"* && "$normalized_line" =~ (ci|check|current-head) ]]; then
+          continue
+        fi
+        ;;
+    esac
+
+    return 0
+  done < "$file"
+
+  return 1
+}
+
 strict_failure_is_remote_pending() {
   local file="$1"
   local marker
@@ -393,7 +885,16 @@ strict_failure_is_remote_pending() {
     esac
   done
 
-  [[ "$ok" == true && "$has_pending" == true ]]
+  if [[ "$ok" == true && "$has_pending" == true ]]; then
+    if report_has_actionable_findings "$file"; then
+      echo "Remote-CI pending report contains actionable local findings." >&2
+      return 1
+    fi
+
+    return 0
+  fi
+
+  return 1
 }
 
 exit_with_status() {
@@ -429,6 +930,15 @@ validate_success_status_target() {
     echo "AI review PASS, but local HEAD $local_head does not match current PR head $github_head_sha." >&2
     exit_with_status 2 "pending" "Strict BMAD review passed locally; push local HEAD and wait for current-head CI."
   fi
+
+  if ! validate_current_head_github_checks; then
+    echo "AI review PASS, but current-head GitHub checks are not passing." >&2
+    if [[ "$current_head_github_checks_result" == "fail" ]]; then
+      exit_with_status 1 "failure" "Strict BMAD review passed locally, but current-head GitHub checks failed or required checks are missing."
+    fi
+
+    exit_with_status 2 "pending" "Strict BMAD review passed locally; current-head GitHub checks are not complete."
+  fi
 }
 
 append_fail_log() {
@@ -461,12 +971,24 @@ mark_review_status() {
       marker_state="$(strict_marker_state "$review_log")"
       case "$marker_state" in
         PASS)
+          if ! report_has_required_content "$review_log"; then
+            echo "Warning: Agent $agent produced STATUS: PASS but required review sections are missing; treating as FAIL." >&2
+            all_pass=false
+            any_fail=true
+            append_fail_log "$agent" "$review_log" "$ts"
+          elif report_has_actionable_findings "$review_log"; then
+            echo "Warning: Agent $agent produced STATUS: PASS with actionable local findings; treating as FAIL." >&2
+            all_pass=false
+            any_fail=true
+            append_fail_log "$agent" "$review_log" "$ts"
+          fi
           ;;
         PENDING)
-          echo "Agent $agent produced STATUS: PASS but strict BMAD markers are waiting for remote CI." >&2
+          echo "Warning: Agent $agent produced STATUS: PASS with remote-CI pending markers; prompt requires STATUS: FAIL for pending remote CI." >&2
           all_pass=false
-          any_pending=true
-          append_pending_log "$agent" "$review_log" "$ts"
+          any_fail=true
+          protocol_failure=true
+          append_fail_log "$agent" "$review_log" "$ts"
           ;;
         *)
           echo "Warning: Agent $agent produced STATUS: PASS but strict BMAD markers are not passing; treating as FAIL." >&2
@@ -479,8 +1001,14 @@ mark_review_status() {
     FAIL)
       all_pass=false
       if strict_failure_is_remote_pending "$review_log"; then
-        any_pending=true
-        append_pending_log "$agent" "$review_log" "$ts"
+        if ! report_has_required_content "$review_log"; then
+          echo "Warning: Agent $agent produced remote-CI pending markers but required review sections are missing; treating as FAIL." >&2
+          any_fail=true
+          append_fail_log "$agent" "$review_log" "$ts"
+        else
+          any_pending=true
+          append_pending_log "$agent" "$review_log" "$ts"
+        fi
       else
         any_fail=true
         append_fail_log "$agent" "$review_log" "$ts"
@@ -505,10 +1033,30 @@ run_fix_if_needed() {
   else
     last_verify_ok=true
   fi
+  verification_ran=true
+}
+
+run_verification_for_pass() {
+  local verify_ts
+
+  if [[ "$verification_ran" == true && "$last_verify_ok" == true ]]; then
+    return
+  fi
+
+  verify_ts=$(date +%Y%m%d_%H%M%S)
+  ci_log="$log_dir/ci-pass-${verify_ts}.log"
+  if ! bash -c "$verify_cmd" >"$ci_log" 2>&1; then
+    echo "Warning: Verification failed (see $ci_log)." >&2
+    last_verify_ok=false
+  else
+    last_verify_ok=true
+  fi
+  verification_ran=true
 }
 
 handle_review_result() {
   if [[ "$all_pass" == true ]]; then
+    run_verification_for_pass
     if [[ "$last_verify_ok" != true ]]; then
       echo "AI review PASS, but last verification failed. Fix verification failures first." >&2
       exit_with_status 1 "failure" "Strict BMAD review passed, but local verification failed."
@@ -516,6 +1064,11 @@ handle_review_result() {
     validate_success_status_target
     echo "AI review PASS." >&2
     exit_with_status 0 "success" "Strict BMAD FR/NFR review and local verification passed."
+  fi
+
+  if [[ "$protocol_failure" == true ]]; then
+    echo "AI review report violates strict BMAD protocol; remote-pending markers require STATUS: FAIL." >&2
+    exit_with_status 1 "failure" "Strict BMAD review report violated pending-CI status protocol."
   fi
 
   if [[ "$any_fail" != true && "$any_pending" == true ]]; then
@@ -591,6 +1144,7 @@ run_fix() {
 iter=1
 ci_log=""
 last_verify_ok=true
+verification_ran=false
 
 while :; do
   if [[ "$max_iter" -ne 0 && "$iter" -gt "$max_iter" ]]; then
@@ -600,6 +1154,7 @@ while :; do
   all_pass=true
   any_fail=false
   any_pending=false
+  protocol_failure=false
   fail_log=""
   pending_log=""
 

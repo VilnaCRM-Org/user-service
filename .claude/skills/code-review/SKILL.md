@@ -1,9 +1,29 @@
 ---
 name: code-review
-description: Systematically retrieve and address PR code review comments and run strict BMAD-style FR/NFR quality review. Use when handling code review feedback, reviewing a PR, validating FR/NFR coverage, checking QA test completeness, scoring system quality attributes, or addressing PR comments.
+description: Strict PR QA and code review workflow. Use when reviewing a PR, addressing PR comments, auditing FR/NFR coverage, finding bugs/security issues/flaky tests, scoring system quality attributes, or validating that automated tests and CI cover changed behavior.
 ---
 
 # Code Review Workflow Skill
+
+## Mission
+
+Act as an independent senior code reviewer and QA reviewer, not only as a
+comment resolver. A review is complete only when:
+
+- Every functional requirement (FR) and non-functional requirement (NFR)
+  implied by the PR is derived from evidence.
+- Positive, negative, edge, security, performance, operability, compatibility,
+  and regression test cases are generated for every FR and relevant NFR.
+- Existing automated tests and CI checks are mapped to those cases.
+- Missing coverage, bugs, security risks, flaky tests, and quality regressions
+  are reported as findings.
+- Every listed system quality attribute is scored as `0-5` or `N/A` with
+  evidence, concrete improvement suggestions for weak scores, and reasons for
+  `N/A`.
+- After fixes, a repeated review finds no new issues.
+
+Missing automated coverage for an FR/NFR is a review finding. Passing CI is
+necessary but never sufficient by itself.
 
 ## Context (Input)
 
@@ -15,9 +35,11 @@ description: Systematically retrieve and address PR code review comments and run
 
 ## Task (Function)
 
-Systematically retrieve, categorize, and address all PR code review comments while maintaining quality standards and strict FR/NFR evidence.
+Systematically retrieve, categorize, and address all PR code review comments
+while independently reviewing the PR for bugs, vulnerabilities, missing
+coverage, flaky tests, CI gaps, and strict FR/NFR evidence.
 
-**Success Criteria**: `make pr-comments` shows 0 unresolved, strict FR/NFR and quality-attribute scorecards have no unresolved FAIL/WARN items, every FR/NFR has automated test or CI evidence, and `make ci` shows "✅ CI checks successfully passed!"
+**Success Criteria**: `make pr-comments` shows 0 unresolved, strict FR/NFR and numeric quality-attribute scorecards have no unresolved blockers, every FR/NFR has automated test or CI evidence, every improvable quality attribute has a concrete suggestion or implemented fix, and `make ci` shows "✅ CI checks successfully passed!"
 
 ## Workflow Overview
 
@@ -58,13 +80,13 @@ for every PR review, even when the user only asks to resolve comments.
 The gate must:
 
 - Post/update GitHub status context `BMAD FR/NFR Review Gate` at start and completion when a PR is available.
-- Load PR diff, changed files, relevant specs/docs, existing tests, CI workflows, and current-head codebase graph evidence when present. Stale graph evidence must fail the graph context unless replaced by a current graph run or explicit current-head code-search impact evidence.
+- Load PR diff, changed files, relevant specs/docs, existing tests, CI workflows, and current-head codebase graph evidence. Search for graph/impact artifacts and graph tooling; if graph evidence is missing or stale, run a current graph when tooling exists or mark `GRAPH_IMPACT_CONTEXT: MISSING|FAIL` and compensate with explicit current-head code-search impact evidence in the report.
 - Extract every FR and NFR from PRD, stories, architecture, run summaries, issue text, PR description, and reviewer comments.
 - Generate positive, negative, edge, security, performance, operability, compatibility, and regression test cases for every FR/NFR.
 - Verify every generated case is covered by automated tests, CI checks, mutation tests, contract tests, or load tests. Manual evidence is supporting context only and cannot replace automation.
 - Review flaky-test risk and require deterministic test data, isolated state, bounded timing, and no ordering dependency.
-- Score every applicable system quality attribute from the reference list and suggest mandatory improvements for WARN/FAIL scores.
-- Fail the review when any applicable FR/NFR lacks automated or CI-backed coverage, any changed behavior is only manually checked, any critical quality attribute is WARN/FAIL without a fix, or any reviewer/comment/CI blocker remains.
+- Score every system quality attribute from the reference list as `0-5` or `N/A`, with evidence for each score and a reason for each `N/A`. Suggest mandatory improvements for every score below `5` when a practical PR-scope improvement exists.
+- Fail the review when any applicable FR/NFR lacks automated or CI-backed coverage, any changed behavior is only manually checked, any critical quality attribute scores below the strict threshold, or any reviewer/comment/CI blocker remains.
 
 ### Step 0: Run Autonomous AI Review Loop
 
@@ -80,6 +102,8 @@ This executes `scripts/ai-review-loop.sh`, which:
 2. If issues are found (`STATUS: FAIL`), runs a fix agent to auto-remediate
 3. Verifies fixes with `make ci`
 4. Repeats up to `AI_REVIEW_MAX_ITER` times (default: 3)
+5. Fails closed when the limit is reached; final reporting remains blocked until
+   a later repeated review finds no new actionable issues
 
 **Configuration** (all overridable via environment):
 
@@ -256,8 +280,8 @@ When a GitHub PR exists:
 
 - Run the strict BMAD FR/NFR gate before and after fixes
 - Derive a test-case matrix from all FRs and NFRs, then map each case to evidence
-- Use codebase graph/context evidence when available to find downstream impact
-- Score system quality attributes and require improvement suggestions for WARN/FAIL
+- Use current-head codebase graph/context evidence and code search to find downstream impact; do not treat graph discovery as optional
+- Score system quality attributes numerically and require improvement suggestions for every improvable score below `5`
 - Post GitHub status updates for PR review start and final result when a PR is available
 - Run `make ai-review-loop` before manually addressing PR comments
 - Apply suggestions exactly as provided
@@ -296,8 +320,8 @@ Ref: https://github.com/owner/repo/pull/XX#discussion_rYYYYYYY
 - [ ] Each FR/NFR test case mapped to automated test, CI check, mutation/contract/load evidence; manual evidence recorded only as supporting context
 - [ ] Missing coverage implemented or recorded as blocking suggestion
 - [ ] Flaky-test risks checked and fixed or recorded as blocking
-- [ ] System quality attribute scorecard completed for every listed attribute
-- [ ] Codebase graph impact reviewed when graph evidence exists
+- [ ] System quality attribute scorecard completed for every listed attribute with `0-5` or `N/A`, evidence, `N/A` reasons, and improvement suggestions where applicable
+- [ ] Current-head codebase graph impact reviewed, or `GRAPH_IMPACT_CONTEXT: MISSING|FAIL` recorded with compensating code-search impact evidence
 - [ ] Autonomous AI review loop run via `make ai-review-loop` (or skipped with justification)
 - [ ] All PR comments retrieved via `make pr-comments`
 - [ ] Comments categorized by type (suggestion/prompt/architecture/question/feedback)
@@ -337,5 +361,5 @@ During code review, you may need to invoke other skills:
 
 ## Related Documentation
 
-- Examples: `examples/organization-fixes.md` - Real-world organization fix examples
 - Reference: `reference/quality-standards.md` - Quality standards integration details
+- Reference: `reference/fr-nfr-quality-gate.md` - Strict QA review gate

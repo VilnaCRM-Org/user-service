@@ -14,17 +14,35 @@ browser WebAuthn APIs:
 - `PASSKEY_ALLOWED_ORIGINS`: comma-separated origins allowed in WebAuthn client
   data, for example `https://app.example.com,https://admin.example.com`.
 - `PASSKEY_TIMEOUT_SECONDS`: browser ceremony timeout returned in public key
-  options.
+  options; must be greater than `0` and no more than `600`.
 - `PASSKEY_CHALLENGE_TTL_SECONDS`: server-side TTL for stored WebAuthn
-  challenges.
+  challenges; must be greater than `0` and no more than `600`.
 - `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`: production-only release flag for
   passkey REST and GraphQL traffic.
 - `PASSKEY_PRODUCTION_MONITORING_READY`: production-only readiness flag for
   the required passkey dashboard and alert controls.
 
+In `prod`, `PASSKEY_RP_ID` must be a registrable public host name and cannot be
+an IP address, localhost, single-label host, or Public Suffix List entry. Every
+allowed origin must use HTTPS, and each allowed origin host must match the
+relying party id or one of its subdomains. Wildcards, origin paths, query
+strings, fragments, and non-local HTTP origins are rejected during configuration
+loading.
+The production RP ID check uses `config/passkey/public_suffix_list.dat`; refresh
+that file from the official Public Suffix List source with
+`make update-public-suffix-list` when browser suffix rules change.
+
 MongoDB stores passkey credential records in `passkey_credentials` and
-short-lived ceremony state in `passkey_challenges`. The challenge collection has
-a TTL index on `expires_at`.
+short-lived ceremony state in `passkey_challenges`. Before enabling production
+traffic, run `make passkey-production-readiness` in the production runtime with
+the production environment variables and target database. The command updates
+MongoDB indexes and asserts all required indexes exist: the unique
+`passkey_credentials.credential_id` index, the `passkey_credentials.user_id`
+lookup index, the `passkey_challenges.{purpose,user_id}` lookup index, and the
+`passkey_challenges.expires_at` TTL index with `expireAfterSeconds=0`. These
+indexes must be full, visible, non-sparse, non-partial, default-collation
+indexes; readiness fails matching key patterns that use `sparse`, `hidden`,
+`partialFilterExpression`, or custom `collation` options.
 
 ## Sign-Up Flow
 
@@ -81,8 +99,9 @@ Users without a passkey should keep using the existing password sign-in and
 password reset flows. A failed passkey challenge does not remove password-based
 fallback.
 
-Passkey sign-in options intentionally omit `allowCredentials` for both known and
-unknown emails. Registered passkeys therefore must be discoverable credentials.
+Passkey sign-in options intentionally return an empty `allowCredentials` array
+for both known and unknown emails. Registered passkeys therefore must be
+discoverable credentials.
 
 ## Frontend Notes
 
@@ -330,6 +349,12 @@ with operation names such as `passkey_signup_options_http`,
 `passkey_register_complete_http`, `passkey_signin_options_http`, and
 `passkey_signin_complete_http`.
 
+Schemathesis exercises the passkey completion operation ids for malformed,
+unauthorized, and invalid-challenge coverage. Positive completion response shapes
+that require browser-created WebAuthn credentials are covered by integration
+tests with deterministic command-bus fixtures and by the sanitized browser
+evidence.
+
 Monitor these passkey signals:
 
 - p95 and p99 latency for every passkey REST operation and matching GraphQL
@@ -411,3 +436,9 @@ strings, form/multipart `operations` payloads, and URL-selected
 `operationName` values. This keeps password, OAuth, password reset, and TOTP
 fallback flows available while preventing production passkey traffic before the
 required operational controls exist.
+
+Run `make passkey-production-readiness` in the production runtime, with
+production environment variables and the production database, before switching
+either flag to `true`; the command updates MongoDB indexes and fails if required
+passkey indexes or configuration prerequisites are missing. Required indexes must
+be full, visible, non-sparse, non-partial, default-collation indexes.

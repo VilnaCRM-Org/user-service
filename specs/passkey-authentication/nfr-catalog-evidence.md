@@ -31,7 +31,7 @@ Evidence and standards:
 
 Current PR smoke/average/stress/spike evidence, collected on 2026-06-01 UTC
 against isolated Compose project `user-service-pr286-passkey-load` with the
-MongoDB 7 override from `var/ai-review/load-test-mongo7.compose.yml` after
+repeatable `MONGODB_VERSION=7.0` load-test setting after
 `make setup-load-test-db`:
 
 - `passkeySignupOptions`: checks `100%`; p99 smoke `48.21ms`, average
@@ -227,6 +227,16 @@ Evidence and standards:
   disabled or monitoring readiness is false. The GraphQL gate covers JSON
   bodies, raw GraphQL bodies, URL query strings, form/multipart `operations`
   payloads, and URL-selected operations.
+- `make passkey-production-readiness` runs in the production runtime, updates
+  MongoDB indexes, and asserts production passkey configuration plus the unique
+  `passkey_credentials.credential_id` index, the
+  `passkey_credentials.user_id` lookup index, the
+  `passkey_challenges.{purpose,user_id}` lookup index, and the
+  `passkey_challenges.expires_at` TTL index with `expireAfterSeconds=0` before
+  release flags are enabled. The required indexes must be full, visible,
+  non-sparse, non-partial, default-collation indexes; readiness rejects matching
+  key patterns that use `sparse`, `hidden`, `partialFilterExpression`, or custom
+  `collation` options.
 - `EndpointInvocations` EMF metrics are emitted for passkey API operations
   through `ApiEndpointBusinessMetricsSubscriber`.
 - Platform/AppRunner metrics must track latency, traffic, errors, and
@@ -263,6 +273,11 @@ Evidence and standards:
   test-only command bus decorator is used only where a browser-created WebAuthn
   attestation/assertion would otherwise be required for deterministic completion
   response serialization.
+- Schemathesis includes the passkey completion operation ids for malformed,
+  unauthorized, and invalid-challenge negative coverage. Positive completion
+  response shapes are covered by deterministic integration tests and sanitized
+  browser evidence because valid attestation/assertion payloads require a browser
+  authenticator.
 - Load scripts use stable public APIs and deterministic scenario selection.
 - Browser completion remains browser controlled because the authenticator is the
   security boundary; sanitized transcript files provide immutable evidence for

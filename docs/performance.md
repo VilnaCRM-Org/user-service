@@ -37,7 +37,7 @@ covered by integration tests and manual browser evidence because k6 does not
 provide a WebAuthn authenticator.
 
 Current PR evidence from 2026-06-01 UTC, using isolated Compose project
-`user-service-pr286-passkey-load` with the MongoDB 7 load-test override after
+`user-service-pr286-passkey-load` with `MONGODB_VERSION=7.0` after
 `make setup-load-test-db`, passed smoke, average, stress, and spike thresholds:
 
 | Scenario                     | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |

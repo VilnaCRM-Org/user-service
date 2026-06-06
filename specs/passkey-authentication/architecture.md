@@ -37,6 +37,10 @@ Application:
 Infrastructure:
 
 - MongoDB repositories and XML mappings.
+- `make passkey-production-readiness` runs in the production runtime and asserts
+  the credential unique/user lookup indexes plus the challenge lookup/TTL indexes
+  before production passkey traffic is enabled. Required indexes must be full,
+  visible, non-sparse, non-partial, default-collation indexes.
 - WebAuthn serializer/validator adapter wiring.
 - Base64url helper for stable credential id keys.
 
@@ -47,8 +51,8 @@ Add environment-backed arguments:
 - `PASSKEY_RP_ID`
 - `PASSKEY_RP_NAME`
 - `PASSKEY_ALLOWED_ORIGINS`
-- `PASSKEY_TIMEOUT_SECONDS`
-- `PASSKEY_CHALLENGE_TTL_SECONDS`
+- `PASSKEY_TIMEOUT_SECONDS` greater than `0` and no more than `600`
+- `PASSKEY_CHALLENGE_TTL_SECONDS` greater than `0` and no more than `600`
 - `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`
 - `PASSKEY_PRODUCTION_MONITORING_READY`
 

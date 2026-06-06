@@ -83,7 +83,11 @@ Transition mirror for `bmalph implement`:
 - `PasskeyCredential` has a `user_id` index for authenticated user passkey listing and duplicate checks.
 - `PasskeyChallenge` has a compound `(purpose, user_id)` index so active challenge cleanup and lookup do not scan all challenges.
 - `PasskeyChallenge` has a TTL index on `expires_at` with `expireAfterSeconds=0` so expired challenge records are removed by MongoDB instead of application sweeps.
-- Challenge TTL is configurable with `PASSKEY_CHALLENGE_TTL_SECONDS`; ceremony timeout is configurable with `PASSKEY_TIMEOUT_SECONDS`.
+- Production readiness requires those indexes to be full, visible, non-sparse,
+  non-partial, default-collation indexes.
+- Challenge TTL is configurable with `PASSKEY_CHALLENGE_TTL_SECONDS`; ceremony
+  timeout is configurable with `PASSKEY_TIMEOUT_SECONDS`. Both values must be
+  greater than `0` and no more than `600`.
 - Passkey completion now atomically claims an active challenge before verification, preventing replay races without an application-level read/modify/write window.
 - Rate-limit target resolution now covers passkey public and authenticated endpoints without adding user-enumeration paths.
 

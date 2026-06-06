@@ -13,7 +13,7 @@ Collect current-state evidence before reviewing:
 - Existing tests across unit, integration, E2E/Behat, contract/API, mutation/Infection, performance/load, smoke, browser/manual bridge, and generated-spec validation.
 - CI workflows and required checks that prove the changed behavior in automation.
 - Current PR check status for the exact head SHA. If branch protection reports no required contexts, enforce the expected check allowlist in this guide anyway.
-- Current-head codebase graph evidence when present (`graphify-out`, graph queries, dependency maps, architecture diagrams, or equivalent). If graph evidence is stale for the reviewed SHA, mark it stale, fail the graph context, and replace it with a current graph run or explicit current-head code-search impact evidence. If graph evidence is missing, record that explicitly and compensate with code search.
+- Current-head codebase graph evidence (`graphify-out`, graph queries, dependency maps, architecture diagrams, or equivalent). Search for graph artifacts and graph tooling before reviewing. If graph evidence is missing, mark `GRAPH_IMPACT_CONTEXT: MISSING` and compensate with explicit current-head code-search impact evidence. If graph evidence is stale for the reviewed SHA, mark it stale, fail the graph context, and replace it with a current graph run or explicit current-head code-search impact evidence.
 
 ## Mandatory Review Flow
 
@@ -37,10 +37,13 @@ Collect current-state evidence before reviewing:
    - Random data not isolated or not seeded through project helpers.
    - Time, sleeps, eventual consistency, external network, order dependency, shared mutable state, rate-limit leakage, non-unique identifiers, or weak assertions.
    - CI-only behavior, environment-variable dependence, locale/timezone dependence, and test pollution between suites.
-8. Review whole-codebase impact using graph evidence or code search:
+8. Review whole-codebase impact using graph evidence and code search:
    - Entry points, listeners, controllers, resolvers, services, handlers, config, generated specs, docs, migrations, fixtures, CI jobs, and observability.
    - Downstream callers and indirect paths affected by changed behavior.
-9. Score system quality attributes. Every listed attribute must appear in the report as PASS, WARN, FAIL, or N/A. N/A requires a one-line reason. WARN/FAIL requires a mandatory improvement suggestion or implemented fix.
+   - Graph discovery is mandatory. `GRAPH_IMPACT_CONTEXT: MISSING` is allowed
+     only as an explicit failing marker with compensating current-head code
+     search evidence.
+9. Score system quality attributes. Every listed attribute must appear in the report with a numeric `0-5` score or `N/A`. N/A requires a one-line reason. Every score below `5` requires either a concrete improvement suggestion or evidence that no practical PR-scope improvement exists.
 10. Re-run the gate after fixes. Continue until no actionable findings remain.
 11. Final GitHub status:
     - `success`: strict gate and expected automated checks passed for the current SHA.
@@ -66,22 +69,23 @@ set is complete and successful. Treat missing or pending checks as
 empty required-check list.
 
 Expected checks for this repository include: PHPUnit, Behat, K6, Infection,
-Schemathesis, Spectral Lint, Openapi-diff, openapi-diff, Psalm, PHP Insights
-checks, Deptrac, lint, symfony-checks, Run Bats Core Tests, Cache Integration
-Tests, Memory leak tests, test-and-report, qlty check, qlty fmt, CodeRabbit, and
-security/snyk (Kravalg). If a check is intentionally absent for a PR, record the
-reason and the workflow/config evidence proving why it is not applicable.
-When duplicate check names appear, every current-head check with that expected
-name must complete successfully unless the report identifies the exact
-`name`/`workflowName` pair and workflow/config evidence proving it is not
-applicable.
+Schemathesis, Spectral Lint, `Openapi-diff@GraphQL spec backward comparability`,
+`openapi-diff@openapi-diff`, Psalm, PHP Insights checks, Deptrac, lint,
+symfony-checks, Run Bats Core Tests, Cache Integration Tests, Memory leak tests,
+test-and-report, qlty check, qlty fmt, CodeRabbit, and security/snyk (Kravalg).
+If a check is intentionally absent for a PR, record the reason and the
+workflow/config evidence proving why it is not applicable. Use
+`check-name@workflow-name` when two expected checks differ only by casing or
+similar names; every current-head check with that expected name/workflow pair
+must complete successfully unless the report identifies the exact check/workflow
+and workflow/config evidence proving it is not applicable.
 
 ## System Quality Attributes To Score
 
 Source list: <https://en.wikipedia.org/wiki/List_of_system_quality_attributes>.
 
-Score every attribute below. Group low-signal N/A rows in the final report only
-when each grouped attribute has the same reason.
+Score every attribute below as `0-5` or `N/A`. Group low-signal N/A rows in
+the final report only when each grouped attribute has the same reason.
 
 accessibility, accountability, accuracy, adaptability, administrability,
 affordability, agility, analyzability, auditability, autonomy, availability,
@@ -103,12 +107,21 @@ compliance, survivability, sustainability, tailorability, testability,
 timeliness, traceability, transparency, ubiquity, understandability,
 upgradability, usability, vulnerability.
 
-## Scoring Rules
+## Numeric Scoring Rules
 
-- PASS: evidence proves the PR preserves or improves the attribute for changed behavior.
-- WARN: evidence is partial, indirect, or improvement is advisable but not release-blocking. Manual-only evidence for applicable behavior is WARN or FAIL, never PASS.
-- FAIL: evidence shows a bug, vulnerability, missing test, missing CI gate, broken contract, or unacceptable regression.
-- N/A: attribute does not apply to this PR's changed behavior; provide a reason.
+- `5`: evidence proves the PR preserves or improves the attribute for changed behavior, automated coverage exists where applicable, and no practical PR-scope improvement remains.
+- `4`: acceptable for merge, but a practical improvement exists. Include a concrete improvement suggestion or implemented fix.
+- `3`: partial or indirect evidence, weak automation, or meaningful maintainability/operability/security concern. Treat as a gate failure until fixed or explicitly accepted as a blocker/follow-up.
+- `2`: likely defect, vulnerability, missing test, missing CI gate, broken contract, or operational risk. Gate failure.
+- `1`: severe gap with high risk. Gate failure.
+- `0`: broken, unreviewable, or evidence contradicts the requirement. Gate failure.
+- `N/A`: attribute does not apply to this PR's changed behavior; provide a reason.
+
+The aggregate `SYSTEM_QUALITY_ATTRIBUTES_SCORECARD` marker is `PASS` only when
+all applicable attributes are `4` or `5`, every `4` has a concrete improvement
+suggestion or implemented fix, security-related attributes meet the stricter
+security rule below, and every `N/A` has a reason. Manual-only evidence for an
+applicable attribute caps the score at `3`.
 
 Critical attributes for most backend/API PRs cannot be N/A without explicit
 reason: correctness, security/securability, confidentiality, integrity,
@@ -116,6 +129,12 @@ availability, reliability, resilience, performance/efficiency/responsiveness,
 interoperability, maintainability, observability, operability, testability,
 traceability, standards compliance, compatibility, scalability, and
 deployability.
+
+Security-related attributes are confidentiality, integrity, securability,
+vulnerability, safety, accountability, auditability, availability, survivability,
+and privacy/data-protection equivalents inferred from the PR. A score below `5`
+for any applicable security-related attribute is a blocker unless the weakness
+is outside PR scope and is explicitly tracked with owner and risk.
 
 ## Minimum Report Sections
 
@@ -130,19 +149,24 @@ CI_COVERAGE: PASS|FAIL|PENDING_REMOTE
 FLAKY_TEST_RISK: PASS|FAIL
 SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS|FAIL
 WHOLE_CODEBASE_IMPACT: PASS|FAIL
-GRAPH_IMPACT_CONTEXT: PASS|WARN|MISSING|FAIL
+GRAPH_IMPACT_CONTEXT: PASS|MISSING|FAIL
 GITHUB_COMPLETION_GATE: PASS|FAIL|PENDING_REMOTE_CI
 ```
 
-Include:
+Include these exact report headings and table headers:
 
-- Reviewed SHA and PR URL.
-- Counts of FRs, NFRs, generated cases, covered cases, uncovered cases, and findings fixed.
-- Findings table with severity, requirement/attribute, evidence, fix, and verification.
-- Test evidence table by suite and command.
-- CI status summary by required check.
-- Flaky-test risk review.
-- Quality-attribute scorecard.
+- `Reviewed SHA and PR URL:`
+- `FR/NFR counts: FRs: <n>; NFRs: <n>; generated cases: <n>; covered cases: <n>; uncovered cases: <n>; findings fixed: <n>.`
+- `Findings table:` followed by `| Severity | File/Line | Requirement/NFR | Evidence | Fix | Verification |`
+- `Test evidence table:` followed by `| Suite/Command | Evidence | Result |`
+- `Current-head GitHub check summary:` followed by `| Check | State | Evidence |`
+- `Flaky-test risk review:`
+- `System quality attribute scorecard:` followed by `| Attribute | Score | Evidence | Improvement/Fix | Blocker |`
+  - Include explicit rows for critical/security attributes and this mandatory
+    grouped row so automation can verify every remaining attribute was
+    considered:
+    `| all remaining listed attributes | N/A | <reason> | <fix> | <blocker> |`.
+- `Graph/code-search whole-codebase impact evidence:`
 - Remaining external blockers, separated from local BMAD gate results.
 
 ## Pass/Fail Policy
@@ -153,8 +177,10 @@ Fail the gate when any of these are true:
 - Positive/negative/edge/security/performance cases are missing for changed behavior.
 - Mutation, coverage, contract, generated spec, or load evidence is required by the NFR but missing.
 - A changed test is plausibly flaky and not fixed.
-- A critical system quality attribute scores FAIL or WARN without an implemented fix or explicit blocking suggestion.
+- A critical system quality attribute scores below `4`.
+- An applicable security-related quality attribute scores below `5` without an explicit out-of-scope tracked blocker.
+- Any quality attribute scores below `5` and the report omits a concrete improvement suggestion or evidence that no practical PR-scope improvement exists.
 - Current-diff review comments, current-diff conversations, or required CI failures remain unresolved. Outdated unresolved comments are historical/non-blocking unless independently revalidated against current code.
 - Expected current-head PR checks are missing, pending, cancelled, skipped without a documented reason, or failing.
 - The report was generated for a stale SHA.
-- Graph impact context is stale for the reviewed SHA, references deleted files, uses old graph counts, or is not replaced by current-head code-search impact evidence.
+- Graph impact context is missing, stale for the reviewed SHA, references deleted files, uses old graph counts, or is not replaced by current-head code-search impact evidence.

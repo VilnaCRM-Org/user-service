@@ -70,7 +70,7 @@ For PR review and release readiness, require:
 - Evidence mapping for every case.
 - Explicit report of missing coverage as blocking review findings.
 - Flaky-test review for all changed tests.
-- System quality attribute scorecard for all attributes listed in the strict gate reference.
+- System quality attribute scorecard for all attributes listed in the strict gate reference, scored as `0-5` or `N/A` with evidence and required improvement suggestions.
 
 Do not accept "line coverage is 100%" as proof of behavior coverage unless the
 FR/NFR matrix shows the actual cases and assertions.
@@ -156,10 +156,12 @@ When quality checks fail, use the appropriate specialized skill:
   - FR/NFR matrix gaps
   - Flaky-test risk
 
-- **System quality attribute WARN/FAIL** → [code-review](../code-review/SKILL.md) plus the relevant specialized skill
+- **System quality attribute score gap** → [code-review](../code-review/SKILL.md) plus the relevant specialized skill
   - Missing evidence for quality attributes
   - Unscored applicable attributes
-  - Improvement suggestions required by strict review
+  - Critical attributes below `4`
+  - Applicable security-related attributes below `5`
+  - Missing improvement suggestions for improvable scores below `5`
 
 ### Workflow Integration
 
@@ -280,7 +282,7 @@ After using this skill:
 - [ ] Understand which threshold applies to the failure
 - [ ] Know the command to re-run the check after fixes
 - [ ] FR/NFR coverage matrix has no gaps for reviewed changes
-- [ ] System quality attributes are scored or explicitly marked N/A with reasons
+- [ ] System quality attributes are scored as `0-5` or explicitly marked N/A with reasons
 
 ## Related Skills
 

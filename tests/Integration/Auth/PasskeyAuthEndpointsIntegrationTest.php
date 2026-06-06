@@ -6,10 +6,13 @@ namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Integration\IntegrationTestCase;
+use App\User\Application\Transformer\PasskeyEncodingTransformer;
 use App\User\Domain\Entity\PasskeyChallenge;
+use App\User\Domain\Entity\PasskeyCredential;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use DateTimeImmutable;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +33,7 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
     private UserRepositoryInterface $userRepository;
     private PasswordHasherFactoryInterface $passwordHasherFactory;
     private UuidTransformer $uuidTransformer;
+    private PasskeyEncodingTransformer $passkeyEncoding;
     private DocumentManager $documentManager;
 
     #[\Override]
@@ -46,6 +50,7 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
             PasswordHasherFactoryInterface::class
         );
         $this->uuidTransformer = $this->container->get(UuidTransformer::class);
+        $this->passkeyEncoding = $this->container->get(PasskeyEncodingTransformer::class);
         $this->documentManager = $this->container->get(DocumentManager::class);
     }
 
@@ -91,6 +96,50 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $this->assertSame('Email is already registered.', $response['body']['detail'] ?? null);
         $this->assertArrayNotHasKey('challenge_id', $response['body']);
         $this->assertNoSignupChallengeWasCreatedForEmail($email);
+    }
+
+    public function testSigninOptionsHideWhetherEmailHasCredentials(): void
+    {
+        $existingEmail = strtolower($this->faker->unique()->safeEmail());
+        $existingUser = $this->createUser($existingEmail);
+        $this->createPasskeyCredential($existingUser);
+
+        $existingUserResponse = $this->requestPasskeySignInOptions($existingEmail);
+        $unknownUserResponse = $this->requestPasskeySignInOptions(
+            strtolower($this->faker->unique()->safeEmail())
+        );
+
+        $this->assertPasskeySignInOptionsPayload($existingUserResponse);
+        $this->assertPasskeySignInOptionsPayload($unknownUserResponse);
+        $this->assertSame(
+            $this->publicKeyShapeWithoutChallenge($existingUserResponse),
+            $this->publicKeyShapeWithoutChallenge($unknownUserResponse)
+        );
+    }
+
+    public function testRegistrationOptionsReturnExistingCredentialDescriptors(): void
+    {
+        $user = $this->createUser(strtolower($this->faker->unique()->safeEmail()));
+        $credentialId = $this->createPasskeyCredential($user);
+
+        $response = $this->requestEmptyJsonObject(
+            '/api/passkeys/register/options',
+            $this->createAuthenticatedHeaders($user->getId())
+        );
+
+        $this->assertSame(Response::HTTP_OK, $response['response']->getStatusCode());
+        $publicKey = $response['body']['public_key'] ?? null;
+        $this->assertIsArray($publicKey);
+        $this->assertBrowserSafePublicKey($publicKey);
+        $this->assertSame(
+            [
+                [
+                    'type' => 'public-key',
+                    'id' => $credentialId,
+                ],
+            ],
+            $publicKey['excludeCredentials'] ?? null
+        );
     }
 
     public function testRegistrationCompleteRejectsWrongUserWithoutConsumingOwnerChallenge(): void
@@ -168,6 +217,39 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
     }
 
     /**
+     * @param JsonResponse $response
+     */
+    private function assertPasskeySignInOptionsPayload(array $response): void
+    {
+        $this->assertSame(Response::HTTP_OK, $response['response']->getStatusCode());
+        $this->assertNotSame('', $this->requireStringKey($response['body'], 'challenge_id'));
+
+        $publicKey = $response['body']['public_key'] ?? null;
+        $this->assertIsArray($publicKey);
+        $this->assertMatchesRegularExpression(
+            '/^[A-Za-z0-9_-]+$/',
+            $this->requireStringKey($publicKey, 'challenge')
+        );
+        $this->assertSame('localhost', $publicKey['rpId'] ?? null);
+        $this->assertSame([], $publicKey['allowCredentials'] ?? null);
+        $this->assertSame('required', $publicKey['userVerification'] ?? null);
+    }
+
+    /**
+     * @param JsonResponse $response
+     *
+     * @return JsonObject
+     */
+    private function publicKeyShapeWithoutChallenge(array $response): array
+    {
+        $publicKey = $response['body']['public_key'] ?? null;
+        $this->assertIsArray($publicKey);
+        unset($publicKey['challenge']);
+
+        return $publicKey;
+    }
+
+    /**
      * @param JsonBody $body
      */
     private function requireStringKey(array $body, string $key): string
@@ -194,6 +276,22 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
         $this->userRepository->save($user);
 
         return $user;
+    }
+
+    private function createPasskeyCredential(User $user): string
+    {
+        $credentialId = $this->passkeyEncoding->encode($this->faker->sha256());
+        $this->documentManager->persist(new PasskeyCredential(
+            (string) $this->faker->uuid(),
+            $user->getId(),
+            $credentialId,
+            json_encode(['id' => $credentialId], JSON_THROW_ON_ERROR),
+            $this->faker->words(2, true),
+            new DateTimeImmutable()
+        ));
+        $this->documentManager->flush();
+
+        return $credentialId;
     }
 
     private function assertNoSignupChallengeWasCreatedForEmail(string $email): void
@@ -251,6 +349,20 @@ final class PasskeyAuthEndpointsIntegrationTest extends IntegrationTestCase
     private function requestEmptyJsonObject(string $uri, array $headers = []): array
     {
         return $this->requestJsonContent($uri, '{}', $headers);
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    private function requestPasskeySignInOptions(string $email): array
+    {
+        return $this->requestJson(
+            '/api/passkeys/signin/options',
+            [
+                'email' => $email,
+                'rememberMe' => true,
+            ]
+        );
     }
 
     /**

@@ -90,8 +90,16 @@ Password grant is intentionally disabled (`enable_password_grant: false`); use a
 - `PASSKEY_RP_ID`: WebAuthn relying party id used for passkey registration and authentication.
 - `PASSKEY_RP_NAME`: WebAuthn relying party display name.
 - `PASSKEY_ALLOWED_ORIGINS`: Comma-separated browser origins allowed for WebAuthn ceremonies.
-- `PASSKEY_TIMEOUT_SECONDS`: Browser WebAuthn ceremony timeout in seconds.
-- `PASSKEY_CHALLENGE_TTL_SECONDS`: Server-side passkey challenge TTL in seconds.
+- `PASSKEY_TIMEOUT_SECONDS`: Browser WebAuthn ceremony timeout in seconds; must be greater than `0` and no more than `600`.
+- `PASSKEY_CHALLENGE_TTL_SECONDS`: Server-side passkey challenge TTL in seconds; must be greater than `0` and no more than `600`.
+- `make passkey-production-readiness`: Production preflight that updates MongoDB
+  indexes and asserts passkey configuration in the production runtime plus the
+  unique `passkey_credentials.credential_id` index, the
+  `passkey_credentials.user_id` lookup index, the
+  `passkey_challenges.{purpose,user_id}` lookup index, and the
+  `passkey_challenges.expires_at` TTL index with `expireAfterSeconds=0` before
+  passkey traffic is enabled. Required indexes must be full, visible,
+  non-sparse, non-partial, default-collation indexes.
 - `PASSKEY_PRODUCTION_TRAFFIC_ENABLED`: Production-only release flag for
   passkey REST and GraphQL traffic. Keep `false` until production monitoring
   and alerts are ready. The Docker Compose production services pass this value

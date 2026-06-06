@@ -24,8 +24,10 @@ Implement changes as requested by reviewers.
 ### 2. Strict FR/NFR And Attribute Review
 
 Run the strict gate before and after fixes. Missing test cases, weak assertions,
-manual-only evidence for applicable behavior, flaky-test risks, or quality
-attribute WARN/FAIL findings are review blockers.
+manual-only evidence for applicable behavior, flaky-test risks, critical
+quality attributes below `4`, applicable security-related attributes below `5`,
+or missing improvement suggestions for improvable scores below `5` are review
+blockers.
 
 ### 3. Quick Verification After Each Change
 
@@ -114,7 +116,7 @@ See the `quality-standards` skill for complete threshold details.
 
 - ✅ `make ci` shows "✅ CI checks successfully passed!"
 - ✅ Strict FR/NFR gate has no missing automated/CI coverage
-- ✅ System quality attribute scorecard has no unresolved WARN/FAIL findings
+- ✅ System quality attribute scorecard uses `0-5` or `N/A`, with evidence and required improvement suggestions
 - ✅ Flaky-test risk reviewed for changed tests
 - ✅ All review comments addressed
 - ✅ No quality regressions introduced

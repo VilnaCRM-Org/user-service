@@ -9,7 +9,7 @@ load-test run. It excludes generated HTML reports and raw container logs.
 - Execution date/time (UTC): 2026-06-01
 - Compose project: `user-service-pr286-passkey-load`
 - API origin: `http://localhost:19081`
-- MongoDB override: `var/ai-review/load-test-mongo7.compose.yml`
+- MongoDB setting: `MONGODB_VERSION=7.0`
 - Preparation: `make setup-load-test-db`
 - Command shape:
   `tests/Load/execute-load-test.sh <scenario> true true true true`
