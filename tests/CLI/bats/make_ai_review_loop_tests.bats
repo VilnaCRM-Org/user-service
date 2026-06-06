@@ -4077,6 +4077,7 @@ SCRIPT
 @test "bmad-fr-nfr-review-gate rejects PASS when PR head differs from local HEAD" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local status_log="${BATS_TEST_TMPDIR}/status.log"
 
   mkdir -p "$bin_dir" "$spec_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
@@ -4085,6 +4086,7 @@ SCRIPT
 
   run env \
     PATH="$bin_dir:$PATH" \
+    GH_STATUS_LOG="$status_log" \
     AI_REVIEW_CODEX_CMD=codex \
     BMAD_REVIEW_SPEC_PATH="$spec_dir" \
     BMAD_REVIEW_BASE=HEAD \
@@ -4097,6 +4099,112 @@ SCRIPT
   assert_output --partial "does not match local HEAD"
   assert_output --partial "GitHub preflight failed before AI review."
   refute_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+
+  run test ! -s "$status_log"
+  assert_success
+}
+
+@test "ai-review-loop rejects BMAD PASS when fixes are only in the dirty worktree" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local status_log="${BATS_TEST_TMPDIR}/status.log"
+  local comment_log="${BATS_TEST_TMPDIR}/comment.log"
+  local review_count="${BATS_TEST_TMPDIR}/review-count"
+
+  mkdir -p "$bin_dir" "$repo_dir/scripts/ai-review-prompts"
+  cp scripts/ai-review-loop.sh "$repo_dir/scripts/ai-review-loop.sh"
+  chmod +x "$repo_dir/scripts/ai-review-loop.sh"
+  printf "Review prompt\n" > "$repo_dir/scripts/ai-review-prompts/review.md"
+  printf "Fix prompt\n" > "$repo_dir/scripts/ai-review-prompts/fix.md"
+
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.email "bats@example.test"
+  git -C "$repo_dir" config user.name "Bats Test"
+  git -C "$repo_dir" add scripts
+  git -C "$repo_dir" commit -q -m "Initial commit"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+
+  if [[ "$output_file" == *"/fix-"* ]]; then
+    printf "local-only fix\n" > local-only-fix.txt
+    echo "Applied local-only fix." > "$output_file"
+    exit 0
+  fi
+
+  count=0
+  if [[ -f "${REVIEW_COUNT_FILE}" ]]; then
+    count="$(cat "${REVIEW_COUNT_FILE}")"
+  fi
+  count=$((count + 1))
+  printf "%s" "$count" > "${REVIEW_COUNT_FILE}"
+
+  if [[ "$count" -eq 1 ]]; then
+    cat > "$output_file" <<'STATUS'
+STATUS: FAIL
+Issues:
+1. Missing BMAD evidence.
+STATUS
+    exit 0
+  fi
+
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_STATUS_LOG="$status_log" \
+    GH_PR_COMMENT_LOG="$comment_log" \
+    REVIEW_COUNT_FILE="$review_count" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_REVIEW_PROMPT="$repo_dir/scripts/ai-review-prompts/review.md" \
+    AI_REVIEW_FIX_PROMPT="$repo_dir/scripts/ai-review-prompts/fix.md" \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="$log_dir" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_MAX_ITER=2 \
+    AI_REVIEW_REQUIRE_GATE_MARKERS=true \
+    AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true \
+    AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
+    AI_REVIEW_POST_PR_COMMENT=true \
+    AI_REVIEW_POST_GITHUB_STATUS=true \
+    bash -c "cd '$repo_dir' && ./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "Warning: Local worktree has uncommitted content; commit and push fixes before BMAD GitHub PASS corroboration or publishing."
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=2 without PASS."
+
+  run grep -F "state=success" "$status_log"
+  assert_failure
+  run test -f "$repo_dir/local-only-fix.txt"
+  assert_success
 }
 
 @test "bmad-fr-nfr-review-gate rejects PASS when GitHub checks are skipped" {

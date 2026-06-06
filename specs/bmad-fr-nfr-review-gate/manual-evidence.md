@@ -3,7 +3,7 @@ workflowType: manual-evidence
 project_name: BMAD FR/NFR Review Gate
 author: Codex
 date: 2026-05-18
-revision: 21
+revision: 23
 ---
 
 # Manual Evidence: BMAD FR/NFR Review Gate
@@ -51,9 +51,10 @@ revision: 21
 | Generated graph impact context  | Run BMAD wrapper without `BMAD_REVIEW_IMPACT_CONTEXT`.                                                                 | Wrapper writes `codebase-graph-impact-context.md` with base/head, changed files, graph artifact pointers, local relationship edges, and reviewer instructions. | FR-15, FR-17, AC-18  |
 | Supplied graph context          | Review Graphify/codebase-memory/Deptrac options and wire `BMAD_REVIEW_IMPACT_CONTEXT`.                                 | Existing graph output can be passed as impact context while the wrapper-generated local relationship graph covers minimal environments.                        | FR-17, NFR-11        |
 | External AI review remediation  | Review CodeRabbit/cubic feedback and apply scoped fixes for the recovery-code random byte loop.                        | Recovery code generation now keeps usable bytes from partially rejected chunks and fails boundedly on unusable entropy fixtures.                               | FR-14, AC-15, NFR-01 |
-| Dependency security remediation | After `symfony-checks` reported advisories, run a scoped Composer update inside existing constraints.                  | `composer.lock` updates Symfony/Twig-related packages without `composer.json` changes; `make check-security` reports no known vulnerabilities.                 | FR-14, AC-15, NFR-04 |
+| Dependency security remediation | Run a scoped Composer update for the vulnerable Symfony packages inside the PHP container.                             | `composer.lock` updates vulnerable Symfony 7.4.8 packages within existing `composer.json` constraints; `make check-security` reports no known vulnerabilities.   | FR-14, AC-15, NFR-04 |
 | Empty visible CI check rollup   | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty`.             | Command exits non-zero with `Warning: GitHub PR check rollup is empty.`                                                                                        | AC-11, NFR-03        |
-| GitHub hard-gate fail-fast      | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing`.                    | Command exits before AI review with `GitHub corroboration failed before AI review.`                                                                            | AC-11, NFR-03        |
+| GitHub check corroboration fail | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing`.                    | After fake PASS output, GitHub check corroboration fails and the loop exits with `Reached AI_REVIEW_MAX_ITER=1 without PASS.`                                  | AC-11, NFR-03        |
+| PR head preflight mismatch      | Run Bats fake-agent test `bmad-fr-nfr-review-gate rejects PASS when PR head differs from local HEAD`.                  | Command exits before AI review or publication with a PR-head mismatch warning and `GitHub preflight failed before AI review.`                                  | AC-11, NFR-03        |
 | GitHub/CI evidence markers      | Run Bats fake-agent marker, threshold, and scorecard validation scenarios.                                             | PASS output must include thresholded min-score, approved GitHub, and passing CI markers.                                                                       | FR-07, AC-05         |
 | Markdown NFR scorecard rows     | Run Bats fake-agent tests for markdown NFR scorecard table rows.                                                       | GFM rows, escaped pipe cells, and malformed short rows require row-local score-cell 5/5.                                                                       | FR-06, FR-07, AC-05  |
 | Markdown formatting             | Run the targeted Prettier check for touched docs/spec/prompt files.                                                    | Command exits successfully with `All matched files use Prettier code style!`.                                                                                  | NFR-01, NFR-07       |

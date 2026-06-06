@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 # ---------------------------------------------------------------------------
 # AI Review Loop — runs AI review agents, applies fixes, verifies with CI.
@@ -334,6 +334,22 @@ github_checks_summary_jq() {
   fi
 
   printf '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | @tsv'
+}
+
+require_clean_worktree_for_github_pass() {
+  local worktree_status
+
+  if ! worktree_status="$(git status --porcelain --untracked-files=all --ignore-submodules=none 2>/dev/null)"; then
+    echo "Warning: Unable to inspect local worktree before BMAD GitHub PASS corroboration or publishing." >&2
+    return 1
+  fi
+
+  if [[ -n "$worktree_status" ]]; then
+    echo "Warning: Local worktree has uncommitted content; commit and push fixes before BMAD GitHub PASS corroboration or publishing." >&2
+    return 1
+  fi
+
+  return 0
 }
 
 build_review_prompt() {
@@ -834,6 +850,8 @@ review_has_github_ci_corroboration() {
     return 1
   fi
 
+  require_clean_worktree_for_github_pass || return 1
+
   if [[ -n "$pr_number" ]]; then
     pr_view_cmd+=("$pr_number")
     pr_checks_cmd+=("$pr_number")
@@ -1022,15 +1040,10 @@ github_pr_url=""
 github_pr_head_oid=""
 github_owner=""
 github_repo=""
-github_context_loaded=false
 
 load_github_pr_context() {
   local pr_view_cmd=(gh pr view)
   local pr_summary pr_path is_draft review_decision
-
-  if [[ "$github_context_loaded" == "true" ]]; then
-    return 0
-  fi
 
   if ! command -v gh >/dev/null 2>&1; then
     echo "Warning: GitHub publishing requires gh CLI." >&2
@@ -1064,7 +1077,25 @@ load_github_pr_context() {
     return 1
   fi
 
-  github_context_loaded=true
+  require_github_publish_context_matches_local_head
+}
+
+require_github_publish_context_matches_local_head() {
+  local local_head_oid
+
+  if [[ -z "$github_pr_head_oid" ]]; then
+    echo "Warning: GitHub PR context is incomplete for BMAD result publishing." >&2
+    return 1
+  fi
+  if ! local_head_oid="$(git rev-parse HEAD 2>/dev/null)"; then
+    echo "Warning: Unable to resolve local HEAD for BMAD result publishing." >&2
+    return 1
+  fi
+  if [[ "$local_head_oid" != "$github_pr_head_oid" ]]; then
+    echo "Warning: Refusing to publish BMAD result because GitHub PR head $github_pr_head_oid does not match local HEAD $local_head_oid." >&2
+    return 1
+  fi
+
   return 0
 }
 
@@ -1184,6 +1215,10 @@ publish_gate_result() {
   esac
 
   if [[ "$result" == "PASS" ]]; then
+    if { is_enabled "$post_github_status" || is_enabled "$post_pr_comment"; } \
+      && ! require_clean_worktree_for_github_pass; then
+      return 1
+    fi
     if ! post_github_commit_status "$state" "$description"; then
       echo "Warning: Failed to publish GitHub status for BMAD result: $result" >&2
       publish_ok=false
@@ -1207,6 +1242,18 @@ publish_gate_result() {
   fi
 
   [[ "$publish_ok" == "true" ]]
+}
+
+publish_unexpected_failure_after_pending() {
+  local exit_code=$?
+  local failed_command="${BASH_COMMAND:-unknown command}"
+  local failure_reason
+
+  trap - ERR
+  failure_reason="Unexpected AI review loop failure after pending publication (exit ${exit_code}): ${failed_command}"
+  publish_gate_result "FAIL" "$failure_reason" "$latest_review_log" "$ci_log" || true
+  echo "$failure_reason" >&2
+  exit "$exit_code"
 }
 
 # --- Agent runners --------------------------------------------------------
@@ -1281,16 +1328,17 @@ ci_log=""
 last_verify_ok=true
 latest_review_log=""
 
-if ! publish_gate_result "PENDING" "BMAD FR/NFR review gate started." "" ""; then
-  echo "Warning: Unable to publish pending BMAD gate status; continuing with local review." >&2
-fi
-
 if is_enabled "$require_github_ci_corroboration" \
   && ! review_has_github_preflight_context; then
-  failure_reason="GitHub preflight failed before AI review. Fix PR identity/check visibility and rerun."
-  publish_gate_result "FAIL" "$failure_reason" "" "" || true
+  failure_reason="GitHub preflight failed before AI review. Fix PR identity, check visibility, or local HEAD and rerun."
   echo "$failure_reason" >&2
   exit 1
+fi
+
+if ! publish_gate_result "PENDING" "BMAD FR/NFR review gate started." "" ""; then
+  echo "Warning: Unable to publish pending BMAD gate status; continuing with local review." >&2
+else
+  trap publish_unexpected_failure_after_pending ERR
 fi
 
 while :; do

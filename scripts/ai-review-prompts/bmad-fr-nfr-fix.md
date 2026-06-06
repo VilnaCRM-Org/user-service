@@ -38,10 +38,9 @@ Constraints:
   repeatable in CI. Add the missing unit, integration, E2E, contract,
   load/performance, mutation, static-analysis, or security test instead, or
   document a concrete technical reason automation is impossible.
-- Do not lower quality thresholds or add suppressions to hide failures, except
-  repo-approved inline suppressions for locked analyzer configs such as
-  `psalm.xml` and `infection.json5`, including specific DI-wired/static-analysis
-  edge cases.
+- Do not lower quality thresholds or add suppressions/ignore directives to hide
+  failures. Fix root causes in code, tests, configuration, architecture, or
+  documentation only.
 - Do not add unrelated refactors.
 
 Fix priorities:
