@@ -13,6 +13,9 @@ on:
       - 'tests/Load/execute-load-test.sh'
       - 'tests/Load/config.json.dist'
 
+permissions:
+  contents: read
+
 jobs:
   cache-integration-tests:
     name: Cache Integration Tests
@@ -21,6 +24,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         with:
@@ -40,6 +45,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         with:

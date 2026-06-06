@@ -4,31 +4,49 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: write
+
 jobs:
   openapi-diff:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' }}
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
     steps:
       - name: Dependabot skip
-        if: github.actor == 'dependabot[bot]'
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
         run: echo "Skipping OpenAPI diff for Dependabot PR"
 
       - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+
+      - name: Configure Git token auth
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          cat > "$RUNNER_TEMP/git-askpass.sh" <<'EOF'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) echo "x-access-token" ;;
+            *Password*) echo "$PUSH_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$RUNNER_TEMP/git-askpass.sh"
+          echo "GIT_ASKPASS=$RUNNER_TEMP/git-askpass.sh" >> "$GITHUB_ENV"
+          echo "GIT_TERMINAL_PROMPT=0" >> "$GITHUB_ENV"
 
       - name: Copy .env.test.local
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
       - name: Cache Composer packages
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: composer-cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
@@ -38,41 +56,46 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install Dependencies
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Generate openapi spec
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 
       - name: Commit changes
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        env:
+          PUSH_TOKEN: ${{ github.token }}
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5
         with:
           add: '.github/openapi-spec/spec.yaml'
+          github_token: ${{ github.token }}
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
 
       - name: Check out head branch
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           path: head
+          persist-credentials: false
 
       - name: Check out master branch
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: main
           path: base
+          persist-credentials: false
 
       - name: Run OpenAPI Diff (from HEAD revision)
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: docker://openapitools/openapi-diff@sha256:9b5bfb7ff04710ac605b1f8d12706b536682ff80c178a4db6b744024b93fccf5
         with:
           args: '/github/workspace/head/.github/openapi-spec/spec.yaml /github/workspace/base/.github/openapi-spec/spec.yaml'
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           name: diff-reports
           path: ./output

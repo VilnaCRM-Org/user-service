@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 9 * * MON'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   repo-sync:
     runs-on: ubuntu-latest
@@ -11,20 +15,29 @@ jobs:
     steps:
       - name: Generate token to read from source repo
         id: generate_token
-        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
         with:
-          app_id: ${{ secrets.VILNACRM_APP_ID }}
-          private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.VILNACRM_APP_ID }}
+          private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            ${{ github.event.repository.name }}
+            php-service-template
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
 
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           token: ${{ steps.generate_token.outputs.token }}
+          persist-credentials: false
 
       - name: actions-template-sync
         uses: AndreasAugustin/actions-template-sync@8a0f668b83c32a0f673353086d74f12b8853d4f5
         with:
-          github_token: ${{ steps.generate_token.outputs.token }}
+          source_gh_token: ${{ steps.generate_token.outputs.token }}
+          target_gh_token: ${{ steps.generate_token.outputs.token }}
           source_repo_path: VilnaCRM-Org/php-service-template
           upstream_branch: main
           pr_labels: template_sync

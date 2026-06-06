@@ -4,21 +4,27 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   psalm:
     name: Psalm
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: github.actor == 'dependabot[bot]'
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
         run: echo "Skipping Psalm for Dependabot PR"
 
       - name: Checkout code
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         with:
           php-version: ${{ vars.PHP_VERSION }}
@@ -27,19 +33,19 @@ jobs:
           ini-values: memory_limit=-1
 
       - name: Install dependencies
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
 
       - name: Psalm
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: vendor/bin/psalm --output-format=github --no-diff
 
       - name: Psalm Security
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: vendor/bin/psalm --taint-analysis --output-format=sarif --report=results.sarif --no-diff
 
       - name: Upload Security Analysis results to GitHub
-        if: ${{ github.actor != 'dependabot[bot]' }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: github/codeql-action/upload-sarif@231aa2c8a89117b126725a0e11897209b7118144
         with:
           sarif_file: results.sarif
