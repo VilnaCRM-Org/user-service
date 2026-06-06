@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: github.actor == 'dependabot[bot]'
         run: echo "Skipping GraphQL diff checks for Dependabot PR"
 
       - name: Generate token with necessary permissions
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         id: generate_token
         uses: tibdex/github-app-token@v2
         with:
@@ -27,45 +27,45 @@ jobs:
           private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
 
       - uses: shivammathur/setup-php@v2
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - name: Checkout Repository
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/checkout@v4.2.1
         with:
-          token: ${{ !contains(toLower(github.actor), 'dependabot') && steps.generate_token.outputs.token || github.token }}
+          token: ${{ github.actor != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Install Dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Start application
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: make start
 
       - name: Generate GraphQL spec
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: make generate-graphql-spec
 
       - name: Copy openapi spec to host
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: docker cp user-service-php-1:/srv/app/.github/graphql-spec/spec .github/graphql-spec/spec
 
       - name: Commit changes
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: EndBug/add-and-commit@v9
         with:
           add: '.github/graphql-spec/spec'
           message: 'feat(#${{ github.event.number }}): generate graphql spec'
 
       - name: GraphQL Inspector
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: kamilkisiela/graphql-inspector@release-1701263349990
         with:
           schema: 'master:.github/graphql-spec/spec'
         env:
-          GITHUB_TOKEN: ${{ !contains(toLower(github.actor), 'dependabot') && steps.generate_token.outputs.token || github.token }}
+          GITHUB_TOKEN: ${{ github.actor != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
