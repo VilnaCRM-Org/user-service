@@ -216,10 +216,51 @@ setup() {
 
   if project_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
     cd "$project_root"
+    ignore_bats_support_checkout_artifacts
     return
   fi
 
   cd "$BATS_TEST_DIRNAME/../../.."
+  ignore_bats_support_checkout_artifacts
+}
+
+ignore_bats_support_checkout_artifacts() {
+  local exclude_file path
+
+  if ! exclude_file="$(git rev-parse --git-path info/exclude 2>/dev/null)"; then
+    return
+  fi
+
+  mkdir -p "$(dirname "$exclude_file")"
+  touch "$exclude_file"
+
+  for path in \
+    "tests/CLI/bats/bats-support" \
+    "tests/CLI/bats/bats-support/" \
+    "tests/CLI/bats/bats-assert" \
+    "tests/CLI/bats/bats-assert/"
+  do
+    if ! grep -qxF "$path" "$exclude_file"; then
+      printf "%s\n" "$path" >> "$exclude_file"
+    fi
+  done
+}
+
+prepare_clean_bmad_gate_repo() {
+  local repo_dir="$1"
+
+  mkdir -p "$repo_dir/scripts/ai-review-prompts"
+  cp scripts/ai-review-loop.sh "$repo_dir/scripts/ai-review-loop.sh"
+  cp scripts/bmad-fr-nfr-review-gate.sh "$repo_dir/scripts/bmad-fr-nfr-review-gate.sh"
+  cp scripts/ai-review-prompts/bmad-fr-nfr-review.md "$repo_dir/scripts/ai-review-prompts/bmad-fr-nfr-review.md"
+  cp scripts/ai-review-prompts/bmad-fr-nfr-fix.md "$repo_dir/scripts/ai-review-prompts/bmad-fr-nfr-fix.md"
+  chmod +x "$repo_dir/scripts/ai-review-loop.sh" "$repo_dir/scripts/bmad-fr-nfr-review-gate.sh"
+
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.email "bats@example.test"
+  git -C "$repo_dir" config user.name "Bats Test"
+  git -C "$repo_dir" add scripts
+  git -C "$repo_dir" commit -q -m "Initial BMAD gate test repo"
 }
 
 write_codex_stub_with_report() {
@@ -4484,9 +4525,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_empty_required_empty_visible_bmad_gh_stub "$bin_dir"
@@ -4499,7 +4542,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub PR check rollup is empty."
@@ -4508,9 +4551,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when fallback visible GitHub checks are not passing" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_empty_required_failing_visible_bmad_gh_stub "$bin_dir"
@@ -4523,7 +4568,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub PR checks are not fully passing: Run Bats Core Tests"
@@ -4665,9 +4710,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when GitHub checks are skipped" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_skipped_check_bmad_gh_stub "$bin_dir"
@@ -4680,7 +4727,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub required PR checks are not fully passing: Optional Docs"
@@ -4689,9 +4736,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate checks paginated unresolved review threads" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -4775,7 +4824,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub PR has unresolved review threads: 1"
@@ -4925,9 +4974,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate fails when verification fails after PASS" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -4969,7 +5020,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=false \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Verification failed after AI review PASS"
