@@ -57,14 +57,13 @@ services:
       - user-service
 
   localstack:
-    image: localstack/localstack:3.4.0
+    image: floci/floci:latest-compat
     ports:
       - '${LOCALSTACK_PORT}:4566'
     environment:
-      - SERVICES=sqs
       - DEBUG=1
+      - FLOCI_HOSTNAME=localstack
     volumes:
-      - localstack_data:/var/lib/localstack
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     networks:
       - user-service
@@ -82,4 +81,3 @@ networks:
   user-service:
 
 volumes:
-  localstack_data:

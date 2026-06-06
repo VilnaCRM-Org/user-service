@@ -44,20 +44,16 @@ services:
       - '${MAILCATCHER_HTTP_PORT:-1080}:1080'
 
   localstack:
-    image: localstack/localstack:3.4.0
+    image: floci/floci:latest-compat
     ports:
       - '${LOCALSTACK_PORT:-4566}:4566'
     environment:
-      - SERVICES=sqs
       - DEBUG=1
+      - FLOCI_HOSTNAME=localstack
     volumes:
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -fsS http://localhost:4566/_localstack/health | grep -q "\"sqs\": \"running\""',
-        ]
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:4566/_localstack/health']
       interval: 5s
       timeout: 3s
       retries: 20
