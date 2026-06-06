@@ -38,8 +38,7 @@ jobs:
         working-directory: tests/Load/
         run: pnpm i --frozen-lockfile
         if: |
-          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
-          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
+          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true'
 
       - name: Run linter
         working-directory: tests/Load/

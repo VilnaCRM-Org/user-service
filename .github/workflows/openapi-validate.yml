@@ -10,26 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
         run: echo "Skipping OpenAPI validation for Dependabot PR"
 
       - name: Checkout Repository
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - name: Install Dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Start Application
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: make start
 
       - name: Validate OpenAPI spec
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: make validate-openapi-spec

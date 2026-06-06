@@ -7,30 +7,30 @@ on:
 jobs:
   openapi-diff:
     runs-on: ubuntu-latest
-    if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+    if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
         run: echo "Skipping OpenAPI diff for Dependabot PR"
 
       - uses: shivammathur/setup-php@v2
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
-      - uses: actions/checkout@v3
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+      - uses: actions/checkout@v4
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Copy .env.test.local
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
       - name: Cache Composer packages
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -38,41 +38,41 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install Dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Generate openapi spec
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 
       - name: Commit changes
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: EndBug/add-and-commit@v9
         with:
           add: '.github/openapi-spec/spec.yaml'
           message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
 
       - name: Check out head branch
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
-        uses: actions/checkout@v2
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        uses: actions/checkout@v4
         with:
           path: head
 
       - name: Check out master branch
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
-        uses: actions/checkout@v2
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        uses: actions/checkout@v4
         with:
           ref: main
           path: base
 
       - name: Run OpenAPI Diff (from HEAD revision)
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: docker://openapitools/openapi-diff:latest
         with:
           args: '/github/workspace/head/.github/openapi-spec/spec.yaml /github/workspace/base/.github/openapi-spec/spec.yaml'
 
       - uses: actions/upload-artifact@v4
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         with:
           name: diff-reports
           path: ./output

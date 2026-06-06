@@ -9,25 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
         run: echo "Skipping symfony checks for Dependabot PR"
 
       - uses: shivammathur/setup-php@v2
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
-      - uses: actions/checkout@v3
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+      - uses: actions/checkout@v4
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
 
       - name: Copy .env.test.local
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
       - name: Cache Composer packages
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -35,21 +35,21 @@ jobs:
             ${{ runner.os }}-php-
 
       - name: Install Dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Install Symfony CLI
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: wget https://get.symfony.com/cli/installer -O - | bash
 
       - name: Composer validate
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: composer validate
 
       - name: Check symfony requirements
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: /home/runner/.symfony5/bin/symfony check:requirements
 
       - name: Symfony security check
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: /home/runner/.symfony5/bin/symfony security:check

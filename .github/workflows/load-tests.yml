@@ -10,27 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
         run: echo "Skipping load tests for Dependabot PR"
 
       - name: Checkout Repository
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
-        uses: actions/checkout@v3
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
+        uses: actions/checkout@v4
 
       - name: Setup Docker
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: docker/setup-docker-action@v4
 
       - name: Start application
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: make start
 
       - name: Setup test db
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: make setup-test-db
 
       - name: Run load tests
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         env:
           API_HOST: localhost
           API_PORT: 8081

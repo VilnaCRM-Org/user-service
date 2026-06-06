@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')
         run: echo "Skipping Psalm for Dependabot PR"
 
       - name: Checkout code
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: actions/checkout@v4
 
       - name: Setup PHP
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ vars.PHP_VERSION }}
@@ -27,19 +27,19 @@ jobs:
           ini-values: memory_limit=-1
 
       - name: Install dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
 
       - name: Psalm
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: vendor/bin/psalm --output-format=github --no-diff
 
       - name: Psalm Security
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         run: vendor/bin/psalm --taint-analysis --output-format=sarif --report=results.sarif --no-diff
 
       - name: Upload Security Analysis results to GitHub
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ !(contains(github.actor, 'dependabot') || contains(github.head_ref, 'dependabot/') || contains(github.ref_name, 'dependabot/')) }}
         uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: results.sarif
