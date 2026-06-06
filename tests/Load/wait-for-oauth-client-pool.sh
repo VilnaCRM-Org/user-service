@@ -37,10 +37,14 @@ client_ready() {
   local poolIndex=$1
   local poolClientID
   local poolClientSecret
+  local netrcFile
   local status
 
   poolClientID=$(resolve_pooled_credential "$clientID" "$poolIndex")
   poolClientSecret=$(resolve_pooled_credential "$clientSecret" "$poolIndex")
+  netrcFile=$(mktemp)
+  chmod 600 "$netrcFile"
+  printf 'machine %s login %s password %s\n' "$apiHost" "$poolClientID" "$poolClientSecret" > "$netrcFile"
 
   status=$(
     curl \
@@ -51,10 +55,11 @@ client_ready() {
       --connect-timeout 2 \
       --max-time 5 \
       --header 'Content-Type: application/json' \
-      --user "${poolClientID}:${poolClientSecret}" \
+      --netrc-file "$netrcFile" \
       --data '{"grant_type":"client_credentials"}' \
       "$tokenUrl" 2>/dev/null || true
   )
+  rm -f "$netrcFile"
 
   [ "$status" = "200" ]
 }

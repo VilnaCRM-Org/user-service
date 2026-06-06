@@ -25,24 +25,12 @@ for composeFile in "${composeFiles[@]}"; do
   composeCmd+=(-f "$composeFile")
 done
 
-read_config_value() {
-  local query=$1
-
-  jq -r "$query" "$loadTestConfigFile"
-}
-
 prepare_oauth_client_pool() {
-  local symfonyCmd
-
-  symfonyCmd=$(printf '%q ' "${composeCmd[@]}")
-  symfonyCmd+=$(printf 'exec -T %q bin/console' "$loadTestPhpService")
-
-  SYMFONY="$symfonyCmd" \
-    "$REPO_ROOT/tests/Load/load-tests-prepare-oauth-client.sh" \
-    "$(read_config_value '.endpoints.oauth.clientName')" \
-    "$(read_config_value '.endpoints.oauth.clientID')" \
-    "$(read_config_value '.endpoints.oauth.clientSecret')" \
-    "$(read_config_value '.endpoints.oauth.clientRedirectUri')"
+  LOAD_TEST_COMPOSE_PROJECT="$loadTestComposeProject" \
+    LOAD_TEST_COMPOSE_FILE="$loadTestComposeFile" \
+    LOAD_TEST_PHP_SERVICE="$loadTestPhpService" \
+    LOAD_TEST_CONFIG_FILE="$loadTestConfigFile" \
+    "$REPO_ROOT/tests/Load/load-tests-prepare-oauth-client.sh"
 }
 
 "${composeCmd[@]}" exec -T "$loadTestRedisService" redis-cli FLUSHALL >/dev/null

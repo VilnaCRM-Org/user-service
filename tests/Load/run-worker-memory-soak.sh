@@ -11,6 +11,7 @@ loadTestComposeFile=${LOAD_TEST_COMPOSE_FILE:-docker-compose.load-tests.yml}
 loadTestPhpService=${LOAD_TEST_PHP_SERVICE:-php}
 loadTestRedisService=${LOAD_TEST_REDIS_SERVICE:-redis}
 loadTestLockoutRedisService=${LOAD_TEST_LOCKOUT_REDIS_SERVICE:-$loadTestRedisService}
+loadTestConfigFile=${LOAD_TEST_CONFIG_FILE:-tests/Load/config.prod.json}
 memorySoakRounds=${MEMORY_SOAK_ROUNDS:-6}
 memorySoakWarmupRounds=${MEMORY_SOAK_WARMUP_ROUNDS:-2}
 memorySoakSettleSeconds=${MEMORY_SOAK_SETTLE_SECONDS:-5}
@@ -95,17 +96,11 @@ timestamp_utc() {
 }
 
 prepare_oauth_client_pool() {
-  local symfony_cmd
-
-  symfony_cmd=$(printf '%q ' "${composeCmd[@]}")
-  symfony_cmd+=$(printf 'exec -T %q bin/console' "$loadTestPhpService")
-
-  SYMFONY="$symfony_cmd" \
-    "$REPO_ROOT/tests/Load/load-tests-prepare-oauth-client.sh" \
-    "$(jq -r '.endpoints.oauth.clientName' "$REPO_ROOT/tests/Load/config.prod.json")" \
-    "$(jq -r '.endpoints.oauth.clientID' "$REPO_ROOT/tests/Load/config.prod.json")" \
-    "$(jq -r '.endpoints.oauth.clientSecret' "$REPO_ROOT/tests/Load/config.prod.json")" \
-    "$(jq -r '.endpoints.oauth.clientRedirectUri' "$REPO_ROOT/tests/Load/config.prod.json")"
+  LOAD_TEST_COMPOSE_PROJECT="$loadTestComposeProject" \
+    LOAD_TEST_COMPOSE_FILE="$loadTestComposeFile" \
+    LOAD_TEST_PHP_SERVICE="$loadTestPhpService" \
+    LOAD_TEST_CONFIG_FILE="$loadTestConfigFile" \
+    "$REPO_ROOT/tests/Load/load-tests-prepare-oauth-client.sh"
 }
 
 reset_round_state() {
