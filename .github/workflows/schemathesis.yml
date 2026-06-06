@@ -10,26 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
-        if: contains(toLower(github.actor), 'dependabot')
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
         run: echo "Skipping Schemathesis for Dependabot PR"
 
       - name: Checkout Repository
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - name: Install Dependencies
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Start Application
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Run Schemathesis Validation
-        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make schemathesis-validate
