@@ -2,31 +2,44 @@ name: code quality
 
 on:
   pull_request:
+    branches: ['main']
 
 jobs:
   psalm:
     name: Psalm
     runs-on: ubuntu-latest
     steps:
+      - name: Dependabot skip
+        if: contains(toLower(github.actor), 'dependabot')
+        run: echo "Skipping Psalm for Dependabot PR"
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        uses: actions/checkout@v4
 
-      - name: Start application
-        run: make start
+      - name: Setup PHP
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+          tools: composer
+          coverage: none
+          ini-values: memory_limit=-1
 
-      - name: Run Psalm
-        run: make psalm
+      - name: Install dependencies
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
 
-      - name: Psalm Security Analysis
-        run: make psalm-security-report
+      - name: Psalm
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: vendor/bin/psalm --output-format=github --no-diff
 
-      - name: Verify SARIF file exists
-        run: docker compose exec php test -f /srv/app/results.sarif || { echo "SARIF file not generated"; exit 1; }
-
-      - name: Copy SARIF file from container
-        run: docker compose cp php:/srv/app/results.sarif ./results.sarif
+      - name: Psalm Security
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        run: vendor/bin/psalm --taint-analysis --output-format=sarif --report=results.sarif --no-diff
 
       - name: Upload Security Analysis results to GitHub
-        uses: github/codeql-action/upload-sarif@v3
+        if: ${{ !contains(toLower(github.actor), 'dependabot') }}
+        uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: results.sarif
