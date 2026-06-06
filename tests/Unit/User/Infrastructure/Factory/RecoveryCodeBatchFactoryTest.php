@@ -7,7 +7,6 @@ namespace App\Tests\Unit\User\Infrastructure\Factory;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Exception\RecoveryCodeGenerationFailedException;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Infrastructure\Factory\RecoveryCodeBatchFactory;
@@ -142,7 +141,7 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         $this->stubRecoveryCodeCreation();
         $this->factory = $this->createFactory(static fn (int $_length): string => '');
 
-        $this->expectException(RecoveryCodeGenerationFailedException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Random byte generator returned no bytes.');
 
         $this->factory->create($user);
@@ -156,7 +155,7 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
             static fn (int $length): string => str_repeat("\xFC", $length)
         );
 
-        $this->expectException(RecoveryCodeGenerationFailedException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Random byte generator did not produce usable bytes.');
 
         $this->factory->create($user);

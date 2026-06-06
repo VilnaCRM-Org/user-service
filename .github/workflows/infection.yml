@@ -28,7 +28,7 @@ jobs:
 
       - name: Start application
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make start
+        run: docker compose up --detach --wait php database redis mailer localstack
 
       - name: Run infection
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}

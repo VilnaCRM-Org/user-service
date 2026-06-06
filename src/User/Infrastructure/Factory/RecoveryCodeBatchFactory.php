@@ -7,7 +7,6 @@ namespace App\User\Infrastructure\Factory;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Exception\RecoveryCodeGenerationFailedException;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use Symfony\Component\Uid\Factory\UlidFactory;
@@ -98,7 +97,7 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
     private function guardUsableRandomByteAttempts(int $attempts, int $maxAttempts): void
     {
         if ($attempts > $maxAttempts) {
-            throw new RecoveryCodeGenerationFailedException(
+            throw new \RuntimeException(
                 self::UNUSABLE_RANDOM_BYTES_MESSAGE
             );
         }
@@ -112,7 +111,7 @@ final readonly class RecoveryCodeBatchFactory implements RecoveryCodeBatchFactor
 
         $bytes = ($this->randomBytes)($length);
         if ($bytes === '') {
-            throw new RecoveryCodeGenerationFailedException(self::EMPTY_RANDOM_BYTES_MESSAGE);
+            throw new \RuntimeException(self::EMPTY_RANDOM_BYTES_MESSAGE);
         }
 
         return $bytes;
