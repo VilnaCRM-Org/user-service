@@ -31,6 +31,7 @@ TEST_CASE_COVERAGE_MIN_SCORE: 5/5
 AUTO_TEST_COVERAGE_MIN_SCORE: 5/5
 FLAKY_TEST_RISK_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -243,7 +244,13 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  review_decision="${GH_REVIEW_DECISION-REVIEW_REQUIRED}"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$review_decision" "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037%s\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$review_decision" "$head_oid"
   exit 0
 fi
 
@@ -253,12 +260,12 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
     echo "required check query must use gh pr checks --required" >&2
     exit 2
   fi
-  printf '3\t\n'
+  printf '3\037\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -290,7 +297,12 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -299,12 +311,12 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
     echo "required check query must use gh pr checks --required" >&2
     exit 2
   fi
-  printf '3\tRun Bats Core Tests\n'
+  printf '3\037Run Bats Core Tests\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -336,21 +348,26 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
   if [[ "$*" == *"--required"* ]]; then
-    printf '0\t\n'
+    printf '0\037\n'
     exit 0
   fi
-  printf '3\t\n'
+  printf '3\037\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -382,17 +399,22 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
-  printf '0\t\n'
+  printf '0\037\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -424,21 +446,26 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
   if [[ "$*" == *"--required"* ]]; then
-    printf '0\t\n'
+    printf '0\037\n'
     exit 0
   fi
-  printf '3\tRun Bats Core Tests\n'
+  printf '3\037Run Bats Core Tests\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -470,7 +497,12 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
     echo "PR state query must include headRefOid and must not rely on full statusCheckRollup" >&2
     exit 2
   fi
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
@@ -479,12 +511,12 @@ if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
     echo "required check query must use gh pr checks --required" >&2
     exit 2
   fi
-  printf '3\tOptional Docs\n'
+  printf '3\037Optional Docs\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -512,17 +544,22 @@ if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t0000000000000000000000000000000000000000\n'
+  head_oid="0000000000000000000000000000000000000000"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
-  printf '3\t\n'
+  printf '3\037\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
-  printf '0\tfalse\t\n'
+  printf '0\037false\037\n'
   exit 0
 fi
 
@@ -941,6 +978,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2062,6 +2100,61 @@ SCRIPT
   assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
+@test "bmad-fr-nfr-review-gate rejects PASS without human approval state evidence" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+  cp "${BMAD_PASS_REPORT}" "$output_file"
+  sed -i '/^GITHUB_HUMAN_APPROVAL_STATE:/d' "$output_file"
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_failure
+  assert_output --partial \
+    "Warning: BMAD PASS output is missing required evidence marker: GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>"
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
+}
+
 @test "bmad-fr-nfr-review-gate rejects PASS scorecards below 5" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
@@ -2157,6 +2250,7 @@ CI_GATE: PASS
 FR_NFR_MIN_SCORE: 4/5
 NFR_CATALOG_MIN_SCORE: 4/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2302,6 +2396,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2432,6 +2527,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2554,6 +2650,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2648,6 +2745,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2744,6 +2842,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2872,6 +2971,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3055,6 +3155,7 @@ CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 **Requirement Scorecard:**
@@ -3144,6 +3245,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3278,6 +3380,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3412,6 +3515,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3546,6 +3650,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3860,6 +3965,46 @@ SCRIPT
   run grep -F 'select(.name != "BMAD FR/NFR Review Gate")' "$checks_args_log"
   assert_success
   run bash -c "grep -R \"BMAD FR/NFR Review Gate: PASS\" '$log_dir'/pr-comment-PASS.*.md"
+  assert_success
+}
+
+@test "bmad-fr-nfr-review-gate preserves empty GitHub review decision fields" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local head_oid
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+  head_oid="$(git rev-parse HEAD)"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_REVIEW_DECISION= \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run grep -F -- "- URL: https://github.example.com/VilnaCRM-Org/user-service/pull/287" "$log_dir/github-corroboration-context.md"
+  assert_success
+  run grep -F -- "- Review decision: UNKNOWN" "$log_dir/github-corroboration-context.md"
+  assert_success
+  run grep -F -- "- Head ref: feature/pr-287" "$log_dir/github-corroboration-context.md"
+  assert_success
+  run grep -F -- "- Head SHA: $head_oid" "$log_dir/github-corroboration-context.md"
+  assert_success
+  run grep -F -- "- Base ref: main" "$log_dir/github-corroboration-context.md"
   assert_success
 }
 
@@ -4283,20 +4428,25 @@ if [[ "${1:-}" == "api" && "${2:-}" == repos/*/statuses/* ]]; then
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "view" ]]; then
-  printf '287\tfalse\tREVIEW_REQUIRED\thttps://github.example.com/VilnaCRM-Org/user-service/pull/287\t%s\n' "$(git rev-parse HEAD)"
+  head_oid="$(git rev-parse HEAD)"
+  if [[ "$*" == *"headRefName"* ]]; then
+    printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037feature/pr-287\037%s\037main\037CLEAN\n' "$head_oid"
+    exit 0
+  fi
+  printf '287\037false\037REVIEW_REQUIRED\037https://github.example.com/VilnaCRM-Org/user-service/pull/287\037%s\n' "$head_oid"
   exit 0
 fi
 
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
-  printf '3\t\n'
+  printf '3\037\n'
   exit 0
 fi
 
 if [[ "${1:-}" == "api" && "${2:-}" == "graphql" ]]; then
   if printf '%s\n' "$*" | grep -Fq -- "-f cursor=PAGE2"; then
-    printf '1\tfalse\t\n'
+    printf '1\037false\037\n'
   else
-    printf '0\ttrue\tPAGE2\n'
+    printf '0\037true\037PAGE2\n'
   fi
   exit 0
 fi
@@ -4367,6 +4517,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
+GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:

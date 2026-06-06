@@ -75,6 +75,10 @@ resolve_path() {
   fi
 }
 
+github_pr_context_jq() {
+  printf '[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | map(if . == null then "" else tostring end) | join("\u001f")'
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --spec)
@@ -360,8 +364,8 @@ write_github_corroboration_context() {
       echo
       if pr_summary="$("${pr_view_cmd[@]}" \
         --json number,isDraft,reviewDecision,url,headRefName,headRefOid,baseRefName,mergeStateStatus \
-        --jq "[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | @tsv" 2>&1)"; then
-        IFS=$'\t' read -r pr_number_detected is_draft review_decision pr_url head_ref pr_head_oid base_ref_name merge_state <<< "$pr_summary"
+        --jq "$(github_pr_context_jq)" 2>&1)"; then
+        IFS=$'\037' read -r pr_number_detected is_draft review_decision pr_url head_ref pr_head_oid base_ref_name merge_state <<< "$pr_summary"
         local_head_oid="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || echo UNKNOWN)"
         echo "- PR number: ${pr_number_detected:-UNKNOWN}"
         echo "- URL: ${pr_url:-UNKNOWN}"
@@ -418,7 +422,7 @@ write_github_corroboration_context() {
           -f owner="$owner" \
           -f repo="$repo" \
           -F number="$pr_number_detected" \
-          --jq "[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), ([.data.repository.pullRequest.reviewThreads.nodes[]?] | length)] | @tsv" 2>&1)"; then
+          --jq "\"active_unresolved=\\(([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length)) total=\\(([.data.repository.pullRequest.reviewThreads.nodes[]?] | length))\"" 2>&1)"; then
           echo "- Active unresolved threads / total first page:"
           write_fenced_block "text" "$thread_summary"
         else

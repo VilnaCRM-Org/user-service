@@ -327,13 +327,17 @@ github_checks_summary_jq() {
 
   if [[ -n "$github_status_excluded_context" ]]; then
     escaped_context="$(jq_string_escape "$github_status_excluded_context")"
-    printf '[([.[] | select(.name != "%s")] | length), ([.[] | select(.name != "%s" and .bucket != "pass") | .name] | join(","))] | @tsv' \
+    printf '[([.[] | select(.name != "%s")] | length), ([.[] | select(.name != "%s" and .bucket != "pass") | .name] | join(","))] | map(if . == null then "" else tostring end) | join("\u001f")' \
       "$escaped_context" \
       "$escaped_context"
     return
   fi
 
-  printf '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | @tsv'
+  printf '[length, ([.[] | select(.bucket != "pass") | .name] | join(","))] | map(if . == null then "" else tostring end) | join("\u001f")'
+}
+
+github_pr_state_jq() {
+  printf '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | map(if . == null then "" else tostring end) | join("\u001f")'
 }
 
 require_clean_worktree_for_github_pass() {
@@ -675,6 +679,8 @@ review_has_scorecard_evidence() {
   local file="$1"
   local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension system_quality_attribute impact_surface
   local normalized_output github_completion_marker_found=false
+  local human_approval_marker_contract="GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>"
+  local human_approval_marker_regex='^GITHUB_HUMAN_APPROVAL_STATE: (APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN)$'
   local score_sections=(
     "Requirement Scorecard"
     "NFR Catalog Scorecard"
@@ -722,6 +728,10 @@ review_has_scorecard_evidence() {
   fi
   if [[ "$github_completion_marker_found" != "true" ]]; then
     echo "Warning: BMAD PASS output is missing required evidence marker: GITHUB_COMPLETION_STATE: PASSING" >&2
+    return 1
+  fi
+  if ! grep -Eq -- "$human_approval_marker_regex" <<< "$normalized_output"; then
+    echo "Warning: BMAD PASS output is missing required evidence marker: $human_approval_marker_contract" >&2
     return 1
   fi
 
@@ -859,12 +869,12 @@ review_has_github_ci_corroboration() {
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
     --json number,isDraft,reviewDecision,url,headRefOid \
-    --jq '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | @tsv' 2>/dev/null)"; then
+    --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR state for BMAD gate." >&2
     return 1
   fi
 
-  IFS=$'\t' read -r pr_number_detected is_draft review_decision pr_url pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r pr_number_detected is_draft review_decision pr_url pr_head_oid <<< "$pr_summary"
 
   if [[ -z "$pr_number_detected" || -z "$pr_url" || -z "$pr_head_oid" ]]; then
     echo "Warning: GitHub PR state is incomplete for BMAD gate." >&2
@@ -899,7 +909,7 @@ review_has_github_ci_corroboration() {
   fi
 
   if ((checks_status == 0)); then
-    IFS=$'\t' read -r check_count check_blockers <<< "$check_summary"
+    IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
   else
     check_count=0
     check_blockers=""
@@ -913,7 +923,7 @@ review_has_github_ci_corroboration() {
   elif check_summary="$("${pr_checks_cmd[@]}" \
     --json name,bucket \
     --jq "$checks_summary_jq" 2>/dev/null)"; then
-    IFS=$'\t' read -r check_count check_blockers <<< "$check_summary"
+    IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
     if ! [[ "$check_count" =~ ^[0-9]+$ ]] || ((check_count == 0)); then
       echo "Warning: GitHub PR check rollup is empty." >&2
       return 1
@@ -948,7 +958,7 @@ review_has_github_ci_corroboration() {
         -f repo="$repo" \
         -F number="$pr_number_detected" \
         -f cursor="$cursor" \
-        --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), (.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage | tostring), (.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // "")] | @tsv' 2>/dev/null)"; then
+        --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), (.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage | tostring), (.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // "")] | map(if . == null then "" else tostring end) | join("\u001f")' 2>/dev/null)"; then
         echo "Warning: Unable to query GitHub review threads for BMAD gate." >&2
         return 1
       fi
@@ -959,13 +969,13 @@ review_has_github_ci_corroboration() {
         -f owner="$owner" \
         -f repo="$repo" \
         -F number="$pr_number_detected" \
-        --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), (.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage | tostring), (.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // "")] | @tsv' 2>/dev/null)"; then
+        --jq '[([.data.repository.pullRequest.reviewThreads.nodes[]? | select(.isResolved == false and .isOutdated != true)] | length), (.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage | tostring), (.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // "")] | map(if . == null then "" else tostring end) | join("\u001f")' 2>/dev/null)"; then
         echo "Warning: Unable to query GitHub review threads for BMAD gate." >&2
         return 1
       fi
     fi
 
-    IFS=$'\t' read -r page_unresolved has_next cursor <<< "$page_summary"
+    IFS=$'\037' read -r page_unresolved has_next cursor <<< "$page_summary"
     unresolved_threads=$((unresolved_threads + page_unresolved))
 
     if [[ "$has_next" != "true" ]]; then
@@ -1000,12 +1010,12 @@ review_has_github_preflight_context() {
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
     --json number,isDraft,reviewDecision,url,headRefOid \
-    --jq '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | @tsv' 2>/dev/null)"; then
+    --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR state for BMAD preflight." >&2
     return 1
   fi
 
-  IFS=$'\t' read -r pr_number_detected is_draft _review_decision pr_url pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r pr_number_detected is_draft _review_decision pr_url pr_head_oid <<< "$pr_summary"
 
   if [[ -z "$pr_number_detected" || -z "$pr_url" || -z "$pr_head_oid" ]]; then
     echo "Warning: GitHub PR state is incomplete for BMAD preflight." >&2
@@ -1056,12 +1066,12 @@ load_github_pr_context() {
 
   if ! pr_summary="$("${pr_view_cmd[@]}" \
     --json number,isDraft,reviewDecision,url,headRefOid \
-    --jq '[.number, .isDraft, .reviewDecision, .url, .headRefOid] | @tsv' 2>/dev/null)"; then
+    --jq "$(github_pr_state_jq)" 2>/dev/null)"; then
     echo "Warning: Unable to query GitHub PR context for BMAD result publishing." >&2
     return 1
   fi
 
-  IFS=$'\t' read -r github_pr_number is_draft review_decision github_pr_url github_pr_head_oid <<< "$pr_summary"
+  IFS=$'\037' read -r github_pr_number is_draft review_decision github_pr_url github_pr_head_oid <<< "$pr_summary"
   if [[ -z "$github_pr_number" || -z "$github_pr_url" || -z "$github_pr_head_oid" ]]; then
     echo "Warning: GitHub PR context is incomplete for BMAD result publishing." >&2
     return 1
