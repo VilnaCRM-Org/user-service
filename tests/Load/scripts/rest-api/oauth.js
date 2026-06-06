@@ -19,10 +19,12 @@ function resolvePooledCredential(baseValue, poolIndex) {
 }
 
 function getJsonHeaderWithBasicAuth(clientId, clientSecret) {
+  const credentials = `${clientId}:${clientSecret}`;
+
   return {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Basic ${b64encode(`${clientId}:${clientSecret}`)}`,
+      Authorization: `Basic ${b64encode(credentials)}`,
     },
   };
 }
