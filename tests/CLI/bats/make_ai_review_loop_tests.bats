@@ -821,6 +821,23 @@ SCRIPT
   assert_success
 }
 
+@test "bmad review prompt keeps Required Fixes heading parseable" {
+  run grep -F -- "- Required Fixes:" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "The Required Fixes section heading must be exactly \`Required Fixes:\`." scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "For PASS, the Required Fixes section" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "body must be exactly \`None.\`." scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "Required Fixes: file path" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_failure
+}
+
 @test "fix prompt constrains design smell remediation to PR scope" {
   run grep -F "system design, design pattern, and code smell findings" scripts/ai-review-prompts/fix.md
   assert_success
