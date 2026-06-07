@@ -38,7 +38,7 @@ Assumptions:
    code-smell findings with the smallest coherent scoped change.
 9. Tests must prove the review and fix prompts retain the expanded criteria.
 10. Documentation must explain that `make ai-review-loop` includes design and
-   maintainability checks.
+    maintainability checks.
 11. Claude review execution must receive the same repository review criteria
     while preserving its built-in `/review` path.
 

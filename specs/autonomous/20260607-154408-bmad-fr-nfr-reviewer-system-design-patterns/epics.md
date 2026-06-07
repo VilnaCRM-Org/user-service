@@ -132,15 +132,15 @@ make ai-review-loop
 
 ## Requirements Coverage Map
 
-| Requirement area | Covered by |
-|---|---|
-| FR review coverage | Story 1.1 |
-| NFR review coverage | Story 1.1 |
-| System design checks | Story 1.1 |
-| Design-pattern fit | Story 1.1 |
-| Code-smell detection | Story 1.1 |
+| Requirement area                    | Covered by       |
+| ----------------------------------- | ---------------- |
+| FR review coverage                  | Story 1.1        |
+| NFR review coverage                 | Story 1.1        |
+| System design checks                | Story 1.1        |
+| Design-pattern fit                  | Story 1.1        |
+| Code-smell detection                | Story 1.1        |
 | Repository architecture enforcement | Stories 1.1, 1.2 |
-| Scoped fixer behavior | Story 1.2 |
-| Claude review prompt parity | Story 1.3 |
-| Prompt and loop tests | Story 1.4 |
-| Documentation sync | Story 1.5 |
+| Scoped fixer behavior               | Story 1.2        |
+| Claude review prompt parity         | Story 1.3        |
+| Prompt and loop tests               | Story 1.4        |
+| Documentation sync                  | Story 1.5        |
