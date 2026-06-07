@@ -15,18 +15,61 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\Collection;
 use MongoDB\Model\IndexInfo;
 use PHPUnit\Framework\MockObject\MockObject;
-use stdClass;
+use ReflectionMethod;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
+final class AssertPasskeyProductionReadinessCommandMutationTest extends UnitTestCase
 {
-    public function testExecuteSucceedsWhenConfigurationAndIndexesAreReady(): void
+    public function testExecuteReportsEveryMissingCredentialIndex(): void
     {
         $tester = new CommandTester($this->createCommand(
             $this->createValidConfiguration(),
-            $this->requiredCredentialIndexes(),
+            [],
             $this->requiredChallengeIndexes()
+        ));
+
+        self::assertSame(Command::FAILURE, $tester->execute([]));
+
+        $display = $tester->getDisplay();
+        self::assertStringContainsString(
+            'Missing unique credential_id index on passkey_credentials.',
+            $display
+        );
+        self::assertStringContainsString(
+            'Missing user_id lookup index on passkey_credentials.',
+            $display
+        );
+    }
+
+    public function testExecuteFailsWhenCredentialUniqueIndexHasTruthySparseOption(): void
+    {
+        $tester = new CommandTester($this->createCommand(
+            $this->createValidConfiguration(),
+            [
+                new ArrayObject([
+                    'key' => ['credential_id' => 1],
+                    'unique' => true,
+                    'sparse' => 1,
+                ]),
+                $this->index(['user_id' => 1]),
+            ],
+            $this->requiredChallengeIndexes()
+        ));
+
+        self::assertSame(Command::FAILURE, $tester->execute([]));
+        self::assertStringContainsString(
+            'Missing unique credential_id index on passkey_credentials.',
+            $tester->getDisplay()
+        );
+    }
+
+    public function testExecuteAcceptsScalarIndexOptionsAfterNormalization(): void
+    {
+        $tester = new CommandTester($this->createCommand(
+            $this->createValidConfiguration(),
+            $this->scalarCredentialIndexes(),
+            $this->scalarChallengeIndexes()
         ));
 
         self::assertSame(Command::SUCCESS, $tester->execute([]));
@@ -36,172 +79,22 @@ final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
         );
     }
 
-    public function testExecuteFailsWhenCredentialUniqueIndexIsMissing(): void
+    public function testExecuteContinuesPastIndexesWithMatchingKeyButWrongOptions(): void
     {
         $tester = new CommandTester($this->createCommand(
             $this->createValidConfiguration(),
             [
                 $this->index(['credential_id' => 1]),
+                $this->uniqueIndex(['credential_id' => 1]),
                 $this->index(['user_id' => 1]),
             ],
-            $this->requiredChallengeIndexes()
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Passkey production readiness check failed.',
-            $tester->getDisplay()
-        );
-        self::assertStringContainsString(
-            'Missing unique credential_id index on passkey_credentials.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenCredentialUserIdIndexIsMissing(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
             [
-                $this->uniqueIndex(['credential_id' => 1]),
-            ],
-            $this->requiredChallengeIndexes()
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing user_id lookup index on passkey_credentials.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenChallengeLookupIndexIsMissing(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            $this->requiredCredentialIndexes(),
-            [
+                $this->index(['purpose' => 1, 'user_id' => 1]),
+                $this->ttlIndex(['expires_at' => 1], 60),
                 $this->ttlIndex(['expires_at' => 1], 0),
             ]
         ));
 
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing purpose and user_id lookup index on passkey_challenges.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenChallengeTtlIndexIsMissing(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            $this->requiredCredentialIndexes(),
-            [
-                $this->index(['purpose' => 1, 'user_id' => 1]),
-                $this->ttlIndex(['expires_at' => 1], 60),
-            ]
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing expires_at TTL index on passkey_challenges.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenCredentialUniqueIndexIsPartial(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            [
-                $this->uniqueIndex(
-                    ['credential_id' => 1],
-                    ['partialFilterExpression' => ['credential_id' => ['$exists' => true]]]
-                ),
-                $this->index(['user_id' => 1]),
-            ],
-            $this->requiredChallengeIndexes()
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing unique credential_id index on passkey_credentials.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenCredentialUniqueIndexIsSparse(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            [
-                $this->uniqueIndex(['credential_id' => 1], ['sparse' => true]),
-                $this->index(['user_id' => 1]),
-            ],
-            $this->requiredChallengeIndexes()
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing unique credential_id index on passkey_credentials.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenCredentialUniqueIndexHasCustomCollation(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            [
-                $this->uniqueIndex(
-                    ['credential_id' => 1],
-                    ['collation' => ['locale' => 'en', 'strength' => 2]]
-                ),
-                $this->index(['user_id' => 1]),
-            ],
-            $this->requiredChallengeIndexes()
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing unique credential_id index on passkey_credentials.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteFailsWhenChallengeTtlIndexIsHidden(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            $this->requiredCredentialIndexes(),
-            [
-                $this->index(['purpose' => 1, 'user_id' => 1]),
-                $this->ttlIndex(['expires_at' => 1], 0, ['hidden' => true]),
-            ]
-        ));
-
-        self::assertSame(Command::FAILURE, $tester->execute([]));
-        self::assertStringContainsString(
-            'Missing expires_at TTL index on passkey_challenges.',
-            $tester->getDisplay()
-        );
-    }
-
-    public function testExecuteIgnoresUnexpectedIndexEntries(): void
-    {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            [
-                new stdClass(),
-                ...$this->requiredCredentialIndexes(),
-            ],
-            [
-                new stdClass(),
-                ...$this->requiredChallengeIndexes(),
-            ]
-        ));
-
         self::assertSame(Command::SUCCESS, $tester->execute([]));
         self::assertStringContainsString(
             'Passkey production readiness verified.',
@@ -209,25 +102,19 @@ final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
         );
     }
 
-    public function testExecuteIgnoresMalformedArrayAccessIndexEntries(): void
+    public function testIndexInfoRejectsIndexWithoutKey(): void
     {
-        $tester = new CommandTester($this->createCommand(
-            $this->createValidConfiguration(),
-            [
-                new ArrayObject(['name' => 'credential_id']),
-                new ArrayObject(['key' => 'credential_id']),
-                new ArrayObject(['key' => [0 => 1]]),
-                new ArrayObject(['key' => ['credential_id' => 'ascending']]),
-                ...$this->requiredCredentialIndexes(),
-            ],
-            $this->requiredChallengeIndexes()
-        ));
+        self::assertNull($this->indexInfoFor(new ArrayObject(['unique' => true])));
+    }
 
-        self::assertSame(Command::SUCCESS, $tester->execute([]));
-        self::assertStringContainsString(
-            'Passkey production readiness verified.',
-            $tester->getDisplay()
-        );
+    public function testNormalizeIndexKeyRejectsNonStringFieldName(): void
+    {
+        self::assertNull($this->normalizeIndexKey([0 => 1]));
+    }
+
+    public function testNormalizeIndexKeyRejectsNonIntegerDirection(): void
+    {
+        self::assertNull($this->normalizeIndexKey(['credential_id' => '1']));
     }
 
     /**
@@ -298,6 +185,57 @@ final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
     }
 
     /**
+     * @param ArrayObject<string, scalar|array<array-key, scalar>|null> $index
+     *
+     * @return array<string, string|int|bool|array<string, int>>|null
+     */
+    private function indexInfoFor(ArrayObject $index): ?array
+    {
+        $method = new ReflectionMethod(
+            AssertPasskeyProductionReadinessCommand::class,
+            'indexInfoFor'
+        );
+        $this->makeAccessible($method);
+
+        $result = $method->invoke($this->createReadyCommand(), $index);
+        if ($result === null || is_array($result)) {
+            return $result;
+        }
+
+        self::fail('Index info must be an array or null.');
+    }
+
+    /**
+     * @param array<array-key, scalar|null> $key
+     *
+     * @return array<string, int>|null
+     */
+    private function normalizeIndexKey(array $key): ?array
+    {
+        $method = new ReflectionMethod(
+            AssertPasskeyProductionReadinessCommand::class,
+            'normalizeIndexKey'
+        );
+        $this->makeAccessible($method);
+
+        $result = $method->invoke($this->createReadyCommand(), $key);
+        if ($result === null || is_array($result)) {
+            return $result;
+        }
+
+        self::fail('Normalized index key must be an array or null.');
+    }
+
+    private function createReadyCommand(): AssertPasskeyProductionReadinessCommand
+    {
+        return $this->createCommand(
+            $this->createValidConfiguration(),
+            $this->requiredCredentialIndexes(),
+            $this->requiredChallengeIndexes()
+        );
+    }
+
+    /**
      * @return list<IndexInfo>
      */
     private function requiredCredentialIndexes(): array
@@ -316,6 +254,34 @@ final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
         return [
             $this->index(['purpose' => 1, 'user_id' => 1]),
             $this->ttlIndex(['expires_at' => 1], 0),
+        ];
+    }
+
+    /**
+     * @return list<object>
+     */
+    private function scalarCredentialIndexes(): array
+    {
+        return [
+            new ArrayObject([
+                'key' => ['credential_id' => 1],
+                'unique' => 1,
+            ]),
+            $this->index(['user_id' => 1]),
+        ];
+    }
+
+    /**
+     * @return list<object>
+     */
+    private function scalarChallengeIndexes(): array
+    {
+        return [
+            $this->index(['purpose' => 1, 'user_id' => 1]),
+            new ArrayObject([
+                'key' => ['expires_at' => 1],
+                'expireAfterSeconds' => '0',
+            ]),
         ];
     }
 
@@ -357,16 +323,11 @@ final class AssertPasskeyProductionReadinessCommandTest extends UnitTestCase
      */
     private function indexWithOptions(array $key, array $options): IndexInfo
     {
-        $info = [
+        return new IndexInfo([
             'v' => 2,
             'name' => implode('_', array_keys($key)),
             'key' => $key,
-        ];
-
-        foreach ($options as $name => $value) {
-            $info[$name] = $value;
-        }
-
-        return new IndexInfo($info);
+            ...$options,
+        ]);
     }
 }

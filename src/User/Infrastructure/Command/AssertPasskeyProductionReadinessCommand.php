@@ -9,7 +9,6 @@ use App\User\Domain\Entity\PasskeyChallenge;
 use App\User\Domain\Entity\PasskeyCredential;
 
 use function array_key_exists;
-use function array_values;
 
 use ArrayAccess;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -58,7 +57,7 @@ final class AssertPasskeyProductionReadinessCommand extends Command
 
     public function __construct(
         private readonly DocumentManager $documentManager,
-        private readonly PasskeyConfiguration $configuration,
+        PasskeyConfiguration $_configuration,
     ) {
         parent::__construct();
     }
@@ -90,8 +89,6 @@ final class AssertPasskeyProductionReadinessCommand extends Command
      */
     private function collectFailures(): array
     {
-        $this->configuration->getAllowedOrigins();
-
         return [
             ...$this->missingIndexes(
                 PasskeyCredential::class,
@@ -139,11 +136,11 @@ final class AssertPasskeyProductionReadinessCommand extends Command
     private function indexesFor(string $documentClass): array
     {
         $indexes = [];
-        foreach (array_values(iterator_to_array(
+        foreach (iterator_to_array(
             $this->documentManager
                 ->getDocumentCollection($documentClass)
                 ->listIndexes()
-        )) as $index) {
+        ) as $index) {
             if (!is_object($index) || !$index instanceof ArrayAccess) {
                 continue;
             }
@@ -218,7 +215,7 @@ final class AssertPasskeyProductionReadinessCommand extends Command
         string $optionName
     ): void {
         if ($index->offsetExists($optionName)) {
-            $indexInfo[$optionName] = true;
+            $indexInfo[$optionName] = $optionName;
         }
     }
 
@@ -271,7 +268,7 @@ final class AssertPasskeyProductionReadinessCommand extends Command
                 continue;
             }
 
-            if ((bool) ($index['unique'] ?? false) !== $requiredIndex['unique']) {
+            if (($index['unique'] ?? false) !== $requiredIndex['unique']) {
                 continue;
             }
 
@@ -300,7 +297,7 @@ final class AssertPasskeyProductionReadinessCommand extends Command
         }
 
         return array_key_exists('expireAfterSeconds', $index)
-            && (int) $index['expireAfterSeconds'] === $requiredIndex['expireAfterSeconds'];
+            && $index['expireAfterSeconds'] === $requiredIndex['expireAfterSeconds'];
     }
 
     /**
@@ -308,8 +305,8 @@ final class AssertPasskeyProductionReadinessCommand extends Command
      */
     private function hasDisqualifyingOptions(array $index): bool
     {
-        return (bool) ($index['sparse'] ?? false)
-            || (bool) ($index['hidden'] ?? false)
+        return ($index['sparse'] ?? false) === true
+            || ($index['hidden'] ?? false) === true
             || array_key_exists('partialFilterExpression', $index)
             || array_key_exists('collation', $index);
     }
