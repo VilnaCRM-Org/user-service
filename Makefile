@@ -158,7 +158,7 @@ bmad-fr-nfr-review-gate: ## Run BMAD spec-driven FR/NFR review gate; set BMAD_RE
 		$${BMAD_REVIEW_AGENTS:+--agents "$${BMAD_REVIEW_AGENTS}"}
 
 bats: ## Run tests for bash commands
-	bats tests/CLI/bats/
+	bats tests/CLI/bats/*_tests.bats
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
 	$(RUN_PHP_CS_FIXER)
