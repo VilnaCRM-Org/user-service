@@ -1,6 +1,15 @@
 # Passkey Authentication Current-Head Impact Context
 
-Generated: 2026-06-01 UTC
+Generated: 2026-06-07T16:52:00Z
+
+Reviewed local HEAD: `57cf5e1bfd221eed70f42d1351f066702ba4d5ce`
+
+Current local-tree note: this evidence was refreshed in the dirty PR working
+tree after the WebAuthn Level 3 OpenAPI attestation-schema remediation. At the
+time of refresh, `git diff --name-only refs/heads/main...HEAD | wc -l` reported
+287 pushed PR files and `git diff --name-only refs/heads/main | wc -l` reported
+318 local-tree files. The local-only delta still requires commit/push or a
+clean pushed-head checkout before remote CI/GitHub completion gates can pass.
 
 Base ref: `refs/remotes/origin/main`
 
@@ -23,14 +32,16 @@ The local Graphify artifact was regenerated with:
 ```
 
 Generated `graphify-out/` artifacts are local review evidence and are not
-committed. The latest clean local refresh completed on 2026-06-02 04:46:30 +0300
-after the passkey sign-in rate-limit hardening, Infection survivor fix,
-resolver extraction, quality/load-test fixes, BMAD readiness-order review, and
-post-claim passkey cleanup hardening, and produced 20,759 nodes and 434,402
-edges. This committed evidence file can move in a later docs-only commit; the
-final BMAD sidecar report records the exact reviewed PR SHA.
+committed. The latest local refresh completed on 2026-06-07T16:52:00Z after the
+WebAuthn Level 3 OpenAPI attestation-schema remediation and produced 20,958
+nodes and 36,692 edges in `graphify-out/graph.json`. This committed evidence
+file records the reviewed local HEAD and dirty-tree counts because remote
+pushed-head corroboration is still externally pending.
 The refreshed graph includes:
 
+- `src/Shared/Application/OpenApi/Transformer/PasskeyCredentialRequestSchemaTransformer.php`
+- `tests/Unit/Shared/Application/OpenApi/Transformer/PasskeyCredentialRequestSchemaTransformerTest.php`
+- `.github/openapi-spec/spec.yaml`
 - `scripts/normalize-graphql-passkey-descriptions.php`
 - `src/User/Application/EventListener/PasskeyGraphQlRequestResolver.php`
 - `src/User/Application/EventListener/PasskeyProductionReadinessListener.php`

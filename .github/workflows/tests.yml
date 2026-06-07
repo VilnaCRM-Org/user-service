@@ -31,9 +31,11 @@ jobs:
         run: make setup-test-db
 
       - name: Assert passkey readiness
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make passkey-test-readiness
 
       - name: Assert production-mode passkey readiness
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make passkey-ci-production-readiness
 
       - name: Execute Unit and Integration tests

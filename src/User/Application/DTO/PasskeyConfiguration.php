@@ -15,14 +15,12 @@ use DateTimeImmutable;
 
 use function explode;
 use function filter_var;
-use function in_array;
 
 use InvalidArgumentException;
 
 use function sprintf;
 use function str_ends_with;
 use function str_starts_with;
-use function strpbrk;
 use function strtolower;
 use function trim;
 
@@ -32,7 +30,6 @@ final readonly class PasskeyConfiguration
     private const MAX_CHALLENGE_TTL_SECONDS = 600;
     private const PUBLIC_SUFFIX_LIST_PATH =
         __DIR__ . '/../../../../config/passkey/public_suffix_list.dat';
-    private const LOCALHOST_RP_IDS = ['localhost'];
     private PasskeyAllowedOriginNormalizer $allowedOriginNormalizer;
     private PasskeyRpIdValidator $rpIdValidator;
 
@@ -146,19 +143,9 @@ final readonly class PasskeyConfiguration
 
     private function assertRpId(string $rpId): void
     {
-        if (strpbrk($rpId, '*:/') !== false) {
-            throw new InvalidArgumentException('Passkey relying party ID must be a host name.');
-        }
-
         $normalizedRpId = strtolower($rpId);
         if (str_starts_with($normalizedRpId, '.') || str_ends_with($normalizedRpId, '.')) {
             throw new InvalidArgumentException('Passkey relying party ID must be a host name.');
-        }
-
-        if (in_array($normalizedRpId, self::LOCALHOST_RP_IDS, true)) {
-            $this->assertProductionRpId($normalizedRpId);
-
-            return;
         }
 
         if (

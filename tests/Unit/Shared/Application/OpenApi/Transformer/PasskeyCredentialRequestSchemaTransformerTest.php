@@ -29,6 +29,50 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
         ));
     }
 
+    public function testTransformDocumentsWebAuthnLevelThreeRegistrationResponseJson(): void
+    {
+        $this->assertWebAuthnLevelThreeRegistrationResponseJson(
+            $this->registrationCompleteSchema()
+        );
+    }
+
+    public function testTransformDocumentsPasskeySignUpOptionsValidationSchema(): void
+    {
+        $resultSchemas = $this->transformedCredentialSchemas();
+        $schema = $resultSchemas->offsetGet('EmptyResponse.PasskeySignUpOptionsDto');
+
+        self::assertIsArray($schema);
+        self::assertSame(
+            '^(?!\\d).*\\S.*$',
+            $schema['properties']['initials']['pattern']
+        );
+    }
+
+    public function testTransformDocumentsPasskeySignUpOptionsArrayObjectValidationSchema(): void
+    {
+        $schemas = new ArrayObject([
+            'EmptyResponse.PasskeySignUpOptionsDto' => [
+                'type' => 'object',
+                'properties' => [
+                    'initials' => new ArrayObject([
+                        'type' => 'string',
+                    ]),
+                ],
+            ],
+        ]);
+        $result = (new PasskeyCredentialRequestSchemaTransformer())
+            ->transform($this->createOpenApi($schemas));
+        $schema = $result->getComponents()?->getSchemas()?->offsetGet(
+            'EmptyResponse.PasskeySignUpOptionsDto'
+        );
+
+        self::assertIsArray($schema);
+        self::assertSame(
+            '^(?!\\d).*\\S.*$',
+            $schema['properties']['initials']['pattern']
+        );
+    }
+
     public function testTransformSkipsInvalidSchemaValues(): void
     {
         $schemas = new ArrayObject([
@@ -37,6 +81,7 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
                 'required' => 'invalid',
                 'properties' => 'invalid',
             ],
+            'EmptyResponse.PasskeySignUpOptionsDto' => 'invalid',
         ]);
         $result = (new PasskeyCredentialRequestSchemaTransformer())
             ->transform($this->createOpenApi($schemas));
@@ -48,6 +93,47 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
         $this->assertSchemaCreatedFromInvalidCollections($resultSchemas?->offsetGet(
             'EmptyResponse.PasskeySignUpCompleteDto'
         ));
+        self::assertSame('invalid', $resultSchemas?->offsetGet(
+            'EmptyResponse.PasskeySignUpOptionsDto'
+        ));
+    }
+
+    public function testTransformCreatesInitialsSchemaFromInvalidGeneratedSchema(): void
+    {
+        $schemas = new ArrayObject([
+            'EmptyResponse.PasskeySignUpOptionsDto' => [
+                'type' => 'object',
+                'properties' => [
+                    'initials' => 'invalid',
+                ],
+            ],
+        ]);
+        $result = (new PasskeyCredentialRequestSchemaTransformer())
+            ->transform($this->createOpenApi($schemas));
+        $schema = $result->getComponents()?->getSchemas()?->offsetGet(
+            'EmptyResponse.PasskeySignUpOptionsDto'
+        );
+
+        self::assertIsArray($schema);
+        self::assertSame(
+            '^(?!\\d).*\\S.*$',
+            $schema['properties']['initials']['pattern']
+        );
+    }
+
+    public function testTransformIgnoresMissingPasskeySignUpOptionsSchema(): void
+    {
+        $schemas = new ArrayObject([
+            'EmptyResponse.PasskeyRegistrationCompleteDto' => [
+                'type' => 'object',
+            ],
+        ]);
+        $result = (new PasskeyCredentialRequestSchemaTransformer())
+            ->transform($this->createOpenApi($schemas));
+        $resultSchemas = $result->getComponents()?->getSchemas();
+
+        self::assertInstanceOf(ArrayObject::class, $resultSchemas);
+        self::assertFalse($resultSchemas->offsetExists('EmptyResponse.PasskeySignUpOptionsDto'));
     }
 
     public function testTransformIgnoresOpenApiWithoutSchemas(): void
@@ -65,6 +151,15 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
         return new ArrayObject([
             'EmptyResponse.PasskeyRegistrationCompleteDto' => [
                 'type' => 'object',
+            ],
+            'EmptyResponse.PasskeySignUpOptionsDto' => [
+                'type' => 'object',
+                'properties' => [
+                    'initials' => [
+                        'type' => 'string',
+                        'pattern' => '^(.*\\S.*)$',
+                    ],
+                ],
             ],
             'EmptyResponse.PasskeySignInCompleteDto' => $this->signInCompleteSchema(),
             'EmptyResponse.PasskeySignUpCompleteDto' => [
@@ -101,18 +196,10 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
     private function assertAttestationCredentialSchema(array $schema): void
     {
         $this->assertCredentialSchema($schema);
-        self::assertSame(
-            ['attestationObject', 'clientDataJSON'],
-            $this->credentialResponseSchema($schema)['required']
-        );
-        self::assertArrayHasKey(
-            'attestationObject',
-            $this->credentialResponseSchema($schema)['properties']
-        );
-        self::assertArrayNotHasKey(
-            'signature',
-            $this->credentialResponseSchema($schema)['properties']
-        );
+        $responseSchema = $this->credentialResponseSchema($schema);
+
+        $this->assertAttestationResponseRequiredProperties($responseSchema);
+        $this->assertAttestationResponseDocumentedProperties($responseSchema);
     }
 
     /**
@@ -142,12 +229,114 @@ final class PasskeyCredentialRequestSchemaTransformerTest extends UnitTestCase
     {
         self::assertSame(['challengeId', 'credential'], $schema['required']);
         self::assertSame('object', $schema['properties']['credential']['type']);
-        self::assertTrue($schema['properties']['credential']['additionalProperties']);
+        self::assertFalse($schema['properties']['credential']['additionalProperties']);
         self::assertSame(
             ['id', 'rawId', 'response', 'type'],
             $schema['properties']['credential']['required']
         );
+        self::assertSame(
+            '^[A-Za-z0-9_-]+$',
+            $schema['properties']['credential']['properties']['id']['pattern']
+        );
         self::assertArrayHasKey('response', $schema['properties']['credential']['properties']);
+    }
+
+    /**
+     * @return array<string, scalar|array|null>
+     */
+    private function registrationCompleteSchema(): array
+    {
+        $schema = $this->transformedCredentialSchemas()
+            ->offsetGet('EmptyResponse.PasskeyRegistrationCompleteDto');
+        self::assertIsArray($schema);
+
+        return $schema;
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $schema
+     */
+    private function assertWebAuthnLevelThreeRegistrationResponseJson(array $schema): void
+    {
+        $responseSchema = $this->credentialResponseSchema($schema);
+        self::assertSame([], array_diff_key(
+            $this->registrationResponseJson(),
+            $this->assertResponseProperties($responseSchema)
+        ));
+        $this->assertRequiredRegistrationResponseProperties($responseSchema);
+    }
+
+    /**
+     * @return array<string, scalar|array|null>
+     */
+    private function registrationResponseJson(): array
+    {
+        return [
+            'attestationObject' => $this->faker->sha256(),
+            'authenticatorData' => $this->faker->sha256(),
+            'clientDataJSON' => $this->faker->sha256(),
+            'publicKey' => $this->faker->sha256(),
+            'publicKeyAlgorithm' => $this->faker->randomElement([-7, -257]),
+            'transports' => [$this->faker->randomElement(['hybrid', 'internal', 'usb'])],
+        ];
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $responseSchema
+     *
+     * @return array<string, scalar|array|null>
+     */
+    private function assertResponseProperties(array $responseSchema): array
+    {
+        $responseProperties = $responseSchema['properties'];
+        self::assertIsArray($responseProperties);
+
+        return $responseProperties;
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $responseSchema
+     */
+    private function assertRequiredRegistrationResponseProperties(array $responseSchema): void
+    {
+        $registrationResponse = $this->registrationResponseJson();
+        $requiredProperties = $responseSchema['required'];
+        self::assertIsArray($requiredProperties);
+
+        foreach ($requiredProperties as $requiredProperty) {
+            self::assertIsString($requiredProperty);
+            self::assertArrayHasKey($requiredProperty, $registrationResponse);
+        }
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $responseSchema
+     */
+    private function assertAttestationResponseRequiredProperties(array $responseSchema): void
+    {
+        self::assertSame([
+            'attestationObject',
+            'authenticatorData',
+            'clientDataJSON',
+            'publicKeyAlgorithm',
+            'transports',
+        ], $responseSchema['required']);
+        self::assertNotContains('publicKey', $responseSchema['required']);
+    }
+
+    /**
+     * @param array<string, scalar|array|null> $responseSchema
+     */
+    private function assertAttestationResponseDocumentedProperties(array $responseSchema): void
+    {
+        self::assertSame([
+            'attestationObject',
+            'authenticatorData',
+            'clientDataJSON',
+            'publicKey',
+            'publicKeyAlgorithm',
+            'transports',
+        ], array_keys($this->assertResponseProperties($responseSchema)));
     }
 
     /**

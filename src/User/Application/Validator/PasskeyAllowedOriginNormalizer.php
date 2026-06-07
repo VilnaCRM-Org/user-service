@@ -113,17 +113,16 @@ final class PasskeyAllowedOriginNormalizer
             $this->throwInvalidBrowserOrigin();
         }
 
-        if (in_array($normalizedHost, self::LOCALHOST_HOSTS, true)) {
-            return;
-        }
-
-        if (filter_var($normalizedHost, FILTER_VALIDATE_IP) !== false) {
-            return;
-        }
-
-        if (filter_var($normalizedHost, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
+        if (!$this->isBrowserOriginHostSupported($normalizedHost)) {
             $this->throwInvalidBrowserOrigin();
         }
+    }
+
+    private function isBrowserOriginHostSupported(string $normalizedHost): bool
+    {
+        return in_array($normalizedHost, self::LOCALHOST_HOSTS, true)
+            || filter_var($normalizedHost, FILTER_VALIDATE_IP) !== false
+            || filter_var($normalizedHost, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
     }
 
     private function assertOriginHasNoExtraComponents(string $origin): void

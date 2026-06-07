@@ -123,6 +123,8 @@ resources:
                         residentKey: 'required'
                         requireResidentKey: true
                       timeout: 60000
+            400:
+              description: 'Invalid request payload'
             409:
               description: 'Email is already registered'
             422:
@@ -181,6 +183,8 @@ resources:
                     2fa_enabled: false
                     access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
                     refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Invalid or expired passkey challenge'
             409:
@@ -233,6 +237,8 @@ resources:
                         residentKey: 'required'
                         requireResidentKey: true
                       timeout: 60000
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Authentication required'
             503: *passkey_production_readiness_response
@@ -262,6 +268,8 @@ resources:
                       credential_id: { type: string }
                   example:
                     credential_id: 'base64url-credential-id'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Authentication required or invalid passkey challenge'
             409:
@@ -303,6 +311,8 @@ resources:
                       allowCredentials: []
                       userVerification: 'required'
                       timeout: 60000
+            400:
+              description: 'Invalid request payload'
             422:
               description: 'Validation error'
             503: *passkey_production_readiness_response
@@ -341,6 +351,8 @@ resources:
                     2fa_enabled: false
                     access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
                     refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+            400:
+              description: 'Invalid request payload'
             401:
               description: 'Invalid passkey credential or challenge'
             422:

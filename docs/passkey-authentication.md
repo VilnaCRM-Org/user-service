@@ -349,11 +349,11 @@ with operation names such as `passkey_signup_options_http`,
 `passkey_register_complete_http`, `passkey_signin_options_http`, and
 `passkey_signin_complete_http`.
 
-Schemathesis exercises the passkey completion operation ids for malformed,
-unauthorized, and invalid-challenge coverage. Positive completion response shapes
-that require browser-created WebAuthn credentials are covered by integration
-tests with deterministic command-bus fixtures and by the sanitized browser
-evidence.
+Schemathesis exercises the passkey completion operation ids with schema-valid
+positive payload generation for invalid-challenge coverage. Completion success
+responses require browser-created WebAuthn credentials, so they are covered by
+integration tests with deterministic command-bus fixtures and by the sanitized
+browser evidence.
 
 Monitor these passkey signals:
 

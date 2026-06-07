@@ -27,7 +27,7 @@ services:
       - user-service
     ports:
       - target: 8081
-        published: 8081
+        published: ${PHP_DEV_PORT:-8081}
         protocol: tcp
 
   app-prod:

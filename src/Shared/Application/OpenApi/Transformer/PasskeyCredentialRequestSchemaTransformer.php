@@ -13,6 +13,10 @@ use ArrayObject;
  */
 final class PasskeyCredentialRequestSchemaTransformer
 {
+    private const SIGN_UP_OPTIONS_SCHEMA_NAME = 'EmptyResponse.PasskeySignUpOptionsDto';
+    private const BASE64URL_PATTERN = '^[A-Za-z0-9_-]+$';
+    private const INITIALS_PATTERN = '^(?!\\d).*\\S.*$';
+
     private const ATTESTATION_SCHEMA_NAMES = [
         'EmptyResponse.PasskeyRegistrationCompleteDto',
         'EmptyResponse.PasskeySignUpCompleteDto',
@@ -24,16 +28,19 @@ final class PasskeyCredentialRequestSchemaTransformer
 
     private const BASE_CREDENTIAL_SCHEMA = [
         'type' => 'object',
-        'additionalProperties' => true,
+        'additionalProperties' => false,
+        'unevaluatedProperties' => false,
         'required' => ['id', 'rawId', 'response', 'type'],
         'properties' => [
             'id' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'rawId' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'type' => [
                 'type' => 'string',
@@ -41,6 +48,7 @@ final class PasskeyCredentialRequestSchemaTransformer
             ],
             'authenticatorAttachment' => [
                 'type' => ['string', 'null'],
+                'enum' => ['platform', 'cross-platform', null],
             ],
             'clientExtensionResults' => [
                 'type' => 'object',
@@ -51,43 +59,74 @@ final class PasskeyCredentialRequestSchemaTransformer
 
     private const ATTESTATION_RESPONSE_SCHEMA = [
         'type' => 'object',
-        'additionalProperties' => true,
-        'required' => ['attestationObject', 'clientDataJSON'],
+        'additionalProperties' => false,
+        'unevaluatedProperties' => false,
+        'required' => [
+            'attestationObject',
+            'authenticatorData',
+            'clientDataJSON',
+            'publicKeyAlgorithm',
+            'transports',
+        ],
         'properties' => [
             'attestationObject' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
+            ],
+            'authenticatorData' => [
+                'type' => 'string',
+                'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'clientDataJSON' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
+            ],
+            'publicKey' => [
+                'type' => 'string',
+                'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
+            ],
+            'publicKeyAlgorithm' => [
+                'type' => 'integer',
             ],
             'transports' => [
                 'type' => 'array',
-                'items' => ['type' => 'string'],
+                'uniqueItems' => true,
+                'items' => [
+                    'type' => 'string',
+                    'enum' => ['ble', 'cable', 'hybrid', 'internal', 'nfc', 'smart-card', 'usb'],
+                ],
             ],
         ],
     ];
 
     private const ASSERTION_RESPONSE_SCHEMA = [
         'type' => 'object',
-        'additionalProperties' => true,
+        'additionalProperties' => false,
+        'unevaluatedProperties' => false,
         'required' => ['authenticatorData', 'clientDataJSON', 'signature'],
         'properties' => [
             'authenticatorData' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'clientDataJSON' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'signature' => [
                 'type' => 'string',
                 'minLength' => 1,
+                'pattern' => self::BASE64URL_PATTERN,
             ],
             'userHandle' => [
                 'type' => ['string', 'null'],
+                'pattern' => self::BASE64URL_PATTERN,
             ],
         ],
     ];
@@ -110,6 +149,8 @@ final class PasskeyCredentialRequestSchemaTransformer
         foreach (self::ASSERTION_SCHEMA_NAMES as $schemaName) {
             $this->transformSchema($schemas, $schemaName, self::ASSERTION_RESPONSE_SCHEMA);
         }
+
+        $this->transformSignUpOptionsSchema($schemas);
 
         return $openApi->withComponents($components->withSchemas($schemas));
     }
@@ -136,6 +177,38 @@ final class PasskeyCredentialRequestSchemaTransformer
         $schema['required'] = $this->requiredProperties($schema);
         $schema['properties'] = $this->credentialProperties($schema, $responseSchema);
         $schemas[$schemaName] = $schema;
+    }
+
+    /**
+     * @param ArrayObject<string, OpenApiSchema|ArrayObject<array-key, scalar|array|null>> $schemas
+     */
+    private function transformSignUpOptionsSchema(ArrayObject $schemas): void
+    {
+        if (!isset($schemas[self::SIGN_UP_OPTIONS_SCHEMA_NAME])) {
+            return;
+        }
+
+        $schema = $this->schemaArray($schemas[self::SIGN_UP_OPTIONS_SCHEMA_NAME]);
+
+        if ($schema === null) {
+            return;
+        }
+
+        $properties = $this->properties($schema);
+        $initials = $properties['initials'] ?? [];
+
+        if ($initials instanceof ArrayObject) {
+            $initials = $initials->getArrayCopy();
+        }
+
+        if (!is_array($initials)) {
+            $initials = [];
+        }
+
+        $initials['pattern'] = self::INITIALS_PATTERN;
+        $properties['initials'] = $initials;
+        $schema['properties'] = $properties;
+        $schemas[self::SIGN_UP_OPTIONS_SCHEMA_NAME] = $schema;
     }
 
     /**
@@ -203,6 +276,20 @@ final class PasskeyCredentialRequestSchemaTransformer
      */
     private function credentialProperties(array $schema, array $responseSchema): array
     {
+        $properties = $this->properties($schema);
+
+        $properties['credential'] = $this->credentialSchema($responseSchema);
+
+        return $properties;
+    }
+
+    /**
+     * @param OpenApiSchema $schema
+     *
+     * @return OpenApiSchema
+     */
+    private function properties(array $schema): array
+    {
         $properties = $schema['properties'] ?? [];
 
         if ($properties instanceof ArrayObject) {
@@ -210,10 +297,8 @@ final class PasskeyCredentialRequestSchemaTransformer
         }
 
         if (!is_array($properties)) {
-            $properties = [];
+            return [];
         }
-
-        $properties['credential'] = $this->credentialSchema($responseSchema);
 
         return $properties;
     }

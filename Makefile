@@ -141,6 +141,22 @@ bmalph-setup: ## Install and initialize BMALPH for current project; defaults to 
 ai-review-loop: ## Run local AI code review + fix loop (Codex default)
 	./scripts/ai-review-loop.sh
 
+bmad-fr-nfr-review-gate: ## Run BMAD spec-driven FR/NFR review gate; set BMAD_REVIEW_SPEC_PATH=specs/my-bundle
+	@if [ -z "$${BMAD_REVIEW_SPEC_PATH:-}" ] && [ -z "$${AI_REVIEW_SPEC_PATH:-}" ]; then \
+		echo "Error: BMAD_REVIEW_SPEC_PATH or AI_REVIEW_SPEC_PATH is required, for example specs/my-bundle"; \
+		exit 1; \
+	fi
+	@./scripts/bmad-fr-nfr-review-gate.sh \
+		--spec "$${BMAD_REVIEW_SPEC_PATH:-$${AI_REVIEW_SPEC_PATH}}" \
+		$${BMAD_REVIEW_MANUAL_EVIDENCE:+--manual-evidence "$${BMAD_REVIEW_MANUAL_EVIDENCE}"} \
+		$${BMAD_REVIEW_PR:+--pr "$${BMAD_REVIEW_PR}"} \
+		$${BMAD_REVIEW_BASE:+--base "$${BMAD_REVIEW_BASE}"} \
+		$${BMAD_REVIEW_MAX_ITER:+--max-iter "$${BMAD_REVIEW_MAX_ITER}"} \
+		$${BMAD_REVIEW_VERIFY_CMD:+--verify-cmd "$${BMAD_REVIEW_VERIFY_CMD}"} \
+		$${BMAD_REVIEW_LOG_DIR:+--log-dir "$${BMAD_REVIEW_LOG_DIR}"} \
+		$${BMAD_REVIEW_IMPACT_CONTEXT:+--impact-context "$${BMAD_REVIEW_IMPACT_CONTEXT}"} \
+		$${BMAD_REVIEW_AGENTS:+--agents "$${BMAD_REVIEW_AGENTS}"}
+
 bats: ## Run tests for bash commands
 	bats tests/CLI/bats/
 
@@ -192,11 +208,11 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
-	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
+	@if grep -aEq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
 		echo "❌ TEST FAILURE: Some unit tests failed"; \
 		exit 1; \
 	fi
-	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep -a "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
 			echo "❌ COVERAGE FAILURE: Line coverage is $$coverage%, but 100% is required. Please cover all lines of code and achieve the 100% code coverage"; \
@@ -230,7 +246,7 @@ memory-tests: setup-test-db ## Run memory leak tests with 100% suite coverage an
 		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
 		exit $$status; \
 	fi
-	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep -a "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
 			echo "❌ COVERAGE FAILURE: Memory suite line coverage is $$coverage%, but 100% is required. Please cover all memory test lines and keep endpoint inventory complete"; \

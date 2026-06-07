@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Serializer;
 
 use PHPUnit\Framework\Assert;
+use Symfony\Component\Serializer\Encoder\DecoderInterface;
+use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class ContextAssertingSerializer implements SerializerInterface
+final class ContextAssertingSerializer implements
+    SerializerInterface,
+    EncoderInterface,
+    DecoderInterface
 {
     /**
      * @param array<string, bool|int> $expectedContext
@@ -25,9 +30,8 @@ final class ContextAssertingSerializer implements SerializerInterface
      * @param array<string, bool|int> $context
      *
      * @return array<array-key, bool|int|string|array<string, bool|string>>
-     *
-     * @psalm-suppress PossiblyUnusedMethod invoked by production code through a concrete serializer
      */
+    #[\Override]
     public function decode(string $data, string $format, array $context = []): array
     {
         Assert::assertSame($this->expectedData, $data);
@@ -35,6 +39,27 @@ final class ContextAssertingSerializer implements SerializerInterface
         Assert::assertSame($this->expectedContext, $context);
 
         return $this->decoded;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    #[\Override]
+    public function encode(mixed $data, string $format, array $context = []): string
+    {
+        throw new \BadMethodCallException('Encoding is not used by this test double.');
+    }
+
+    #[\Override]
+    public function supportsEncoding(string $format): bool
+    {
+        return $format === JsonEncoder::FORMAT;
+    }
+
+    #[\Override]
+    public function supportsDecoding(string $format): bool
+    {
+        return $format === JsonEncoder::FORMAT;
     }
 
     /**

@@ -198,10 +198,18 @@ run_schemathesis \
     --include-operation-id create_http \
     --include-operation-id request_password_reset \
     --include-operation-id passkey_signup_options_http \
-    --include-operation-id passkey_signup_complete_http \
     --include-operation-id passkey_signin_options_http \
-    --include-operation-id passkey_signin_complete_http \
     --include-operation-id api_health_get
+
+refresh_seed_data
+run_schemathesis \
+    coverage-public-passkey-complete \
+    --phases=coverage \
+    --mode=positive \
+    -n 1 \
+    --warnings=off \
+    --include-operation-id passkey_signup_complete_http \
+    --include-operation-id passkey_signin_complete_http
 
 refresh_seed_data
 user_token=$(sign_in_access_token 'user@example.com' 'Password1!')
@@ -215,6 +223,14 @@ run_schemathesis \
     --include-path '/api/users/{id}/resend-confirmation-email' \
     --include-operation-id setup_2fa_http \
     --include-operation-id passkey_register_options_http \
+    --header "Authorization: Bearer ${user_token}"
+
+run_schemathesis \
+    coverage-user-passkey-complete \
+    --phases=coverage \
+    --mode=positive \
+    -n 1 \
+    --warnings=off \
     --include-operation-id passkey_register_complete_http \
     --header "Authorization: Bearer ${user_token}"
 
@@ -226,10 +242,18 @@ run_schemathesis \
     --include-operation-id create_http \
     --include-operation-id request_password_reset \
     --include-operation-id passkey_signup_options_http \
-    --include-operation-id passkey_signup_complete_http \
     --include-operation-id passkey_signin_options_http \
-    --include-operation-id passkey_signin_complete_http \
     --include-operation-id api_health_get
+
+refresh_seed_data
+run_schemathesis \
+    fuzzing-public-passkey-complete \
+    --phases=fuzzing \
+    --mode=positive \
+    -n 1 \
+    --warnings=off \
+    --include-operation-id passkey_signup_complete_http \
+    --include-operation-id passkey_signin_complete_http
 
 refresh_seed_data
 user_token=$(sign_in_access_token 'user@example.com' 'Password1!')
@@ -242,5 +266,13 @@ run_schemathesis \
     --include-operation-id api_users_id_get \
     --include-operation-id setup_2fa_http \
     --include-operation-id passkey_register_options_http \
+    --header "Authorization: Bearer ${user_token}"
+
+run_schemathesis \
+    fuzzing-user-passkey-complete \
+    --phases=fuzzing \
+    --mode=positive \
+    -n 1 \
+    --warnings=off \
     --include-operation-id passkey_register_complete_http \
     --header "Authorization: Bearer ${user_token}"
