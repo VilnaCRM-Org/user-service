@@ -762,6 +762,9 @@ SCRIPT
 }
 
 @test "review prompt requires system design patterns and code smell review" {
+  run grep -F "Functional requirements: verify the changed behavior satisfies the PR/spec/story intent" scripts/ai-review-prompts/review.md
+  assert_success
+
   run grep -F "System design" scripts/ai-review-prompts/review.md
   assert_success
 
@@ -772,6 +775,27 @@ SCRIPT
   assert_success
 
   run grep -F "FR/NFR coverage" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Software engineering best practices" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "SOLID, DRY, KISS" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Repository architecture" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "DDD" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "CQRS" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Hexagonal Architecture" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Domain stays framework-free" scripts/ai-review-prompts/review.md
   assert_success
 }
 
@@ -802,6 +826,12 @@ SCRIPT
   assert_success
 
   run grep -F "smallest coherent change" scripts/ai-review-prompts/fix.md
+  assert_success
+
+  run grep -F "Preserve repository architecture rules: Domain stays framework-free, Application owns use cases/contracts, and Infrastructure owns external adapters." scripts/ai-review-prompts/fix.md
+  assert_success
+
+  run grep -F "Do not add design patterns just to satisfy a label" scripts/ai-review-prompts/fix.md
   assert_success
 }
 
