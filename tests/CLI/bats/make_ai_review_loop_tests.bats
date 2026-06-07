@@ -792,6 +792,9 @@ SCRIPT
 
   run grep -F "Focus on correctness, FR/NFR coverage, system design, design patterns, code smells, security, performance, architecture, tests, and repository rules." scripts/ai-review-prompts/review.md
   assert_success
+
+  run grep -F "Category: one of correctness, FR/NFR coverage, system design, design patterns, code smells, security, performance, architecture, tests, repository rules" scripts/ai-review-prompts/review.md
+  assert_success
 }
 
 @test "fix prompt constrains design smell remediation to PR scope" {

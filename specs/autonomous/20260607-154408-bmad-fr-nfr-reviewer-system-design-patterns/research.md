@@ -2,9 +2,9 @@
 
 ## Current State
 
-BMALPH is configured for Codex with planning artifacts under `specs` in
-`_bmad/config.yaml`. `_bmad/COMMANDS.md` maps the research stage to the
-`analyst` command.
+BMALPH planning for this repository is driven by the committed guidance in
+`AGENTS.md` and `.agents/skills/bmad-autonomous-planning/SKILL.md`. Planning
+artifacts for this run are committed under `specs/autonomous/`.
 
 The local AI review loop is prompt-driven. `scripts/ai-review-loop.sh` reads
 `scripts/ai-review-prompts/review.md` and
@@ -47,6 +47,7 @@ Primary implementation surface:
 
 - `scripts/ai-review-prompts/review.md`
 - `scripts/ai-review-prompts/fix.md`
+- `scripts/ai-review-loop.sh`
 - `tests/CLI/bats/make_ai_review_loop_tests.bats`
 
 Documentation sync surface:
@@ -54,8 +55,11 @@ Documentation sync surface:
 - `.claude/skills/code-review/SKILL.md`
 - `docs/onboarding.md`
 
-No change is required in `scripts/ai-review-loop.sh` because the first-line
-status contract remains unchanged.
+`scripts/ai-review-loop.sh` is updated only for orchestration: Claude keeps its
+built-in `/review` flow while receiving the appended repository policy, and
+base-ref resolution prefers `origin/<base>` over a stale same-named local branch
+when the remote-tracking ref exists. The first-line status contract remains
+unchanged.
 
 ## Risks
 

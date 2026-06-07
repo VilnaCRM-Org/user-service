@@ -6,7 +6,8 @@
 - Existing `STATUS: PASS` / `STATUS: FAIL` parser behavior must remain
   unchanged.
 - Prompt policy is the primary implementation mechanism.
-- Script changes are limited to Claude review-policy bridging.
+- Script changes are limited to Claude review-policy bridging and origin-first
+  base-ref resolution.
 - `make ci` is the authoritative validation gate for the Bats prompt/loop
   tests.
 

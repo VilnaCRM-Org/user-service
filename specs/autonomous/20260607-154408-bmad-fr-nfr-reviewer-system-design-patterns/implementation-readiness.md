@@ -14,7 +14,7 @@
 | Claude policy parity                          | `prd.md`            | `scripts/ai-review-loop.sh`, `tests/CLI/bats/make_ai_review_loop_tests.bats`      | Aligned; fake-agent Bats proves invocation shape. Live Claude CLI evidence is unavailable in this environment because `claude` is not installed. |
 | Bats coverage                                 | `epics.md`          | `tests/CLI/bats/make_ai_review_loop_tests.bats`                                   | Aligned                                                                                                                                          |
 | Docs sync                                     | `epics.md`          | `.claude/skills/code-review/SKILL.md`, `docs/onboarding.md`                       | Aligned                                                                                                                                          |
-| BMALPH trace                                  | `_bmad/COMMANDS.md` | Planning bundle includes research, brief, PRD, architecture, epics, and readiness | Aligned                                                                                                                                          |
+| BMALPH trace                                  | `AGENTS.md`, `.agents/skills/bmad-autonomous-planning/SKILL.md` | Planning bundle includes research, brief, PRD, architecture, epics, and readiness | Aligned                                                                                                                                          |
 
 ## Gaps
 
@@ -45,7 +45,7 @@
 4. `make ai-review-loop` returns parseable `STATUS: PASS` under default Codex.
    Done: `STATUS: PASS`, `0 issues`.
 5. If the loop applies fixes, rerun `make ci` and `make ai-review-loop` until
-   PASS. Not applicable: no fixer phase ran.
+   PASS. Done: fixer iterations ran, followed by full CI and AI-review PASS.
 6. After commit and PR creation, rerun the BMAD FR/NFR gate against the PR head
    and require PASS with GitHub completion and CI corroboration.
 

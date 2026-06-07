@@ -38,7 +38,7 @@ Each issue must include:
 - File path
 - Short description
 - Expected fix
-- Category: one of correctness, FR/NFR, system design, design pattern, code smell, security, performance, architecture, tests, repository rules
+- Category: one of correctness, FR/NFR coverage, system design, design patterns, code smells, security, performance, architecture, tests, repository rules
 
 Constraints:
 
