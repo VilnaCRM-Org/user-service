@@ -819,7 +819,7 @@ SCRIPT
     'tests/CLI/bats/make_ai_review_loop_tests.bats' \
     'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/architecture.md' \
     'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/manual-evidence.md' \
-    | rg \"\$support_pattern\""
+    | grep -E \"\$support_pattern\""
   assert_success
   assert_output --partial "docs/onboarding.md"
   assert_output --partial "tests/CLI/bats/make_ai_review_loop_tests.bats"
@@ -833,7 +833,7 @@ SCRIPT
     'specs/autonomous/20260607-154408-customer-review-endpoint/architecture.md' \
     'specs/autonomous/20260607-154408-customer-review-workflow/manual-evidence.md' \
     'specs/autonomous/20260607-154408-product-review-api/prd.md' \
-    | rg \"\$support_pattern\""
+    | grep -E \"\$support_pattern\""
   assert_failure
 }
 
