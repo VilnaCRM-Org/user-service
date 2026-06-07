@@ -38,8 +38,9 @@
 ## Validation Evidence Needed
 
 1. Focused Bats coverage for prompt scope, applicability, NFR checklist,
-   Claude policy propagation, and base-ref precedence passes. Done: 7 tests.
-2. Full Bats helper suite passes. Done: 94 tests.
+   gate-policy validation support classification, Claude policy propagation,
+   and base-ref precedence passes. Done: 8 tests.
+2. Full Bats helper suite passes. Done: 95 tests.
 3. `make ci` completes successfully. Done.
 4. `make ai-review-loop` returns parseable `STATUS: PASS` under default Codex.
    Done: `STATUS: PASS`, `0 issues`.

@@ -48,7 +48,8 @@ preserving the repository review-loop contract and BMAD completion gates.
   available.
 - Added Bats coverage for prompt criteria, fix scoping, Claude built-in review
   compatibility, Claude policy parity, stale-base regression, applicability
-  guardrails, and NFR checklist retention.
+  guardrails, NFR checklist retention, and gate-policy validation-support file
+  classification.
 - Updated `.claude/skills/code-review/SKILL.md` and `docs/onboarding.md`.
 
 ## Validation Evidence
@@ -56,14 +57,15 @@ preserving the repository review-loop contract and BMAD completion gates.
 - `bash -n scripts/ai-review-loop.sh`: PASS.
 - `bash -n scripts/bmad-fr-nfr-review-gate.sh`: PASS.
 - `git diff --check`: PASS.
-- `bats -f "review prompt requires|review prompt prevents|review prompt retains|fix prompt constrains|claude agent receives|prefers origin base|local base branch before" tests/CLI/bats/make_ai_review_loop_tests.bats`: PASS, 7 tests.
-- `bats tests/CLI/bats/make_ai_review_loop_tests.bats tests/CLI/bats/make_bmalph_tests.bats`: PASS, 94 tests.
+- `bats -f "code-review gate policy classifies|review prompt requires|review prompt prevents|review prompt retains|fix prompt constrains|claude agent receives|prefers origin base|local base branch before" tests/CLI/bats/make_ai_review_loop_tests.bats`: PASS, 8 tests.
+- `bats tests/CLI/bats/make_ai_review_loop_tests.bats tests/CLI/bats/make_bmalph_tests.bats`: PASS, 95 tests.
 - `make ci COMPOSE_PROJECT_NAME=user-service-bmad-design-review ...`: PASS on
   2026-06-07 after the final Bats/doc updates, including unit tests,
   integration tests, Behat, OpenAPI validation, Schemathesis examples/coverage/
   fuzzing, Deptrac, Psalm, security checks, and Infection at 100% MSI.
 - `make ai-review-loop AI_REVIEW_BASE=main AI_REVIEW_VERIFY_ON_PASS=false ...`:
-  PASS after final CI; Codex reviewer reported `STATUS: PASS` and `0 issues`.
+  PASS after final CI and fixer iterations; Codex reviewer reported
+  `STATUS: PASS` and `0 issues`.
 - `make bmad-fr-nfr-review-gate ... BMAD_REVIEW_POST_PR_COMMENT=false BMAD_REVIEW_POST_GITHUB_STATUS=false`: local dry run failed as expected before commit/PR because `HEAD` still matched `origin/main`, the worktree was dirty, and GitHub/PR corroboration was unavailable. The gate must be rerun after commit and PR creation.
 
 ## Pending Completion Gates

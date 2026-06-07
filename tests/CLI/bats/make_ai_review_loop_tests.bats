@@ -802,6 +802,38 @@ SCRIPT
   assert_success
 }
 
+@test "code-review gate policy classifies only review-loop validation support files" {
+  local support_pattern
+  support_pattern="$(sed -n "s/^GATE_DEFINITION_VALIDATION_SUPPORT_FILE_PATTERN='\\(.*\\)'$/\\1/p" .claude/skills/code-review/SKILL.md | head -n 1)"
+  [ -n "$support_pattern" ]
+
+  run bash -c "sed -n \"s/^\\(GATE_DEFINITION_VALIDATION_SUPPORT_FILE_PATTERN\\|gate_definition_validation_support_file_pattern\\)='\\(.*\\)'$/\\2/p\" .claude/skills/code-review/SKILL.md | sort -u | wc -l | tr -d '[:space:]'"
+  assert_success
+  assert_output "1"
+
+  run env support_pattern="$support_pattern" bash -c "printf '%s\n' \
+    'docs/onboarding.md' \
+    'tests/CLI/bats/make_ai_review_loop_tests.bats' \
+    'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/architecture.md' \
+    'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/manual-evidence.md' \
+    | rg \"\$support_pattern\""
+  assert_success
+  assert_output --partial "docs/onboarding.md"
+  assert_output --partial "tests/CLI/bats/make_ai_review_loop_tests.bats"
+  assert_output --partial "architecture.md"
+  assert_output --partial "manual-evidence.md"
+
+  run env support_pattern="$support_pattern" bash -c "printf '%s\n' \
+    'docs/api.md' \
+    'tests/Unit/User/Application/UserTest.php' \
+    'specs/autonomous/20260607-154408-new-user-endpoint/architecture.md' \
+    'specs/autonomous/20260607-154408-customer-review-endpoint/architecture.md' \
+    'specs/autonomous/20260607-154408-customer-review-workflow/manual-evidence.md' \
+    'specs/autonomous/20260607-154408-product-review-api/prd.md' \
+    | rg \"\$support_pattern\""
+  assert_failure
+}
+
 @test "ai-review-loop fails with helpful message when Codex command is missing" {
   AI_REVIEW_CODEX_CMD=codex-missing AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" run ./scripts/ai-review-loop.sh
   assert_failure
