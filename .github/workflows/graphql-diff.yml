@@ -25,10 +25,7 @@ jobs:
         with:
           app-id: ${{ secrets.VILNACRM_APP_ID }}
           private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
-          permission-checks: write
           permission-contents: write
-          permission-pull-requests: write
-          permission-statuses: write
 
       - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
@@ -90,4 +87,4 @@ jobs:
         with:
           schema: 'master:.github/graphql-spec/spec'
         env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
