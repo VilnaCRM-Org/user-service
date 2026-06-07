@@ -43,9 +43,10 @@ jobs:
       - name: Configure GPG for automated signing
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: |
-          GPG_TTY="$(tty)"
-          export GPG_TTY
-          echo "GPG_TTY=$GPG_TTY" >> "$GITHUB_ENV"
+          if GPG_TTY="$(tty 2>/dev/null)"; then
+            export GPG_TTY
+            echo "GPG_TTY=$GPG_TTY" >> "$GITHUB_ENV"
+          fi
           echo "GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }}" >> "$GITHUB_ENV"
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
@@ -63,7 +64,9 @@ jobs:
           gpg-connect-agent reloadagent /bye || true
           cat > ~/.gnupg/gpg-wrapper.sh << 'EOF'
           #!/bin/bash
-          export GPG_TTY=$(tty)
+          if GPG_TTY="$(tty 2>/dev/null)"; then
+            export GPG_TTY
+          fi
           case "$*" in
             *--detach-sign*|*--sign*)
               echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "$@"

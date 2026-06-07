@@ -26,6 +26,10 @@ jobs:
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+      - name: Start application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: docker compose up --detach --wait php database redis mailer localstack
+
       - name: Run infection
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: CI=1 make infection
