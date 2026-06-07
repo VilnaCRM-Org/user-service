@@ -343,8 +343,16 @@ fi
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
   printf 'pr checks %s\n' "$*" >> "${GH_PR_CHECKS_ARGS_LOG:-/dev/null}"
   if [[ "$*" != *"--required"* ]]; then
+    if [[ "${GH_REQUIRED_CHECKS_NONE_ERROR-false}" == "true" ]]; then
+      printf '3\037\n'
+      exit 0
+    fi
     echo "required check query must use gh pr checks --required" >&2
     exit 2
+  fi
+  if [[ "${GH_REQUIRED_CHECKS_NONE_ERROR-false}" == "true" ]]; then
+    echo "no required checks reported on the 'feature/pr-287' branch" >&2
+    exit 1
   fi
   if [[ "${GH_REQUIRED_CHECKS_FAIL-false}" == "true" ]]; then
     exit 1
@@ -4524,6 +4532,40 @@ SCRIPT
 
   assert_success
   assert_output --partial "AI review PASS."
+}
+
+@test "bmad-fr-nfr-review-gate falls back to visible checks when GitHub reports no required checks" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
+  local unavailable_tmp="${BATS_TEST_TMPDIR}/missing-tmp"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    TMPDIR="$unavailable_tmp" \
+    GH_REQUIRED_CHECKS_NONE_ERROR=true \
+    GH_PR_CHECKS_ARGS_LOG="$checks_args_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+  run grep -F -- "pr checks pr checks --required" "$checks_args_log"
+  assert_success
+  run grep -F -- "pr checks pr checks --json name,bucket" "$checks_args_log"
+  assert_success
 }
 
 @test "bmad-fr-nfr-review-gate fails closed when required check query fails" {

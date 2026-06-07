@@ -959,6 +959,7 @@ review_has_github_ci_corroboration() {
   local pr_view_cmd=(gh pr view)
   local pr_checks_cmd=(gh pr checks)
   local pr_summary check_summary is_draft review_decision merge_state_status mergeable check_count check_blockers
+  local required_checks_error_file required_checks_error
   local pr_number_detected pr_url pr_head_oid local_head_oid
   local owner repo pr_path unresolved_threads query page_summary page_unresolved has_next cursor
   local checks_summary_jq
@@ -1007,16 +1008,25 @@ review_has_github_ci_corroboration() {
   require_github_pr_mergeable_for_pass "$merge_state_status" "$mergeable" "BMAD gate" || return 1
 
   checks_summary_jq="$(github_checks_summary_jq)"
+  required_checks_error_file="$(mktemp "${log_dir%/}/required-checks.XXXXXX")"
 
-  if ! check_summary="$("${pr_checks_cmd[@]}" \
+  if check_summary="$("${pr_checks_cmd[@]}" \
     --required \
     --json name,bucket \
-    --jq "$checks_summary_jq" 2>/dev/null)"; then
+    --jq "$checks_summary_jq" 2>"$required_checks_error_file")"; then
+    rm -f "$required_checks_error_file"
+    IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
+  elif required_checks_error="$(cat "$required_checks_error_file" 2>/dev/null)" \
+    && grep -Fqi -- "no required checks reported" <<< "$required_checks_error"; then
+    rm -f "$required_checks_error_file"
+    check_count=0
+    check_blockers=""
+  else
+    rm -f "$required_checks_error_file"
     echo "Warning: Unable to query GitHub required PR checks for BMAD gate." >&2
     return 1
   fi
 
-  IFS=$'\037' read -r check_count check_blockers <<< "$check_summary"
   if [[ "$check_count" =~ ^[0-9]+$ ]] && ((check_count > 0)); then
     if [[ -n "$check_blockers" ]]; then
       echo "Warning: GitHub required PR checks are not fully passing: $check_blockers" >&2
