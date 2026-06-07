@@ -29,7 +29,8 @@ immutable data carrier:
 Add `FindUserByEmailQueryHandlerInterface` and `FindUserByEmailQueryHandler`
 under `User/Application/Query`.
 
-The handler wraps `UserRepositoryInterface::findByEmailCaseInsensitive()` and returns
+The handler wraps `UserRepositoryInterface::findByEmail()` and
+`UserRepositoryInterface::findByEmailCaseInsensitive()` and returns
 `?UserInterface`. Returning null is required because "not found" is a normal
 registration decision, unlike `GetUserQueryHandler::handle($id)` where missing
 users are exceptional.
@@ -85,7 +86,7 @@ existing account data.
 - Processor/resolver depend on the Application command factory, command bus,
   and command-response guard.
 - The registration command handler depends on the email query handler for
-  duplicate guarding and post-save reload.
+  duplicate guarding.
 - The query handler and registration command handler both use `EmailNormalizer`
   so direct reads and registration writes use the same email form.
 - Domain layer is unchanged.
@@ -96,7 +97,7 @@ existing account data.
 
 - Command test: constructor only.
 - Command handler tests: duplicate-guard failure, normalized create/save/event
-  success, save failure without publishing, and post-save reload failure.
+  success, save failure without publishing, and response DTO content.
 - Query handler tests: found and not-found cases.
 - Email normalizer test: trims and lowercases ASCII and multibyte input.
 - Processor/resolver tests: command creation, dispatch, and response guarding.

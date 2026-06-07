@@ -13,32 +13,33 @@ final class DuplicateEmailExceptionTest extends UnitTestCase
 {
     public function testMessage(): void
     {
-        $exception = new DuplicateEmailException('test@example.com');
+        $email = $this->faker->safeEmail();
+        $exception = new DuplicateEmailException($email);
 
         $this->assertSame(
-            'Email "test@example.com" is already registered',
+            sprintf('Email "%s" is already registered', $email),
             $exception->getMessage()
         );
     }
 
     public function testPreviousExceptionIsPreserved(): void
     {
-        $previous = new RuntimeException('Duplicate key');
-        $exception = new DuplicateEmailException('test@example.com', $previous);
+        $previous = new RuntimeException($this->faker->sentence());
+        $exception = new DuplicateEmailException($this->faker->safeEmail(), $previous);
 
         $this->assertSame($previous, $exception->getPrevious());
     }
 
     public function testGetTranslationTemplate(): void
     {
-        $exception = new DuplicateEmailException('test@example.com');
+        $exception = new DuplicateEmailException($this->faker->safeEmail());
 
         $this->assertSame('email.not.unique', $exception->getTranslationTemplate());
     }
 
     public function testGetTranslationArgs(): void
     {
-        $exception = new DuplicateEmailException('test@example.com');
+        $exception = new DuplicateEmailException($this->faker->safeEmail());
 
         $this->assertSame([], $exception->getTranslationArgs());
     }
@@ -46,7 +47,7 @@ final class DuplicateEmailExceptionTest extends UnitTestCase
     public function testExtendsDomainException(): void
     {
         $this->assertTrue(
-            (new DuplicateEmailException('test@example.com')) instanceof DomainException
+            (new DuplicateEmailException($this->faker->safeEmail())) instanceof DomainException
         );
     }
 }

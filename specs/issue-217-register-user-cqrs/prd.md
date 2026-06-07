@@ -9,33 +9,34 @@ date: '2026-05-10'
 
 ## Objective
 
-Remove response side effects from the register-user command path while keeping
-REST and GraphQL registration responses unchanged.
+Remove mutable command-response side effects from the register-user command
+object while keeping REST and GraphQL registration responses unchanged.
 
 ## Functional Requirements
 
 1. `RegisterUserCommand` must contain only immutable registration input:
    `email`, `initials`, and `password`.
-2. `RegisterUserCommandResponse` must be removed from production code and tests.
-3. `RegisterUserCommandHandler::__invoke()` must return `void`, create and save
-   only new users, and publish `UserRegisteredEvent` only for new users.
-4. Existing-user lookup must be performed through a query handler, not through
+2. `RegisterUserCommand` must not expose `getResponse()` / `setResponse()` or
+   carry mutable response state.
+3. `RegisterUserCommandResponse` must remain a command response DTO wrapping the
+   created `UserInterface` for API processors and GraphQL resolvers.
+4. `RegisterUserCommandHandler::__invoke()` must return
+   `RegisterUserCommandResponse`, create and save only new users, and publish
+   `UserRegisteredEvent` only after successful persistence.
+5. Existing-user lookup must be performed through a query handler, not through
    command response mutation.
-5. `RegisterUserProcessor` must:
+6. `RegisterUserProcessor` must:
    - rely on existing public validation to reject known duplicate email
      attempts;
-   - keep a read-side duplicate guard after validation so command handlers stay
-     write-only and no duplicate command is dispatched when a caller has already
-     passed validation;
-   - dispatch `RegisterUserCommand` when missing;
-   - return the persisted user after dispatch.
-6. `RegisterUserMutationResolver` must follow the same lookup/dispatch/return
-   orchestration as the REST processor, using the orchestrator duplicate guard
-   as the single known-duplicate enforcement point for GraphQL create requests.
-7. Tests must verify state changes and collaborator calls rather than command
-   response values.
-8. Documentation must state that write commands do not carry response payloads
-   in the register-user flow.
+   - dispatch `RegisterUserCommand` through the shared command dispatcher;
+   - return the user from the guarded `RegisterUserCommandResponse`.
+7. `RegisterUserMutationResolver` must validate GraphQL input before dispatch,
+   use the shared command dispatcher, and return the user from the guarded
+   `RegisterUserCommandResponse`.
+8. Tests must verify immutable command state, handler side effects, duplicate
+   rejection, and command-response guarding.
+9. Documentation must state that the command object does not carry response
+   state while the handler may return a response DTO for API return data.
 
 ## Non-Functional Requirements
 
@@ -46,21 +47,24 @@ REST and GraphQL registration responses unchanged.
 
 ## Acceptance Criteria
 
-- No production or test references to `RegisterUserCommandResponse` remain.
 - No `getResponse()` or `setResponse()` exists on `RegisterUserCommand`.
-- Processor and resolver return `UserInterface`/`User` through query lookup.
+- `RegisterUserCommandResponse` exists as an immutable DTO wrapping the created
+  `UserInterface`.
+- `RegisterUserCommandHandler::__invoke()` returns
+  `RegisterUserCommandResponse` on success.
+- Processor and resolver return `UserInterface`/`User` through the shared
+  dispatcher and `CommandResponseTypeGuard`.
 - Public duplicate-email registration still returns the existing validation
   error without exposing account data.
-- The post-validation duplicate guard avoids command dispatch when it resolves a
-  user through read-side lookup.
-- New-user path dispatches once and performs a post-dispatch lookup.
+- The handler duplicate guard rejects existing emails before hashing, saving, or
+  publishing.
+- New-user API paths dispatch once and return the user from the command response.
 - Focused unit tests pass.
 
 ## Traceability
 
-- Issue task: remove command response class -> FR 2.
-- Issue task: remove command response methods -> FR 1.
-- Issue task: handler returns void -> FR 3.
-- Issue task: separate query handler -> FR 4.
-- Issue task: update processor/resolver -> FR 5 and FR 6.
-- Issue task: update tests/docs -> FR 7 and FR 8.
+- Issue task: remove command response methods -> FR 1 and FR 2.
+- Chosen design: retain a response DTO for API return data -> FR 3 and FR 4.
+- Issue task: separate query handler -> FR 5.
+- Issue task: update processor/resolver -> FR 6 and FR 7.
+- Issue task: update tests/docs -> FR 8 and FR 9.

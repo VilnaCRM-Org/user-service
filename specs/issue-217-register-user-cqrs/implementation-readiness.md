@@ -13,10 +13,11 @@ Ready for implementation.
 
 ## Alignment Checks
 
-- Research, PRD, and architecture agree on the same boundary: query handlers own
-  user lookup for API return values; command handlers own write-side creation.
+- Research, PRD, and architecture agree on the same boundary: the command has no
+  response state, the handler owns duplicate guarding and write-side creation,
+  and API entry points guard the handler response DTO.
 - Stories are ordered so the query handler and command state removal happen
-  before processor/resolver refactors.
+  before processor/resolver dispatcher refactors.
 - Existing public API behavior is explicitly preserved.
 - No database, schema, endpoint, or infrastructure change is required.
 

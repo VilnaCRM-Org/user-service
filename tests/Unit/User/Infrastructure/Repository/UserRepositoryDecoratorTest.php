@@ -50,48 +50,23 @@ final class UserRepositoryDecoratorTest extends UnitTestCase
         );
     }
 
-    public function testFindByEmailCaseInsensitiveReturnsNormalizedExactMatch(): void
+    public function testFindByEmailCaseInsensitiveDelegatesNormalizedLookup(): void
     {
         $email = $this->faker->email();
         $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
         $normalizedEmail = mb_strtolower(trim($inputEmail), 'UTF-8');
         $expectedUser = $this->createMock(UserInterface::class);
+        $expectedUsers = new UserCollection([$expectedUser]);
         $innerRepository = $this->createMock(UserRepositoryInterface::class);
 
-        $innerRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn($expectedUser);
         $innerRepository->expects($this->never())
-            ->method('findByEmailCaseInsensitive');
-
-        self::assertSame(
-            [$expectedUser],
-            iterator_to_array(
-                $this->createDecorator($innerRepository)
-                    ->findByEmailCaseInsensitive($inputEmail)
-            )
-        );
-    }
-
-    public function testFindByEmailCaseInsensitiveDelegatesNormalizedMiss(): void
-    {
-        $email = $this->faker->email();
-        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
-        $normalizedEmail = mb_strtolower(trim($inputEmail), 'UTF-8');
-        $expectedUsers = new UserCollection();
-        $innerRepository = $this->createMock(UserRepositoryInterface::class);
-
-        $innerRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($normalizedEmail)
-            ->willReturn(null);
+            ->method('findByEmail');
         $innerRepository->expects($this->once())
             ->method('findByEmailCaseInsensitive')
             ->with($normalizedEmail)
             ->willReturn($expectedUsers);
 
-        $this->assertSame(
+        self::assertSame(
             $expectedUsers,
             $this->createDecorator($innerRepository)
                 ->findByEmailCaseInsensitive($inputEmail)

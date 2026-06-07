@@ -9,9 +9,9 @@ date: '2026-05-10'
 
 ## Problem
 
-The registration command currently doubles as an output container. This makes
-the write side responsible for read-model return data and leaves processors and
-resolvers dependent on command mutation side effects.
+The registration command previously doubled as an output container. This made
+API return data depend on command mutation side effects instead of an explicit
+command response contract.
 
 ## Outcome
 
@@ -19,9 +19,10 @@ Registration remains behaviorally identical for REST and GraphQL clients, while
 the application code follows the intended CQRS split:
 
 - command: request to create a user when needed
-- command handler: write-side creation and event publication
-- query handler: lookup of the user to return to API Platform and GraphQL
-- processor/resolver: orchestration of lookup, dispatch, and response object
+- command handler: duplicate guard, write-side creation, event publication, and
+  response DTO return
+- query handler: duplicate-email lookup for the handler
+- processor/resolver: command dispatch and response DTO guarding
 
 ## Users
 
@@ -31,11 +32,13 @@ the application code follows the intended CQRS split:
 
 ## In Scope
 
-- Remove `RegisterUserCommandResponse`.
 - Remove `getResponse()` / `setResponse()` and response state from
   `RegisterUserCommand`.
-- Add a registration lookup query handler for `findByEmail`.
-- Update REST processor and GraphQL mutation resolver orchestration.
+- Keep `RegisterUserCommandResponse` as the immutable DTO returned by the
+  handler and guarded by API entry points.
+- Add a registration lookup query handler for exact and case-insensitive email
+  lookup.
+- Update REST processor and GraphQL mutation resolver dispatch flow.
 - Update unit tests and architecture documentation.
 
 ## Out of Scope
@@ -48,10 +51,10 @@ the application code follows the intended CQRS split:
 
 ## Success Measures
 
-- `RegisterUserCommandHandler::__invoke()` returns `void` and does not mutate
-  the command.
-- `RegisterUserCommandResponse` no longer exists.
+- `RegisterUserCommandHandler::__invoke()` returns
+  `RegisterUserCommandResponse` and does not mutate the command.
+- `RegisterUserCommand` has no response state.
 - Existing register APIs keep their current public duplicate-email validation
   behavior and return newly-created users on successful registration.
-- Post-validation duplicate guards do not trigger hashing, saving, or events.
+- Duplicate guards do not trigger hashing, saving, or events.
 - Focused unit tests pass locally.

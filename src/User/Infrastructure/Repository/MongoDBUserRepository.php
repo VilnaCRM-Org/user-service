@@ -9,19 +9,23 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
+
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\Bundle\MongoDBBundle\Repository\ServiceDocumentRepository;
-
 use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
+
 use function mb_strtolower;
 use function preg_quote;
 use function str_contains;
+
 use Throwable;
+
 use function trim;
 
 /**
@@ -202,21 +206,19 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     private function persistUsersInBatch(UserCollection $users): void
     {
         $usersForPersistence = $users->users;
+        $persistedUsers = new UserCollection();
 
-        array_walk(
-            $usersForPersistence,
-            function (User $user, int $index): void {
-                $position = $index + 1;
-                $this->documentManager->persist($user);
+        foreach ($usersForPersistence as $index => $user) {
+            $position = $index + 1;
+            $persistedUsers->add($user);
+            $this->documentManager->persist($user);
 
-                if ($position % $this->batchSize === 0) {
-                    $this->documentManager->flush();
-                    $this->documentManager->clear();
-                }
+            if ($position % $this->batchSize === 0) {
+                $this->flushPersistedUsers($persistedUsers);
+                $persistedUsers = new UserCollection();
             }
-        );
-        $this->documentManager->flush();
-        $this->documentManager->clear();
+        }
+        $this->flushPersistedUsers($persistedUsers);
     }
 
     private function removeUsersInBatch(UserCollection $users): void
@@ -237,5 +239,32 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         );
         $this->documentManager->flush();
         $this->documentManager->clear();
+    }
+
+    private function flushPersistedUsers(UserCollection $users): void
+    {
+        try {
+            $this->documentManager->flush();
+        } catch (Throwable $error) {
+            $this->documentManager->clear();
+            $this->throwDuplicateEmailExceptionForBatchFlush($error, $users);
+
+            throw $error;
+        }
+
+        $this->documentManager->clear();
+    }
+
+    private function throwDuplicateEmailExceptionForBatchFlush(
+        Throwable $error,
+        UserCollection $users
+    ): void {
+        foreach ($users as $user) {
+            if (!$this->isDuplicateEmailKeyError($error, $user->getEmail())) {
+                continue;
+            }
+
+            throw new DuplicateEmailException($user->getEmail(), $error);
+        }
     }
 }

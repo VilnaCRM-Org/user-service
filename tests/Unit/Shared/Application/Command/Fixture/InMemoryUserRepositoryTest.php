@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
+
 use function mb_strtolower;
 use function mb_strtoupper;
 

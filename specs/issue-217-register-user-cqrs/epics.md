@@ -15,16 +15,18 @@ Acceptance criteria:
 
 - `FindUserByEmailQueryHandlerInterface` exists under `User/Application/Query`.
 - `FindUserByEmailQueryHandler` delegates to
-  `UserRepositoryInterface::findByEmail()`.
+  `UserRepositoryInterface::findByEmail()` and
+  `UserRepositoryInterface::findByEmailCaseInsensitive()`.
 - Tests cover found and missing users.
 
-### Story 1.2: Remove command response state
+### Story 1.2: Remove command response state from the command
 
 Acceptance criteria:
 
 - `RegisterUserCommand` has no response property or response methods.
-- `RegisterUserCommandResponse` is deleted.
-- Tests no longer import or instantiate the deleted response class.
+- `RegisterUserCommandResponse` remains an immutable command response DTO for
+  the created user.
+- Tests cover the immutable command and returned response DTO behavior.
 
 ## Epic 2: Move API Orchestration To Processor/Resolver
 
@@ -32,18 +34,20 @@ Acceptance criteria:
 
 Acceptance criteria:
 
-- Registration validation does not reject an existing email before orchestration.
-- Existing user is returned without dispatching the command.
-- New user dispatches once and returns the post-dispatch lookup result.
+- Existing public duplicate-email validation behavior is preserved.
+- Processor delegates command creation, dispatch, and response guarding through
+  `RegisterUserCommandDispatcher`.
+- New user dispatches once and returns the user from the command response.
 
 ### Story 2.2: Refactor GraphQL registration resolver
 
 Acceptance criteria:
 
 - Resolver validation behavior is preserved.
-- Registration validation does not reject an existing email before orchestration.
-- Existing user is returned without dispatch.
-- New user dispatches once and returns the post-dispatch lookup result.
+- Invalid input is validated before command dispatch.
+- Resolver delegates command creation, dispatch, and response guarding through
+  `RegisterUserCommandDispatcher`.
+- New user dispatches once and returns the user from the command response.
 
 ## Epic 3: Simplify Command Handler And Validate
 
@@ -52,9 +56,11 @@ Acceptance criteria:
 Acceptance criteria:
 
 - Handler performs only new-user creation.
+- Handler rejects duplicate emails through `FindUserByEmailQueryHandler`.
 - Handler still hashes passwords, saves users, and publishes registration
   events.
-- Handler tests verify write-side effects rather than response mutation.
+- Handler returns `RegisterUserCommandResponse` for successful registration.
+- Handler tests verify write-side effects and response DTO content.
 
 ### Story 3.2: Update docs and run focused checks
 

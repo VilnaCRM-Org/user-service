@@ -12,7 +12,7 @@ date: '2026-05-10'
 Issue #217 requires removing response mutation from the register-user command
 flow while preserving current REST and GraphQL registration behavior.
 
-## Current State
+## Pre-Refactor State
 
 - `RegisterUserCommand` carries request data and a mutable
   `RegisterUserCommandResponse`.
@@ -28,7 +28,8 @@ flow while preserving current REST and GraphQL registration behavior.
 ## Constraints
 
 - Commands should remain immutable data carriers.
-- Command handlers should perform write-side work and return `void`.
+- Command handlers should perform write-side work and may return immutable
+  `CommandResponseInterface` DTOs when API callers need created-resource data.
 - API Platform processors and GraphQL resolvers must still return a `User`
   object on successful registration so current REST and GraphQL responses do not
   change.
@@ -53,19 +54,19 @@ flow while preserving current REST and GraphQL registration behavior.
 
 ## Risks
 
-- If the processor queries only before dispatch, a newly-created user must still
-  be returned after dispatch. The safest flow is query before dispatch, dispatch
-  only when missing, then query after dispatch.
+- A handler-returned response DTO keeps the created user available to REST and
+  GraphQL without storing response state on `RegisterUserCommand`.
 - There is a small race window between validation, the pre-check, and the create
   command. Known public duplicates remain validation errors; duplicate-key
   failures inside an accepted registration flow should be translated into
-  duplicate-email recovery when the query side can resolve the race winner.
-- Tests that assert command responses must be rewritten or removed.
+  duplicate-email exceptions.
+- Tests that assert mutable command responses must be rewritten.
 
 ## Recommendation
 
 Add a small `FindUserByEmailQueryHandlerInterface` and
 `FindUserByEmailQueryHandler` under `User/Application/Query`. Inject it into the
-processor and GraphQL resolver. Remove `RegisterUserCommandResponse`, remove
-response state from `RegisterUserCommand`, and simplify the command handler to
-create users only when invoked.
+command handler for duplicate guarding. Remove response state from
+`RegisterUserCommand`, keep `RegisterUserCommandResponse` as the immutable
+handler return DTO, and have processors/resolvers dispatch through a shared
+dispatcher that guards the response type.

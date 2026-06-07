@@ -48,8 +48,10 @@ BMALPH command names.
 ## Key Decisions
 
 - Add an Application query handler for lookup by email.
-- Keep the command handler write-only and response-free.
-- Have REST and GraphQL orchestration query before dispatch and after dispatch.
+- Keep the command object response-free while the handler returns a command
+  response DTO for created-user data.
+- Have REST and GraphQL entry points dispatch through the shared dispatcher and
+  validate the command response type.
 - Keep API schemas, duplicate-email validation behavior, persistence mappings, and
   unrelated command response patterns unchanged.
 

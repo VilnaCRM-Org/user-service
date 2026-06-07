@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
 use function array_map;
 use function mb_strtolower;
 use function trim;

@@ -40,11 +40,6 @@ abstract class UserRepositoryDecorator implements UserRepositoryInterface
     public function findByEmailCaseInsensitive(string $email): UserCollection
     {
         $normalizedEmail = mb_strtolower(trim($email), 'UTF-8');
-        $cachedUser = $this->findByEmail($normalizedEmail);
-
-        if ($cachedUser !== null) {
-            return new UserCollection([$cachedUser]);
-        }
 
         return $this->inner->findByEmailCaseInsensitive($normalizedEmail);
     }

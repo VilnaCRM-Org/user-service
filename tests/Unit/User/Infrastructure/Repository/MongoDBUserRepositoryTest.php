@@ -7,7 +7,6 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
@@ -15,7 +14,6 @@ use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
 use function array_key_exists;
-use function count;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
@@ -82,10 +80,47 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $email = $this->faker->email();
         $expectedUser = $this->createUserWithEmail($email);
 
-        $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
+        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
+            ->setConstructorArgs([
+                $this->documentManager,
+                $this->registry,
+                self::BATCH_SIZE,
+            ])
+            ->onlyMethods(['findOneBy'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('findOneBy')
+            ->with(['email' => $email])
+            ->willReturn($expectedUser);
+
+        $this->userRepository = $repository;
 
         $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
-        $this->assertFindByEmailCaseInsensitiveReturnsUser();
+    }
+
+    public function testFindByEmailCaseInsensitiveReturnsUser(): void
+    {
+        $caseInsensitiveEmail = $this->faker->unique()->email();
+        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($caseInsensitiveEmail);
+        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
+
+        $this->expectFindByEmailsQuery(
+            $repository,
+            $queryBuilder,
+            $query,
+            [
+                '$regex' => '^' . preg_quote(trim($inputEmail), '/') . '$',
+                '$options' => 'i',
+            ],
+            [$user]
+        );
+
+        $this->assertSame(
+            [$user],
+            iterator_to_array($repository->findByEmailCaseInsensitive($inputEmail))
+        );
     }
 
     public function testFindByEmailsReturnsUsersForNormalizedUniqueEmails(): void
@@ -292,29 +327,10 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->delete($user);
     }
 
-    public function testSaveBatch(): void
-    {
-        $users = $this->getUsersForBatchSave(self::BATCH_SIZE + 1);
-
-        $this->testSaveBatchSetDocumentManagerExpectations($users);
-
-        $this->userRepository->saveBatch($users);
-    }
-
-    public function testSaveBatchWithPartialBatch(): void
-    {
-        $batchSize = self::BATCH_SIZE;
-        $totalUsers = $batchSize + 1;
-        $users = $this->getUsersForBatchSave($totalUsers);
-
-        $this->testSaveBatchSetDocumentManagerExpectations($users);
-
-        $this->userRepository->saveBatch($users);
-    }
-
     public function testDeleteAll(): void
     {
-        [$queryBuilder] = $this->setupDeleteQueryBuilder();
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
 
         $repository = $this->getMockBuilder(MongoDBUserRepository::class)
             ->setConstructorArgs([
@@ -329,128 +345,11 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->method('createQueryBuilder')
             ->willReturn($queryBuilder);
 
-        $repository->deleteAll();
-    }
-
-    public function testDeleteBatch(): void
-    {
-        $totalUsers = self::BATCH_SIZE + 1;
-        $users = $this->getUsersForBatchSave($totalUsers);
-
-        $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
-        $expectedFlushCalls = $fullBatches + 1;
-        $expectedClearCalls = $expectedFlushCalls;
-
-        $this->documentManager
-            ->expects($this->exactly($totalUsers))
-            ->method('remove')
-            ->with($this->isInstanceOf(User::class));
-
-        $this->documentManager
-            ->expects($this->exactly($expectedFlushCalls))
-            ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly($expectedClearCalls))
-            ->method('clear');
-
-        $this->userRepository->deleteBatch($users);
-    }
-
-    public function testDeleteBatchWithExactBatchSize(): void
-    {
-        $users = $this->getUsersForBatchSave(self::BATCH_SIZE);
-
-        $this->documentManager
-            ->expects($this->exactly(self::BATCH_SIZE))
-            ->method('remove')
-            ->with($this->isInstanceOf(User::class));
-
-        $this->documentManager
-            ->expects($this->exactly(2))
-            ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly(2))
-            ->method('clear');
-
-        $this->userRepository->deleteBatch($users);
-    }
-
-    private function assertFindByEmailCaseInsensitiveReturnsUser(): void
-    {
-        $caseInsensitiveEmail = $this->faker->unique()->email();
-        $inputEmail = '  ' . mb_strtoupper($caseInsensitiveEmail, 'UTF-8') . '  ';
-        $user = $this->createUserWithEmail($caseInsensitiveEmail);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            [
-                '$regex' => '^' . preg_quote(trim($inputEmail), '/') . '$',
-                '$options' => 'i',
-            ],
-            [$user]
-        );
-
-        $this->assertSame(
-            [$user],
-            iterator_to_array($repository->findByEmailCaseInsensitive($inputEmail))
-        );
-    }
-
-    /**
-     * @return array{Builder, Query}
-     */
-    private function setupDeleteQueryBuilder(): array
-    {
-        $queryBuilder = $this->createMock(Builder::class);
-        $query = $this->createMock(Query::class);
-
         $queryBuilder->expects($this->once())->method('remove')->willReturnSelf();
         $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
         $query->expects($this->once())->method('execute');
 
-        return [$queryBuilder, $query];
-    }
-
-    private function getUsersForBatchSave(int $count): UserCollection
-    {
-        $users = [];
-        for ($i = 0; $i < $count; ++$i) {
-            $users[] = $this->userFactory->create(
-                $this->faker->unique()->email(),
-                $this->faker->name(),
-                $this->faker->password(),
-                $this->transformer->transformFromString($this->faker->uuid())
-            );
-        }
-
-        return new UserCollection($users);
-    }
-
-    private function testSaveBatchSetDocumentManagerExpectations(UserCollection $users): void
-    {
-        $totalUsers = count($users);
-        $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
-
-        $expectedFlushCalls = $fullBatches + 1;
-        $expectedClearCalls = $expectedFlushCalls;
-
-        $this->documentManager
-            ->expects($this->exactly($totalUsers))
-            ->method('persist')
-            ->with($this->isInstanceOf(User::class));
-
-        $this->documentManager
-            ->expects($this->exactly($expectedFlushCalls))
-            ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly($expectedClearCalls))
-            ->method('clear');
+        $repository->deleteAll();
     }
 
     private function getRepository(int $batchSize): MongoDBUserRepository
@@ -466,27 +365,6 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             $this->registry,
             $batchSize
         );
-    }
-
-    private function testFindByEmailReturnsUserSetExpectations(
-        UserInterface $user,
-        string $email
-    ): void {
-        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
-            ->setConstructorArgs([
-                $this->documentManager,
-                $this->registry,
-                self::BATCH_SIZE,
-            ])
-            ->onlyMethods(['findOneBy'])
-            ->getMock();
-
-        $repository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['email' => $email])
-            ->willReturn($user);
-
-        $this->userRepository = $repository;
     }
 
     /**

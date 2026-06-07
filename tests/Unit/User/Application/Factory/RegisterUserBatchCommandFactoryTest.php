@@ -9,13 +9,11 @@ use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Application\Factory\RegisterUserBatchCommandFactory;
 use InvalidArgumentException;
+use ReflectionClass;
 
 final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
 {
     private const BATCH_SIZE = 2;
-    private const VALID_EMAIL = 'user@example.test';
-    private const VALID_INITIALS = 'User';
-    private const VALID_PASSWORD = 'password';
 
     public function testCreate(): void
     {
@@ -42,9 +40,9 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     /**
      * @dataProvider invalidPayloadProvider
      *
-     * @param object|array<string, int|string> $payload
+     * @param non-empty-string $mutation
      */
-    public function testCreateRejectsInvalidPayload(object|array $payload): void
+    public function testCreateRejectsInvalidPayload(string $mutation): void
     {
         $factory = new RegisterUserBatchCommandFactory();
 
@@ -53,115 +51,71 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
             'Batch user payload must contain string email, initials, and password fields.'
         );
 
-        /** @psalm-suppress InvalidArgument */
-        $factory->create(new UserRegisterBatchDto([$payload]));
+        $factory->create(
+            $this->createBatchDtoWithPayload(
+                $this->createInvalidPayload($mutation)
+            )
+        );
     }
 
     /**
-     * @return array<string, array{object|array<string, int|string>}>
+     * @return array<string, array{non-empty-string}>
      */
     public static function invalidPayloadProvider(): array
     {
-        return array_merge(
-            self::nonArrayPayloads(),
-            self::missingFieldPayloads(),
-            self::invalidScalarPayloads()
-        );
-    }
-
-    /**
-     * @return array<string, array{object|array<string, int|string>}>
-     */
-    private static function nonArrayPayloads(): array
-    {
         return [
-            'non-array row' => [(object) [
-                'email' => self::VALID_EMAIL,
-                'initials' => self::VALID_INITIALS,
-                'password' => self::VALID_PASSWORD,
-            ],
-            ],
+            'non-array row' => ['non-array row'],
+            'missing email' => ['missing email'],
+            'missing initials' => ['missing initials'],
+            'missing password' => ['missing password'],
+            'non-string email' => ['non-string email'],
+            'non-string initials' => ['non-string initials'],
+            'non-string password' => ['non-string password'],
         ];
     }
 
     /**
-     * @return array<string, array{array<string, int|string>}>
+     * @param non-empty-string $mutation
+     *
+     * @return object|array<string, int|string>
      */
-    private static function missingFieldPayloads(): array
+    private function createInvalidPayload(string $mutation): object|array
     {
-        return [
-            'missing email' => [[
-                'initials' => self::VALID_INITIALS,
-                'password' => self::VALID_PASSWORD,
-            ],
-            ],
-            'missing initials' => [[
-                'email' => self::VALID_EMAIL,
-                'password' => self::VALID_PASSWORD,
-            ],
-            ],
-            'missing password' => [[
-                'email' => self::VALID_EMAIL,
-                'initials' => self::VALID_INITIALS,
-            ],
-            ],
-        ];
+        $payload = $this->createValidPayload();
+
+        if ($mutation === 'non-array row') {
+            return (object) $payload;
+        }
+
+        if (str_starts_with($mutation, 'missing ')) {
+            unset($payload[substr($mutation, 8)]);
+
+            return $payload;
+        }
+
+        $payload[substr($mutation, 11)] = $this->faker->randomNumber();
+
+        return $payload;
     }
 
     /**
-     * @return array<string, array{array<string, int|string>}>
+     * @return array{email: string, initials: string, password: string}
      */
-    private static function invalidScalarPayloads(): array
-    {
-        return array_merge(
-            self::invalidEmailPayloads(),
-            self::invalidInitialsPayloads(),
-            self::invalidPasswordPayloads()
-        );
-    }
-
-    /**
-     * @return array<string, array{array<string, int|string>}>
-     */
-    private static function invalidEmailPayloads(): array
+    private function createValidPayload(): array
     {
         return [
-            'non-string email' => [[
-                'email' => 123,
-                'initials' => self::VALID_INITIALS,
-                'password' => self::VALID_PASSWORD,
-            ],
-            ],
+            'email' => $this->faker->email(),
+            'initials' => $this->faker->name(),
+            'password' => $this->faker->password(),
         ];
     }
 
-    /**
-     * @return array<string, array{array<string, int|string>}>
-     */
-    private static function invalidInitialsPayloads(): array
+    private function createBatchDtoWithPayload(object|array $payload): UserRegisterBatchDto
     {
-        return [
-            'non-string initials' => [[
-                'email' => self::VALID_EMAIL,
-                'initials' => 123,
-                'password' => self::VALID_PASSWORD,
-            ],
-            ],
-        ];
-    }
+        $reflection = new ReflectionClass(UserRegisterBatchDto::class);
+        $dto = $reflection->newInstanceWithoutConstructor();
+        $reflection->getProperty('users')->setValue($dto, [$payload]);
 
-    /**
-     * @return array<string, array{array<string, int|string>}>
-     */
-    private static function invalidPasswordPayloads(): array
-    {
-        return [
-            'non-string password' => [[
-                'email' => self::VALID_EMAIL,
-                'initials' => self::VALID_INITIALS,
-                'password' => 123,
-            ],
-            ],
-        ];
+        return $dto;
     }
 }

@@ -6,16 +6,18 @@ namespace App\OAuth\Application\Resolver;
 
 use App\OAuth\Application\DTO\OAuthResolvedUser;
 use App\OAuth\Application\Factory\OAuthUserFactory;
+use App\OAuth\Application\Service\SocialIdentityLinker;
 use App\OAuth\Domain\Entity\SocialIdentity;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
-use App\User\Application\Factory\IdFactoryInterface;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserRepositoryInterface;
-use DateTimeImmutable;
+
+use function trim;
 
 /**
  * @psalm-api
@@ -25,8 +27,9 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
     public function __construct(
         private SocialIdentityRepositoryInterface $socialIdentityRepository,
         private UserRepositoryInterface $userRepository,
-        private IdFactoryInterface $idFactory,
+        private EmailNormalizer $emailNormalizer,
         private OAuthUserFactory $oauthUserFactory,
+        private SocialIdentityLinker $socialIdentityLinker,
     ) {
     }
 
@@ -46,7 +49,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
             throw new UnverifiedProviderEmailException((string) $provider);
         }
 
-        $user = $this->userRepository->findByEmail($profile->email);
+        $user = $this->findUserByProfileEmail($profile->email);
 
         if ($user instanceof User) {
             return $this->handleAutoLink($user, $provider, $profile);
@@ -58,8 +61,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
     private function handleExistingIdentity(
         SocialIdentity $identity,
     ): OAuthResolvedUser {
-        $identity->touchLastUsed(new DateTimeImmutable());
-        $this->socialIdentityRepository->save($identity);
+        $this->socialIdentityLinker->touch($identity);
 
         $user = $this->userRepository->findById($identity->getUserId());
 
@@ -75,7 +77,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
         OAuthProvider $provider,
         OAuthUserProfile $profile,
     ): OAuthResolvedUser {
-        $this->createAndSaveIdentity(
+        $this->socialIdentityLinker->link(
             $provider,
             $profile->providerId,
             $user->getId(),
@@ -89,6 +91,26 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
         return new OAuthResolvedUser($user, false);
     }
 
+    private function findUserByProfileEmail(string $email): ?User
+    {
+        $normalizedEmail = $this->emailNormalizer->normalize($email);
+        $user = $this->userRepository->findByEmail($normalizedEmail);
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        $submittedEmail = trim($email);
+
+        if ($submittedEmail === $normalizedEmail) {
+            return null;
+        }
+
+        $user = $this->userRepository->findByEmail($submittedEmail);
+
+        return $user instanceof User ? $user : null;
+    }
+
     private function handleNewUser(
         OAuthProvider $provider,
         OAuthUserProfile $profile,
@@ -96,28 +118,12 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
         $user = $this->oauthUserFactory->create($profile);
         $this->userRepository->save($user);
 
-        $this->createAndSaveIdentity(
+        $this->socialIdentityLinker->link(
             $provider,
             $profile->providerId,
             $user->getId(),
         );
 
         return new OAuthResolvedUser($user, true);
-    }
-
-    private function createAndSaveIdentity(
-        OAuthProvider $provider,
-        string $providerId,
-        string $userId,
-    ): void {
-        $identity = new SocialIdentity(
-            $this->idFactory->create(),
-            $provider,
-            $providerId,
-            $userId,
-            new DateTimeImmutable(),
-        );
-
-        $this->socialIdentityRepository->save($identity);
     }
 }

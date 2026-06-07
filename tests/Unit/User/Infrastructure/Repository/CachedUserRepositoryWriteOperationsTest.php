@@ -104,18 +104,18 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
         self::assertSame([$user], iterator_to_array($result));
     }
 
-    public function testFindByEmailCaseInsensitiveReturnsCachedNormalizedEmailHit(): void
+    public function testFindByEmailCaseInsensitiveDelegatesNormalizedLookup(): void
     {
         $email = $this->faker->unique()->email();
         $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
         $normalizedEmail = mb_strtolower($email, 'UTF-8');
-        $cacheKey = 'user.email.' . $this->faker->sha256();
         $user = $this->createUserMock($this->faker->uuid(), $email);
+        $expectedUsers = new UserCollection([$user]);
 
-        $this->expectNormalizedEmailCacheHit($normalizedEmail, $cacheKey, $user);
-        $this->documentManager->expects($this->once())
-            ->method('contains')->with($user)->willReturn(true);
-        $this->innerRepository->expects($this->never())->method('findByEmailCaseInsensitive');
+        $this->innerRepository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($normalizedEmail)
+            ->willReturn($expectedUsers);
 
         $result = $this->repository->findByEmailCaseInsensitive($inputEmail);
 
@@ -203,29 +203,6 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
 
         $this->expectHashEmail($user->getEmail(), $hash);
         $this->expectInvalidateTags($this->singleUserTags($user, $hash));
-    }
-
-    private function expectNormalizedEmailCacheHit(
-        string $email,
-        string $cacheKey,
-        UserInterface $user
-    ): void {
-        $this->cacheKeyBuilder->expects($this->once())
-            ->method('buildUserEmailKey')
-            ->with($email)
-            ->willReturn($cacheKey);
-        $this->cache->expectGet(
-            static function (string $actualCacheKey, callable $callback, ?float $beta) use (
-                $cacheKey,
-                $user
-            ): UserInterface {
-                self::assertSame($cacheKey, $actualCacheKey);
-                self::assertIsCallable($callback);
-                self::assertNull($beta);
-
-                return $user;
-            }
-        );
     }
 
     /**
