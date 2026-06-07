@@ -34,9 +34,10 @@ jobs:
         uses: bats-core/bats-action@472edde1138d59aca53ff162fb8d996666d21e4a
 
       - name: Install Bats plugins
-        run: mkdir -p tests/CLI/bats/test_helper && cd tests/CLI/bats/test_helper &&
-          git clone https://github.com/bats-core/bats-support.git &&
-          git clone https://github.com/bats-core/bats-assert.git
+        run: |
+          rm -rf tests/CLI/bats/bats-support tests/CLI/bats/bats-assert
+          git clone --depth 1 https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
         run: make bats
