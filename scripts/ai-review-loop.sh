@@ -1403,7 +1403,7 @@ run_review() {
         && [[ -z "$spec_path" ]]; then
         "${agent_env[@]}" "$claude_cmd" -p "/review" \
           ${claude_flags[@]+"${claude_flags[@]}"} \
-          --append-system-prompt "After completing the review, your FIRST line of output MUST be exactly STATUS: PASS or STATUS: FAIL. Then list any issues found." \
+          --append-system-prompt "After completing the review, output MUST follow this contract exactly: first line STATUS: PASS or STATUS: FAIL. If PASS, second line MUST be exactly: 0 issues. If FAIL, second line MUST be Issues: followed by a numbered list of concrete problems. Do not write anything before the status line." \
           --output-format text \
           >"$output_file" 2>"${output_file}.log"
       else

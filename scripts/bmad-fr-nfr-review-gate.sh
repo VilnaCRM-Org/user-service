@@ -30,7 +30,8 @@ Environment equivalents:
   BMAD_REVIEW_LOG_DIR, BMAD_REVIEW_AGENTS, BMAD_REVIEW_POST_PR_COMMENT,
   BMAD_REVIEW_IMPACT_CONTEXT,
   BMAD_REVIEW_POST_GITHUB_STATUS, BMAD_REVIEW_STATUS_CONTEXT,
-  BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT
+  BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT,
+  BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION
 USAGE
 }
 
@@ -51,6 +52,7 @@ agents="${BMAD_REVIEW_AGENTS:-}"
 impact_context="${BMAD_REVIEW_IMPACT_CONTEXT:-}"
 post_pr_comment="${BMAD_REVIEW_POST_PR_COMMENT:-true}"
 post_github_status="${BMAD_REVIEW_POST_GITHUB_STATUS:-true}"
+require_github_ci_corroboration="${BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION:-}"
 status_context="${BMAD_REVIEW_STATUS_CONTEXT:-BMAD FR/NFR Review Gate}"
 status_excluded_context="${BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT:-}"
 
@@ -77,6 +79,17 @@ resolve_path() {
 
 github_pr_context_jq() {
   printf '[.number, .isDraft, .reviewDecision, .url, .headRefName, .headRefOid, .baseRefName, .mergeStateStatus] | map(if . == null then "" else tostring end) | join("\u001f")'
+}
+
+is_enabled() {
+  case "$(printf "%s" "${1:-}" | tr '[:upper:]' '[:lower:]')" in
+    true|1|yes|on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_local_only_dry_run() {
+  ! is_enabled "$post_pr_comment" && ! is_enabled "$post_github_status"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -144,6 +157,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 status_excluded_context="${status_excluded_context:-$status_context}"
+
+if [[ -z "$require_github_ci_corroboration" ]]; then
+  if is_local_only_dry_run; then
+    require_github_ci_corroboration=false
+  else
+    require_github_ci_corroboration=true
+  fi
+fi
 
 if [[ -z "$spec_path" ]]; then
   echo "Error: --spec or BMAD_REVIEW_SPEC_PATH is required." >&2
@@ -245,10 +266,12 @@ write_symbol_relationships() {
   if [[ -n "$symbol" ]]; then
     {
       rg -n --fixed-strings "$symbol" "$repo_root" \
+        --hidden \
         --glob '!vendor/**' \
         --glob '!var/**' \
         --glob '!node_modules/**' \
         --glob '!graphify-out/**' \
+        --glob '!.git/**' \
         --glob "!$changed_file" \
         | sed "s#^$repo_root/##" \
         | head -n 20
@@ -470,7 +493,9 @@ resolve_default_base_ref
 if [[ -z "$impact_context" ]]; then
   impact_context="$(generate_impact_context)"
 fi
-augment_impact_context_with_github_corroboration
+if is_enabled "$require_github_ci_corroboration"; then
+  augment_impact_context_with_github_corroboration
+fi
 
 export AI_REVIEW_REVIEW_PROMPT="$script_dir/ai-review-prompts/bmad-fr-nfr-review.md"
 export AI_REVIEW_FIX_PROMPT="$script_dir/ai-review-prompts/bmad-fr-nfr-fix.md"
@@ -485,7 +510,7 @@ export AI_REVIEW_REQUIRE_GATE_MARKERS="true"
 # ai-review-loop requires scored evidence for every pinned NFR category.
 export AI_REVIEW_REQUIRE_SCORECARD_VALIDATION=true
 # ai-review-loop prechecks and revalidates GitHub review/check state against the local HEAD.
-export AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true
+export AI_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION="$require_github_ci_corroboration"
 export AI_REVIEW_REQUIRED_GATE_MARKERS="$bmad_required_gate_markers"
 export AI_REVIEW_POST_PR_COMMENT="$post_pr_comment"
 export AI_REVIEW_POST_GITHUB_STATUS="$post_github_status"

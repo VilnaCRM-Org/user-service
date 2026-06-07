@@ -25,6 +25,9 @@ applicable rows score 5/5.
   `BMAD_REVIEW_POST_GITHUB_STATUS=true|false`. For PR runs, BMAD status
   publishing is required and defaults to `true`; disabling is only for
   local-only dry runs or test harnesses that must not write to GitHub.
+- GitHub read/corroboration gate: `BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true|false`.
+  It defaults to `true` for PR publishing runs and `false` when both PR comment
+  and GitHub status publishing are disabled for a local-only dry run.
 - Optional status context: `BMAD_REVIEW_STATUS_CONTEXT='BMAD FR/NFR Review Gate'`
 - Optional status self-filter override:
   `BMAD_REVIEW_STATUS_EXCLUDED_CONTEXT=<check-context>`; defaults to the final
@@ -189,9 +192,13 @@ review output. PASS also requires `EXPANDED_QUALITY_MIN_SCORE: 5/5` and
 
 For BMAD wrapper PR runs, PR comment and commit-status publishing are required
 low-risk review-gate writes and must run without waiting for human approval.
-Set `BMAD_REVIEW_POST_PR_COMMENT=false` or
-`BMAD_REVIEW_POST_GITHUB_STATUS=false` only for local-only dry runs or tests
-that must not write to GitHub. The commit-status context defaults to
+Set both `BMAD_REVIEW_POST_PR_COMMENT=false` and
+`BMAD_REVIEW_POST_GITHUB_STATUS=false` for local-only dry runs. Set either
+toggle individually only for tests that must suppress that GitHub write channel.
+Setting both to `false` also disables GitHub
+preflight/corroboration by default; set
+`BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true` when a read-only GitHub gate
+is still required. The commit-status context defaults to
 `BMAD FR/NFR Review Gate`; the loop ignores that same context while checking the
 rest of the PR check rollup, so an earlier failed gate status does not block the
 next remediation run from starting.

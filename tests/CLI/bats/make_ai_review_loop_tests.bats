@@ -250,6 +250,8 @@ prepare_clean_bmad_gate_repo() {
   local repo_dir="$1"
 
   mkdir -p "$repo_dir/scripts/ai-review-prompts"
+  cp .env.test "$repo_dir/.env.test"
+  cp Makefile "$repo_dir/Makefile"
   cp scripts/ai-review-loop.sh "$repo_dir/scripts/ai-review-loop.sh"
   cp scripts/bmad-fr-nfr-review-gate.sh "$repo_dir/scripts/bmad-fr-nfr-review-gate.sh"
   cp scripts/ai-review-prompts/bmad-fr-nfr-review.md "$repo_dir/scripts/ai-review-prompts/bmad-fr-nfr-review.md"
@@ -259,8 +261,9 @@ prepare_clean_bmad_gate_repo() {
   git -C "$repo_dir" init -q
   git -C "$repo_dir" config user.email "bats@example.test"
   git -C "$repo_dir" config user.name "Bats Test"
-  git -C "$repo_dir" add scripts
+  git -C "$repo_dir" add .env.test Makefile scripts
   git -C "$repo_dir" commit -q -m "Initial BMAD gate test repo"
+  git -C "$repo_dir" update-ref refs/remotes/origin/main HEAD
 }
 
 write_codex_stub_with_report() {
@@ -357,6 +360,19 @@ fi
 
 echo "unexpected gh invocation: $*" >&2
 exit 2
+SCRIPT
+  chmod +x "$bin_dir/gh"
+}
+
+write_failing_bmad_gh_stub() {
+  local bin_dir="$1"
+
+  cat > "$bin_dir/gh" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+printf 'unexpected gh invocation: %s\n' "$*" >> "${GH_INVOCATION_LOG}"
+exit 19
 SCRIPT
   chmod +x "$bin_dir/gh"
 }
@@ -1185,17 +1201,41 @@ SCRIPT
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Capture all args to verify /review is passed
-for arg in "$@"; do
-  if [[ "$arg" == "/review" ]]; then
-    echo "STATUS: PASS"
-    echo "0 issues."
-    exit 0
+saw_review=false
+system_prompt=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -p)
+      if [[ "${2:-}" == "/review" ]]; then
+        saw_review=true
+      fi
+      shift 2
+      ;;
+    --append-system-prompt)
+      system_prompt="${2:-}"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [[ "$saw_review" != "true" ]]; then
+  echo "ERROR: /review not found in args" >&2
+  exit 2
+fi
+
+for expected in "STATUS: PASS or STATUS: FAIL" "second line MUST be exactly: 0 issues." "If FAIL, second line MUST be Issues:"; do
+  if [[ "$system_prompt" != *"$expected"* ]]; then
+    echo "ERROR: strict review output contract missing: $expected" >&2
+    exit 2
   fi
 done
 
-echo "ERROR: /review not found in args: $*" >&2
-exit 2
+echo "STATUS: PASS"
+echo "0 issues."
 SCRIPT
   chmod +x "$bin_dir/claude"
 
@@ -1957,6 +1997,9 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "make bmad-fr-nfr-review-gate 2>&1"
 
   assert_success
@@ -2027,6 +2070,9 @@ SCRIPT
     BMAD_REVIEW_BASE=HEAD \
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
@@ -2100,6 +2146,9 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
@@ -2152,6 +2201,9 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "cd '${BATS_TEST_TMPDIR}' && '${repo_root}/scripts/bmad-fr-nfr-review-gate.sh' --spec specs/example --base HEAD 2>&1"
 
   assert_success
@@ -2160,10 +2212,12 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate make target forces pinned BMAD constants" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local prompt_capture="${BATS_TEST_TMPDIR}/prompt.txt"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -2211,7 +2265,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "make bmad-fr-nfr-review-gate 2>&1"
+    bash -c "cd '$repo_dir' && make bmad-fr-nfr-review-gate 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -2301,6 +2355,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
@@ -2370,6 +2425,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
@@ -2424,6 +2480,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
@@ -2479,6 +2536,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
@@ -4067,6 +4125,9 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
@@ -4120,6 +4181,9 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=false \
     bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
@@ -4128,9 +4192,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when GitHub checks are not passing" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -4172,7 +4238,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub required PR checks are not fully passing: Run Bats Core Tests"
@@ -4181,9 +4247,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate falls back to visible checks when required check rollup is empty" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_empty_required_passing_visible_bmad_gh_stub "$bin_dir"
@@ -4196,7 +4264,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -4204,9 +4272,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate fails closed when required check query fails" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4220,7 +4290,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: Unable to query GitHub required PR checks for BMAD gate."
@@ -4229,9 +4299,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when GitHub merge state is dirty" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4245,7 +4317,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub PR mergeStateStatus blocks BMAD gate: DIRTY."
@@ -4254,9 +4326,11 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate rejects PASS when GitHub mergeability is conflicting" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4270,7 +4344,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_failure
   assert_output --partial "Warning: GitHub PR mergeable state blocks BMAD gate: CONFLICTING."
@@ -4279,6 +4353,7 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate publishes PR comment and success GitHub status after PASS" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local log_dir="${BATS_TEST_TMPDIR}/ai-review"
   local status_log="${BATS_TEST_TMPDIR}/status.log"
@@ -4286,6 +4361,7 @@ SCRIPT
   local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4301,7 +4377,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="$log_dir" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=1 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -4320,17 +4396,118 @@ SCRIPT
   assert_success
 }
 
+@test "bmad-fr-nfr-review-gate local-only dry run skips GitHub reads and writes" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local gh_log="${BATS_TEST_TMPDIR}/gh.log"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_failing_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_INVOCATION_LOG="$gh_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run test ! -e "$gh_log"
+  assert_success
+  run test -f "$log_dir/codebase-graph-impact-context.md"
+  assert_success
+  run test ! -e "$log_dir/github-corroboration-context.md"
+  assert_success
+  run test ! -e "$log_dir/bmad-required-impact-and-github-context.md"
+  assert_success
+}
+
+@test "bmad-fr-nfr-review-gate generated impact context includes hidden directory references" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local gh_log="${BATS_TEST_TMPDIR}/gh.log"
+  local impact_file
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_failing_bmad_gh_stub "$bin_dir"
+
+  mkdir -p \
+    "$repo_dir/src" \
+    "$repo_dir/.claude/skills/impact" \
+    "$repo_dir/.agents/skills/impact" \
+    "$repo_dir/.github/workflows"
+  cat > "$repo_dir/src/HiddenImpactSubject.php" <<'PHP'
+<?php
+
+final class HiddenImpactSubject
+{
+}
+PHP
+  printf "HiddenImpactSubject\n" > "$repo_dir/.claude/skills/impact/SKILL.md"
+  printf "HiddenImpactSubject\n" > "$repo_dir/.agents/skills/impact/SKILL.md"
+  printf "name: HiddenImpactSubject\n" > "$repo_dir/.github/workflows/impact.yml"
+  printf "HiddenImpactSubject\n" > "$repo_dir/.git/hidden-reference"
+  git -C "$repo_dir" add src .claude .agents .github
+  git -C "$repo_dir" commit -qm "Add hidden impact references"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_INVOCATION_LOG="$gh_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD~ \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  impact_file="$log_dir/codebase-graph-impact-context.md"
+  run grep -F ".claude/skills/impact/SKILL.md" "$impact_file"
+  assert_success
+  run grep -F ".agents/skills/impact/SKILL.md" "$impact_file"
+  assert_success
+  run grep -F ".github/workflows/impact.yml" "$impact_file"
+  assert_success
+  run grep -F ".git/hidden-reference" "$impact_file"
+  assert_failure
+  run test ! -e "$gh_log"
+  assert_success
+}
+
 @test "bmad-fr-nfr-review-gate preserves empty GitHub review decision fields" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local log_dir="${BATS_TEST_TMPDIR}/ai-review"
   local head_oid
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
-  head_oid="$(git rev-parse HEAD)"
+  head_oid="$(git -C "$repo_dir" rev-parse HEAD)"
 
   run env \
     PATH="$bin_dir:$PATH" \
@@ -4343,7 +4520,8 @@ SCRIPT
     BMAD_REVIEW_MAX_ITER=1 \
     BMAD_REVIEW_POST_PR_COMMENT=false \
     BMAD_REVIEW_POST_GITHUB_STATUS=false \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -4362,10 +4540,12 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate excludes BMAD status check when status publishing is disabled" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4381,7 +4561,8 @@ SCRIPT
     BMAD_REVIEW_MAX_ITER=1 \
     BMAD_REVIEW_POST_PR_COMMENT=false \
     BMAD_REVIEW_POST_GITHUB_STATUS=false \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -4392,10 +4573,12 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate excludes custom status context after argument parsing" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
@@ -4411,7 +4594,8 @@ SCRIPT
     BMAD_REVIEW_MAX_ITER=1 \
     BMAD_REVIEW_POST_PR_COMMENT=false \
     BMAD_REVIEW_POST_GITHUB_STATUS=false \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh --status-context 'Custom Gate' 2>&1"
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh --status-context 'Custom Gate' 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
@@ -4422,6 +4606,7 @@ SCRIPT
 
 @test "bmad-fr-nfr-review-gate publishes failure status before Codex fix and success after PASS" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local log_dir="${BATS_TEST_TMPDIR}/ai-review"
   local status_log="${BATS_TEST_TMPDIR}/status.log"
@@ -4429,6 +4614,7 @@ SCRIPT
   local review_count="${BATS_TEST_TMPDIR}/review-count"
 
   mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
 
   cat > "$bin_dir/codex" <<'SCRIPT'
@@ -4501,7 +4687,7 @@ SCRIPT
     BMAD_REVIEW_LOG_DIR="$log_dir" \
     BMAD_REVIEW_VERIFY_CMD=true \
     BMAD_REVIEW_MAX_ITER=2 \
-    bash -c "./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
   assert_success
   assert_output --partial "AI review PASS."
