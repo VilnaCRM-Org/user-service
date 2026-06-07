@@ -228,21 +228,23 @@ review_base=""
 fetch_remote=""
 fetch_branch=""
 
-if git show-ref --verify --quiet "refs/heads/$base_branch"; then
-  review_base="refs/heads/$base_branch"
-elif git show-ref --verify --quiet "refs/remotes/$base_branch"; then
-  review_base="refs/remotes/$base_branch"
-elif [[ "$base_branch_explicit" == "true" && "$base_branch" =~ ^HEAD([~^][0-9]*)*$ ]]; then
-  review_base="$base_branch"
-elif [[ "$base_branch_explicit" == "true" && "$base_branch" =~ ^[0-9a-fA-F]{7,40}$ ]] \
-  && git rev-parse --verify "${base_branch}^{commit}" >/dev/null 2>&1; then
-  review_base="$base_branch"
-elif [[ "$base_branch_explicit" == "true" && "$base_branch" == refs/* ]]; then
-  review_base="$base_branch"
-elif [[ "$base_branch" == */* ]] && git remote get-url "${base_branch%%/*}" >/dev/null 2>&1; then
+if [[ "$base_branch" == */* ]] && git remote get-url "${base_branch%%/*}" >/dev/null 2>&1; then
   fetch_remote="${base_branch%%/*}"
   fetch_branch="${base_branch#*/}"
   review_base="refs/remotes/$base_branch"
+elif [[ "$base_branch_explicit" == "true" && "$base_branch" =~ ^HEAD([~^][0-9]*)*$ ]]; then
+  review_base="$base_branch"
+elif [[ "$base_branch_explicit" == "true" && "$base_branch" == refs/* ]]; then
+  review_base="$base_branch"
+elif git show-ref --verify --quiet "refs/remotes/origin/$base_branch"; then
+  review_base="refs/remotes/origin/$base_branch"
+elif git show-ref --verify --quiet "refs/heads/$base_branch"; then
+  review_base="refs/heads/$base_branch"
+elif git show-ref --verify --quiet "refs/remotes/$base_branch"; then
+  review_base="refs/remotes/$base_branch"
+elif [[ "$base_branch_explicit" == "true" && "$base_branch" =~ ^[0-9a-fA-F]{7,40}$ ]] \
+  && git rev-parse --verify "${base_branch}^{commit}" >/dev/null 2>&1; then
+  review_base="$base_branch"
 else
   fetch_remote="origin"
   fetch_branch="$base_branch"
@@ -1397,13 +1399,15 @@ run_review() {
       ;;
     claude)
       prompt="$(build_review_prompt)"
+      local append_prompt
       if is_enabled "${AI_REVIEW_CLAUDE_USE_BUILTIN_REVIEW:-true}" \
         && [[ "$review_prompt_file" == "scripts/ai-review-prompts/review.md" ]] \
         && ! is_enabled "$require_gate_markers" \
         && [[ -z "$spec_path" ]]; then
+        append_prompt=$(printf 'Apply the repository AI review policy below while using /review. After completing the review, output MUST follow this contract exactly: first line STATUS: PASS or STATUS: FAIL. If PASS, second line MUST be exactly: 0 issues. If FAIL, second line MUST be Issues: followed by a numbered list of concrete problems. Do not write anything before the status line.\n\n%s' "$prompt")
         "${agent_env[@]}" "$claude_cmd" -p "/review" \
           ${claude_flags[@]+"${claude_flags[@]}"} \
-          --append-system-prompt "After completing the review, output MUST follow this contract exactly: first line STATUS: PASS or STATUS: FAIL. If PASS, second line MUST be exactly: 0 issues. If FAIL, second line MUST be Issues: followed by a numbered list of concrete problems. Do not write anything before the status line." \
+          --append-system-prompt "$append_prompt" \
           --output-format text \
           >"$output_file" 2>"${output_file}.log"
       else

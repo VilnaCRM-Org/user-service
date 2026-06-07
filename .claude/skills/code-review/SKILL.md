@@ -1033,6 +1033,17 @@ This executes `scripts/ai-review-loop.sh`, which:
 3. Verifies fixes with `make ci`
 4. Repeats up to `AI_REVIEW_MAX_ITER` times (default: 3)
 
+The reviewer prompt in `scripts/ai-review-prompts/review.md` checks both FR/NFR
+coverage and code health for supported local review agents. It explicitly
+includes system design tradeoffs, appropriate design pattern use, code smells,
+SOLID/DRY/KISS, DDD/CQRS, Hexagonal Architecture, and repository rules. Review
+failures must stay concrete and scoped to changed code or directly affected
+behavior.
+
+Codex consumes the reviewer prompt directly. Claude keeps its built-in
+`/review` invocation and receives the same repository review policy through the
+loop's appended system prompt.
+
 **Configuration** (all overridable via environment):
 
 | Variable               | Default         | Description                         |
