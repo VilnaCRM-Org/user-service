@@ -8,13 +8,32 @@ jobs:
   behat:
     name: Behat
     runs-on: ubuntu-latest
-
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping Behat tests for Dependabot PR"
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Install Dependencies
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Start Application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
+      - name: Setup Test Database
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: make setup-test-db
+
       - name: Run Behat Tests
-        run: make behat
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: make e2e-tests

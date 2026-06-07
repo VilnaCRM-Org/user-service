@@ -10,11 +10,8 @@ use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\RecoveryCodeFactoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Infrastructure\Factory\RecoveryCodeBatchFactory;
-use function array_map;
-use function chr;
-use Closure;
-use function implode;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 use Symfony\Component\Uid\Factory\UlidFactory;
 use Symfony\Component\Uid\Ulid;
 
@@ -24,21 +21,23 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
     private RecoveryCodeFactoryInterface&MockObject $recoveryCodeFactory;
     private UlidFactory&MockObject $ulidFactory;
     private RecoveryCodeBatchFactory $factory;
+    /**
+     * @var list<string>
+     */
+    private array $randomByteChunks = [];
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->randomByteChunks = [];
+
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->recoveryCodeFactory = $this->createMock(RecoveryCodeFactoryInterface::class);
         $this->ulidFactory = $this->createMock(UlidFactory::class);
 
-        $this->factory = new RecoveryCodeBatchFactory(
-            $this->recoveryCodeRepository,
-            $this->recoveryCodeFactory,
-            $this->ulidFactory,
-        );
+        $this->factory = $this->createFactory();
     }
 
     public function testCreateReturnsCorrectNumberOfCodes(): void
@@ -112,6 +111,57 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         $this->factory->create($user);
     }
 
+    public function testCreateKeepsReadingCurrentRandomChunkAfterRejectedByte(): void
+    {
+        $user = $this->createUserWithId($this->faker->uuid());
+        $this->stubRecoveryCodeCreation();
+
+        $this->recoveryCodeRepository->expects($this->once())
+            ->method('saveAll');
+
+        $remainingCodeChunks = array_fill(
+            0,
+            RecoveryCode::COUNT - 1,
+            str_repeat("\x08", RecoveryCode::SEGMENT_LENGTH * 2)
+        );
+        $this->queueRandomBytes(
+            "\x00\xFC\x01\x02\x03\x04\x05\x06",
+            str_repeat("\x07", RecoveryCode::SEGMENT_LENGTH * 2),
+            ...$remainingCodeChunks,
+        );
+        $this->factory = $this->createFactory(\Closure::fromCallable([$this, 'nextRandomBytes']));
+
+        $codes = $this->factory->create($user);
+
+        $this->assertSame('ABCD-EFGH', $codes[0]);
+    }
+
+    public function testCreateFailsWhenRandomByteGeneratorReturnsEmptyString(): void
+    {
+        $user = $this->createUserWithId($this->faker->uuid());
+        $this->stubRecoveryCodeCreation();
+        $this->factory = $this->createFactory(static fn (int $_length): string => '');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Random byte generator returned no bytes.');
+
+        $this->factory->create($user);
+    }
+
+    public function testCreateFailsWhenRandomByteGeneratorProducesOnlyRejectedBytes(): void
+    {
+        $user = $this->createUserWithId($this->faker->uuid());
+        $this->stubRecoveryCodeCreation();
+        $this->factory = $this->createFactory(
+            static fn (int $length): string => str_repeat("\xFC", $length)
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Random byte generator did not produce usable bytes.');
+
+        $this->factory->create($user);
+    }
+
     public function testCreateReturnsUniqueCodesWithHighProbability(): void
     {
         $user = $this->createMock(User::class);
@@ -133,53 +183,26 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         );
     }
 
-    public function testCreateSkipsBiasedRandomBytesWhenGeneratingCode(): void
+    private function createUserWithId(string $userId): User&MockObject
     {
         $user = $this->createMock(User::class);
-        $user->method('getId')->willReturn($this->faker->uuid());
+        $user->method('getId')->willReturn($userId);
 
+        return $user;
+    }
+
+    private function stubRecoveryCodeCreation(): void
+    {
         $ulid = $this->createMock(Ulid::class);
         $ulid->method('__toString')->willReturn($this->faker->uuid());
         $this->ulidFactory->method('create')->willReturn($ulid);
 
         $recoveryCode = $this->createMock(RecoveryCode::class);
         $this->recoveryCodeFactory->method('create')->willReturn($recoveryCode);
-
-        $factory = $this->createFactoryWithRandomBytes(
-            $this->biasedThenValidRandomBytes()
-        );
-
-        $codes = $factory->create($user);
-
-        $this->assertSame('BCDE-FGHI', $codes[0]);
     }
 
-    /**
-     * @return Closure(int): string
-     */
-    private function biasedThenValidRandomBytes(): Closure
+    private function createFactory(?\Closure $randomBytes = null): RecoveryCodeBatchFactory
     {
-        $calls = 0;
-
-        return function (int $length) use (&$calls): string {
-            $this->assertSame(RecoveryCode::SEGMENT_LENGTH * 2, $length);
-            $currentCall = $calls;
-            $calls++;
-
-            return match ($currentCall) {
-                0 => $this->bytes(255, 1, 2, 3, 4, 5, 6, 7),
-                1 => $this->bytes(8, 9, 10, 11, 12, 13, 14, 15),
-                default => $this->bytes(0, 0, 0, 0, 0, 0, 0, 0),
-            };
-        };
-    }
-
-    /**
-     * @param Closure(int): string $randomBytes
-     */
-    private function createFactoryWithRandomBytes(
-        Closure $randomBytes
-    ): RecoveryCodeBatchFactory {
         return new RecoveryCodeBatchFactory(
             $this->recoveryCodeRepository,
             $this->recoveryCodeFactory,
@@ -188,8 +211,24 @@ final class RecoveryCodeBatchFactoryTest extends UnitTestCase
         );
     }
 
-    private function bytes(int ...$values): string
+    private function queueRandomBytes(string ...$byteChunks): void
     {
-        return implode('', array_map(static fn (int $value): string => chr($value), $values));
+        $this->randomByteChunks = $byteChunks;
+    }
+
+    private function nextRandomBytes(int $length): string
+    {
+        $bytes = array_shift($this->randomByteChunks);
+        if ($bytes === null) {
+            self::fail('Random byte fixture queue is empty.');
+        }
+
+        self::assertSame(
+            $length,
+            strlen($bytes),
+            'Random byte fixture chunk length should match the requested length.'
+        );
+
+        return $bytes;
     }
 }

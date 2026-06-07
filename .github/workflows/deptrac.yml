@@ -9,11 +9,23 @@ jobs:
     name: Deptrac
     runs-on: ubuntu-latest
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping Deptrac for Dependabot PR"
+
       - name: Checkout code
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@v4
 
-      - name: Start Application
-        run: make start
+      - uses: shivammathur/setup-php@v2
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Install Dependencies
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Run Deptrac
-        run: make deptrac
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: CI=1 make deptrac

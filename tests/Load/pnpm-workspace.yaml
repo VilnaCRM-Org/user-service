@@ -1,0 +1,10 @@
+packages:
+  - .
+
+overrides:
+  string.prototype.trim: 1.2.10
+  string.prototype.trimend: 1.0.9
+  which-typed-array: 1.1.21
+
+allowBuilds:
+  esbuild: true
