@@ -54,12 +54,12 @@ backfill in production.
 
   ```json
   {
-      "generatedAt": "2026-06-08T06:58:00+00:00",
-      "status": "success",
-      "matched": 0,
-      "modified": 0,
-      "dryRun": true,
-      "duplicates": []
+    "generatedAt": "2026-06-08T06:58:00+00:00",
+    "status": "success",
+    "matched": 0,
+    "modified": 0,
+    "dryRun": true,
+    "duplicates": []
   }
   ```
 
