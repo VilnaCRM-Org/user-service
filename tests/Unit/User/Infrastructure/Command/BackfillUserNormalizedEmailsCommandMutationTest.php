@@ -20,13 +20,7 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  * }
  */
 
-use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Service\EmailNormalizer;
-use App\User\Domain\Entity\User;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsReportWriter;
-use Doctrine\ODM\MongoDB\DocumentManager;
 use function mb_strtoupper;
 use MongoDB\BulkWriteResult;
 use MongoDB\Collection;
@@ -35,7 +29,8 @@ use function substr_count;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class BackfillUserNormalizedEmailsCommandMutationTest extends UnitTestCase
+final class BackfillUserNormalizedEmailsCommandMutationTest extends
+    BackfillUserNormalizedEmailsCommandTestCase
 {
     public function testDuplicateFailureLimitsPreviewAndReportsCounts(): void
     {
@@ -116,29 +111,6 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends UnitTestCase
         $this->assertSuccessfulBackfill($tester, 101, 101);
     }
 
-    /** @return array{0: CommandTester, 1: Collection} */
-    private function createTesterWithCollection(): array
-    {
-        $documentManager = $this->createMock(DocumentManager::class);
-        $collection = $this->createMock(Collection::class);
-
-        $documentManager->expects($this->any())
-            ->method('getDocumentCollection')
-            ->with(User::class)
-            ->willReturn($collection);
-
-        return [
-            new CommandTester(new BackfillUserNormalizedEmailsCommand(
-                new BackfillUserNormalizedEmailsBackfiller(
-                    $documentManager,
-                    new EmailNormalizer()
-                ),
-                new BackfillUserNormalizedEmailsReportWriter($this->createJsonSerializer())
-            )),
-            $collection,
-        ];
-    }
-
     /**
      * @param list<TestCursorDocument> $candidates
      * @param list<TestCursorDocument> $existing
@@ -217,11 +189,6 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends UnitTestCase
             ->willReturn($modifiedCount);
 
         return $result;
-    }
-
-    private function expectNoBulkWrite(Collection $collection): void
-    {
-        $collection->expects($this->never())->method('bulkWrite');
     }
 
     private function assertSuccessfulBackfill(
@@ -305,47 +272,6 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends UnitTestCase
         }
 
         return $operations;
-    }
-
-    /** @return array{'$or': list<array{normalizedEmail: array{'$exists': false}|string}>} */
-    private function backfillFilter(): array
-    {
-        return [
-            '$or' => [
-                ['normalizedEmail' => ['$exists' => false]],
-                ['normalizedEmail' => ''],
-            ],
-        ];
-    }
-
-    /**
-     * @return array{
-     *     projection: array{_id: int, email: int},
-     *     sort: array{_id: int},
-     *     batchSize: int
-     * }
-     */
-    private function candidateFindOptions(): array
-    {
-        return [
-            'projection' => ['_id' => 1, 'email' => 1],
-            'sort' => ['_id' => 1],
-            'batchSize' => 100,
-        ];
-    }
-
-    /**
-     * @return array{
-     *     projection: array{_id: int, normalizedEmail: int},
-     *     batchSize: int
-     * }
-     */
-    private function existingFindOptions(): array
-    {
-        return [
-            'projection' => ['_id' => 1, 'normalizedEmail' => 1],
-            'batchSize' => 100,
-        ];
     }
 
     /**

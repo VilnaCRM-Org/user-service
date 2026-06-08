@@ -7,34 +7,21 @@ namespace App\Tests\Integration\Auth;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Integration\IntegrationTestCase;
+use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
-use Doctrine\ODM\MongoDB\DocumentManager;
-use MongoDB\Collection;
-use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
+final class EmailAmbiguityRuntimeIntegrationTest extends UserIntegrationTestCase
 {
     private const FLOW_COOKIE_NAME = 'oauth_flow_binding';
 
     private HttpKernelInterface $httpKernel;
-    private DocumentManager $documentManager;
-    private UserRepositoryInterface $userRepository;
     private SocialIdentityRepositoryInterface $socialIdentityRepository;
-    private UserFactoryInterface $userFactory;
-    private UuidTransformer $uuidTransformer;
     private RecordingOAuthPublisher $recordingOAuthPublisher;
-    private CacheItemPoolInterface $userCache;
-    /** @var list<string> */
-    private array $emailsForCleanup = [];
 
     #[\Override]
     protected function setUp(): void
@@ -44,42 +31,23 @@ final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
         $kernel = $this->container->get('kernel');
         $this->assertInstanceOf(HttpKernelInterface::class, $kernel);
         $this->httpKernel = $kernel;
-        $this->documentManager = $this->container->get(DocumentManager::class);
-        $this->userRepository = $this->container->get(UserRepositoryInterface::class);
         $this->socialIdentityRepository = $this->container->get(
             SocialIdentityRepositoryInterface::class
         );
-        $this->userFactory = $this->container->get(UserFactoryInterface::class);
-        $this->uuidTransformer = $this->container->get(UuidTransformer::class);
         $this->recordingOAuthPublisher = $this->container->get(
             RecordingOAuthPublisher::class
         );
-        $this->userCache = $this->container->get('cache.user');
         $this->recordingOAuthPublisher->reset();
-        $this->userCache->clear();
-    }
-
-    #[\Override]
-    protected function tearDown(): void
-    {
-        if ($this->emailsForCleanup !== []) {
-            $this->usersCollection()->deleteMany([
-                'email' => ['$in' => $this->emailsForCleanup],
-            ]);
-            $this->documentManager->clear();
-            $this->userCache->clear();
-        }
-
-        parent::tearDown();
+        $this->clearUserDocumentState();
     }
 
     public function testPasswordResetReturnsNeutralResponseForAmbiguousDuplicateEmail(): void
     {
-        $email = $this->mixedCaseEmail();
-        $this->insertLegacyUserDocument($email);
-        $this->insertLegacyUserDocument(mb_strtoupper($email, 'UTF-8'));
+        $email = $this->createMixedCaseEmail();
+        $this->insertLegacyUserDocumentWithEmail($email);
+        $this->insertLegacyUserDocumentWithEmail(mb_strtoupper($email, 'UTF-8'));
 
-        $response = $this->requestJson('/api/reset-password', [
+        $response = $this->requestJsonPost('/api/reset-password', [
             'email' => $email,
         ]);
 
@@ -89,22 +57,21 @@ final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
 
     public function testSetupTwoFactorRejectsAmbiguousDuplicateEmailWithoutPersistingSecret(): void
     {
-        $email = $this->mixedCaseEmail();
-        $user = $this->createUser($email);
-        $this->insertLegacyUserDocument(mb_strtoupper($email, 'UTF-8'));
+        $email = $this->createMixedCaseEmail();
+        $user = $this->createPersistedUserWithEmail($email);
+        $this->insertLegacyUserDocumentWithEmail(mb_strtoupper($email, 'UTF-8'));
         $accessToken = $this->createBearerTokenForUser($user->getId());
 
-        $response = $this->requestJson(
+        $response = $this->requestJsonPost(
             '/api/2fa/setup',
             [],
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken)]
         );
 
         $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
-        $this->documentManager->clear();
-        $this->userCache->clear();
+        $this->clearUserDocumentState();
 
-        $reloadedUser = $this->userRepository->findById($user->getId());
+        $reloadedUser = $this->userRepository()->findById($user->getId());
         $this->assertInstanceOf(User::class, $reloadedUser);
         $this->assertNull($reloadedUser->getTwoFactorSecret());
         $this->assertFalse($reloadedUser->isTwoFactorEnabled());
@@ -115,8 +82,8 @@ final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
         $provider = 'github';
         $code = 'ambiguous-auto-link-user';
         $email = DeterministicOAuthProvider::emailFor($provider, $code);
-        $existingUser = $this->createUser($email);
-        $this->insertLegacyUserDocument(mb_strtoupper($email, 'UTF-8'));
+        $existingUser = $this->createPersistedUserWithEmail($email);
+        $this->insertLegacyUserDocumentWithEmail(mb_strtoupper($email, 'UTF-8'));
         $flow = $this->initiateFlow($provider);
 
         ['response' => $response, 'body' => $body] = $this->completeFlow(
@@ -131,68 +98,6 @@ final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
             $body,
             $existingUser,
             $provider
-        );
-    }
-
-    private function createUser(string $email): User
-    {
-        $this->emailsForCleanup[] = $email;
-        $user = $this->userFactory->create(
-            $email,
-            $this->faker->name(),
-            $this->faker->sha256(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
-        );
-        $this->assertInstanceOf(User::class, $user);
-        $this->userRepository->save($user);
-        $this->documentManager->clear();
-        $this->userCache->clear();
-
-        return $user;
-    }
-
-    private function insertLegacyUserDocument(string $email): void
-    {
-        $this->emailsForCleanup[] = $email;
-        $this->usersCollection()->insertOne([
-            '_id' => $this->faker->uuid(),
-            'email' => $email,
-            'initials' => $this->faker->name(),
-            'password' => $this->faker->sha256(),
-            'confirmed' => false,
-            'twoFactorEnabled' => false,
-            'twoFactorSecret' => null,
-        ]);
-        $this->documentManager->clear();
-        $this->userCache->clear();
-    }
-
-    /**
-     * @param array<string, bool|string> $payload
-     * @param array<string, string> $extraHeaders
-     */
-    private function requestJson(
-        string $uri,
-        array $payload,
-        array $extraHeaders = []
-    ): Response {
-        $content = $payload === [] ? '{}' : json_encode($payload, JSON_THROW_ON_ERROR);
-        $server = array_merge([
-            'REMOTE_ADDR' => $this->faker->ipv4(),
-            'HTTP_ACCEPT' => 'application/json',
-            'CONTENT_TYPE' => 'application/json',
-        ], $extraHeaders);
-
-        return $this->httpKernel->handle(
-            Request::create(
-                $uri,
-                Request::METHOD_POST,
-                [],
-                [],
-                [],
-                $server,
-                $content
-            )
         );
     }
 
@@ -338,20 +243,5 @@ final class EmailAmbiguityRuntimeIntegrationTest extends IntegrationTestCase
         $this->assertNotSame('', $value);
 
         return $value;
-    }
-
-    private function usersCollection(): Collection
-    {
-        return $this->documentManager->getDocumentCollection(User::class);
-    }
-
-    private function mixedCaseEmail(): string
-    {
-        return sprintf(
-            '%s%s@%s',
-            ucfirst($this->faker->unique()->userName()),
-            str_replace('-', '', $this->faker->uuid()),
-            $this->faker->safeEmailDomain()
-        );
     }
 }

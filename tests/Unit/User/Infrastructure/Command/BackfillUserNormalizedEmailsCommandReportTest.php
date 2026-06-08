@@ -9,18 +9,11 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  * @psalm-type TestDocument = array<string, TestDocumentValue>
  */
 
-use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Service\EmailNormalizer;
-use App\User\Domain\Entity\User;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;
-use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsReportWriter;
-use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Tester\CommandTester;
 
-final class BackfillUserNormalizedEmailsCommandReportTest extends UnitTestCase
+final class BackfillUserNormalizedEmailsCommandReportTest extends
+    BackfillUserNormalizedEmailsCommandTestCase
 {
     private const FAILING_REPORT_STREAM = 'backfillreportfailure';
     private const UNWRITABLE_REPORT_STREAM = 'backfillreportunwritable';
@@ -99,67 +92,41 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends UnitTestCase
 
     public function testExecuteReturnsFailureWhenReportDirectoryIsNotWritable(): void
     {
-        [$tester, $collection] = $this->createTesterWithCollection();
-        $reportFile = sprintf('%s://directory/report.json', self::UNWRITABLE_REPORT_STREAM);
-
-        $this->expectFindCalls($collection, [], []);
-        $this->expectNoBulkWrite($collection);
-        $this->registerReportStream(self::UNWRITABLE_REPORT_STREAM, 0040555);
-
-        try {
-            $this->assertSame(Command::FAILURE, $tester->execute(['--report-file' => $reportFile]));
-            $this->assertStringContainsString(
-                'Backfill report directory is not writable for',
-                $tester->getDisplay()
-            );
-            $this->assertStringContainsString($reportFile, $tester->getDisplay());
-        } finally {
-            $this->unregisterReportStream(self::UNWRITABLE_REPORT_STREAM);
-        }
+        $this->assertReportStreamFailure(
+            self::UNWRITABLE_REPORT_STREAM,
+            0040555,
+            'Backfill report directory is not writable for'
+        );
     }
 
     public function testExecuteReturnsFailureWhenReportWriteOperationFails(): void
     {
+        $this->assertReportStreamFailure(
+            self::FAILING_REPORT_STREAM,
+            0040777,
+            'Backfill report could not be written to'
+        );
+    }
+
+    private function assertReportStreamFailure(
+        string $protocol,
+        int $directoryMode,
+        string $expectedMessage
+    ): void {
         [$tester, $collection] = $this->createTesterWithCollection();
-        $reportFile = sprintf('%s://directory/report.json', self::FAILING_REPORT_STREAM);
+        $reportFile = sprintf('%s://directory/report.json', $protocol);
 
         $this->expectFindCalls($collection, [], []);
         $this->expectNoBulkWrite($collection);
-        $this->registerReportStream(self::FAILING_REPORT_STREAM, 0040777);
+        $this->registerReportStream($protocol, $directoryMode);
 
         try {
             $this->assertSame(Command::FAILURE, $tester->execute(['--report-file' => $reportFile]));
-            $this->assertStringContainsString(
-                'Backfill report could not be written to',
-                $tester->getDisplay()
-            );
+            $this->assertStringContainsString($expectedMessage, $tester->getDisplay());
             $this->assertStringContainsString($reportFile, $tester->getDisplay());
         } finally {
-            $this->unregisterReportStream(self::FAILING_REPORT_STREAM);
+            $this->unregisterReportStream($protocol);
         }
-    }
-
-    /** @return array{0: CommandTester, 1: Collection} */
-    private function createTesterWithCollection(): array
-    {
-        $documentManager = $this->createMock(DocumentManager::class);
-        $collection = $this->createMock(Collection::class);
-
-        $documentManager->expects($this->any())
-            ->method('getDocumentCollection')
-            ->with(User::class)
-            ->willReturn($collection);
-
-        return [
-            new CommandTester(new BackfillUserNormalizedEmailsCommand(
-                new BackfillUserNormalizedEmailsBackfiller(
-                    $documentManager,
-                    new EmailNormalizer()
-                ),
-                new BackfillUserNormalizedEmailsReportWriter($this->createJsonSerializer())
-            )),
-            $collection,
-        ];
     }
 
     /**
@@ -179,11 +146,6 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends UnitTestCase
                 new ArrayCursor($candidates),
                 new ArrayCursor($existing)
             );
-    }
-
-    private function expectNoBulkWrite(Collection $collection): void
-    {
-        $collection->expects($this->never())->method('bulkWrite');
     }
 
     /** @return list<TestDocument> */

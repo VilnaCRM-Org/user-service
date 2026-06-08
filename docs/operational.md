@@ -69,16 +69,14 @@ the backfill mutates data.
 3. Run the backfill in dry-run mode and write a report:
 
    ```bash
-   make sh
-   php bin/console app:backfill-user-normalized-emails --dry-run --report-file=/tmp/normalized-email-backfill.json
+   docker compose exec php php bin/console app:backfill-user-normalized-emails --dry-run --report-file=/tmp/normalized-email-backfill.json
    ```
 
 4. Review the JSON report. Continue only when `duplicates` is empty.
 5. Run the mutating backfill and keep its report as the release artifact:
 
    ```bash
-   make sh
-   php bin/console app:backfill-user-normalized-emails --report-file=/tmp/normalized-email-backfill.json
+   docker compose exec php php bin/console app:backfill-user-normalized-emails --report-file=/tmp/normalized-email-backfill.json
    ```
 
 6. Run a smoke registration check for a new user and a case-variant duplicate.
@@ -118,3 +116,9 @@ plan removes them.
 - OAuth social callback duplicate conflict check passed.
 - Password reset still returns a neutral response for ambiguous email data.
 - 2FA setup rejects ambiguous email data without persisting a secret.
+
+Use
+`specs/issue-217-register-user-cqrs/manual-evidence-template.md`
+to record the tester, date, dry-run JSON artifact, duplicate-remediation
+decision, rollout checks, and rollback evidence before running the BMAD
+FR/NFR review gate with `BMAD_REVIEW_MANUAL_EVIDENCE`.

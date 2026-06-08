@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Application\Validator;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Validator\UserCredentialValidator;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
@@ -72,7 +73,7 @@ final class UserCredentialValidatorDuplicateEmailTest extends UnitTestCase
 
         return [
             'email' => $email,
-            'normalizedEmail' => strtolower(trim($email)),
+            'normalizedEmail' => (new EmailNormalizer())->normalize($email),
             'password' => $this->faker->password(),
             'ipAddress' => $this->faker->ipv4(),
             'userAgent' => $this->faker->userAgent(),
@@ -125,6 +126,7 @@ final class UserCredentialValidatorDuplicateEmailTest extends UnitTestCase
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
+            new EmailNormalizer(),
             $dummyHash
         );
     }

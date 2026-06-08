@@ -7,6 +7,7 @@ namespace App\Tests\Unit\User\Application\Validator;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Validator\UserCredentialValidator;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
@@ -91,8 +92,8 @@ final class UserCredentialValidatorTest extends UnitTestCase
 
     public function testValidateNormalizesEmail(): void
     {
-        $rawEmail = '  Test@Example.COM  ';
-        $normalizedEmail = 'test@example.com';
+        $rawEmail = '  Тест@Example.COM  ';
+        $normalizedEmail = 'тест@example.com';
         $password = $this->faker->password();
         $ipAddress = $this->faker->ipv4();
         $userAgent = $this->faker->userAgent();
@@ -119,20 +120,10 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $maxAttempts = $this->faker->numberBetween(3, 20);
         $lockoutSeconds = $this->faker->numberBetween(60, 3600);
 
-        $this->lockoutGuard->method('isLocked')->willReturn(true);
-        $this->lockoutGuard->method('maxAttempts')->willReturn($maxAttempts);
-        $this->lockoutGuard->method('lockoutSeconds')->willReturn($lockoutSeconds);
+        $this->arrangeLockedAccountNotification($email, $maxAttempts, $lockoutSeconds);
+        $this->expectAccountLockedException();
 
-        $this->events->expects($this->once())
-            ->method('publishLockedOut')
-            ->with(strtolower(trim($email)), $maxAttempts, $lockoutSeconds);
-
-        $validator = $this->createValidator($this->faker->sha256());
-
-        $this->expectException(LockedHttpException::class);
-        $this->expectExceptionMessage('Account temporarily locked');
-
-        $validator->validate(
+        $this->createValidator($this->faker->sha256())->validate(
             $email,
             $this->faker->password(),
             $this->faker->ipv4(),
@@ -258,7 +249,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $this->events->expects($this->once())->method('publishFailed');
         $this->events->expects($this->once())
             ->method('publishLockedOut')
-            ->with(strtolower(trim($email)), $max, $secs);
+            ->with((new EmailNormalizer())->normalize($email), $max, $secs);
 
         $this->expectException(LockedHttpException::class);
         $validator = $this->createValidator($this->faker->sha256());
@@ -283,6 +274,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
+            new EmailNormalizer(),
             null
         );
     }
@@ -299,6 +291,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
+            new EmailNormalizer(),
             ''
         );
     }
@@ -316,6 +309,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
+            new EmailNormalizer(),
             $dummyHash
         );
     }
@@ -339,6 +333,25 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $this->passwordHasher->method('verify')->willReturn(false);
     }
 
+    private function arrangeLockedAccountNotification(
+        string $email,
+        int $maxAttempts,
+        int $lockoutSeconds
+    ): void {
+        $this->lockoutGuard->method('isLocked')->willReturn(true);
+        $this->lockoutGuard->method('maxAttempts')->willReturn($maxAttempts);
+        $this->lockoutGuard->method('lockoutSeconds')->willReturn($lockoutSeconds);
+        $this->events->expects($this->once())
+            ->method('publishLockedOut')
+            ->with((new EmailNormalizer())->normalize($email), $maxAttempts, $lockoutSeconds);
+    }
+
+    private function expectAccountLockedException(): void
+    {
+        $this->expectException(LockedHttpException::class);
+        $this->expectExceptionMessage('Account temporarily locked');
+    }
+
     private function createUserMock(string $hashedPassword): User&MockObject
     {
         $user = $this->createMock(User::class);
@@ -355,6 +368,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
+            new EmailNormalizer(),
             $dummyHash
         );
     }

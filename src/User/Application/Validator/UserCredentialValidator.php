@@ -6,6 +6,7 @@ namespace App\User\Application\Validator;
 
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\DuplicateEmailException;
@@ -30,6 +31,7 @@ final class UserCredentialValidator implements UserCredentialValidatorInterface
         private readonly PasswordHasherInterface $passwordHasher,
         private readonly AccountLockoutProviderInterface $lockoutGuard,
         private readonly SignInPublisherInterface $signInPublisher,
+        private readonly EmailNormalizer $emailNormalizer,
         ?string $dummyPasswordHash = null,
     ) {
         $this->dummyPasswordHash = is_string($dummyPasswordHash) && $dummyPasswordHash !== ''
@@ -44,7 +46,7 @@ final class UserCredentialValidator implements UserCredentialValidatorInterface
         string $ipAddress,
         string $userAgent
     ): User {
-        $normalizedEmail = strtolower(trim($email));
+        $normalizedEmail = $this->emailNormalizer->normalize($email);
 
         $this->assertNotLocked($normalizedEmail);
 

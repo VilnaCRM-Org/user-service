@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Repository;
 
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
+use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -57,7 +58,8 @@ final class CachedUserRepository extends UserRepositoryDecorator
         private TagAwareCacheInterface $cache,
         private CacheKeyBuilder $cacheKeyBuilder,
         private LoggerInterface $logger,
-        private DocumentManager $documentManager
+        private DocumentManager $documentManager,
+        private EmailNormalizer $emailNormalizer
     ) {
         parent::__construct($inner);
     }
@@ -377,7 +379,10 @@ final class CachedUserRepository extends UserRepositoryDecorator
             return null;
         }
 
-        if (strtolower(trim($user->getEmail())) === strtolower(trim($requestedEmail))) {
+        if (
+            $this->emailNormalizer->normalize($user->getEmail())
+            === $this->emailNormalizer->normalize($requestedEmail)
+        ) {
             return $user;
         }
 

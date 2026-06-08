@@ -40,7 +40,20 @@ jobs:
 
       - name: Install Symfony CLI
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: wget https://get.symfony.com/cli/installer -O - | bash
+        env:
+          SYMFONY_CLI_VERSION: 5.17.1
+          SYMFONY_CLI_LINUX_AMD64_SHA256: 526c26e029427a94f275f06298a12119ed95c7df037ca13b93f29405740d2f4e
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/symfony-cli_linux_amd64.tar.gz"
+          curl --fail --location --show-error --silent \
+            --retry 5 --retry-delay 2 --retry-max-time 120 \
+            "https://github.com/symfony-cli/symfony-cli/releases/download/v${SYMFONY_CLI_VERSION}/symfony-cli_linux_amd64.tar.gz" \
+            --output "${archive}"
+          printf '%s  %s\n' "${SYMFONY_CLI_LINUX_AMD64_SHA256}" "${archive}" | sha256sum -c -
+          mkdir -p "${HOME}/.symfony5/bin"
+          tar -xzf "${archive}" -C "${HOME}/.symfony5/bin" symfony
+          chmod +x "${HOME}/.symfony5/bin/symfony"
 
       - name: Composer validate
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
