@@ -168,10 +168,14 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         array|string $emails,
         array $queryResult
     ): void {
-        $repository->expects($this->once())->method('createQueryBuilder')
-            ->willReturn($queryBuilder);
+        $legacyQueryBuilder = $this->createMock(Builder::class);
+        $legacyQuery = $this->createMock(Query::class);
+
+        $repository->expects($this->exactly(2))->method('createQueryBuilder')
+            ->willReturnOnConsecutiveCalls($queryBuilder, $legacyQueryBuilder);
 
         $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
+        $this->expectLegacyFallbackQuery($legacyQueryBuilder, $legacyQuery, []);
     }
 
     /**

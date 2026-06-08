@@ -18,7 +18,6 @@ use Doctrine\ODM\MongoDB\Query\Query;
 use function mb_strtolower;
 use function mb_strtoupper;
 use PHPUnit\Framework\MockObject\MockObject;
-use function preg_quote;
 
 /**
  * @psalm-type LegacyFallbackFixture = array{
@@ -108,14 +107,14 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
         );
     }
 
-    public function testFindByEmailsDoesNotQueryLegacyDocuments(): void
+    public function testFindByEmailsFallsBackToLegacyWithoutEmailRegexOr(): void
     {
-        $fixture = $this->createLegacyFallbackFixture(1);
+        $fixture = $this->createLegacyFallbackFixture();
 
-        $this->expectCurrentOnlyQuery($fixture, [$fixture['normalizedEmail']]);
+        $this->expectLegacyFallbackQueries($fixture, [$fixture['normalizedEmail']]);
 
         $this->assertSame(
-            [],
+            [$fixture['user']],
             iterator_to_array(
                 $fixture['repository']->findByEmails([$fixture['inputEmail']])
             )
@@ -219,25 +218,6 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
     }
 
     /**
-     * @param LegacyFallbackFixture $fixture
-     * @param list<string>|string $normalizedEmails
-     */
-    private function expectCurrentOnlyQuery(
-        array $fixture,
-        array|string $normalizedEmails
-    ): void {
-        $this->expectNormalizedEmailQuery(
-            $fixture['currentQueryBuilder'],
-            $fixture['currentQuery'],
-            $normalizedEmails,
-            []
-        );
-
-        $fixture['legacyQueryBuilder']->expects($this->never())
-            ->method('addAnd');
-    }
-
-    /**
      * @param list<string>|string $emails
      * @param list<object> $queryResult
      */
@@ -335,20 +315,30 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
     /**
      * @param list<string> $normalizedEmails
      *
-     * @return array{'$or': list<array{email: array{'$regex': string, '$options': string}}>}
+     * @return array{
+     *     '$expr': array{
+     *         '$in': array{
+     *             0: array{'$toLower': array{'$trim': array{input: string}}},
+     *             1: list<string>
+     *         }
+     *     }
+     * }
      */
     private function legacyEmailExpression(array $normalizedEmails): array
     {
         return [
-            '$or' => array_map(
-                static fn (string $normalizedEmail): array => [
-                    'email' => [
-                        '$regex' => '^' . preg_quote($normalizedEmail, '/') . '$',
-                        '$options' => 'i',
+            '$expr' => [
+                '$in' => [
+                    [
+                        '$toLower' => [
+                            '$trim' => [
+                                'input' => '$email',
+                            ],
+                        ],
                     ],
+                    $normalizedEmails,
                 ],
-                $normalizedEmails
-            ),
+            ],
         ];
     }
 

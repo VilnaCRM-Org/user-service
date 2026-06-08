@@ -20,7 +20,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 
 use function mb_strtolower;
-use function preg_quote;
 use function spl_object_id;
 use function str_contains;
 
@@ -87,7 +86,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches trimmed and lowercase email candidates through the normalizedEmail index.
+     * Matches current normalized records and migration-scoped legacy records.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -98,7 +97,10 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             return new UserCollection();
         }
 
-        return $this->findByNormalizedEmails($uniqueEmails);
+        return $this->combineUserCollections(
+            $this->findByNormalizedEmails($uniqueEmails),
+            $this->findLegacyByNormalizedEmails($uniqueEmails)
+        );
     }
 
     #[\Override]
@@ -232,18 +234,30 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param list<string> $normalizedEmails
      *
-     * @return array{'$or': list<array{email: array{'$regex': string, '$options': string}}>}
+     * @return array{
+     *     '$expr': array{
+     *         '$in': array{
+     *             0: array{'$toLower': array{'$trim': array{input: string}}},
+     *             1: list<string>
+     *         }
+     *     }
+     * }
      */
     private function legacyEmailExpression(array $normalizedEmails): array
     {
         return [
-            '$or' => array_map(
-                /** @return array{email: array{'$regex': string, '$options': string}} */
-                fn (string $normalizedEmail): array => [
-                    'email' => $this->caseInsensitiveEmailMatch($normalizedEmail),
+            '$expr' => [
+                '$in' => [
+                    [
+                        '$toLower' => [
+                            '$trim' => [
+                                'input' => '$email',
+                            ],
+                        ],
+                    ],
+                    $normalizedEmails,
                 ],
-                $normalizedEmails
-            ),
+            ],
         ];
     }
 
@@ -271,17 +285,6 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         }
 
         return new UserCollection($users);
-    }
-
-    /**
-     * @return array{'$regex': string, '$options': string}
-     */
-    private function caseInsensitiveEmailMatch(string $email): array
-    {
-        return [
-            '$regex' => '^' . preg_quote($email, '/') . '$',
-            '$options' => 'i',
-        ];
     }
 
     /**
