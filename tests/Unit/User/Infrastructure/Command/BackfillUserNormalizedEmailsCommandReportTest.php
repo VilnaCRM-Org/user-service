@@ -9,6 +9,8 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  * @psalm-type TestDocument = array<string, TestDocumentValue>
  */
 
+use App\User\Application\Service\EmailNormalizer;
+use function mb_strtoupper;
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;
 
@@ -22,15 +24,17 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends
     {
         [$tester, $collection] = $this->createTesterWithCollection();
         $reportFile = $this->temporaryReportFile();
+        $duplicateEmail = $this->faker->safeEmail();
+        $normalizedDuplicateEmail = $this->normalizeEmail($duplicateEmail);
 
-        $this->expectFindCalls($collection, $this->duplicateCandidates(), []);
+        $this->expectFindCalls($collection, $this->duplicateCandidates($duplicateEmail), []);
         $this->expectNoBulkWrite($collection);
 
         try {
             $this->assertSame(Command::FAILURE, $tester->execute(['--report-file' => $reportFile]));
             $this->assertStringContainsString('Backfill report written to ', $tester->getDisplay());
             $this->assertStringContainsString('Backfill aborted:', $tester->getDisplay());
-            $this->assertDuplicateReportFile($reportFile);
+            $this->assertDuplicateReportFile($reportFile, $normalizedDuplicateEmail);
         } finally {
             $this->removeReportFile($reportFile);
         }
@@ -41,11 +45,7 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends
         [$tester, $collection] = $this->createTesterWithCollection();
         $reportFile = $this->temporaryReportFile();
 
-        $this->expectFindCalls(
-            $collection,
-            [['email' => 'USER@example.com', '_id' => 'user-1']],
-            []
-        );
+        $this->expectFindCalls($collection, $this->dryRunCandidates(), []);
         $this->expectNoBulkWrite($collection);
 
         try {
@@ -149,11 +149,22 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends
     }
 
     /** @return list<TestDocument> */
-    private function duplicateCandidates(): array
+    private function dryRunCandidates(): array
     {
         return [
-            ['_id' => 'user-1', 'email' => 'USER@example.com'],
-            ['_id' => 'user-2', 'email' => 'user@example.com'],
+            [
+                'email' => mb_strtoupper($this->faker->safeEmail(), 'UTF-8'),
+                '_id' => $this->faker->uuid(),
+            ],
+        ];
+    }
+
+    /** @return list<TestDocument> */
+    private function duplicateCandidates(string $email): array
+    {
+        return [
+            ['_id' => $this->faker->uuid(), 'email' => mb_strtoupper($email, 'UTF-8')],
+            ['_id' => $this->faker->uuid(), 'email' => $email],
         ];
     }
 
@@ -196,8 +207,10 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends
         $this->assertSame(['mode' => $directoryMode], $stream->__call('url_stat', []));
     }
 
-    private function assertDuplicateReportFile(string $reportFile): void
-    {
+    private function assertDuplicateReportFile(
+        string $reportFile,
+        string $normalizedDuplicateEmail
+    ): void {
         $report = $this->decodedReport($reportFile);
 
         $this->assertStringContainsString(
@@ -209,8 +222,13 @@ final class BackfillUserNormalizedEmailsCommandReportTest extends
         $this->assertSame(2, $report['decoded']['matched']);
         $this->assertSame(0, $report['decoded']['modified']);
         $this->assertFalse($report['decoded']['dryRun']);
-        $this->assertSame(['user@example.com'], $report['decoded']['duplicates']);
+        $this->assertSame([$normalizedDuplicateEmail], $report['decoded']['duplicates']);
         $this->assertIsString($report['decoded']['generatedAt']);
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return (new EmailNormalizer())->normalize($email);
     }
 
     private function assertSuccessReportFile(

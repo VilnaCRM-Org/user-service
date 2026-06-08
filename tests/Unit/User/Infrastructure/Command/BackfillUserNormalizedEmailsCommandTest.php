@@ -12,6 +12,7 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
 
 use App\User\Application\Service\EmailNormalizer;
 use ArrayObject;
+use function mb_strtoupper;
 use MongoDB\BulkWriteResult;
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;
@@ -24,55 +25,60 @@ final class BackfillUserNormalizedEmailsCommandTest extends
     {
         [$tester, $collection] = $this->createTesterWithCollection();
         $result = $this->createMock(BulkWriteResult::class);
-        $unicodeEmail = "\u{0104}\u{017D}@example.COM";
-        $normalizedUnicodeEmail = "\u{0105}\u{017E}@example.com";
+        $unicodeEmail = sprintf("\u{0104}\u{017D}@%s", $this->faker->safeEmailDomain());
+        $candidates = $this->successfulCandidates($this->faker->safeEmail(), $unicodeEmail);
 
-        $this->expectFindCalls($collection, $this->successfulCandidates($unicodeEmail), []);
-        $this->expectSuccessfulBulkWrite($collection, $result, $normalizedUnicodeEmail);
+        $this->expectFindCalls($collection, $candidates, []);
+        $this->expectSuccessfulBulkWrite($collection, $result, $candidates);
         $this->assertSuccessfulBackfill($tester);
     }
 
     public function testExecuteAbortsWhenCandidatesNormalizeToDuplicateEmail(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
+        $email = $this->faker->safeEmail();
+        $normalizedEmail = $this->normalizeEmail($email);
 
         $this->expectFindCalls(
             $collection,
             [
-                ['_id' => 'user-1', 'email' => 'USER@example.com'],
-                ['_id' => 'user-2', 'email' => 'user@example.com'],
+                ['_id' => $this->faker->uuid(), 'email' => $this->uppercaseEmail($email)],
+                ['_id' => $this->faker->uuid(), 'email' => $email],
             ],
             []
         );
         $this->expectNoBulkWrite($collection);
 
-        $this->assertDuplicateFailure($tester, 'user@example.com', 2);
+        $this->assertDuplicateFailure($tester, $normalizedEmail, 2);
     }
 
     public function testExecuteAbortsWhenExistingNormalizedEmailWouldCollide(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
+        $email = $this->faker->safeEmail();
+        $normalizedEmail = $this->normalizeEmail($email);
 
         $this->expectFindCalls(
             $collection,
             [
-                ['_id' => 'legacy-user', 'email' => 'LEGACY@example.com'],
+                ['_id' => $this->faker->uuid(), 'email' => $this->uppercaseEmail($email)],
             ],
             [
-                ['_id' => 'current-user', 'normalizedEmail' => 'legacy@example.com'],
+                ['_id' => $this->faker->uuid(), 'normalizedEmail' => $normalizedEmail],
             ]
         );
         $this->expectNoBulkWrite($collection);
 
-        $this->assertDuplicateFailure($tester, 'legacy@example.com', 1);
+        $this->assertDuplicateFailure($tester, $normalizedEmail, 1);
     }
 
     public function testExecuteDryRunScansWithoutBulkWrite(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
-        $unicodeEmail = "\u{0104}\u{017D}@example.COM";
+        $unicodeEmail = sprintf("\u{0104}\u{017D}@%s", $this->faker->safeEmailDomain());
+        $candidates = $this->successfulCandidates($this->faker->safeEmail(), $unicodeEmail);
 
-        $this->expectFindCalls($collection, $this->successfulCandidates($unicodeEmail), []);
+        $this->expectFindCalls($collection, $candidates, []);
         $this->expectNoBulkWrite($collection);
 
         $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true]));
@@ -94,9 +100,9 @@ final class BackfillUserNormalizedEmailsCommandTest extends
             ->method('find')
             ->with($this->backfillFilter(), $this->candidateFindOptions())
             ->willReturn(new ArrayCursor([
-                (object) ['email' => 'ignored@example.com'],
-                ['_id' => 'missing-email'],
-                ['_id' => 'invalid-email', 'email' => 123],
+                (object) ['email' => $this->faker->safeEmail()],
+                ['_id' => $this->faker->uuid()],
+                ['_id' => $this->faker->uuid(), 'email' => 123],
             ]));
         $this->expectNoBulkWrite($collection);
 
@@ -107,18 +113,21 @@ final class BackfillUserNormalizedEmailsCommandTest extends
     {
         [$tester, $collection] = $this->createTesterWithCollection();
         $result = $this->createMock(BulkWriteResult::class);
+        $email = $this->faker->safeEmail();
+        $candidateEmail = sprintf(' %s ', $this->uppercaseEmail($email));
+        $normalizedEmail = $this->normalizeEmail($candidateEmail);
         $candidate = new ArrayObject([
-            '_id' => true,
-            'email' => ' ARRAY@example.COM ',
+            '_id' => $this->faker->boolean(),
+            'email' => $candidateEmail,
         ]);
         $operation = [
             'updateOne' => [
                 $this->updateFilter(null),
-                ['$set' => ['normalizedEmail' => 'array@example.com']],
+                ['$set' => ['normalizedEmail' => $normalizedEmail]],
             ],
         ];
 
-        $this->expectArrayAccessBackfillFindCalls($collection, $candidate);
+        $this->expectArrayAccessBackfillFindCalls($collection, $candidate, $normalizedEmail);
         $this->expectBulkWrite($collection, $result, [$operation]);
         $result->expects($this->once())->method('getModifiedCount')->willReturn(1);
 
@@ -158,36 +167,41 @@ final class BackfillUserNormalizedEmailsCommandTest extends
     }
 
     /** @return list<TestDocument> */
-    private function successfulCandidates(string $unicodeEmail): array
+    private function successfulCandidates(string $email, string $unicodeEmail): array
     {
         return [
-            ['_id' => 'user-1', 'email' => ' USER@example.COM '],
-            ['_id' => 'user-2', 'email' => $unicodeEmail],
+            [
+                '_id' => $this->faker->uuid(),
+                'email' => sprintf(' %s ', $this->uppercaseEmail($email)),
+            ],
+            ['_id' => $this->faker->uuid(), 'email' => $unicodeEmail],
         ];
     }
 
+    /** @param list<TestDocument> $candidates */
     private function expectSuccessfulBulkWrite(
         Collection $collection,
         BulkWriteResult $result,
-        string $normalizedUnicodeEmail
+        array $candidates
     ): void {
         $this->expectBulkWrite(
             $collection,
             $result,
-            $this->successfulBackfillOperations($normalizedUnicodeEmail)
+            $this->successfulBackfillOperations($candidates)
         );
         $result->expects($this->once())->method('getModifiedCount')->willReturn(2);
     }
 
     private function expectArrayAccessBackfillFindCalls(
         Collection $collection,
-        ArrayObject $candidate
+        ArrayObject $candidate,
+        string $normalizedEmail
     ): void {
         $collection->expects($this->exactly(2))
             ->method('find')
             ->willReturnCallback(
                 fn (array $filter, array $options): ArrayCursor => $this
-                    ->arrayAccessBackfillCursor($filter, $options, $candidate)
+                    ->arrayAccessBackfillCursor($filter, $options, $candidate, $normalizedEmail)
             );
     }
 
@@ -202,7 +216,8 @@ final class BackfillUserNormalizedEmailsCommandTest extends
     private function arrayAccessBackfillCursor(
         array $filter,
         array $options,
-        ArrayObject $candidate
+        ArrayObject $candidate,
+        string $normalizedEmail
     ): ArrayCursor {
         if ($filter === $this->backfillFilter()) {
             $this->assertSame($this->candidateFindOptions(), $options);
@@ -212,18 +227,20 @@ final class BackfillUserNormalizedEmailsCommandTest extends
 
         $this->assertSame([
             'normalizedEmail' => [
-                '$in' => ['array@example.com'],
+                '$in' => [$normalizedEmail],
             ],
         ], $filter);
         $this->assertSame($this->existingFindOptions(), $options);
 
         return new ArrayCursor([
-            (object) ['normalizedEmail' => 'array@example.com'],
-            ['_id' => 'existing-without-normalized-email'],
+            (object) ['normalizedEmail' => $normalizedEmail],
+            ['_id' => $this->faker->uuid()],
         ]);
     }
 
     /**
+     * @param list<TestDocument> $candidates
+     *
      * @return list<array{
      *     updateOne: array{
      *         0: array{
@@ -234,22 +251,38 @@ final class BackfillUserNormalizedEmailsCommandTest extends
      *     }
      * }>
      */
-    private function successfulBackfillOperations(string $normalizedUnicodeEmail): array
+    private function successfulBackfillOperations(array $candidates): array
     {
+        $firstEmail = $candidates[0]['email'] ?? null;
+        $secondEmail = $candidates[1]['email'] ?? null;
+
+        self::assertIsString($firstEmail);
+        self::assertIsString($secondEmail);
+
         return [
             [
                 'updateOne' => [
-                    $this->updateFilter('user-1'),
-                    ['$set' => ['normalizedEmail' => 'user@example.com']],
+                    $this->updateFilter($candidates[0]['_id'] ?? null),
+                    ['$set' => ['normalizedEmail' => $this->normalizeEmail($firstEmail)]],
                 ],
             ],
             [
                 'updateOne' => [
-                    $this->updateFilter('user-2'),
-                    ['$set' => ['normalizedEmail' => $normalizedUnicodeEmail]],
+                    $this->updateFilter($candidates[1]['_id'] ?? null),
+                    ['$set' => ['normalizedEmail' => $this->normalizeEmail($secondEmail)]],
                 ],
             ],
         ];
+    }
+
+    private function uppercaseEmail(string $email): string
+    {
+        return mb_strtoupper($email, 'UTF-8');
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return (new EmailNormalizer())->normalize($email);
     }
 
     /**

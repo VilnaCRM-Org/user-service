@@ -35,8 +35,9 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
     public function testDuplicateFailureLimitsPreviewAndReportsCounts(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
+        $duplicateEmails = $this->duplicateEmails(6);
 
-        $this->expectFindCalls($collection, $this->duplicateCandidates(6), []);
+        $this->expectFindCalls($collection, $this->duplicateCandidates($duplicateEmails), []);
         $this->expectNoBulkWrite($collection);
 
         $this->assertSame(Command::FAILURE, $tester->execute([]));
@@ -46,20 +47,26 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
             'Backfill aborted: scanned 12 matched users, modified 0 users',
             $display
         );
-        foreach (range(1, 5) as $position) {
-            $this->assertStringContainsString($this->duplicateEmail($position), $display);
+        foreach (array_slice($duplicateEmails, 0, 5) as $email) {
+            $this->assertStringContainsString($this->normalizeEmail($email), $display);
         }
-        $this->assertStringNotContainsString($this->duplicateEmail(6), $display);
+        $this->assertStringNotContainsString(
+            $this->normalizeEmail($duplicateEmails[5]),
+            $display
+        );
     }
 
     public function testCandidateCollectionSkipsUnreadableDocumentsAndContinues(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
-        $validCandidate = $this->candidate(7, 'valid-candidate@example.test');
+        $validCandidate = $this->candidate(
+            $this->faker->uuid(),
+            $this->faker->safeEmail()
+        );
 
         $this->expectFindCalls($collection, [
-            (object) ['email' => 'ignored@example.test'],
-            ['_id' => 'invalid-email', 'email' => 123],
+            (object) ['email' => $this->faker->safeEmail()],
+            ['_id' => $this->faker->uuid(), 'email' => 123],
             $validCandidate,
         ], []);
         $this->expectBulkWriteOperations(
@@ -74,23 +81,27 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
     public function testExistingDocumentScanSkipsUnreadableDocumentsAndContinues(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
-        $candidate = $this->candidate('legacy-user', 'legacy-collision@example.test');
-        $otherCandidate = $this->candidate('legacy-other-user', 'legacy-other@example.test');
+        $email = $this->generatedEmail();
+        $otherEmail = $this->generatedEmail();
+        $normalizedEmail = $this->normalizeEmail($email);
+        $otherNormalizedEmail = $this->normalizeEmail($otherEmail);
+        $candidate = $this->candidate($this->faker->uuid(), $email);
+        $otherCandidate = $this->candidate($this->faker->uuid(), $otherEmail);
 
         $this->expectFindCalls($collection, [$candidate, $otherCandidate], [
-            (object) ['normalizedEmail' => 'legacy-collision@example.test'],
-            ['normalizedEmail' => 'legacy-collision@example.test'],
-            ['normalizedEmail' => 'legacy-collision@example.test'],
-            ['normalizedEmail' => 'legacy-other@example.test'],
+            (object) ['normalizedEmail' => $normalizedEmail],
+            ['normalizedEmail' => $normalizedEmail],
+            ['normalizedEmail' => $normalizedEmail],
+            ['normalizedEmail' => $otherNormalizedEmail],
         ]);
         $this->expectNoBulkWrite($collection);
 
         $this->assertSame(Command::FAILURE, $tester->execute([]));
         $display = $tester->getDisplay();
 
-        $this->assertStringContainsString('legacy-collision@example.test', $display);
-        $this->assertStringContainsString('legacy-other@example.test', $display);
-        $this->assertSame(1, substr_count($display, 'legacy-collision@example.test'));
+        $this->assertStringContainsString($normalizedEmail, $display);
+        $this->assertStringContainsString($otherNormalizedEmail, $display);
+        $this->assertSame(1, substr_count($display, $normalizedEmail));
     }
 
     public function testBackfillAccumulatesModifiedCountAcrossBatchesAndPreservesIntegerIds(): void
@@ -207,16 +218,31 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
         );
     }
 
-    /** @return list<TestDocument> */
-    private function duplicateCandidates(int $duplicateCount): array
+    /** @return list<string> */
+    private function duplicateEmails(int $duplicateCount): array
+    {
+        $emails = [];
+
+        for ($index = 0; $index < $duplicateCount; ++$index) {
+            $emails[] = $this->generatedEmail();
+        }
+
+        return $emails;
+    }
+
+    /**
+     * @param list<string> $emails
+     *
+     * @return list<TestDocument>
+     */
+    private function duplicateCandidates(array $emails): array
     {
         $candidates = [];
 
-        foreach (range(1, $duplicateCount) as $position) {
-            $email = $this->duplicateEmail($position);
+        foreach ($emails as $email) {
             $upperEmail = mb_strtoupper($email, 'UTF-8');
-            $candidates[] = $this->candidate("duplicate-{$position}-a", $email);
-            $candidates[] = $this->candidate("duplicate-{$position}-b", $upperEmail);
+            $candidates[] = $this->candidate($this->faker->uuid(), $email);
+            $candidates[] = $this->candidate($this->faker->uuid(), $upperEmail);
         }
 
         return $candidates;
@@ -227,10 +253,10 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
     {
         $candidates = [];
 
-        foreach (range(1, $count) as $position) {
+        for ($index = 0; $index < $count; ++$index) {
             $candidates[] = $this->candidate(
-                $position,
-                sprintf('batch-%03d@example.test', $position)
+                $this->faker->unique()->numberBetween(1, 1_000_000),
+                $this->faker->unique()->safeEmail()
             );
         }
 
@@ -244,11 +270,6 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
             '_id' => $id,
             'email' => $email,
         ];
-    }
-
-    private function duplicateEmail(int $position): string
-    {
-        return sprintf('duplicate-%d@example.test', $position);
     }
 
     /**
@@ -272,6 +293,16 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends
         }
 
         return $operations;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return (new EmailNormalizer())->normalize($email);
+    }
+
+    private function generatedEmail(): string
+    {
+        return sprintf('%s@%s', $this->faker->uuid(), $this->faker->safeEmailDomain());
     }
 
     /**
