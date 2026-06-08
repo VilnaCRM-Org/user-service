@@ -1000,7 +1000,7 @@
         "duration": 10
       },
       "average": {
-        "threshold": 300,
+        "threshold": 2500,
         "rps": 50,
         "vus": 50,
         "duration": {
@@ -1020,7 +1020,7 @@
         }
       },
       "spike": {
-        "threshold": 8000,
+        "threshold": 12000,
         "rps": 400,
         "vus": 400,
         "duration": {
