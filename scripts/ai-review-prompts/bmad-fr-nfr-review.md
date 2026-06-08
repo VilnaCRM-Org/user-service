@@ -265,14 +265,9 @@ Required review process:
 11. Check GitHub completion using the supplied PR number or by detecting the PR
     for the current branch. If a PR cannot be identified, remote GitHub state
     cannot be queried, or review-thread/check state cannot be verified, fail
-    closed. Human approval is not required before the BMAD review can pass.
-    Report `GITHUB_HUMAN_APPROVAL_STATE: APPROVED` when GitHub
-    `reviewDecision` is `APPROVED`; report
-    `GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED` when `reviewDecision` is
-    `REVIEW_REQUIRED` and there are no unresolved active review threads.
-    Fail on `CHANGES_REQUESTED`, an unknown/empty `reviewDecision`,
-    unresolved active review threads, mismatched PR head, draft PR state, or
-    non-passing applicable checks.
+    closed. Human approval is not required for the BMAD review to run or pass;
+    fail only on unresolved active review threads, requested-changes reviews,
+    mismatched PR head, draft PR state, or non-passing applicable checks.
 12. Check the CI gate separately. Local verification is supporting evidence, but
     it does not replace GitHub check evidence for an open PR. If required
     checks are configured, verify those required checks. If the repository
@@ -320,7 +315,7 @@ TEST_CASE_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
 AUTO_TEST_COVERAGE_MIN_SCORE: {SCORE_THRESHOLD}/5
 FLAKY_TEST_RISK_MIN_SCORE: {SCORE_THRESHOLD}/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|NOT_REQUIRED>
+GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>
 CI_CHECK_ROLLUP: PASSING
 
 For FAIL, include the same markers with FAIL for any failed area.

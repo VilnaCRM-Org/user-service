@@ -39,20 +39,17 @@ jobs:
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
-      - name: Install Bats and bats libs
+      - name: Setup Bats and bats libs
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends \
-            bats=1.10.0-1 \
-            bats-support=0.3.0-4 \
-            bats-assert=2.1.0-3
+        uses: bats-core/bats-action@2.0.0
+        with:
+          bats-version: 1.13.0
 
       - name: Install Bats plugins
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: |
-          ln -s /usr/lib/bats/bats-support tests/CLI/bats/bats-support
-          ln -s /usr/lib/bats/bats-assert tests/CLI/bats/bats-assert
+          git clone https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
+          git clone https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}

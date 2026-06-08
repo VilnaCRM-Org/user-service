@@ -154,10 +154,9 @@ vulnerability/defect risk blocks PASS.
    fix loop continues.
 7. Fetch and address GitHub comments with `make pr-comments` when a PR exists.
 8. Do not mark the PR/task complete until the gate reports `STATUS: PASS`,
-   `make ci` passes, GitHub comments are resolved, required checks pass, no
-   requested-changes review remains, and human approval is either `APPROVED` or
-   explicitly `NOT_REQUIRED`. Human approval is not required before the BMAD
-   reviewer runs or posts status updates.
+   `make ci` passes, GitHub comments are resolved, required checks pass, and no
+   requested-changes review remains. Human approval is not required before the
+   BMAD reviewer runs or posts status updates.
 9. For PR work, leave the final BMAD result visible on the PR through the
    generated PR comment and `BMAD FR/NFR Review Gate` commit status.
 

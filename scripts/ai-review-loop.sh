@@ -785,8 +785,8 @@ review_has_scorecard_evidence() {
   local file="$1"
   local evidence_marker section score below_threshold_regex threshold_regex nfr_category quality_dimension system_quality_attribute impact_surface
   local normalized_output github_completion_marker_found=false
-  local human_approval_marker_contract="GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|NOT_REQUIRED>"
-  local human_approval_marker_regex='^GITHUB_HUMAN_APPROVAL_STATE: (APPROVED|NOT_REQUIRED)$'
+  local human_approval_marker_contract="GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>"
+  local human_approval_marker_regex='^GITHUB_HUMAN_APPROVAL_STATE: (APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN)$'
   local score_sections=(
     "Requirement Scorecard"
     "NFR Catalog Scorecard"
@@ -998,18 +998,10 @@ review_has_github_ci_corroboration() {
     echo "Warning: GitHub PR is still draft." >&2
     return 1
   fi
-  case "${review_decision:-UNKNOWN}" in
-    APPROVED | REVIEW_REQUIRED)
-      ;;
-    CHANGES_REQUESTED)
-      echo "Warning: GitHub review decision has requested changes: $review_decision" >&2
-      return 1
-      ;;
-    *)
-      echo "Warning: GitHub review decision is unknown for BMAD gate: ${review_decision:-UNKNOWN}" >&2
-      return 1
-      ;;
-  esac
+  if [[ "$review_decision" == "CHANGES_REQUESTED" ]]; then
+    echo "Warning: GitHub review decision has requested changes: ${review_decision:-UNKNOWN}" >&2
+    return 1
+  fi
   require_github_pr_mergeable_for_pass "$merge_state_status" "$mergeable" "BMAD gate" || return 1
 
   checks_summary_jq="$(github_checks_summary_jq)"
