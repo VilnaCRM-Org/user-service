@@ -87,7 +87,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches exact, trimmed, and lowercase email candidates.
+     * Matches trimmed and lowercase email candidates through the normalizedEmail index.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
@@ -98,12 +98,7 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
             return new UserCollection();
         }
 
-        $currentUsers = $this->findByNormalizedEmails($uniqueEmails);
-
-        return $this->combineUserCollections(
-            $currentUsers,
-            $this->findLegacyByNormalizedEmails($uniqueEmails)
-        );
+        return $this->findByNormalizedEmails($uniqueEmails);
     }
 
     #[\Override]

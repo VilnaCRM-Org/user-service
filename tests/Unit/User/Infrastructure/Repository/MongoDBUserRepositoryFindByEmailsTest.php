@@ -21,7 +21,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         $user = $this->createUserWithEmail($caseInsensitiveEmail);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
+        $this->expectFindByEmailCaseInsensitiveQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
@@ -43,7 +43,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         $secondUser = $this->createUserWithEmail($secondEmail);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
+        $this->expectFindByEmailsQuery(
             $repository,
             $queryBuilder,
             $query,
@@ -63,7 +63,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
+        $this->expectFindByEmailsQuery(
             $repository,
             $queryBuilder,
             $query,
@@ -84,7 +84,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
+        $this->expectFindByEmailsQuery(
             $repository,
             $queryBuilder,
             $query,
@@ -113,7 +113,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
+        $this->expectFindByEmailsQuery(
             $repository,
             $queryBuilder,
             $query,
@@ -140,7 +140,7 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
      * @param list<string>|string $emails
      * @param list<object> $queryResult
      */
-    private function expectFindByEmailsQueryWithEmptyLegacyFallback(
+    private function expectFindByEmailCaseInsensitiveQueryWithEmptyLegacyFallback(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
         Query $query,
@@ -155,6 +155,23 @@ final class MongoDBUserRepositoryFindByEmailsTest extends MongoDBUserRepositoryT
 
         $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
         $this->expectLegacyFallbackQuery($legacyQueryBuilder, $legacyQuery, []);
+    }
+
+    /**
+     * @param list<string>|string $emails
+     * @param list<object> $queryResult
+     */
+    private function expectFindByEmailsQuery(
+        MongoDBUserRepository $repository,
+        Builder $queryBuilder,
+        Query $query,
+        array|string $emails,
+        array $queryResult
+    ): void {
+        $repository->expects($this->once())->method('createQueryBuilder')
+            ->willReturn($queryBuilder);
+
+        $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
     }
 
     /**

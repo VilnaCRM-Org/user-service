@@ -87,49 +87,15 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
         );
     }
 
-    public function testFindByEmailsFallsBackToLegacyDocuments(): void
+    public function testCaseInsensitiveLookupDeduplicatesSameLegacyUserWithoutId(): void
     {
         $fixture = $this->createLegacyFallbackFixture();
-
-        $this->expectLegacyFallbackQueries($fixture, [$fixture['normalizedEmail']]);
-
-        $this->assertSame(
-            [$fixture['user']],
-            iterator_to_array(
-                $fixture['repository']->findByEmails([$fixture['inputEmail']])
-            )
-        );
-    }
-
-    public function testFindByEmailsReturnsCurrentAndLegacyDuplicates(): void
-    {
-        $fixture = $this->createLegacyFallbackFixture();
-        $currentUser = $this->createUserWithEmail($fixture['normalizedEmail']);
-        $legacyUser = $fixture['user'];
+        $normalizedEmail = $fixture['normalizedEmail'];
+        $user = $this->createUserWithoutStringId($normalizedEmail);
 
         $this->expectLegacyFallbackQueries(
             $fixture,
-            [$fixture['normalizedEmail']],
-            [$currentUser],
-            [$legacyUser]
-        );
-
-        $this->assertSame(
-            [$currentUser, $legacyUser],
-            iterator_to_array(
-                $fixture['repository']->findByEmails([$fixture['inputEmail']])
-            )
-        );
-    }
-
-    public function testFindByEmailsDeduplicatesSameCurrentAndLegacyUserWithoutId(): void
-    {
-        $fixture = $this->createLegacyFallbackFixture();
-        $user = $this->createUserWithoutStringId($fixture['normalizedEmail']);
-
-        $this->expectLegacyFallbackQueries(
-            $fixture,
-            [$fixture['normalizedEmail']],
+            $normalizedEmail,
             [$user],
             [$user]
         );
@@ -137,16 +103,30 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
         $this->assertSame(
             [$user],
             iterator_to_array(
+                $fixture['repository']->findByEmailCaseInsensitive($fixture['inputEmail'])
+            )
+        );
+    }
+
+    public function testFindByEmailsDoesNotQueryLegacyDocuments(): void
+    {
+        $fixture = $this->createLegacyFallbackFixture(1);
+
+        $this->expectCurrentOnlyQuery($fixture, [$fixture['normalizedEmail']]);
+
+        $this->assertSame(
+            [],
+            iterator_to_array(
                 $fixture['repository']->findByEmails([$fixture['inputEmail']])
             )
         );
     }
 
     /** @return LegacyFallbackFixture */
-    private function createLegacyFallbackFixture(): array
+    private function createLegacyFallbackFixture(int $queryBuilderCalls = 2): array
     {
         $email = $this->faker->unique()->email();
-        $repositoryFixture = $this->createLegacyFallbackRepository();
+        $repositoryFixture = $this->createLegacyFallbackRepository($queryBuilderCalls);
 
         return [
             'inputEmail' => mb_strtoupper($email, 'UTF-8'),
@@ -165,7 +145,7 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
      *     legacyQuery: Query
      * }
      */
-    private function createLegacyFallbackRepository(): array
+    private function createLegacyFallbackRepository(int $queryBuilderCalls = 2): array
     {
         $currentQueryBuilder = $this->createMock(Builder::class);
         $currentQuery = $this->createMock(Query::class);
@@ -175,7 +155,8 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
         return [
             'repository' => $this->createRepositoryWithQueryBuilders(
                 $currentQueryBuilder,
-                $legacyQueryBuilder
+                $legacyQueryBuilder,
+                $queryBuilderCalls
             ),
             'currentQueryBuilder' => $currentQueryBuilder,
             'currentQuery' => $currentQuery,
@@ -186,7 +167,8 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
 
     private function createRepositoryWithQueryBuilders(
         Builder $currentQueryBuilder,
-        Builder $legacyQueryBuilder
+        Builder $legacyQueryBuilder,
+        int $queryBuilderCalls
     ): MongoDBUserRepository {
         $this->registry
             ->expects($this->atLeastOnce())
@@ -203,7 +185,7 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
             ->onlyMethods(['createQueryBuilder'])
             ->getMock();
 
-        $repository->expects($this->exactly(2))
+        $repository->expects($this->exactly($queryBuilderCalls))
             ->method('createQueryBuilder')
             ->willReturnOnConsecutiveCalls($currentQueryBuilder, $legacyQueryBuilder);
 
@@ -234,6 +216,25 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
             (array) $normalizedEmails,
             $legacyQueryResult ?? [$fixture['user']]
         );
+    }
+
+    /**
+     * @param LegacyFallbackFixture $fixture
+     * @param list<string>|string $normalizedEmails
+     */
+    private function expectCurrentOnlyQuery(
+        array $fixture,
+        array|string $normalizedEmails
+    ): void {
+        $this->expectNormalizedEmailQuery(
+            $fixture['currentQueryBuilder'],
+            $fixture['currentQuery'],
+            $normalizedEmails,
+            []
+        );
+
+        $fixture['legacyQueryBuilder']->expects($this->never())
+            ->method('addAnd');
     }
 
     /**
