@@ -164,8 +164,9 @@ final class OAuthExceptionListenerTest extends UnitTestCase
 
     public function testDuplicateEmailReturns409(): void
     {
+        $email = $this->faker->safeEmail();
         $event = $this->createExceptionEvent(
-            new DuplicateEmailException($this->faker->safeEmail()),
+            new DuplicateEmailException($email),
             sprintf(
                 '/api/auth/social/%s/callback',
                 $this->faker->randomElement(['facebook', 'github', 'google', 'twitter'])
@@ -179,6 +180,11 @@ final class OAuthExceptionListenerTest extends UnitTestCase
             Response::HTTP_CONFLICT,
             'duplicate_email'
         );
+        $this->assertResponseDetail(
+            $event,
+            'Email address matches multiple local users; automatic linking is blocked.'
+        );
+        $this->assertResponseDetailDoesNotContain($event, $email);
     }
 
     public function testDuplicateEmailOutsideOAuthSocialCallbackIsIgnored(): void
@@ -276,5 +282,35 @@ final class OAuthExceptionListenerTest extends UnitTestCase
 
         $this->assertSame($expectedErrorCode, $body['error_code']);
         $this->assertSame($expectedStatus, $body['status']);
+    }
+
+    private function assertResponseDetail(
+        ExceptionEvent $event,
+        string $expectedDetail,
+    ): void {
+        $this->assertSame($expectedDetail, $this->responseDetail($event));
+    }
+
+    private function assertResponseDetailDoesNotContain(
+        ExceptionEvent $event,
+        string $unexpectedValue,
+    ): void {
+        $this->assertStringNotContainsString($unexpectedValue, $this->responseDetail($event));
+    }
+
+    private function responseDetail(ExceptionEvent $event): string
+    {
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+
+        $body = json_decode(
+            (string) $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $this->assertIsString($body['detail']);
+
+        return $body['detail'];
     }
 }

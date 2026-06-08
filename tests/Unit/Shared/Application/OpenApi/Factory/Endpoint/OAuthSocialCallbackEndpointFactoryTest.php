@@ -71,6 +71,10 @@ final class OAuthSocialCallbackEndpointFactoryTest extends UnitTestCase
         $mediaType = $content['application/problem+json'] ?? null;
         $this->assertNotNull($mediaType);
         $this->assertSame('duplicate_email', $mediaType->getExample()['error_code'] ?? null);
+        $this->assertSame(
+            'Email address matches multiple local users; automatic linking is blocked.',
+            $mediaType->getExample()['detail'] ?? null
+        );
 
         return true;
     }

@@ -198,6 +198,10 @@ final class EmailAmbiguityRuntimeIntegrationTest extends UserIntegrationTestCase
         string $provider
     ): void {
         $this->assertProblem($response, $body, Response::HTTP_CONFLICT, 'duplicate_email');
+        $this->assertSame(
+            'Email address matches multiple local users; automatic linking is blocked.',
+            $body['detail'] ?? null
+        );
         $this->assertSame([], $this->recordingOAuthPublisher->createdEvents());
         $this->assertSame([], $this->recordingOAuthPublisher->signedInEvents());
         $this->assertNull($this->socialIdentityRepository->findByUserIdAndProvider(

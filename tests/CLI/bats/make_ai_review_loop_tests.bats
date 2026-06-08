@@ -31,7 +31,7 @@ TEST_CASE_COVERAGE_MIN_SCORE: 5/5
 AUTO_TEST_COVERAGE_MIN_SCORE: 5/5
 FLAKY_TEST_RISK_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -199,7 +199,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, human approval not required, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS
@@ -1295,7 +1295,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -1360,7 +1360,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, human approval not required, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS
@@ -2485,7 +2485,7 @@ SCRIPT
 
   assert_failure
   assert_output --partial \
-    "Warning: BMAD PASS output is missing required evidence marker: GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|REVIEW_REQUIRED|CHANGES_REQUESTED|UNKNOWN>"
+    "Warning: BMAD PASS output is missing required evidence marker: GITHUB_HUMAN_APPROVAL_STATE: <APPROVED|NOT_REQUIRED>"
   assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 }
 
@@ -2585,7 +2585,7 @@ CI_GATE: PASS
 FR_NFR_MIN_SCORE: 4/5
 NFR_CATALOG_MIN_SCORE: 4/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2731,7 +2731,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2862,7 +2862,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -2985,7 +2985,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3080,7 +3080,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3177,7 +3177,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3306,7 +3306,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3490,7 +3490,7 @@ CI_GATE: PASS
 FR_NFR_MIN_SCORE: 5/5
 NFR_CATALOG_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 **Requirement Scorecard:**
@@ -3580,7 +3580,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3715,7 +3715,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3850,7 +3850,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -3985,7 +3985,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -4495,19 +4495,17 @@ PHP
   assert_success
 }
 
-@test "bmad-fr-nfr-review-gate preserves empty GitHub review decision fields" {
+@test "bmad-fr-nfr-review-gate rejects empty GitHub review decision fields" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local repo_dir="${BATS_TEST_TMPDIR}/repo"
   local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
   local log_dir="${BATS_TEST_TMPDIR}/ai-review"
-  local head_oid
 
   mkdir -p "$bin_dir" "$spec_dir"
   prepare_clean_bmad_gate_repo "$repo_dir"
   printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
   write_bmad_pass_codex_stub "$bin_dir"
   write_successful_bmad_gh_stub "$bin_dir"
-  head_oid="$(git -C "$repo_dir" rev-parse HEAD)"
 
   run env \
     PATH="$bin_dir:$PATH" \
@@ -4523,19 +4521,42 @@ PHP
     BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
     bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
 
-  assert_success
-  assert_output --partial "AI review PASS."
+  assert_failure
+  assert_output --partial "Warning: GitHub review decision is unknown for BMAD gate: UNKNOWN"
+  assert_output --partial "Reached AI_REVIEW_MAX_ITER=1 without PASS."
 
-  run grep -F -- "- URL: https://github.example.com/VilnaCRM-Org/user-service/pull/287" "$log_dir/github-corroboration-context.md"
-  assert_success
   run grep -F -- "- Review decision: UNKNOWN" "$log_dir/github-corroboration-context.md"
   assert_success
-  run grep -F -- "- Head ref: feature/pr-287" "$log_dir/github-corroboration-context.md"
+}
+
+@test "bmad-fr-nfr-review-gate allows review-required GitHub review decision when human approval is not required" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_REVIEW_DECISION=REVIEW_REQUIRED \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="$log_dir" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    BMAD_REVIEW_POST_PR_COMMENT=false \
+    BMAD_REVIEW_POST_GITHUB_STATUS=false \
+    BMAD_REVIEW_REQUIRE_GITHUB_CI_CORROBORATION=true \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
   assert_success
-  run grep -F -- "- Head SHA: $head_oid" "$log_dir/github-corroboration-context.md"
-  assert_success
-  run grep -F -- "- Base ref: main" "$log_dir/github-corroboration-context.md"
-  assert_success
+  assert_output --partial "AI review PASS."
 }
 
 @test "bmad-fr-nfr-review-gate excludes BMAD status check when status publishing is disabled" {
@@ -5063,7 +5084,7 @@ NFR_CATALOG_MIN_SCORE: 5/5
 EXPANDED_QUALITY_MIN_SCORE: 5/5
 IMPACT_ANALYSIS_MIN_SCORE: 5/5
 GITHUB_COMPLETION_STATE: PASSING
-GITHUB_HUMAN_APPROVAL_STATE: REVIEW_REQUIRED
+GITHUB_HUMAN_APPROVAL_STATE: NOT_REQUIRED
 CI_CHECK_ROLLUP: PASSING
 
 Requirement Scorecard:
@@ -5128,7 +5149,7 @@ QA Verification:
 
 GitHub Completion Gate:
 - GitHub completion verified: 5/5 PASS
-- reviewDecision REVIEW_REQUIRED, unresolved threads 0.
+- reviewDecision REVIEW_REQUIRED, human approval not required, unresolved threads 0.
 
 CI Gate:
 - Required CI checks verified: 5/5 PASS

@@ -24,7 +24,6 @@ use Throwable;
 final class OAuthExceptionListener
 {
     private const OAUTH_SOCIAL_CALLBACK_PATTERN = '#^/api/auth/social/[^/]+/callback$#';
-
     private const ERROR_CODE_MAP = [
         UnsupportedProviderException::class => [
             'error_code' => 'unsupported_provider',
@@ -99,13 +98,22 @@ final class OAuthExceptionListener
             [
                 'type' => "/errors/{$mapping['status']}",
                 'title' => 'An error occurred',
-                'detail' => $exception->getMessage(),
+                'detail' => $this->detailFor($exception),
                 'status' => $mapping['status'],
                 'error_code' => $mapping['error_code'],
             ],
             $mapping['status'],
             ['Content-Type' => 'application/problem+json']
         );
+    }
+
+    private function detailFor(Throwable $exception): string
+    {
+        if ($exception instanceof DuplicateEmailException) {
+            return 'Email address matches multiple local users; automatic linking is blocked.';
+        }
+
+        return $exception->getMessage();
     }
 
     private function isOAuthSocialCallbackRequest(ExceptionEvent $event): bool
