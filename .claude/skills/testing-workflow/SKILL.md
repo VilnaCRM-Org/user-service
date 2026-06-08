@@ -1,6 +1,6 @@
 ---
 name: testing-workflow
-description: Run and manage functional tests (unit, integration, E2E, mutation). Use when running tests, debugging test failures, ensuring test coverage, or fixing mutation testing issues. Covers PHPUnit, Behat, and Infection. For K6 load/performance tests, use the load-testing skill instead.
+description: Run and manage functional tests (unit, integration, E2E, mutation) and verify FR/NFR test completeness. Use when running tests, debugging test failures, ensuring test coverage, fixing mutation testing issues, checking flaky-test risk, or mapping requirements to positive/negative/edge automated coverage. Covers PHPUnit, Behat, and Infection. For K6 load/performance tests, use the load-testing skill instead.
 ---
 
 # Testing Workflow Skill
@@ -10,10 +10,12 @@ description: Run and manage functional tests (unit, integration, E2E, mutation).
 - Code changes require test validation
 - Test failures need debugging
 - Coverage/mutation targets must be met
+- FR/NFR positive, negative, edge, security, performance, and operability cases must be covered
 
 ## Task (Function)
 
-Execute appropriate test suite and ensure 100% pass rate with required coverage.
+Execute appropriate test suite and ensure 100% pass rate with required coverage,
+mutation strength, deterministic tests, and explicit FR/NFR case coverage.
 
 **Note**: For K6 load/performance testing, see [load-testing skill](../load-testing/SKILL.md).
 
@@ -31,6 +33,17 @@ Execute appropriate test suite and ensure 100% pass rate with required coverage.
 
 ## Execution Workflow
 
+### Step 0: Build Requirement Test Matrix
+
+Before adding or accepting tests for a PR:
+
+1. Extract FRs/NFRs from PRD, stories, architecture, docs, PR description, and changed behavior.
+2. Generate positive, negative, and edge cases for each requirement.
+3. Add NFR-specific cases for security, availability, performance, scalability, interoperability, observability, operability, maintainability, and compatibility.
+4. Map each case to an automated test, CI check, mutation/coverage evidence, contract/spec validation, or load/performance run.
+5. Record manual evidence only as supporting context. It does not satisfy automated coverage.
+6. Treat unmapped applicable cases as missing coverage. Implement tests or mark the review blocked.
+
 ### Step 1: Run Tests
 
 ```bash
@@ -41,6 +54,7 @@ make all-tests            # For comprehensive check
 ### Step 2: Check Results
 
 - ✅ **All Pass + 100% coverage** → Complete
+- ⚠️ **All Pass but matrix gaps** → Add missing cases before completion
 - ❌ **Failures detected** → Go to Step 3
 
 ### Step 3: Debug Failures
@@ -54,6 +68,8 @@ Identify failure type and apply fix:
 | Escaped mutants   | `make infection` output | Test edge cases, strengthen assertions    |
 | Behat scenario    | Feature output          | Fix application logic or step definitions |
 | Type error        | Stack trace             | Fix type hints, mock returns              |
+| Matrix gap        | FR/NFR matrix           | Add positive, negative, edge, or NFR case |
+| Flaky risk        | Test inspection         | Remove timing/order/env/shared-state risk |
 
 ### Step 4: Fix and Re-test
 
@@ -120,6 +136,23 @@ make spike-load-tests      # Extreme spikes, 25-35 min
 - Docker containers running (`make start`)
 - K6 Docker image built
 
+## Flaky-Test Review
+
+Every new or changed test must be inspected for deterministic behavior.
+
+Reject or fix tests with:
+
+- Sleeps, unbounded waits, wall-clock assumptions, or timezone/locale dependence.
+- Shared mutable state, non-unique IDs, rate-limit leakage, or order dependency.
+- External network calls in unit/integration tests.
+- Random test data not generated through project helpers or not isolated.
+- Weak assertions that only check "no exception" or status without payload/business effect.
+- CI-only environment assumptions not documented in workflow configuration.
+
+When a test must use time, async behavior, or external services, require a fake
+clock, bounded polling with assertions, local stub, fixture isolation, or a
+clear CI check that proves repeatability.
+
 ## Constraints (Parameters)
 
 **NEVER**:
@@ -128,14 +161,18 @@ make spike-load-tests      # Extreme spikes, 25-35 min
 - Commit with failing tests
 - Accept coverage < 100%
 - Allow escaped mutants
+- Accept green tests when FR/NFR positive, negative, or edge cases remain unmapped
+- Accept flaky tests or weak assertions as coverage
 - Run tests outside Docker (use `make` commands)
 
 **ALWAYS**:
 
+- Build and update the FR/NFR test matrix before claiming coverage
 - Use Faker for dynamic test data
 - Mock external dependencies in unit tests
 - Use real DB in integration tests
 - Ensure deterministic test results
+- Map NFRs to the correct suite: security/contract/load/observability/operability checks as appropriate
 
 ## Format (Output)
 
@@ -158,5 +195,8 @@ OK (X tests, Y assertions)
 - [ ] All tests pass
 - [ ] Coverage is 100%
 - [ ] Zero escaped mutants (if running mutation tests)
+- [ ] FR/NFR matrix has positive, negative, and edge cases mapped to evidence
+- [ ] NFR-specific cases have CI, contract, mutation, load, or observability evidence
+- [ ] Flaky-test risk reviewed and fixed
 - [ ] No hardcoded test values (use Faker)
 - [ ] Tests run in Docker container via `make`

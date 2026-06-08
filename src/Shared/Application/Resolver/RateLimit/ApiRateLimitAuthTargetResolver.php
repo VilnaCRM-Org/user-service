@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 final readonly class ApiRateLimitAuthTargetResolver
 {
     private const SIGNIN_PATH = '/api/signin';
+    private const PASSKEY_SIGNIN_OPTIONS_PATH = '/api/passkeys/signin/options';
+    private const PASSKEY_SIGNIN_COMPLETE_PATH = '/api/passkeys/signin/complete';
     private const SIGNIN_TWO_FACTOR_PATH = '/api/signin/2fa';
     private const TWO_FACTOR_ROUTE_LIMITERS = [
         '/api/2fa/setup' => 'twofa_setup',
@@ -50,7 +52,7 @@ final readonly class ApiRateLimitAuthTargetResolver
         string $path,
         string $method
     ): array {
-        if ($method !== 'POST' || $path !== self::SIGNIN_PATH) {
+        if ($method !== 'POST' || !$this->isSignInPath($path)) {
             return [];
         }
 
@@ -58,12 +60,48 @@ final readonly class ApiRateLimitAuthTargetResolver
             ['name' => 'signin_ip', 'key' => $this->buildIpKey($request)],
         ];
 
-        $email = $this->clientIdentityResolver->resolveSignInEmail($request);
+        $email = $this->isSignInEmailPath($path)
+            ? $this->resolveSignInEmail($request, $path)
+            : null;
         if ($email !== null) {
             $targets[] = ['name' => 'signin_email', 'key' => $this->buildEmailKey($email)];
         }
 
         return $targets;
+    }
+
+    private function resolveSignInEmail(Request $request, string $path): ?string
+    {
+        if ($path === self::PASSKEY_SIGNIN_OPTIONS_PATH) {
+            return $this->clientIdentityResolver->resolveTopLevelSignInEmail($request);
+        }
+
+        return $this->clientIdentityResolver->resolveSignInEmail($request);
+    }
+
+    private function isSignInPath(string $path): bool
+    {
+        return in_array(
+            $path,
+            [
+                self::SIGNIN_PATH,
+                self::PASSKEY_SIGNIN_OPTIONS_PATH,
+                self::PASSKEY_SIGNIN_COMPLETE_PATH,
+            ],
+            true
+        );
+    }
+
+    private function isSignInEmailPath(string $path): bool
+    {
+        return in_array(
+            $path,
+            [
+                self::SIGNIN_PATH,
+                self::PASSKEY_SIGNIN_OPTIONS_PATH,
+            ],
+            true
+        );
     }
 
     /**

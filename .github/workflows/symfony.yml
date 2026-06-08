@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   symfony-checks:
     runs-on: ubuntu-latest
@@ -12,13 +15,15 @@ jobs:
         if: github.event.pull_request.user.login == 'dependabot[bot]'
         run: echo "Skipping symfony checks for Dependabot PR"
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        with:
+          persist-credentials: false
 
       - name: Copy .env.test.local
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
@@ -27,7 +32,7 @@ jobs:
       - name: Cache Composer packages
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: composer-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -40,7 +45,19 @@ jobs:
 
       - name: Install Symfony CLI
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: wget https://get.symfony.com/cli/installer -O - | bash
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            if wget https://get.symfony.com/cli/installer -O - | bash; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+
+            sleep $((attempt * 10))
+          done
 
       - name: Composer validate
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}

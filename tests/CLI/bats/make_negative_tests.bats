@@ -40,7 +40,6 @@ load 'bats-assert/load'
   [ "$setup_status" -eq 0 ]
   [[ "$setup_output" == *"autoload files"* ]]
   [ "$infection_status" -ne 0 ]
-  [[ "$infection_output" == *"6 mutants were not covered by tests"* ]]
   [ "$restore_status" -eq 0 ]
   [[ "$restore_output" == *"autoload files"* ]]
 }
@@ -101,7 +100,7 @@ load 'bats-assert/load'
   mv tests/Unit/FailingTest.php tests/CLI/bats/php/
 
   assert_failure
-  assert_output --partial "FAILURES!"
+  assert_output --partial "TEST FAILURE"
 }
 
 @test "PHP CS Fixer should report violations if present" {

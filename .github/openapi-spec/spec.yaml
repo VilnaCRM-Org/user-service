@@ -218,6 +218,541 @@ paths:
             schema:
               $ref: '#/components/schemas/EmptyResponse.SetupTwoFactorDto'
         required: true
+  /api/passkeys/register/complete:
+    post:
+      operationId: passkey_register_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey registered'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - credential_id
+                properties:
+                  credential_id: { type: string }
+              example:
+                credential_id: base64url-credential-id
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Authentication required or invalid passkey challenge'
+        '409':
+          description: 'Passkey credential is already registered'
+        '422':
+          description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Complete authenticated passkey registration'
+      description: 'Verifies WebAuthn attestation and stores the passkey for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationCompleteDto'
+        required: true
+  /api/passkeys/register/options:
+    post:
+      operationId: passkey_register_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey creation options generated'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - challenge_id
+                  - public_key
+                properties:
+                  challenge_id: { type: string }
+                  public_key: { type: object, additionalProperties: true }
+              example:
+                challenge_id: 01KSEPASSKEYREGISTER
+                public_key:
+                  challenge: base64url-challenge
+                  rp: { name: VilnaCRM, id: localhost }
+                  user: { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
+                  pubKeyCredParams: [{ type: public-key, alg: -7 }]
+                  excludeCredentials: []
+                  authenticatorSelection: { userVerification: required, residentKey: required, requireResidentKey: true }
+                  timeout: 60000
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Authentication required'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Start authenticated passkey registration'
+      description: 'Creates WebAuthn public key creation options for the authenticated user.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeyRegistrationOptionsDto'
+        required: true
+  /api/passkeys/signin/complete:
+    post:
+      operationId: passkey_signin_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey sign-in completed'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { type: object, required: [2fa_enabled, access_token, refresh_token], properties: { 2fa_enabled: { type: boolean, enum: [false] }, access_token: { type: string }, refresh_token: { type: string } } }
+                  - { type: object, required: [2fa_enabled, pending_session_id], properties: { 2fa_enabled: { type: boolean, enum: [true] }, pending_session_id: { type: string } } }
+              example:
+                2fa_enabled: false
+                access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Invalid passkey credential or challenge'
+        '422':
+          description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Complete passkey sign in'
+      description: 'Verifies WebAuthn assertion, updates the stored credential counter, and issues tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInCompleteDto'
+        required: true
+      security: []
+  /api/passkeys/signin/options:
+    post:
+      operationId: passkey_signin_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey request options generated'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - challenge_id
+                  - public_key
+                properties:
+                  challenge_id: { type: string }
+                  public_key: { type: object, additionalProperties: true }
+              example:
+                challenge_id: 01KSEPASSKEYSIGNIN
+                public_key:
+                  challenge: base64url-challenge
+                  rpId: localhost
+                  allowCredentials: []
+                  userVerification: required
+                  timeout: 60000
+        '400':
+          description: 'Invalid request payload'
+        '422':
+          description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Start passkey sign in'
+      description: 'Creates WebAuthn public key request options for username-first passkey sign in.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignInOptionsDto'
+        required: true
+      security: []
+  /api/passkeys/signup/complete:
+    post:
+      operationId: passkey_signup_complete_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey sign-up completed'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - 2fa_enabled
+                  - access_token
+                  - refresh_token
+                properties:
+                  2fa_enabled: { type: boolean, enum: [false] }
+                  access_token: { type: string }
+                  refresh_token: { type: string }
+              example:
+                2fa_enabled: false
+                access_token: '<ACCESS_TOKEN_PLACEHOLDER>'
+                refresh_token: '<REFRESH_TOKEN_PLACEHOLDER>'
+        '400':
+          description: 'Invalid request payload'
+        '401':
+          description: 'Invalid or expired passkey challenge'
+        '409':
+          description: 'Email or passkey credential is already registered'
+        '422':
+          description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Complete passkey sign-up'
+      description: 'Verifies WebAuthn attestation, creates the account, stores the passkey, and issues tokens.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpCompleteDto'
+        required: true
+      security: []
+  /api/passkeys/signup/options:
+    post:
+      operationId: passkey_signup_options_http
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 'Passkey creation options generated'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - challenge_id
+                  - public_key
+                properties:
+                  challenge_id: { type: string }
+                  public_key: { type: object, additionalProperties: true }
+              example:
+                challenge_id: 01KSEPASSKEYSIGNUP
+                public_key:
+                  challenge: base64url-challenge
+                  rp: { name: VilnaCRM, id: localhost }
+                  user: { id: base64url-user-id, name: user@example.test, displayName: 'Example User' }
+                  pubKeyCredParams: [{ type: public-key, alg: -7 }]
+                  authenticatorSelection: { userVerification: required, residentKey: required, requireResidentKey: true }
+                  timeout: 60000
+        '400':
+          description: 'Invalid request payload'
+        '409':
+          description: 'Email is already registered'
+        '422':
+          description: 'Validation error'
+        '503':
+          description: 'Production passkey traffic disabled until monitoring is ready'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                required:
+                  - type
+                  - title
+                  - status
+                  - detail
+                properties:
+                  type: { type: string, example: /errors/passkey-production-readiness }
+                  title: { type: string, example: 'Service Unavailable' }
+                  status: { type: integer, example: 503 }
+                  detail: { type: string, example: 'Passkey production traffic is disabled until production monitoring and alerts are ready.' }
+              example:
+                type: /errors/passkey-production-readiness
+                title: 'Service Unavailable'
+                status: 503
+                detail: 'Passkey production traffic is disabled until production monitoring and alerts are ready.'
+        '500':
+          description: 'Internal server error'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+              example:
+                type: /errors/500
+                title: 'An error occurred'
+                detail: 'Something went wrong'
+                status: 500
+          headers: {  }
+      summary: 'Start passkey sign-up'
+      description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
+      parameters: []
+      requestBody:
+        description: 'The new EmptyResponse resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+          application/graphql:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/EmptyResponse.PasskeySignUpOptionsDto'
+        required: true
+      security: []
   /api/signin:
     post:
       operationId: signin_http
@@ -2635,6 +3170,270 @@ components:
         twoFactorCode:
           pattern: '^(.*(^\d{6}$|^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$).*)$'
           type: string
+    EmptyResponse.PasskeyRegistrationCompleteDto:
+      type: object
+      required:
+        - challengeId
+        - credential
+      properties:
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          type: object
+          additionalProperties: false
+          unevaluatedProperties: false
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            rawId:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+              enum:
+                - platform
+                - cross-platform
+                - null
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: false
+              unevaluatedProperties: false
+              required:
+                - attestationObject
+                - authenticatorData
+                - clientDataJSON
+                - publicKeyAlgorithm
+                - transports
+              properties:
+                attestationObject:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                authenticatorData:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                publicKey:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                publicKeyAlgorithm:
+                  type: integer
+                transports:
+                  type: array
+                  uniqueItems: true
+                  items: { type: string, enum: [ble, cable, hybrid, internal, nfc, smart-card, usb] }
+        label:
+          maxLength: 100
+          type: string
+    EmptyResponse.PasskeyRegistrationOptionsDto:
+      type: object
+    EmptyResponse.PasskeySignInCompleteDto:
+      type: object
+      required:
+        - challengeId
+        - credential
+      properties:
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          type: object
+          additionalProperties: false
+          unevaluatedProperties: false
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            rawId:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+              enum:
+                - platform
+                - cross-platform
+                - null
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: false
+              unevaluatedProperties: false
+              required:
+                - authenticatorData
+                - clientDataJSON
+                - signature
+              properties:
+                authenticatorData:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                signature:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                userHandle:
+                  type: [string, 'null']
+                  pattern: '^[A-Za-z0-9_-]+$'
+    EmptyResponse.PasskeySignInOptionsDto:
+      type: object
+      properties:
+        rememberMe:
+          default: false
+          type: boolean
+        email:
+          format: email
+          minLength: 1
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+      required:
+        - email
+    EmptyResponse.PasskeySignUpCompleteDto:
+      type: object
+      properties:
+        rememberMe:
+          default: false
+          type: boolean
+        challengeId:
+          minLength: 1
+          maxLength: 255
+          type: string
+        credential:
+          type: object
+          additionalProperties: false
+          unevaluatedProperties: false
+          required:
+            - id
+            - rawId
+            - response
+            - type
+          properties:
+            id:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            rawId:
+              type: string
+              minLength: 1
+              pattern: '^[A-Za-z0-9_-]+$'
+            type:
+              type: string
+              enum:
+                - public-key
+            authenticatorAttachment:
+              type:
+                - string
+                - 'null'
+              enum:
+                - platform
+                - cross-platform
+                - null
+            clientExtensionResults:
+              type: object
+              additionalProperties: true
+            response:
+              type: object
+              additionalProperties: false
+              unevaluatedProperties: false
+              required:
+                - attestationObject
+                - authenticatorData
+                - clientDataJSON
+                - publicKeyAlgorithm
+                - transports
+              properties:
+                attestationObject:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                authenticatorData:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                clientDataJSON:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                publicKey:
+                  type: string
+                  minLength: 1
+                  pattern: '^[A-Za-z0-9_-]+$'
+                publicKeyAlgorithm:
+                  type: integer
+                transports:
+                  type: array
+                  uniqueItems: true
+                  items: { type: string, enum: [ble, cable, hybrid, internal, nfc, smart-card, usb] }
+        label:
+          maxLength: 100
+          type: string
+      required:
+        - challengeId
+        - credential
+    EmptyResponse.PasskeySignUpOptionsDto:
+      type: object
+      required:
+        - email
+        - initials
+      properties:
+        email:
+          format: email
+          maxLength: 255
+          externalDocs:
+            url: 'https://schema.org/email'
+          type: string
+        initials:
+          maxLength: 255
+          pattern: '^(?!\d).*\S.*$'
+          type: string
+        displayName:
+          maxLength: 255
+          type: string
     EmptyResponse.RefreshTokenDto:
       type: object
       required:
@@ -2901,9 +3700,9 @@ components:
         users:
           type: array
           items:
-            type:
-              - string
-              - 'null'
+            type: object
+            additionalProperties:
+              type: string
     User.UserRegisterDto:
       type: object
       additionalProperties: false

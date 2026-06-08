@@ -1,14 +1,21 @@
 # Load environment variables from .env.test
 include .env.test
+export OAUTH_ENCRYPTION_KEY
+export TWO_FACTOR_ENCRYPTION_KEY
 
 # Parameters
 PROJECT       = user-service
 GIT_AUTHOR    = Kravalg
 LOAD_TEST_CONFIG = tests/Load/config.prod.json
 LOAD_TEST_COMPOSE_PROJECT ?= $(PROJECT)-load-tests
+LOAD_TEST_API_HOST ?= localhost
 LOAD_TEST_API_PORT ?= 18081
 LOAD_TEST_MAILCATCHER_SMTP_PORT ?= 1125
 LOAD_TEST_MAILCATCHER_HTTP_PORT ?= 1180
+LOAD_TEST_DELAY_BETWEEN_SCENARIOS ?= 0
+LOAD_TEST_RECOVERY_AFTER_SCENARIOS ?= cachePerformance
+LOAD_TEST_RECOVERY_SETTLE_SECONDS ?= 5
+LOAD_TEST_RESET_BEFORE_SCENARIOS ?= graphQLGetUsers
 MEMORY_SOAK_ROUNDS ?= 6
 MEMORY_SOAK_WARMUP_ROUNDS ?= 2
 MEMORY_SOAK_SETTLE_SECONDS ?= 5
@@ -21,6 +28,7 @@ SYMFONY_BIN   = symfony
 DOCKER        = docker
 DOCKER_COMPOSE = docker compose
 DOCKER_COMPOSE_LOAD_TEST = LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_MAILCATCHER_SMTP_PORT=$(LOAD_TEST_MAILCATCHER_SMTP_PORT) LOAD_TEST_MAILCATCHER_HTTP_PORT=$(LOAD_TEST_MAILCATCHER_HTTP_PORT) $(DOCKER_COMPOSE) -p $(LOAD_TEST_COMPOSE_PROJECT) -f docker-compose.load-tests.yml
+LOAD_TEST_RUNTIME_RECOVERY_ENV = LOAD_TEST_DELAY_BETWEEN_SCENARIOS="$(LOAD_TEST_DELAY_BETWEEN_SCENARIOS)" LOAD_TEST_RECOVERY_AFTER_SCENARIOS="$(LOAD_TEST_RECOVERY_AFTER_SCENARIOS)" LOAD_TEST_RECOVERY_SETTLE_SECONDS="$(LOAD_TEST_RECOVERY_SETTLE_SECONDS)" LOAD_TEST_RESET_BEFORE_SCENARIOS="$(LOAD_TEST_RESET_BEFORE_SCENARIOS)" LOAD_TEST_COMPOSE_PROJECT="$(LOAD_TEST_COMPOSE_PROJECT)" LOAD_TEST_CONFIG_FILE="$(LOAD_TEST_CONFIG)" LOAD_TEST_API_HOST="$(LOAD_TEST_API_HOST)" LOAD_TEST_API_PORT="$(LOAD_TEST_API_PORT)"
 DOCKER_COMPOSE_SCHEMATHESIS = $(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.schemathesis.yml
 # Pinned Schemathesis image to avoid CI drift
 SCHEMATHESIS_IMAGE = schemathesis/schemathesis:4.9.5
@@ -38,6 +46,8 @@ GIT           = git
 EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NOTTY = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
+EXEC_PHP_PROD_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=prod -e APP_DEBUG=0 php
+PASSKEY_CI_PRODUCTION_ENV = -e APP_ENV=prod -e APP_DEBUG=0 -e PASSKEY_RP_ID=example.com -e PASSKEY_RP_NAME=VilnaCRM -e PASSKEY_ALLOWED_ORIGINS=https://example.com -e PASSKEY_TIMEOUT_SECONDS=300 -e PASSKEY_CHALLENGE_TTL_SECONDS=300 -e PASSKEY_PRODUCTION_TRAFFIC_ENABLED=false -e PASSKEY_PRODUCTION_MONITORING_READY=false -e OAUTH_ENCRYPTION_KEY_TYPE=plain
 EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
 EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
@@ -45,6 +55,7 @@ EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=loa
 SYMFONY       = $(EXEC_PHP) bin/console
 SYMFONY_TEST_ENV = $(EXEC_PHP_TEST_ENV) bin/console
 SYMFONY_TEST_ENV_NODEBUG = $(EXEC_PHP_TEST_ENV_NODEBUG) bin/console
+SYMFONY_PROD_ENV_NODEBUG = $(EXEC_PHP_PROD_ENV_NODEBUG) bin/console
 SYMFONY_LOAD_TEST_ENV = $(EXEC_PHP_LOAD_TEST_ENV) bin/console
 SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
@@ -147,7 +158,7 @@ bmad-fr-nfr-review-gate: ## Run BMAD spec-driven FR/NFR review gate; set BMAD_RE
 		$${BMAD_REVIEW_AGENTS:+--agents "$${BMAD_REVIEW_AGENTS}"}
 
 bats: ## Run tests for bash commands
-	bats tests/CLI/bats/
+	bats tests/CLI/bats/*_tests.bats
 
 phpcsfixer: ## A tool to automatically fix PHP Coding Standards issues
 	$(RUN_PHP_CS_FIXER)
@@ -197,11 +208,11 @@ phpinsights: phpmd ## Instant PHP quality checks, static analysis, and complexit
 unit-tests: ## Run unit tests
 	@echo "Running unit tests with coverage requirement of 100%..."
 	@$(RUN_TESTS_COVERAGE) --testsuite=Unit 2>&1 | tee /tmp/phpunit_output.txt
-	@if grep -Eq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
+	@if grep -aEq "FAILURES!|ERRORS!" /tmp/phpunit_output.txt; then \
 		echo "❌ TEST FAILURE: Some unit tests failed"; \
 		exit 1; \
 	fi
-	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_output.txt | grep -a "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
 			echo "❌ COVERAGE FAILURE: Line coverage is $$coverage%, but 100% is required. Please cover all lines of code and achieve the 100% code coverage"; \
@@ -235,7 +246,7 @@ memory-tests: setup-test-db ## Run memory leak tests with 100% suite coverage an
 		echo "❌ TEST FAILURE: Some memory leak tests failed"; \
 		exit $$status; \
 	fi
-	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
+	@coverage=$$(sed 's/\x1b\[[0-9;]*m//g' /tmp/phpunit_memory_output.txt | grep -a "^  Lines:" | awk '{print $$2}' | sed 's/%//' | head -1); \
 	if [ -n "$$coverage" ]; then \
 		if [ $$(echo "$$coverage < 100" | bc -l) -eq 1 ]; then \
 			echo "❌ COVERAGE FAILURE: Memory suite line coverage is $$coverage%, but 100% is required. Please cover all memory test lines and keep endpoint inventory complete"; \
@@ -276,8 +287,8 @@ setup-load-test-db: ## Create database for load testing purposes
 	$(SYMFONY_LOAD_TEST_ENV) c:c
 	$(SYMFONY_LOAD_TEST_ENV_NODEBUG) c:c
 	@echo "Recreating MongoDB schema for load testing..."
-	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
-	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
+	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop --skip-search-indexes 2>&1 || true
+	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create --skip-search-indexes
 	@echo "Ensuring JWT keypair exists for load-test environment..."
 	$(SYMFONY_LOAD_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
@@ -286,52 +297,72 @@ setup-load-test-db: ## Create database for load testing purposes
 
 all-tests: unit-tests integration-tests behat ## Run unit, integration and e2e tests
 
-LOAD_TEST_PREPARE_OAUTH_CLIENT = SYMFONY="$(DOCKER_COMPOSE_LOAD_TEST) exec -T php bin/console" tests/Load/load-tests-prepare-oauth-client.sh "$$(jq -r '.endpoints.oauth.clientName' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientID' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientSecret' $(LOAD_TEST_CONFIG))" "$$(jq -r '.endpoints.oauth.clientRedirectUri' $(LOAD_TEST_CONFIG))"
+LOAD_TEST_PREPARE_OAUTH_CLIENT = LOAD_TEST_COMPOSE_PROJECT="$(LOAD_TEST_COMPOSE_PROJECT)" LOAD_TEST_COMPOSE_FILE="docker-compose.load-tests.yml" LOAD_TEST_CONFIG_FILE="$(LOAD_TEST_CONFIG)" LOAD_TEST_API_PORT="$(LOAD_TEST_API_PORT)" LOAD_TEST_MAILCATCHER_SMTP_PORT="$(LOAD_TEST_MAILCATCHER_SMTP_PORT)" LOAD_TEST_MAILCATCHER_HTTP_PORT="$(LOAD_TEST_MAILCATCHER_HTTP_PORT)" tests/Load/load-tests-prepare-oauth-client.sh
+LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES = $(DOCKER_COMPOSE_LOAD_TEST) restart php && $(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+LOAD_TEST_WAIT_OAUTH_CLIENT_POOL = LOAD_TEST_API_HOST=$(LOAD_TEST_API_HOST) LOAD_TEST_API_PORT=$(LOAD_TEST_API_PORT) LOAD_TEST_CONFIG_FILE="$(LOAD_TEST_CONFIG)" bash tests/Load/wait-for-oauth-client-pool.sh
 
 smoke-load-tests: build-k6-docker ## Run load tests with minimal load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	tests/Load/run-smoke-load-tests.sh
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-smoke-load-tests.sh
 
 average-load-tests: build-k6-docker ## Run load tests with average load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	tests/Load/run-average-load-tests.sh
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-average-load-tests.sh
 
 stress-load-tests: build-k6-docker ## Run load tests with high load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	tests/Load/run-stress-load-tests.sh
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-stress-load-tests.sh
 
 spike-load-tests: build-k6-docker ## Run load tests with a spike of extreme load
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	tests/Load/run-spike-load-tests.sh
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-spike-load-tests.sh
 
 load-tests: build-k6-docker ## Run load tests
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	tests/Load/run-load-tests.sh
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
+	$(LOAD_TEST_RUNTIME_RECOVERY_ENV) tests/Load/run-load-tests.sh
 
 memory-load-soak-tests: build-k6-docker ## Run repeated worker-mode smoke load tests and fail on leak signals
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	$(DOCKER_COMPOSE_LOAD_TEST) restart php
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$(MEMORY_SOAK_SCENARIOS)" tests/Load/run-worker-memory-soak.sh
 
 memory-load-soak-tests-full: build-k6-docker ## Run exhaustive worker-mode smoke load tests across every load scenario
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
 	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
-	$(DOCKER_COMPOSE_LOAD_TEST) restart php
-	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	MEMORY_SOAK_ROUNDS=$(MEMORY_SOAK_ROUNDS) MEMORY_SOAK_WARMUP_ROUNDS=$(MEMORY_SOAK_WARMUP_ROUNDS) MEMORY_SOAK_SETTLE_SECONDS=$(MEMORY_SOAK_SETTLE_SECONDS) WORKER_MEMORY_STEP_TOLERANCE_KB=$(WORKER_MEMORY_STEP_TOLERANCE_KB) WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB=$(WORKER_MEMORY_TOTAL_GROWTH_TOLERANCE_KB) MEMORY_SOAK_SCENARIOS="$$(./tests/Load/get-worker-memory-soak-scenarios.sh | paste -sd, -)" tests/Load/run-worker-memory-soak.sh
 
 execute-load-tests-script: build-k6-docker ## Execute single load test scenario.
 	$(DOCKER_COMPOSE_LOAD_TEST) up --detach --wait php database redis mailer localstack
+	$(MAKE) setup-load-test-db
 	$(LOAD_TEST_PREPARE_OAUTH_CLIENT)
+	$(LOAD_TEST_REFRESH_PHP_AFTER_FIXTURES)
+	$(LOAD_TEST_WAIT_OAUTH_CLIENT_POOL)
 	tests/Load/execute-load-test.sh $(scenario) $(or $(runSmoke),true) $(or $(runAverage),true) $(or $(runStress),true) $(or $(runSpike),true)
 
 cache-performance-load-tests: build-k6-docker ## Run cache performance K6 load tests
@@ -391,7 +422,6 @@ new-logs: ## Show live logs
 
 start: ## Start docker
 	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
-	$(MAKE) build-k6-docker
 	$(MAKE) build-spectral-docker
 
 start-memory-tests: ## Start only services required for memory leak tests
@@ -436,6 +466,27 @@ reset-db: ## Recreate the database schema for ephemeral test runs
 	@$(SYMFONY) app:seed-schemathesis-data
 	@echo "✅ Database reset complete"
 
+passkey-production-readiness: ## Update MongoDB indexes and assert passkey production readiness prerequisites
+	@echo "Updating MongoDB indexes for passkey production readiness..."
+	@$(SYMFONY_PROD_ENV_NODEBUG) doctrine:mongodb:schema:update --skip-search-indexes
+	@$(SYMFONY_PROD_ENV_NODEBUG) app:passkey:assert-production-readiness
+
+passkey-test-readiness: ## Assert passkey readiness prerequisites against the test schema
+	@$(SYMFONY_TEST_ENV) app:passkey:assert-production-readiness
+
+passkey-ci-production-readiness: ## Assert passkey readiness in prod mode with CI-safe production env values
+	@$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY \
+		-e TWO_FACTOR_ENCRYPTION_KEY \
+		php bin/console doctrine:mongodb:schema:update --skip-search-indexes
+	@$(DOCKER_COMPOSE) exec $(PASSKEY_CI_PRODUCTION_ENV) \
+		-e OAUTH_ENCRYPTION_KEY \
+		-e TWO_FACTOR_ENCRYPTION_KEY \
+		php bin/console app:passkey:assert-production-readiness
+
+update-public-suffix-list: ## Refresh the passkey Public Suffix List data from the official source
+	curl -fsSL https://publicsuffix.org/list/public_suffix_list.dat -o config/passkey/public_suffix_list.dat
+
 coverage-html: ## Create the code coverage report with PHPUnit
 	$(DOCKER_COMPOSE) exec -e XDEBUG_MODE=coverage php php -d memory_limit=-1 vendor/bin/phpunit --coverage-html=coverage/html
 
@@ -445,6 +496,9 @@ coverage-xml: ## Create the code coverage report with PHPUnit
 generate-openapi-spec:
 	$(EXEC_PHP) php bin/console api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 	@if command -v npx >/dev/null 2>&1; then \
+		if [ ! -w .github/openapi-spec/spec.yaml ]; then \
+			$(EXEC_PHP) chown "$$(id -u):$$(id -g)" .github/openapi-spec/spec.yaml 2>/dev/null || true; \
+		fi; \
 		if [ ! -w .github/openapi-spec/spec.yaml ] && command -v sudo >/dev/null 2>&1; then \
 			sudo -n chown "$$(id -u):$$(id -g)" .github/openapi-spec/spec.yaml 2>/dev/null || true; \
 		fi; \
@@ -471,6 +525,7 @@ schemathesis-validate: reset-db generate-openapi-spec ## Validate the running AP
 
 generate-graphql-spec:
 	$(EXEC_PHP) php bin/console api:graphql:export --output=.github/graphql-spec/spec
+	$(EXEC_PHP) php scripts/normalize-graphql-passkey-descriptions.php .github/graphql-spec/spec
 
 start-prod-loadtest: ## Start production environment with load testing capabilities
 	$(DOCKER_COMPOSE) -f docker-compose.loadtest.yml up --detach
@@ -510,6 +565,8 @@ ci-mutation:
 
 ci-tests-and-openapi:
 	@$(MAKE) setup-test-db
+	@$(MAKE) passkey-test-readiness
+	@$(MAKE) passkey-ci-production-readiness
 	@$(MAKE) unit-tests
 	@$(MAKE) integration-tests
 	@$(MAKE) behat
@@ -539,10 +596,13 @@ ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has
 	if ! make phpmd; then failed_checks="$$failed_checks\n❌ PHPMD quality analysis"; fi; \
 	echo "9️⃣  Running code quality analysis with PHPInsights..."; \
 	if ! make phpinsights; then failed_checks="$$failed_checks\n❌ PHPInsights quality analysis"; fi; \
-	echo "🔟  Validating architecture with Deptrac..."; \
-	if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
-	echo "1️⃣1️⃣ Running complete test suite (unit, integration, e2e)..."; \
-	if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
+		echo "🔟  Validating architecture with Deptrac..."; \
+		if ! make deptrac; then failed_checks="$$failed_checks\n❌ Deptrac architecture validation"; fi; \
+		echo "1️⃣1️⃣ Running complete test suite (unit, integration, e2e)..."; \
+		if ! make setup-test-db; then failed_checks="$$failed_checks\n❌ test database setup"; fi; \
+		if ! make passkey-test-readiness; then failed_checks="$$failed_checks\n❌ passkey readiness"; fi; \
+		if ! make passkey-ci-production-readiness; then failed_checks="$$failed_checks\n❌ production passkey readiness"; fi; \
+		if ! make unit-tests; then failed_checks="$$failed_checks\n❌ unit tests"; fi; \
 	if ! make integration-tests; then failed_checks="$$failed_checks\n❌ integration tests"; fi; \
 	if ! make behat; then failed_checks="$$failed_checks\n❌ Behat e2e tests"; fi; \
 	echo "1️⃣2️⃣ Running mutation testing with Infection..."; \
@@ -565,7 +625,7 @@ ci-sequential: ## Run CI checks sequentially (fallback if parallel execution has
 	fi
 
 
-pr-comments: ## Retrieve ALL unresolved comments (including outdated) for current PR (markdown format)
+pr-comments: ## Retrieve current unresolved comments for current PR (markdown format)
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -577,12 +637,12 @@ pr-comments: ## Retrieve ALL unresolved comments (including outdated) for curren
 		exit 1; \
 	fi
 ifdef PR
-	@echo "Retrieving unresolved comments (including outdated) for PR #$(PR)..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+	@echo "Retrieving current unresolved comments for PR #$(PR)..."
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
 		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-markdown}"
 else
 	@echo "Auto-detecting PR from current git branch..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="true" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="false" \
 		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
 endif
 
@@ -607,7 +667,7 @@ else
 		./scripts/get-pr-comments.sh "$${FORMAT:-markdown}"
 endif
 
-pr-comments-all: ## Retrieve ALL unresolved comments (with pagination) for a GitHub Pull Request
+pr-comments-all: ## Retrieve all unresolved comments, including outdated, for a GitHub Pull Request
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -620,14 +680,14 @@ pr-comments-all: ## Retrieve ALL unresolved comments (with pagination) for a Git
 	fi
 ifdef PR
 	@echo "Retrieving ALL unresolved comments for PR #$(PR)..."
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="$${VERBOSE:-false}" \
 		./scripts/get-pr-comments.sh "$(PR)" "$${FORMAT:-text}"
 else
-	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="$${VERBOSE:-false}" \
+	@GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="$${VERBOSE:-false}" \
 		./scripts/get-pr-comments.sh "$${FORMAT:-text}"
 endif
 
-pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments-errors.txt
+pr-comments-to-file: ## Fetch current unresolved PR comments and save to pr-comments-errors.txt
 	@if ! command -v gh >/dev/null 2>&1; then \
 		echo "Error: GitHub CLI (gh) is required but not installed."; \
 		echo "Visit: https://cli.github.com/ for installation instructions"; \
@@ -651,13 +711,13 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo ""; \
 	} > "$$output_file"; \
 	if [ -n "$(PR)" ]; then \
-		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="false" \
 			./scripts/get-pr-comments.sh "$(PR)" "text" >> "$$output_file" 2>&1; then \
 			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
 			echo "❌ Failed to fetch PR comments for PR #$(PR)"; \
 		fi; \
 	else \
-		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-true}" VERBOSE="false" \
+		if ! GITHUB_HOST="$(GITHUB_HOST)" INCLUDE_OUTDATED="$${INCLUDE_OUTDATED:-false}" VERBOSE="false" \
 			./scripts/get-pr-comments.sh "text" >> "$$output_file" 2>&1; then \
 			echo "⚠️  Warning: Failed to fetch PR comments, check error output above" >> "$$output_file"; \
 			echo "❌ Failed to fetch PR comments from current branch"; \

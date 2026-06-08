@@ -4709,6 +4709,103 @@ SCRIPT
   fi
 }
 
+@test "ai-review-loop keeps status pending for remote-only pending markers" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local log_dir="${BATS_TEST_TMPDIR}/ai-review"
+  local status_log="${BATS_TEST_TMPDIR}/status.log"
+  local fix_invocation="${BATS_TEST_TMPDIR}/fix-invocation"
+
+  mkdir -p "$bin_dir" "$repo_dir/scripts/ai-review-prompts"
+  cp scripts/ai-review-loop.sh "$repo_dir/scripts/ai-review-loop.sh"
+  chmod +x "$repo_dir/scripts/ai-review-loop.sh"
+  printf "Review prompt\n" > "$repo_dir/scripts/ai-review-prompts/review.md"
+  printf "Fix prompt\n" > "$repo_dir/scripts/ai-review-prompts/fix.md"
+
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.email "bats@example.test"
+  git -C "$repo_dir" config user.name "Bats Test"
+  git -C "$repo_dir" add scripts
+  git -C "$repo_dir" commit -q -m "Initial commit"
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  cat >/dev/null
+
+  if [[ "$output_file" == *"/fix-"* ]]; then
+    echo "fix agent should not run" > "${FIX_INVOCATION_FILE}"
+    echo "Unexpected fix." > "$output_file"
+    exit 0
+  fi
+
+  cat > "$output_file" <<'STATUS'
+STATUS: FAIL
+Issues:
+1. File path: GitHub checks
+   Short description: Current-head remote checks are still pending.
+   Expected fix: Wait for remote checks to finish before final PASS.
+FR_NFR_SCORECARD: PASS
+TEST_CASE_MATRIX: PASS
+AUTO_TEST_COVERAGE: PASS
+CI_COVERAGE: PENDING_REMOTE
+FLAKY_TEST_RISK: PASS
+SYSTEM_QUALITY_ATTRIBUTES_SCORECARD: PASS
+WHOLE_CODEBASE_IMPACT: PASS
+GRAPH_IMPACT_CONTEXT: PASS
+GITHUB_COMPLETION_GATE: PENDING_REMOTE_CI
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    GH_STATUS_LOG="$status_log" \
+    FIX_INVOCATION_FILE="$fix_invocation" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=HEAD \
+    AI_REVIEW_LOG_DIR="$log_dir" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_MAX_ITER=3 \
+    AI_REVIEW_POST_GITHUB_STATUS=true \
+    bash -c "cd '$repo_dir' && ./scripts/ai-review-loop.sh 2>&1"
+
+  assert_failure
+  assert_output --partial "AI review is waiting for current-head remote CI/checks to complete."
+
+  run grep -F "state=pending" "$status_log"
+  assert_success
+  run grep -F "state=failure" "$status_log"
+  assert_failure
+  run test ! -f "$fix_invocation"
+  assert_success
+  run test ! -f "$log_dir/fix-latest.md"
+  assert_success
+}
+
 @test "bmad-fr-nfr-review-gate rejects PASS when visible GitHub check rollup is empty" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   local repo_dir="${BATS_TEST_TMPDIR}/repo"

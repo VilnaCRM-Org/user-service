@@ -21,23 +21,39 @@ jobs:
       - name: Generate token with necessary permissions
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: generate_token
-        uses: tibdex/github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
         with:
-          app_id: ${{ secrets.VILNACRM_APP_ID }}
-          private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.VILNACRM_APP_ID }}
+          private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          permission-contents: write
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
           php-version: ${{ vars.PHP_VERSION }}
 
       - name: Checkout Repository
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871
         with:
-          token: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
+          token: ${{ steps.generate_token.outputs.token }}
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure Git token auth
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          cat > "$RUNNER_TEMP/git-askpass.sh" <<'EOF'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) echo "x-access-token" ;;
+            *Password*) echo "$PUSH_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$RUNNER_TEMP/git-askpass.sh"
+          echo "GIT_ASKPASS=$RUNNER_TEMP/git-askpass.sh" >> "$GITHUB_ENV"
+          echo "GIT_TERMINAL_PROMPT=0" >> "$GITHUB_ENV"
 
       - name: Install Dependencies
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
@@ -57,15 +73,18 @@ jobs:
 
       - name: Commit changes
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: EndBug/add-and-commit@v9
+        env:
+          PUSH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5
         with:
           add: '.github/graphql-spec/spec'
+          github_token: ${{ steps.generate_token.outputs.token }}
           message: 'feat(#${{ github.event.number }}): generate graphql spec'
 
       - name: GraphQL Inspector
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: kamilkisiela/graphql-inspector@release-1701263349990
+        uses: kamilkisiela/graphql-inspector@91cefc9d934ccac1b4be9f26f44b6f533c300247
         with:
           schema: 'master:.github/graphql-spec/spec'
         env:
-          GITHUB_TOKEN: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
+          GITHUB_TOKEN: ${{ github.token }}

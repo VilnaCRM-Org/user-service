@@ -8,7 +8,9 @@ Constraints:
 - Use make targets for any PHP tooling. Do not run PHP directly on the host.
 - Keep changes within the current PR scope.
 - Do not add unrelated refactors.
-- If a command is needed, suggest it in the response instead of running it.
+- Run the relevant make, test, graph, CI-inspection, and validation commands yourself when available.
+- Report the exact commands run and their results.
+- Do not fake unavailable checks; state any unavailable or externally pending validation explicitly.
 
 Output format (MUST follow exactly):
 Summary: <one sentence>

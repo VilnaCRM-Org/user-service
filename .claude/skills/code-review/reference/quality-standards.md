@@ -9,6 +9,11 @@ How to maintain quality standards when implementing PR review feedback.
 **Code reviews MUST maintain or improve quality metrics - NEVER decrease them.**
 
 When implementing review feedback, quality standards are non-negotiable.
+Numeric quality thresholds are not enough. Every reviewed PR must also pass the
+strict FR/NFR gate in [fr-nfr-quality-gate.md](fr-nfr-quality-gate.md): complete
+requirement extraction, positive/negative/edge test matrix, automated/CI evidence
+mapping, flaky-test review, graph/impact review when available, and system
+quality attribute scorecard.
 
 ## PR Review Workflow
 
@@ -16,28 +21,39 @@ When implementing review feedback, quality standards are non-negotiable.
 
 Implement changes as requested by reviewers.
 
-### 2. Quick Verification After Each Change
+### 2. Strict FR/NFR And Attribute Review
+
+Run the strict gate before and after fixes. Missing test cases, weak assertions,
+manual-only evidence for applicable behavior, flaky-test risks, critical
+quality attributes below `4`, applicable security-related attributes below `5`,
+or missing improvement suggestions for improvable scores below `5` are review
+blockers.
+
+### 3. Quick Verification After Each Change
 
 ```bash
 make phpcsfixer && make psalm && make unit-tests
 ```
 
-### 3. Final Comprehensive Check
+### 4. Final Comprehensive Check
 
 ```bash
 make ci  # MUST show "✅ CI checks successfully passed!"
 ```
 
-### 4. If CI Fails
+### 5. If CI Fails
 
 **Invoke the appropriate skill** based on failure type:
 
-| Failure                | Invoke Skill              |
-| ---------------------- | ------------------------- |
-| Complexity issues      | `complexity-management`   |
-| Architecture violation | `deptrac-fixer`           |
-| Test failures          | `testing-workflow`        |
-| See complete mapping   | `quality-standards` skill |
+| Failure                | Invoke Skill                                   |
+| ---------------------- | ---------------------------------------------- |
+| Complexity issues      | `complexity-management`                        |
+| Architecture violation | `deptrac-fixer`                                |
+| Test failures          | `testing-workflow`                             |
+| Requirement matrix gap | `testing-workflow`                             |
+| Flaky-test risk        | `testing-workflow`                             |
+| Quality attribute gap  | `quality-standards` plus relevant domain skill |
+| See complete mapping   | `quality-standards` skill                      |
 
 ## PR Review-Specific Scenarios
 
@@ -99,6 +115,9 @@ See the `quality-standards` skill for complete threshold details.
 **Before marking PR review as complete:**
 
 - ✅ `make ci` shows "✅ CI checks successfully passed!"
+- ✅ Strict FR/NFR gate has no missing automated/CI coverage
+- ✅ System quality attribute scorecard uses `0-5` or `N/A`, with evidence and required improvement suggestions
+- ✅ Flaky-test risk reviewed for changed tests
 - ✅ All review comments addressed
 - ✅ No quality regressions introduced
 - ✅ All conversations resolved

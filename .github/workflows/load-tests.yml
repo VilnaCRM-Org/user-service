@@ -4,10 +4,20 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   load-tests:
     name: K6
     runs-on: ubuntu-latest
+
+    env:
+      COMPOSE_PROJECT_NAME: user-service-load-tests
+      COMPOSE_FILE: docker-compose.yml:docker-compose.override.yml:docker-compose.load-tests.yml
+      LOAD_TEST_COMPOSE_PROJECT: user-service-load-tests
+      FRANKENPHP_LOOP_MAX: '-1'
+
     steps:
       - name: Dependabot skip
         if: github.event.pull_request.user.login == 'dependabot[bot]'
@@ -15,23 +25,14 @@ jobs:
 
       - name: Checkout Repository
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Setup Docker
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: docker/setup-docker-action@v4
-
-      - name: Start application
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make start
-
-      - name: Setup test db
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make setup-test-db
+        uses: docker/setup-docker-action@e43656e248c0bd0647d3f5c195d116aacf6fcaf4
 
       - name: Run load tests
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        env:
-          API_HOST: localhost
-          API_PORT: 8081
-        run: make smoke-load-tests
+        run: make load-tests

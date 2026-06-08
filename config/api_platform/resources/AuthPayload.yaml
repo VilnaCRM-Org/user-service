@@ -131,3 +131,105 @@ resources:
           groups: ['auth:output']
         denormalizationContext:
           groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignUpOptionsAuthMutationResolver'
+        name: 'passkeySignUpOptions'
+        description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+          initials:
+            type: 'String!'
+          displayName:
+            type: 'String'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignUpCompleteAuthMutationResolver'
+        name: 'passkeySignUpComplete'
+        description: >-
+          Verifies WebAuthn attestation, creates the account, stores the passkey, and returns authentication data.
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+          label:
+            type: 'String'
+          rememberMe:
+            type: 'Boolean'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignInOptionsAuthMutationResolver'
+        name: 'passkeySignInOptions'
+        description: 'Creates WebAuthn public key request options for passkey sign-in.'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          email:
+            type: 'String!'
+          rememberMe:
+            type: 'Boolean'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeySignInCompleteAuthMutationResolver'
+        name: 'passkeySignInComplete'
+        description: 'Verifies WebAuthn assertion and returns authentication data.'
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeyRegistrationOptionsAuthMutationResolver'
+        name: 'passkeyRegistrationOptions'
+        description: 'Creates WebAuthn public key creation options for the authenticated user.'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+      - class: 'ApiPlatform\Metadata\GraphQl\Mutation'
+        shortName: 'User'
+        resolver: 'App\User\Application\Resolver\PasskeyRegistrationCompleteAuthMutationResolver'
+        name: 'passkeyRegistrationComplete'
+        description: 'Verifies WebAuthn attestation and stores a passkey for the authenticated user.'
+        security: "is_granted('ROLE_USER')"
+        deserialize: false
+        output: 'App\User\Application\DTO\AuthPayload'
+        normalizationContext:
+          groups: ['auth:output']
+        denormalizationContext:
+          groups: []
+        extraArgs:
+          challengeId:
+            type: 'String!'
+          credential:
+            type: 'Iterable!'
+          label:
+            type: 'String'

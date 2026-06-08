@@ -51,6 +51,16 @@ final readonly class ApiRateLimitClientIdentityResolver
         return strtolower(trim($email));
     }
 
+    public function resolveTopLevelSignInEmail(Request $request): ?string
+    {
+        $email = $this->payloadValueResolver->resolveTopLevel($request, [self::EMAIL_KEY]);
+        if ($email === null) {
+            return null;
+        }
+
+        return strtolower(trim($email));
+    }
+
     public function resolvePendingSessionId(Request $request): ?string
     {
         return $this->resolvePayloadValue($request, self::PENDING_SESSION_ID_KEYS);

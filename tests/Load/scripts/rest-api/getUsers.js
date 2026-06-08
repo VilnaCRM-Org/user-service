@@ -23,7 +23,7 @@ export default function getUsers(data) {
   const page = utils.getRandomNumber(1, 5);
 
   const response = http.get(
-    `${utils.getBaseHttpUrl()}?page=${page}&itemsPerPage=${usersToGetInOneRequest}`,
+    `${utils.getBaseHttpUrl()}?page=${page}&itemsPerPage=${usersToGetInOneRequest}&partial=true`,
     utils.getJsonHeaderWithAuth(user.accessToken)
   );
 

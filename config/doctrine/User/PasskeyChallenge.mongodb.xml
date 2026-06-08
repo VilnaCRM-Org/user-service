@@ -1,0 +1,34 @@
+<doctrine-mongo-mapping
+  xmlns="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping
+                                            http://doctrine-project.org/schemas/odm/doctrine-mongo-mapping.xsd"
+>
+
+    <document name="App\User\Domain\Entity\PasskeyChallenge" db="user_service" collection="passkey_challenges">
+        <id field-name="id" type="string" strategy="NONE" />
+
+        <field field-name="purpose" type="string" />
+        <field field-name="challenge" type="string" />
+        <field field-name="options" type="string" />
+        <field field-name="createdAt" name="created_at" type="date_immutable" />
+        <field field-name="expiresAt" name="expires_at" type="date_immutable" />
+        <field field-name="email" type="string" nullable="true" />
+        <field field-name="initials" type="string" nullable="true" />
+        <field field-name="displayName" name="display_name" type="string" nullable="true" />
+        <field field-name="userId" name="user_id" type="string" nullable="true" />
+        <field field-name="rememberMe" name="remember_me" type="boolean" />
+        <field field-name="consumedAt" name="consumed_at" type="date_immutable" nullable="true" />
+
+        <indexes>
+            <index>
+                <key name="purpose" order="asc" />
+                <key name="user_id" order="asc" />
+            </index>
+            <index>
+                <key name="expires_at" order="asc" />
+                <option name="expireAfterSeconds" value="0" />
+            </index>
+        </indexes>
+    </document>
+</doctrine-mongo-mapping>

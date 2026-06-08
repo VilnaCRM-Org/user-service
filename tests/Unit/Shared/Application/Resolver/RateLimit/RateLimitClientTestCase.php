@@ -7,10 +7,16 @@ namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlAuthTargetResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlDocumentResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlPayloadResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlQueryInspector;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitOAuthSocialTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 abstract class RateLimitClientTestCase extends UnitTestCase
 {
@@ -49,7 +55,10 @@ abstract class RateLimitClientTestCase extends UnitTestCase
         ?JwtTokenConverterInterface $jwtConverter = null,
     ): ApiRateLimitClientIdentityResolver {
         return new ApiRateLimitClientIdentityResolver(
-            new ApiRateLimitPayloadValueResolver($this->createJsonSerializer()),
+            new ApiRateLimitPayloadValueResolver(
+                $this->createJsonSerializer(),
+                new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver())
+            ),
             $jwtConverter,
         );
     }
@@ -78,6 +87,12 @@ abstract class RateLimitClientTestCase extends UnitTestCase
                 $pendingTwoFactorRepository,
                 $clientIdentityResolver,
             ),
+            new ApiRateLimitGraphQlAuthTargetResolver(
+                $clientIdentityResolver,
+                new ApiRateLimitGraphQlQueryInspector(new ApiRateLimitGraphQlDocumentResolver()),
+                new ApiRateLimitGraphQlPayloadResolver(new JsonEncoder()),
+            ),
+            new ApiRateLimitOAuthSocialTargetResolver(),
         );
     }
 }

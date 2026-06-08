@@ -53,6 +53,10 @@ coverage-html/
 
 ###> bats-core ###
 /tests/CLI/bats/test_helper/
+/tests/CLI/bats/bats-support
+/tests/CLI/bats/bats-support/
+/tests/CLI/bats/bats-assert
+/tests/CLI/bats/bats-assert/
 ###< bats-core ###
 
 .phpunit.cache
@@ -62,6 +66,8 @@ coverage-html/
 /_bmad/
 /_bmad-output/
 _bmad-output/
+/bmalph/state/
+/graphify-out/
 ###> league/oauth2-server-bundle ###
 /config/jwt/*.pem
 /config/reference.php

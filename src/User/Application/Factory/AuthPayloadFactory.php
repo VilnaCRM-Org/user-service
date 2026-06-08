@@ -7,6 +7,8 @@ namespace App\User\Application\Factory;
 use App\User\Application\DTO\AuthPayload;
 use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
+use App\User\Application\DTO\PasskeyAuthenticationResult;
+use App\User\Application\DTO\PasskeyOptionsResult;
 use App\User\Application\DTO\RefreshTokenCommandResponse;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
@@ -49,6 +51,35 @@ final class AuthPayloadFactory
             ->setId('auth-refresh-token')
             ->setAccessToken($response->getAccessToken())
             ->setRefreshToken($response->getRefreshToken());
+    }
+
+    public function createFromPasskeyOptionsResponse(
+        string $id,
+        PasskeyOptionsResult $response
+    ): AuthPayload {
+        return (new AuthPayload())
+            ->setId($id)
+            ->setChallengeId($response->getChallenge()->getId())
+            ->setPublicKey($response->getPublicKeyOptions());
+    }
+
+    public function createFromPasskeyAuthenticationResult(
+        string $id,
+        PasskeyAuthenticationResult $result
+    ): AuthPayload {
+        return (new AuthPayload())
+            ->setId($id)
+            ->setTwoFactorEnabled($result->isTwoFactorEnabled())
+            ->setAccessToken($result->isTwoFactorEnabled() ? null : $result->getAccessToken())
+            ->setRefreshToken($result->isTwoFactorEnabled() ? null : $result->getRefreshToken())
+            ->setPendingSessionId($result->getPendingSessionId());
+    }
+
+    public function createFromPasskeyCredentialId(string $credentialId): AuthPayload
+    {
+        return (new AuthPayload())
+            ->setId('auth-passkey-registration-complete')
+            ->setCredentialId($credentialId);
     }
 
     public function createFromSetupTwoFactorResponse(

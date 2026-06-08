@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Infrastructure\Validator;
 
 use App\Shared\Infrastructure\Validator\AccessTokenValidator;
+use App\Tests\Unit\Shared\Infrastructure\Serializer\ContextAssertingSerializer;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Serializer;
 
 final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorTestCase
 {
@@ -237,20 +236,15 @@ final class AccessTokenValidatorTokenStructureTest extends AccessTokenValidatorT
 
     private function createValidatorExpectingHeaderDecode(string $headerJson): AccessTokenValidator
     {
-        $serializer = $this->createMock(Serializer::class);
-        $serializer
-            ->expects($this->once())
-            ->method('decode')
-            ->with(
-                $headerJson,
-                JsonEncoder::FORMAT,
-                [
-                    JsonDecode::ASSOCIATIVE => true,
-                    JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
-                    JsonDecode::RECURSION_DEPTH => 4,
-                ]
-            )
-            ->willReturn(['alg' => 'RS256', 'typ' => 'JWT']);
+        $serializer = new ContextAssertingSerializer(
+            $headerJson,
+            [
+                JsonDecode::ASSOCIATIVE => true,
+                JsonDecode::OPTIONS => JSON_THROW_ON_ERROR,
+                JsonDecode::RECURSION_DEPTH => 4,
+            ],
+            ['alg' => 'RS256', 'typ' => 'JWT']
+        );
 
         return new AccessTokenValidator($serializer, $this->jwtEncoder);
     }

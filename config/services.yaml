@@ -183,6 +183,22 @@ services:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
 
+  App\User\Application\EventListener\PasskeyProductionReadinessListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $productionTrafficEnabled: '%env(bool:PASSKEY_PRODUCTION_TRAFFIC_ENABLED)%'
+      $productionMonitoringReady: '%env(bool:PASSKEY_PRODUCTION_MONITORING_READY)%'
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, priority: 110 }
+
+  App\User\Application\EventListener\PasskeyGraphQlRequestResolver:
+    arguments:
+      $jsonEncoder: '@serializer.encoder.json'
+
+  App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlPayloadResolver:
+    arguments:
+      $jsonEncoder: '@serializer.encoder.json'
+
   App\Shared\Application\EventListener\InvalidUuidRequestListener:
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 10 }
@@ -289,6 +305,12 @@ services:
   App\User\Domain\Repository\RecoveryCodeRepositoryInterface:
     alias: App\User\Infrastructure\Repository\MongoDBRecoveryCodeRepository
 
+  App\User\Domain\Repository\PasskeyCredentialRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasskeyCredentialRepository
+
+  App\User\Domain\Repository\PasskeyChallengeRepositoryInterface:
+    alias: App\User\Infrastructure\Repository\MongoDBPasskeyChallengeRepository
+
   App\User\Application\EventSubscriber\PasswordResetEmailSentEventSubscriber:
     arguments:
       $apiBaseUrl: '%env(API_BASE_URL)%'
@@ -332,6 +354,24 @@ services:
   App\User\Infrastructure\Publisher\SignInPublisherInterface: '@App\User\Infrastructure\Publisher\SignInPublisher'
   App\User\Application\Validator\UserCredentialValidatorInterface: '@App\User\Application\Validator\UserCredentialValidator'
   App\User\Application\Validator\OwnershipValidatorInterface: '@App\User\Application\Validator\TokenOwnershipValidator'
+  App\User\Application\Validator\PasskeyCredentialValidatorInterface: '@App\User\Application\Validator\PasskeyCredentialValidator'
+  App\User\Application\Factory\PasskeyWebauthnFactoryInterface: '@App\User\Application\Factory\PasskeyWebauthnFactory'
+  App\User\Application\Transformer\PasskeyJsonTransformerInterface: '@App\User\Application\Transformer\PasskeyJsonTransformer'
+
+  App\User\Application\Transformer\PasskeyJsonTransformer:
+    arguments:
+      $serializer: null
+      $jsonEncoder: null
+
+  App\User\Application\DTO\PasskeyConfiguration:
+    arguments:
+      $rpId: '%env(string:PASSKEY_RP_ID)%'
+      $rpName: '%env(string:PASSKEY_RP_NAME)%'
+      $allowedOrigins: '%env(string:PASSKEY_ALLOWED_ORIGINS)%'
+      $timeoutSeconds: '%env(int:PASSKEY_TIMEOUT_SECONDS)%'
+      $challengeTtlSeconds: '%env(int:PASSKEY_CHALLENGE_TTL_SECONDS)%'
+      $appEnv: '%kernel.environment%'
+      $publicSuffixListPath: '%kernel.project_dir%/config/passkey/public_suffix_list.dat'
 
   App\User\Application\Factory\AuthTokenFactory:
     arguments:
@@ -362,6 +402,8 @@ services:
         - { pattern: '#^/api/users/confirm$#', methods: ['PATCH'] }
         - { pattern: '#^/api/reset-password#' }
         - { pattern: '#^/api/signin#' }
+        - { pattern: '#^/api/passkeys/signup/(options|complete)$#', methods: ['POST'] }
+        - { pattern: '#^/api/passkeys/signin/(options|complete)$#', methods: ['POST'] }
         - { pattern: '#^/api/token$#', methods: ['POST'] }
         - { pattern: '#^/api/oauth/token$#', methods: ['POST'] }
         - { pattern: '#^/api/docs#' }
@@ -370,6 +412,10 @@ services:
         - { pattern: '#^/healthz#' }
 
   App\User\Application\CommandHandler\SignInCommandHandler:
+    arguments:
+      $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
+
+  App\User\Application\Service\PasskeyTwoFactorHandler:
     arguments:
       $pendingTwoFactorTtlSeconds: '%env(int:PENDING_2FA_TTL_SECONDS)%'
 

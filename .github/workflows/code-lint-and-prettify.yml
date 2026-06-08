@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -16,22 +19,38 @@ jobs:
       - name: Generate token with necessary permissions
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: generate_token
-        uses: tibdex/github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
         with:
-          app_id: ${{ secrets.VILNACRM_APP_ID }}
-          private_key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.VILNACRM_APP_ID }}
+          private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          permission-contents: write
 
       - name: Checkout code
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          token: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
+          token: ${{ steps.generate_token.outputs.token }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure Git token auth
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          cat > "$RUNNER_TEMP/git-askpass.sh" <<'EOF'
+          #!/usr/bin/env bash
+          case "$1" in
+            *Username*) echo "x-access-token" ;;
+            *Password*) echo "$PUSH_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "$RUNNER_TEMP/git-askpass.sh"
+          echo "GIT_ASKPASS=$RUNNER_TEMP/git-askpass.sh" >> "$GITHUB_ENV"
+          echo "GIT_TERMINAL_PROMPT=0" >> "$GITHUB_ENV"
 
       - name: Import GPG key
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -43,11 +62,9 @@ jobs:
       - name: Configure GPG for automated signing
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: |
-          if GPG_TTY="$(tty 2>/dev/null)"; then
-            export GPG_TTY
-            echo "GPG_TTY=$GPG_TTY" >> "$GITHUB_ENV"
-          fi
-          echo "GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }}" >> "$GITHUB_ENV"
+          export GPG_TTY=$(tty)
+          echo "GPG_TTY=$GPG_TTY" >> $GITHUB_ENV
+          echo "GPG_PASSPHRASE=${{ secrets.GPG_PASSPHRASE }}" >> $GITHUB_ENV
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
           cat > ~/.gnupg/gpg.conf << EOF
@@ -64,9 +81,7 @@ jobs:
           gpg-connect-agent reloadagent /bye || true
           cat > ~/.gnupg/gpg-wrapper.sh << 'EOF'
           #!/bin/bash
-          if GPG_TTY="$(tty 2>/dev/null)"; then
-            export GPG_TTY
-          fi
+          export GPG_TTY=$(tty)
           case "$*" in
             *--detach-sign*|*--sign*)
               echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "$@"
@@ -88,7 +103,7 @@ jobs:
       - name: Run Super-Linter
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         continue-on-error: true
-        uses: super-linter/super-linter@v7.1.0
+        uses: super-linter/super-linter@b92721f792f381cedc002ecdbb9847a15ece5bb8
         env:
           FILTER_REGEX_EXCLUDE: '^\\.github/openapi-spec/'
           VALIDATE_JAVASCRIPT_ES: true
@@ -102,14 +117,15 @@ jobs:
           VALIDATE_JAVASCRIPT_PRETTIER: true
           FIX_JAVASCRIPT_PRETTIER: true
           VALIDATE_ALL_CODEBASE: true
-          GITHUB_TOKEN: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
 
       - name: Commit and push linting fixes
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.event_name == 'pull_request' && github.ref_name != github.event.repository.default_branch }}
         env:
           GPG_TTY: ${{ env.GPG_TTY }}
           GPG_PASSPHRASE: ${{ env.GPG_PASSPHRASE }}
-        uses: stefanzweifel/git-auto-commit-action@v5
+          PUSH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403
         with:
           branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
           commit_message: 'chore(#${{ github.event.number }}): fix linting issues'

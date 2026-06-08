@@ -26,6 +26,31 @@ To ensure our User Service is optimized for high performance, we conducted exten
 - `POST /api/users/batch` now preloads existing users with a single bulk email lookup instead of performing one duplicate-email query per incoming user.
 - Batch registration assembly now lives in a dedicated factory, which keeps the hot path explicit and makes the bulk-lookup behavior easier to validate with repository and cache tests.
 
+## Passkey Load Coverage
+
+Passkey authentication adds K6 coverage for the repeatable server-side
+start-ceremony paths: `passkeySignupOptions`, `passkeySigninOptions`, and
+`passkeyRegistrationOptions`. These scenarios require `checks` above `99%`,
+p99 under `1500ms` for smoke/average, p99 under `3000ms` for stress, and p99
+under `5000ms` for spike. Browser-created attestation/assertion completion is
+covered by integration tests and manual browser evidence because k6 does not
+provide a WebAuthn authenticator.
+
+Current PR evidence from 2026-06-01 UTC, using isolated Compose project
+`user-service-pr286-passkey-load` with `MONGODB_VERSION=7.0` after
+`make setup-load-test-db`, passed smoke, average, stress, and spike thresholds:
+
+| Scenario                     | Checks | Smoke p99 | Average p99 | Stress p99 | Spike p99 |
+| ---------------------------- | ------ | --------: | ----------: | ---------: | --------: |
+| `passkeySignupOptions`       | 100%   |   48.21ms |     78.89ms |    89.48ms |  165.49ms |
+| `passkeySigninOptions`       | 100%   |   357.2ms |     67.77ms |   115.23ms |    5.97ms |
+| `passkeyRegistrationOptions` | 100%   |   108.6ms |    164.63ms |    73.29ms |  201.87ms |
+
+An earlier run without the load-test database preparation failed the signup
+stress threshold at p99 `6.14s`. The documented precondition is to run the repo's
+load-test setup so schema, indexes, OAuth client, and JWT fixtures exist before
+capturing passkey performance evidence.
+
 ## PR 278 Performance Report
 
 This pull request focused on the hot paths that were still visible under load:

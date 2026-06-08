@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   psalm:
     name: Psalm
@@ -15,11 +19,13 @@ jobs:
 
       - name: Checkout code
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc
         with:
           php-version: ${{ vars.PHP_VERSION }}
           tools: composer
@@ -40,6 +46,6 @@ jobs:
 
       - name: Upload Security Analysis results to GitHub
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@231aa2c8a89117b126725a0e11897209b7118144
         with:
           sarif_file: results.sarif
