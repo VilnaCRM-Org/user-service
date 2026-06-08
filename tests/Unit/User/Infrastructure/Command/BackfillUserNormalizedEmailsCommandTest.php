@@ -14,6 +14,7 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\User;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;
+use ArrayObject;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use MongoDB\BSON\Int64;
 use MongoDB\BulkWriteResult;
@@ -72,6 +73,72 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         $this->assertDuplicateFailure($tester, 'legacy@example.com');
     }
 
+    public function testExecuteSkipsUnreadableCandidatesAndSucceedsWithoutUpdates(): void
+    {
+        [$tester, $collection] = $this->createTesterWithCollection();
+
+        $collection->expects($this->once())
+            ->method('find')
+            ->with($this->backfillFilter(), $this->candidateFindOptions())
+            ->willReturn(new ArrayCursor([
+                (object) ['email' => 'ignored@example.com'],
+                ['_id' => 'missing-email'],
+                ['_id' => 'invalid-email', 'email' => 123],
+            ]));
+        $this->expectNoBulkWrite($collection);
+
+        $this->assertSuccessfulBackfill($tester, 0, 0);
+    }
+
+    public function testExecuteHandlesArrayAccessCandidatesAndSkipsUnreadableExistingDocuments(): void
+    {
+        [$tester, $collection] = $this->createTesterWithCollection();
+        $result = $this->createMock(BulkWriteResult::class);
+        $candidate = new ArrayObject([
+            '_id' => true,
+            'email' => ' ARRAY@example.COM ',
+        ]);
+
+        $collection->expects($this->exactly(2))
+            ->method('find')
+            ->willReturnCallback(
+                function (array $filter, array $options) use ($candidate): ArrayCursor {
+                    if ($filter === $this->backfillFilter()) {
+                        $this->assertSame($this->candidateFindOptions(), $options);
+
+                        return new ArrayCursor([$candidate]);
+                    }
+
+                    $this->assertSame([
+                        'normalizedEmail' => [
+                            '$in' => ['array@example.com'],
+                        ],
+                    ], $filter);
+                    $this->assertSame($this->existingFindOptions(), $options);
+
+                    return new ArrayCursor([
+                        (object) ['normalizedEmail' => 'array@example.com'],
+                        ['_id' => 'existing-without-normalized-email'],
+                    ]);
+                }
+            );
+        $this->expectBulkWrite(
+            $collection,
+            $result,
+            [
+                [
+                    'updateOne' => [
+                        $this->updateFilter(null),
+                        ['$set' => ['normalizedEmail' => 'array@example.com']],
+                    ],
+                ],
+            ]
+        );
+        $result->expects($this->once())->method('getModifiedCount')->willReturn(1);
+
+        $this->assertSuccessfulBackfill($tester, 1, 1);
+    }
+
     public function testArrayCursorReportsDeadStateForEmptyDocuments(): void
     {
         $cursor = new ArrayCursor([]);
@@ -125,11 +192,18 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         $this->assertStringContainsString($normalizedEmail, $tester->getDisplay());
     }
 
-    private function assertSuccessfulBackfill(CommandTester $tester): void
-    {
+    private function assertSuccessfulBackfill(
+        CommandTester $tester,
+        int $modified = 2,
+        int $matched = 2
+    ): void {
         $this->assertSame(Command::SUCCESS, $tester->execute([]));
         $this->assertStringContainsString(
-            'Backfilled normalized emails for 2 of 2 matched users.',
+            sprintf(
+                'Backfilled normalized emails for %d of %d matched users.',
+                $modified,
+                $matched
+            ),
             $tester->getDisplay()
         );
     }

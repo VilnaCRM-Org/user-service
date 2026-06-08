@@ -23,8 +23,10 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
 use function mb_strtolower;
 use function mb_strtoupper;
+
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;

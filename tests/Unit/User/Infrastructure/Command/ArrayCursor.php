@@ -13,15 +13,16 @@ use RuntimeException;
 /**
  * @psalm-type TestDocumentValue = object|array|string|int|float|bool|null
  * @psalm-type TestDocument = array<string, TestDocumentValue>
+ * @psalm-type CursorDocument = object|TestDocument
  *
- * @implements CursorInterface<int, TestDocument>
- * @implements Iterator<int, TestDocument>
+ * @implements CursorInterface<int, CursorDocument>
+ * @implements Iterator<int, CursorDocument>
  */
 final class ArrayCursor implements CursorInterface, Iterator
 {
     private int $position = 0;
 
-    /** @param list<TestDocument> $documents */
+    /** @param list<CursorDocument> $documents */
     public function __construct(private readonly array $documents)
     {
     }
@@ -81,7 +82,7 @@ final class ArrayCursor implements CursorInterface, Iterator
     }
 
     /**
-     * @return list<TestDocument>
+     * @return list<CursorDocument>
      */
     #[\Override]
     public function toArray(): array

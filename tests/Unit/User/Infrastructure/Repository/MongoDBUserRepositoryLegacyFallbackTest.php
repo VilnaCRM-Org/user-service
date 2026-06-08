@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
+use App\Shared\Domain\ValueObject\UuidInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
@@ -14,9 +15,12 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
+
 use function mb_strtolower;
 use function mb_strtoupper;
+
 use PHPUnit\Framework\MockObject\MockObject;
+
 use function preg_quote;
 
 /**
@@ -115,6 +119,26 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
 
         $this->assertSame(
             [$currentUser, $legacyUser],
+            iterator_to_array(
+                $fixture['repository']->findByEmails([$fixture['inputEmail']])
+            )
+        );
+    }
+
+    public function testFindByEmailsDeduplicatesSameCurrentAndLegacyUserWithoutId(): void
+    {
+        $fixture = $this->createLegacyFallbackFixture();
+        $user = $this->createUserWithoutStringId($fixture['normalizedEmail']);
+
+        $this->expectLegacyFallbackQueries(
+            $fixture,
+            [$fixture['normalizedEmail']],
+            [$user],
+            [$user]
+        );
+
+        $this->assertSame(
+            [$user],
             iterator_to_array(
                 $fixture['repository']->findByEmails([$fixture['inputEmail']])
             )
@@ -337,6 +361,29 @@ final class MongoDBUserRepositoryLegacyFallbackTest extends UnitTestCase
             $this->faker->name(),
             $this->faker->password(),
             $this->transformer->transformFromString($this->faker->uuid())
+        );
+    }
+
+    private function createUserWithoutStringId(string $email): User
+    {
+        $id = new class() implements UuidInterface {
+            public function __toString(): string
+            {
+                return '';
+            }
+
+            #[\Override]
+            public function toBinary(): ?string
+            {
+                return null;
+            }
+        };
+
+        return new User(
+            $email,
+            $this->faker->name(),
+            $this->faker->password(),
+            $id
         );
     }
 }
