@@ -45,7 +45,19 @@ jobs:
 
       - name: Install Symfony CLI
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: wget https://get.symfony.com/cli/installer -O - | bash
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            if wget https://get.symfony.com/cli/installer -O - | bash; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+
+            sleep $((attempt * 10))
+          done
 
       - name: Composer validate
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
