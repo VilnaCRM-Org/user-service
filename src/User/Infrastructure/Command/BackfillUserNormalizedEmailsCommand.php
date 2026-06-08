@@ -47,7 +47,7 @@ final class BackfillUserNormalizedEmailsCommand extends Command
         $result = $this->backfillNormalizedEmails();
 
         if ($result['duplicates'] !== []) {
-            $this->writeDuplicateFailure($io, $result['duplicates']);
+            $this->writeDuplicateFailure($io, $result);
 
             return Command::FAILURE;
         }
@@ -88,12 +88,14 @@ final class BackfillUserNormalizedEmailsCommand extends Command
         ));
     }
 
-    /** @param list<string> $duplicates */
-    private function writeDuplicateFailure(SymfonyStyle $io, array $duplicates): void
+    /** @param BackfillResult $result */
+    private function writeDuplicateFailure(SymfonyStyle $io, array $result): void
     {
         $io->error(sprintf(
-            'Backfill aborted because duplicate normalized emails were found: %s',
-            implode(', ', array_slice($duplicates, 0, self::DUPLICATE_PREVIEW_LIMIT))
+            'Backfill aborted: scanned %d matched users, modified %d users, duplicates: %s',
+            $result['matched'],
+            $result['modified'],
+            implode(', ', array_slice($result['duplicates'], 0, self::DUPLICATE_PREVIEW_LIMIT))
         ));
     }
 
@@ -173,54 +175,45 @@ final class BackfillUserNormalizedEmailsCommand extends Command
      */
     private function findDuplicateNormalizedEmails(array $candidates): array
     {
-        $counts = $this->candidateNormalizedEmailCounts($candidates);
-
-        foreach (
-            $this->existingNormalizedEmailCounts(array_keys($counts)) as $normalizedEmail => $count
-        ) {
-            $counts[$normalizedEmail] = ($counts[$normalizedEmail] ?? 0) + $count;
-        }
-
-        $duplicates = [];
-
-        foreach ($counts as $normalizedEmail => $count) {
-            if ($count > 1) {
-                $duplicates[] = $normalizedEmail;
-            }
-        }
-
-        return $duplicates;
-    }
-
-    /**
-     * @param list<BackfillCandidate> $candidates
-     *
-     * @return array<string, int>
-     */
-    private function candidateNormalizedEmailCounts(array $candidates): array
-    {
-        $counts = [];
+        $seen = [];
+        $duplicateEmails = [];
+        $duplicateIndex = [];
 
         foreach ($candidates as $candidate) {
             $normalizedEmail = $candidate['normalizedEmail'];
-            $counts[$normalizedEmail] = ($counts[$normalizedEmail] ?? 0) + 1;
+
+            if (isset($seen[$normalizedEmail])) {
+                $this->appendUniqueNormalizedEmail(
+                    $duplicateEmails,
+                    $duplicateIndex,
+                    $normalizedEmail
+                );
+                continue;
+            }
+
+            $seen[$normalizedEmail] = $normalizedEmail;
         }
 
-        return $counts;
+        foreach ($this->existingNormalizedEmails(array_values($seen)) as $normalizedEmail) {
+            $this->appendUniqueNormalizedEmail($duplicateEmails, $duplicateIndex, $normalizedEmail);
+        }
+
+        return $duplicateEmails;
     }
 
     /**
      * @param list<string> $normalizedEmails
      *
-     * @return array<string, int>
+     * @return list<string>
      */
-    private function existingNormalizedEmailCounts(array $normalizedEmails): array
+    private function existingNormalizedEmails(array $normalizedEmails): array
     {
         if ($normalizedEmails === []) {
             return [];
         }
 
-        $counts = [];
+        $existingNormalizedEmails = [];
+        $existingNormalizedEmailIndex = [];
         $cursor = $this->usersCollection()
             ->find($this->existingFilter($normalizedEmails), $this->existingFindOptions());
 
@@ -231,10 +224,31 @@ final class BackfillUserNormalizedEmailsCommand extends Command
                 continue;
             }
 
-            $counts[$normalizedEmail] = ($counts[$normalizedEmail] ?? 0) + 1;
+            $this->appendUniqueNormalizedEmail(
+                $existingNormalizedEmails,
+                $existingNormalizedEmailIndex,
+                $normalizedEmail
+            );
         }
 
-        return $counts;
+        return $existingNormalizedEmails;
+    }
+
+    /**
+     * @param list<string> $normalizedEmails
+     * @param array<string, string> $normalizedEmailIndex
+     */
+    private function appendUniqueNormalizedEmail(
+        array &$normalizedEmails,
+        array &$normalizedEmailIndex,
+        string $normalizedEmail
+    ): void {
+        if (isset($normalizedEmailIndex[$normalizedEmail])) {
+            return;
+        }
+
+        $normalizedEmailIndex[$normalizedEmail] = $normalizedEmail;
+        $normalizedEmails[] = $normalizedEmail;
     }
 
     /** @param array<string, DocumentValue>|object|null $document */

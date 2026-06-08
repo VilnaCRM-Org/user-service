@@ -52,7 +52,7 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         );
         $this->expectNoBulkWrite($collection);
 
-        $this->assertDuplicateFailure($tester, 'user@example.com');
+        $this->assertDuplicateFailure($tester, 'user@example.com', 2);
     }
 
     public function testExecuteAbortsWhenExistingNormalizedEmailWouldCollide(): void
@@ -70,7 +70,7 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         );
         $this->expectNoBulkWrite($collection);
 
-        $this->assertDuplicateFailure($tester, 'legacy@example.com');
+        $this->assertDuplicateFailure($tester, 'legacy@example.com', 1);
     }
 
     public function testExecuteSkipsUnreadableCandidatesAndSucceedsWithoutUpdates(): void
@@ -155,11 +155,15 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
 
     private function assertDuplicateFailure(
         CommandTester $tester,
-        string $normalizedEmail
+        string $normalizedEmail,
+        int $matched
     ): void {
         $this->assertSame(Command::FAILURE, $tester->execute([]));
         $this->assertStringContainsString(
-            'Backfill aborted because duplicate normalized emails were found:',
+            sprintf(
+                'Backfill aborted: scanned %d matched users, modified 0 users',
+                $matched
+            ),
             $tester->getDisplay()
         );
         $this->assertStringContainsString($normalizedEmail, $tester->getDisplay());
