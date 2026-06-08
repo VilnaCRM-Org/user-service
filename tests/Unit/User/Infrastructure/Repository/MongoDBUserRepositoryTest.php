@@ -13,16 +13,15 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
-use function array_key_exists;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
+use function implode;
 use InvalidArgumentException;
 use function mb_strtolower;
 use function mb_strtoupper;
 use PHPUnit\Framework\MockObject\MockObject;
-use function preg_quote;
 use RuntimeException;
 use function sprintf;
 use function trim;
@@ -106,14 +105,11 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $user = $this->createUserWithEmail($caseInsensitiveEmail);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQuery(
+        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
-            [
-                '$regex' => '^' . preg_quote(trim($inputEmail), '/') . '$',
-                '$options' => 'i',
-            ],
+            mb_strtolower($caseInsensitiveEmail, 'UTF-8'),
             [$user]
         );
 
@@ -131,7 +127,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $secondUser = $this->createUserWithEmail($secondEmail);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQuery(
+        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
@@ -151,11 +147,11 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQuery(
+        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
-            [$inputEmail, mb_strtolower($email, 'UTF-8')],
+            [mb_strtolower($email, 'UTF-8')],
             [$user]
         );
 
@@ -172,11 +168,11 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQuery(
+        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
-            [$inputEmail, $trimmedEmail, mb_strtolower($email, 'UTF-8')],
+            [mb_strtolower($email, 'UTF-8')],
             [$user]
         );
 
@@ -201,7 +197,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $user = $this->createUserWithEmail($email);
         [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
 
-        $this->expectFindByEmailsQuery(
+        $this->expectFindByEmailsQueryWithEmptyLegacyFallback(
             $repository,
             $queryBuilder,
             $query,
@@ -238,12 +234,16 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
 
     public function testSaveUser(): void
     {
-        $user = $this->createMock(UserInterface::class);
+        $email = '  ' . mb_strtoupper($this->faker->unique()->email(), 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($email);
 
         $this->documentManager
             ->expects($this->once())
             ->method('persist')
-            ->with($user);
+            ->with($this->callback(
+                static fn (User $persistedUser): bool => $persistedUser === $user
+                    && $persistedUser->getNormalizedEmail() === mb_strtolower(trim($email), 'UTF-8')
+            ));
 
         $this->documentManager
             ->expects($this->once())
@@ -278,8 +278,12 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $email = $this->faker->email();
         $user = $this->createMock(UserInterface::class);
         $error = new RuntimeException(sprintf(
-            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
-            $email
+            implode(' ', [
+                'E11000 duplicate key error index:',
+                'normalizedEmail_1 dup key:',
+                '{ normalizedEmail: "%s" }',
+            ]),
+            mb_strtolower($email, 'UTF-8')
         ), 11000);
 
         $user->method('getEmail')->willReturn($email);
@@ -298,8 +302,12 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $otherEmail = $this->faker->unique()->email();
         $user = $this->createMock(UserInterface::class);
         $error = new RuntimeException(sprintf(
-            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
-            $otherEmail
+            implode(' ', [
+                'E11000 duplicate key error index:',
+                'normalizedEmail_1 dup key:',
+                '{ normalizedEmail: "%s" }',
+            ]),
+            mb_strtolower($otherEmail, 'UTF-8')
         ), 11000);
 
         $user->method('getEmail')->willReturn($email);
@@ -387,39 +395,68 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, string>|list<string> $emails
+     * @param list<string>|string $emails
      * @param list<object> $queryResult
      */
     private function expectFindByEmailsQuery(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
         Query $query,
-        array $emails,
+        array|string $emails,
         array $queryResult
-    ): void {
-        $this->expectQueryBuilder($repository, $queryBuilder, $emails);
-        $queryBuilder->expects($this->once())
-            ->method('getQuery')
-            ->willReturn($query);
-        $query->expects($this->once())
-            ->method('execute')
-            ->willReturn($queryResult);
-    }
-
-    /**
-     * @param array<string, string>|list<string> $emails
-     */
-    private function expectQueryBuilder(
-        MongoDBUserRepository $repository,
-        Builder $queryBuilder,
-        array $emails
     ): void {
         $repository->expects($this->once())->method('createQueryBuilder')
             ->willReturn($queryBuilder);
-        $queryBuilder->expects($this->once())->method('field')->with('email')
+
+        $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
+    }
+
+    /**
+     * @param list<string>|string $emails
+     * @param list<object> $queryResult
+     */
+    private function expectFindByEmailsQueryWithEmptyLegacyFallback(
+        MongoDBUserRepository $repository,
+        Builder $queryBuilder,
+        Query $query,
+        array|string $emails,
+        array $queryResult
+    ): void {
+        $legacyQueryBuilder = $this->createMock(Builder::class);
+        $legacyQuery = $this->createMock(Query::class);
+
+        $repository->expects($this->exactly(2))->method('createQueryBuilder')
+            ->willReturnOnConsecutiveCalls($queryBuilder, $legacyQueryBuilder);
+
+        $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
+        $this->expectLegacyFallbackQuery($legacyQueryBuilder, $legacyQuery, []);
+    }
+
+    /**
+     * @param list<string>|string $emails
+     * @param list<object> $queryResult
+     */
+    private function expectNormalizedEmailQuery(
+        Builder $queryBuilder,
+        Query $query,
+        array|string $emails,
+        array $queryResult
+    ): void {
+        $this->expectNormalizedEmailConstraint($queryBuilder, $emails);
+        $this->expectQueryExecution($queryBuilder, $query, $queryResult);
+    }
+
+    /**
+     * @param list<string>|string $emails
+     */
+    private function expectNormalizedEmailConstraint(
+        Builder $queryBuilder,
+        array|string $emails
+    ): void {
+        $queryBuilder->expects($this->once())->method('field')->with('normalizedEmail')
             ->willReturnSelf();
 
-        if (array_key_exists('$regex', $emails)) {
+        if (is_string($emails)) {
             $queryBuilder->expects($this->once())
                 ->method('equals')
                 ->with($emails)
@@ -432,6 +469,37 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
             ->method('in')
             ->with($emails)
             ->willReturnSelf();
+    }
+
+    /**
+     * @param list<object> $queryResult
+     */
+    private function expectLegacyFallbackQuery(
+        Builder $queryBuilder,
+        Query $query,
+        array $queryResult
+    ): void {
+        $queryBuilder->expects($this->once())
+            ->method('addAnd')
+            ->willReturnSelf();
+
+        $this->expectQueryExecution($queryBuilder, $query, $queryResult);
+    }
+
+    /**
+     * @param list<object> $queryResult
+     */
+    private function expectQueryExecution(
+        Builder $queryBuilder,
+        Query $query,
+        array $queryResult
+    ): void {
+        $queryBuilder->expects($this->once())
+            ->method('getQuery')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('execute')
+            ->willReturn($queryResult);
     }
 
     private function createUserWithEmail(string $email): User

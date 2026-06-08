@@ -11,6 +11,7 @@ use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\CommandHandler\SetupTwoFactorCommandHandler;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\TOTPSecretFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactory;
@@ -22,6 +23,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private TwoFactorSecretEncryptorInterface&MockObject $twoFactorSecretEncryptor;
     private TOTPSecretFactoryInterface&MockObject $totpSecretFactory;
     private UserFactory $userFactory;
@@ -33,6 +35,8 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->twoFactorSecretEncryptor =
             $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->totpSecretFactory = $this->createMock(TOTPSecretFactoryInterface::class);
@@ -57,9 +61,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     public function testInvokeThrowsUnauthorizedWhenAuthenticatedUserIsMissing(): void
     {
         $email = $this->faker->email();
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($email)
             ->willReturn(null);
         $this->totpSecretFactory
@@ -78,9 +82,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser($this->faker->email());
         $user->setTwoFactorEnabled(true);
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($user->getEmail())
             ->willReturn($user);
         $this->totpSecretFactory
@@ -99,6 +103,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     {
         return new SetupTwoFactorCommandHandler(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->twoFactorSecretEncryptor,
             $this->totpSecretFactory,
         );
@@ -115,9 +120,9 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
 
     private function expectUserLookup(User $user): void
     {
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($user->getEmail())
             ->willReturn($user);
     }

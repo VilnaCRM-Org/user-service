@@ -11,6 +11,7 @@ use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
@@ -27,6 +28,7 @@ use Symfony\Component\Uid\Ulid;
 final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private TwoFactorCodeValidatorInterface&MockObject $twoFactorCodeVerifier;
     private RecoveryCodeBatchFactoryInterface&MockObject $recoveryCodeBatchFactory;
@@ -40,6 +42,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeValidatorInterface::class);
         $this->recoveryCodeBatchFactory = $this->createMock(
@@ -73,7 +77,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     public function testInvalidCodeThrowsUnauthorized(): void
     {
         $user = $this->createUserWithSecret();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndConsumeOrFail')
@@ -95,7 +99,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     public function testUserWithoutSecretThrowsUnauthorized(): void
     {
         $user = $this->createUser($this->faker->email());
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->twoFactorCodeVerifier->expects($this->never())->method('verifyAndConsumeOrFail');
         $this->expectException(UnauthorizedHttpException::class);
         $this->createHandler()->__invoke(new ConfirmTwoFactorCommand(
@@ -107,9 +111,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
     public function testUserNotFoundThrowsUnauthorized(): void
     {
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -188,16 +190,16 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
     private function configureUserLookup(User $user): void
     {
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($user->getEmail())
             ->willReturn($user);
     }
 
     private function configureUserLookupStub(User $user): void
     {
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
     }
 
     private function expectTotpVerification(User $user, string $code): void
@@ -281,6 +283,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         return new ConfirmTwoFactorCommandHandler(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->authSessionRepository,
             $this->twoFactorCodeVerifier,
             $this->recoveryCodeBatchFactory,

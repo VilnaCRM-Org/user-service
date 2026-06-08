@@ -9,11 +9,11 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -25,7 +25,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
     private const SUDO_MODE_TTL_SECONDS = 300;
 
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
@@ -47,7 +47,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
 
     private function resolveUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->findUserByEmailQueryHandler->find($email);
         if (!$user instanceof User) {
             throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
         }

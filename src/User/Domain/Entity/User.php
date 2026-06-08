@@ -16,6 +16,7 @@ class User implements UserInterface
     private bool $confirmed;
     private bool $twoFactorEnabled;
     private ?string $twoFactorSecret;
+    private string $normalizedEmail = '';
 
     public function __construct(
         private string $email,
@@ -60,6 +61,16 @@ class User implements UserInterface
     public function setEmail(string $email): void
     {
         $this->email = $email;
+    }
+
+    public function getNormalizedEmail(): string
+    {
+        return $this->normalizedEmail;
+    }
+
+    public function setNormalizedEmail(string $normalizedEmail): void
+    {
+        $this->normalizedEmail = $normalizedEmail;
     }
 
     public function getInitials(): string

@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Application\Validator;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Validator\UserCredentialValidator;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 final class UserCredentialValidatorTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private AccountLockoutProviderInterface&MockObject $lockoutGuard;
     private SignInPublisherInterface&MockObject $events;
@@ -28,6 +30,8 @@ final class UserCredentialValidatorTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->lockoutGuard = $this->createMock(AccountLockoutProviderInterface::class);
         $this->events = $this->createMock(SignInPublisherInterface::class);
@@ -45,7 +49,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $user = $this->createUserMock($hashedPassword);
 
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->passwordHasher->method('needsRehash')->willReturn(false);
 
@@ -98,8 +102,8 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $user = $this->createUserMock($hashedPassword);
 
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
             ->with($normalizedEmail)
             ->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(true);
@@ -184,7 +188,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
         $password = $this->faker->password();
 
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
         $this->lockoutGuard->method('recordFailure')->willReturn(false);
 
         $this->passwordHasher->expects($this->once())
@@ -225,7 +229,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
     {
         $user = $this->createUserMock($this->faker->sha256());
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(false);
         $this->lockoutGuard->method('recordFailure')->willReturn(false);
 
@@ -275,6 +279,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
 
         new UserCredentialValidator(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
@@ -290,6 +295,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
 
         new UserCredentialValidator(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
@@ -306,6 +312,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
 
         new UserCredentialValidator(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,
@@ -317,7 +324,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
     {
         $user = $this->createUserMock($this->faker->sha256());
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->passwordHasher->method('verify')->willReturn(true);
         $this->passwordHasher->method('needsRehash')
             ->willReturn($needsRehash);
@@ -328,7 +335,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
     private function arrangeFailedValidation(): void
     {
         $this->lockoutGuard->method('isLocked')->willReturn(false);
-        $this->userRepository->method('findByEmail')->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
         $this->passwordHasher->method('verify')->willReturn(false);
     }
 
@@ -344,6 +351,7 @@ final class UserCredentialValidatorTest extends UnitTestCase
     {
         return new UserCredentialValidator(
             $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->passwordHasher,
             $this->lockoutGuard,
             $this->events,

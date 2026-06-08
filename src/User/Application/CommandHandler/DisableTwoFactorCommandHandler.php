@@ -6,6 +6,7 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\DisableTwoFactorCommand;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
@@ -21,6 +22,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private TwoFactorPublisherInterface $events,
@@ -45,7 +47,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
 
     private function resolveUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
+        $user = $this->findUserByEmailQueryHandler->find($email);
         if (!$user instanceof User) {
             throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
         }

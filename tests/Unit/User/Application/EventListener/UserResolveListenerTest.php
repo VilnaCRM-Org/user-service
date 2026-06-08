@@ -9,13 +9,12 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\DTO\AuthorizationUserDto;
 use App\User\Application\EventListener\UserResolveListener;
-use App\User\Application\Service\EmailNormalizer;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use League\Bundle\OAuth2ServerBundle\Model\AbstractClient;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
@@ -27,10 +26,9 @@ use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 final class UserResolveListenerTest extends UnitTestCase
 {
     private MockObject $hasherFactory;
-    private MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private MockObject $mockUserTransformer;
 
-    private EmailNormalizer $emailNormalizer;
     private UserTransformer $userTransformer;
 
     private UserFactoryInterface $userFactory;
@@ -45,10 +43,9 @@ final class UserResolveListenerTest extends UnitTestCase
 
         $this->hasherFactory =
             $this->createMock(PasswordHasherFactoryInterface::class);
-        $this->userRepository =
-            $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->mockUserTransformer = $this->createMock(UserTransformer::class);
-        $this->emailNormalizer = new EmailNormalizer();
         $this->userTransformer = new UserTransformer(
             new UuidTransformer(new UuidFactory())
         );
@@ -92,8 +89,8 @@ final class UserResolveListenerTest extends UnitTestCase
     {
         $email = $this->faker->email();
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
             ->with($email)
             ->willReturn(null);
 
@@ -149,8 +146,8 @@ final class UserResolveListenerTest extends UnitTestCase
         $email = $user->getEmail();
         $password = $user->getPassword();
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
             ->with($email)
             ->willReturn($user);
 
@@ -178,9 +175,9 @@ final class UserResolveListenerTest extends UnitTestCase
         $email = $user->getEmail();
         $password = $user->getPassword();
 
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')
-            ->with($this->emailNormalizer->normalize($submittedEmail ?? $email))
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($submittedEmail ?? $email)
             ->willReturn($user);
 
         $this->mockUserTransformer->expects($this->once())
@@ -207,12 +204,10 @@ final class UserResolveListenerTest extends UnitTestCase
     ): void {
         $email = $user->getEmail();
 
-        $this->userRepository->expects($this->exactly(2))
-            ->method('findByEmail')
-            ->willReturnMap([
-                [$this->emailNormalizer->normalize($email), null],
-                [$email, $user],
-            ]);
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willReturn($user);
 
         $this->mockUserTransformer->expects($this->once())
             ->method('transformToAuthorizationUser')
@@ -253,8 +248,7 @@ final class UserResolveListenerTest extends UnitTestCase
     {
         return new UserResolveListener(
             $this->hasherFactory,
-            $this->userRepository,
-            $this->emailNormalizer,
+            $this->findUserByEmailQueryHandler,
             $this->mockUserTransformer
         );
     }

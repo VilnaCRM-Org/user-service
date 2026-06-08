@@ -12,12 +12,10 @@ use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\OAuth\Domain\ValueObject\OAuthProvider;
 use App\OAuth\Domain\ValueObject\OAuthUserProfile;
-use App\User\Application\Service\EmailNormalizer;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\UserNotFoundException;
 use App\User\Domain\Repository\UserRepositoryInterface;
-
-use function trim;
 
 /**
  * @psalm-api
@@ -27,7 +25,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
     public function __construct(
         private SocialIdentityRepositoryInterface $socialIdentityRepository,
         private UserRepositoryInterface $userRepository,
-        private EmailNormalizer $emailNormalizer,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         private OAuthUserFactory $oauthUserFactory,
         private SocialIdentityLinker $socialIdentityLinker,
     ) {
@@ -93,20 +91,7 @@ final readonly class OAuthUserResolver implements OAuthUserResolverInterface
 
     private function findUserByProfileEmail(string $email): ?User
     {
-        $normalizedEmail = $this->emailNormalizer->normalize($email);
-        $user = $this->userRepository->findByEmail($normalizedEmail);
-
-        if ($user instanceof User) {
-            return $user;
-        }
-
-        $submittedEmail = trim($email);
-
-        if ($submittedEmail === $normalizedEmail) {
-            return null;
-        }
-
-        $user = $this->userRepository->findByEmail($submittedEmail);
+        $user = $this->findUserByEmailQueryHandler->find($email);
 
         return $user instanceof User ? $user : null;
     }

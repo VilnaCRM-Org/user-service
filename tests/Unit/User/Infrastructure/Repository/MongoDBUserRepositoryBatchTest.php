@@ -16,7 +16,9 @@ use App\User\Infrastructure\Repository\MongoDBUserRepository;
 use function count;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use function implode;
 use function intdiv;
+use function mb_strtolower;
 use function min;
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
@@ -183,8 +185,12 @@ final class MongoDBUserRepositoryBatchTest extends UnitTestCase
     private function createDuplicateKeyError(string $duplicateEmail): RuntimeException
     {
         return new RuntimeException(sprintf(
-            'E11000 duplicate key error index: email_1 dup key: { email: "%s" }',
-            $duplicateEmail
+            implode(' ', [
+                'E11000 duplicate key error index:',
+                'normalizedEmail_1 dup key:',
+                '{ normalizedEmail: "%s" }',
+            ]),
+            mb_strtolower($duplicateEmail, 'UTF-8')
         ), 11000);
     }
 

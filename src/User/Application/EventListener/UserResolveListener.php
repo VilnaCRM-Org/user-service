@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace App\User\Application\EventListener;
 
-use App\User\Application\Service\EmailNormalizer;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-
-use function trim;
 
 final readonly class UserResolveListener
 {
     public function __construct(
         private PasswordHasherFactoryInterface $hasherFactory,
-        private UserRepositoryInterface $userRepository,
-        private EmailNormalizer $emailNormalizer,
+        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         private UserTransformer $userTransformer,
     ) {
     }
@@ -54,20 +50,7 @@ final readonly class UserResolveListener
 
     private function findUserBySubmittedEmail(string $email): ?UserInterface
     {
-        $normalizedEmail = $this->emailNormalizer->normalize($email);
-        $user = $this->userRepository->findByEmail($normalizedEmail);
-
-        if ($user instanceof UserInterface) {
-            return $user;
-        }
-
-        $submittedEmail = trim($email);
-
-        if ($submittedEmail === $normalizedEmail) {
-            return null;
-        }
-
-        return $this->userRepository->findByEmail($submittedEmail);
+        return $this->findUserByEmailQueryHandler->find($email);
     }
 
     private function passwordMatches(

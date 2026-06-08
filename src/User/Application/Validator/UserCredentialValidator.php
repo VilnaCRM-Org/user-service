@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\User\Application\Validator;
 
 use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\SignInPublisherInterface;
 use Symfony\Component\HttpKernel\Exception\LockedHttpException;
@@ -24,6 +26,7 @@ final class UserCredentialValidator implements UserCredentialValidatorInterface
 
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
+        private readonly FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
         private readonly PasswordHasherInterface $passwordHasher,
         private readonly AccountLockoutProviderInterface $lockoutGuard,
         private readonly SignInPublisherInterface $signInPublisher,
@@ -45,7 +48,11 @@ final class UserCredentialValidator implements UserCredentialValidatorInterface
 
         $this->assertNotLocked($normalizedEmail);
 
-        $found = $this->userRepository->findByEmail($normalizedEmail);
+        try {
+            $found = $this->findUserByEmailQueryHandler->find($normalizedEmail);
+        } catch (DuplicateEmailException) {
+            $found = null;
+        }
         $user = $found instanceof User ? $found : null;
 
         $verified = $this->verifyCredentials($user, $password);
