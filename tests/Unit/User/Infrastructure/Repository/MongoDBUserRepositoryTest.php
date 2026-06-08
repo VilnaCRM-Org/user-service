@@ -398,23 +398,6 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
      * @param list<string>|string $emails
      * @param list<object> $queryResult
      */
-    private function expectFindByEmailsQuery(
-        MongoDBUserRepository $repository,
-        Builder $queryBuilder,
-        Query $query,
-        array|string $emails,
-        array $queryResult
-    ): void {
-        $repository->expects($this->once())->method('createQueryBuilder')
-            ->willReturn($queryBuilder);
-
-        $this->expectNormalizedEmailQuery($queryBuilder, $query, $emails, $queryResult);
-    }
-
-    /**
-     * @param list<string>|string $emails
-     * @param list<object> $queryResult
-     */
     private function expectFindByEmailsQueryWithEmptyLegacyFallback(
         MongoDBUserRepository $repository,
         Builder $queryBuilder,
