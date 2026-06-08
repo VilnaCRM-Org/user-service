@@ -30,14 +30,27 @@ jobs:
       - name: Start Application
         run: make start
 
-      - name: Setup Bats and bats libs
-        uses: bats-core/bats-action@472edde1138d59aca53ff162fb8d996666d21e4a
+      - name: Install Bats
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
 
       - name: Install Bats plugins
         run: |
           rm -rf tests/CLI/bats/bats-support tests/CLI/bats/bats-assert
-          git clone --depth 1 https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
-          git clone --depth 1 https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
+          for plugin in bats-support bats-assert; do
+            for attempt in 1 2 3; do
+              if git clone --depth 1 "https://github.com/bats-core/${plugin}.git" "tests/CLI/bats/${plugin}"; then
+                break
+              fi
+
+              if [ "$attempt" -eq 3 ]; then
+                exit 1
+              fi
+
+              sleep $((attempt * 10))
+            done
+          done
 
       - name: Run Bats tests
         run: make bats
