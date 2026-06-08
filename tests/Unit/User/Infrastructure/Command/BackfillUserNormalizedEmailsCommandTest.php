@@ -13,14 +13,13 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\User;
+use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;
+use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsReportWriter;
 use ArrayObject;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use MongoDB\BSON\Int64;
 use MongoDB\BulkWriteResult;
 use MongoDB\Collection;
-use MongoDB\Driver\Server;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -73,6 +72,25 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         $this->assertDuplicateFailure($tester, 'legacy@example.com', 1);
     }
 
+    public function testExecuteDryRunScansWithoutBulkWrite(): void
+    {
+        [$tester, $collection] = $this->createTesterWithCollection();
+        $unicodeEmail = "\u{0104}\u{017D}@example.COM";
+
+        $this->expectFindCalls($collection, $this->successfulCandidates($unicodeEmail), []);
+        $this->expectNoBulkWrite($collection);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true]));
+        $this->assertStringContainsString(
+            'Dry run completed: 2 matched users would be backfilled; 0 users modified.',
+            $tester->getDisplay()
+        );
+        $this->assertStringNotContainsString(
+            'Backfilled normalized emails',
+            $tester->getDisplay()
+        );
+    }
+
     public function testExecuteSkipsUnreadableCandidatesAndSucceedsWithoutUpdates(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
@@ -112,30 +130,6 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         $this->assertSuccessfulBackfill($tester, 1, 1);
     }
 
-    public function testArrayCursorReportsDeadStateForEmptyDocuments(): void
-    {
-        $cursor = new ArrayCursor([]);
-
-        $cursor->setTypeMap([]);
-
-        $this->assertTrue($cursor->isDead());
-        $this->assertSame([], $cursor->toArray());
-    }
-
-    public function testArrayCursorIdMetadataIsUnavailable(): void
-    {
-        $this->expectException(RuntimeException::class);
-
-        self::assertInstanceOf(Int64::class, (new ArrayCursor([]))->getId());
-    }
-
-    public function testArrayCursorServerMetadataIsUnavailable(): void
-    {
-        $this->expectException(RuntimeException::class);
-
-        self::assertInstanceOf(Server::class, (new ArrayCursor([]))->getServer());
-    }
-
     /** @return array{0: CommandTester, 1: Collection} */
     private function createTesterWithCollection(): array
     {
@@ -146,8 +140,11 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
 
         return [
             new CommandTester(new BackfillUserNormalizedEmailsCommand(
-                $documentManager,
-                new EmailNormalizer()
+                new BackfillUserNormalizedEmailsBackfiller(
+                    $documentManager,
+                    new EmailNormalizer()
+                ),
+                new BackfillUserNormalizedEmailsReportWriter($this->createJsonSerializer())
             )),
             $collection,
         ];

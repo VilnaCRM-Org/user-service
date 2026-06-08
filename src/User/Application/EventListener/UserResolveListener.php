@@ -8,6 +8,7 @@ use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
@@ -50,7 +51,11 @@ final readonly class UserResolveListener
 
     private function findUserBySubmittedEmail(string $email): ?UserInterface
     {
-        return $this->findUserByEmailQueryHandler->find($email);
+        try {
+            return $this->findUserByEmailQueryHandler->find($email);
+        } catch (DuplicateEmailException) {
+            return null;
+        }
     }
 
     private function passwordMatches(

@@ -23,7 +23,9 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\User;
+use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;
+use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsReportWriter;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use function mb_strtoupper;
 use MongoDB\BulkWriteResult;
@@ -127,8 +129,11 @@ final class BackfillUserNormalizedEmailsCommandMutationTest extends UnitTestCase
 
         return [
             new CommandTester(new BackfillUserNormalizedEmailsCommand(
-                $documentManager,
-                new EmailNormalizer()
+                new BackfillUserNormalizedEmailsBackfiller(
+                    $documentManager,
+                    new EmailNormalizer()
+                ),
+                new BackfillUserNormalizedEmailsReportWriter($this->createJsonSerializer())
             )),
             $collection,
         ];

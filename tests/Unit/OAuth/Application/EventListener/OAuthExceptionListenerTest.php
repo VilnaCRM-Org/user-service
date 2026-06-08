@@ -14,6 +14,7 @@ use App\OAuth\Domain\Exception\StateExpiredException;
 use App\OAuth\Domain\Exception\UnsupportedProviderException;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Exception\DuplicateEmailException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -161,6 +162,37 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         );
     }
 
+    public function testDuplicateEmailReturns409(): void
+    {
+        $event = $this->createExceptionEvent(
+            new DuplicateEmailException($this->faker->safeEmail()),
+            sprintf(
+                '/api/auth/social/%s/callback',
+                $this->faker->randomElement(['facebook', 'github', 'google', 'twitter'])
+            )
+        );
+
+        ($this->listener)($event);
+
+        $this->assertProblemResponse(
+            $event,
+            Response::HTTP_CONFLICT,
+            'duplicate_email'
+        );
+    }
+
+    public function testDuplicateEmailOutsideOAuthSocialCallbackIsIgnored(): void
+    {
+        $event = $this->createExceptionEvent(
+            new DuplicateEmailException($this->faker->safeEmail()),
+            $this->faker->randomElement(['/api/users', '/api/graphql', '/api/auth/social/github'])
+        );
+
+        ($this->listener)($event);
+
+        $this->assertNull($event->getResponse());
+    }
+
     public function testNonOAuthExceptionIsIgnored(): void
     {
         $event = $this->createExceptionEvent(
@@ -214,11 +246,13 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         $this->assertArrayHasKey('error_code', $body);
     }
 
-    private function createExceptionEvent(\Throwable $exception): ExceptionEvent
-    {
+    private function createExceptionEvent(
+        \Throwable $exception,
+        string $path = '/api/auth/social/github'
+    ): ExceptionEvent {
         return new ExceptionEvent(
             $this->kernel,
-            Request::create('/api/auth/social/github'),
+            Request::create($path),
             HttpKernelInterface::MAIN_REQUEST,
             $exception,
         );

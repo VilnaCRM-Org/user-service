@@ -13,6 +13,7 @@ use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Application\Transformer\UserTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
@@ -96,6 +97,28 @@ final class UserResolveListenerTest extends UnitTestCase
 
         $this->hasherFactory->expects($this->never())
             ->method('getPasswordHasher');
+
+        $event = $this->createEvent($email, $this->faker->password());
+
+        $this->createListener()->onUserResolve($event);
+
+        $this->assertNull($event->getUser());
+    }
+
+    public function testDuplicateEmailAmbiguityLeavesUserUnset(): void
+    {
+        $email = $this->faker->email();
+
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+
+        $this->hasherFactory->expects($this->never())
+            ->method('getPasswordHasher');
+
+        $this->mockUserTransformer->expects($this->never())
+            ->method('transformToAuthorizationUser');
 
         $event = $this->createEvent($email, $this->faker->password());
 
