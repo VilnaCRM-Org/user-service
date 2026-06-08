@@ -143,10 +143,20 @@ RUN set -eux; \
     esac; \
     symfony_cli_archive="/tmp/symfony-cli_linux_${symfony_cli_arch}.tar.gz"; \
     symfony_cli_checksum="/tmp/symfony-cli_linux_${symfony_cli_arch}.sha256"; \
-    curl --fail --location --show-error --silent \
-        --retry 5 --retry-delay 2 --retry-max-time 120 \
-        "https://github.com/symfony-cli/symfony-cli/releases/download/v${SYMFONY_CLI_VERSION}/symfony-cli_linux_${symfony_cli_arch}.tar.gz" \
-        --output "${symfony_cli_archive}"; \
+    symfony_cli_url="https://github.com/symfony-cli/symfony-cli/releases/download/v${SYMFONY_CLI_VERSION}/symfony-cli_linux_${symfony_cli_arch}.tar.gz"; \
+    for attempt in 1 2 3 4 5 6; do \
+        rm -f "${symfony_cli_archive}"; \
+        if curl --fail --location --show-error --silent \
+            --retry 3 --retry-delay 5 --retry-max-time 180 \
+            "${symfony_cli_url}" \
+            --output "${symfony_cli_archive}"; then \
+            break; \
+        fi; \
+        if [ "${attempt}" = 6 ]; then \
+            exit 1; \
+        fi; \
+        sleep "$((attempt * 10))"; \
+    done; \
     printf '%s  %s\n' "${symfony_cli_sha256}" "${symfony_cli_archive}" > "${symfony_cli_checksum}"; \
     sha256sum -c "${symfony_cli_checksum}"; \
     tar -xzf "${symfony_cli_archive}" -C /usr/local/bin symfony; \
