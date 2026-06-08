@@ -90,7 +90,7 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
         $this->assertSuccessfulBackfill($tester, 0, 0);
     }
 
-    public function testExecuteHandlesArrayAccessCandidatesAndSkipsUnreadableExistingDocuments(): void
+    public function testExecuteSupportsArrayAccessBackfillDocuments(): void
     {
         [$tester, $collection] = $this->createTesterWithCollection();
         $result = $this->createMock(BulkWriteResult::class);
@@ -98,42 +98,15 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
             '_id' => true,
             'email' => ' ARRAY@example.COM ',
         ]);
+        $operation = [
+            'updateOne' => [
+                $this->updateFilter(null),
+                ['$set' => ['normalizedEmail' => 'array@example.com']],
+            ],
+        ];
 
-        $collection->expects($this->exactly(2))
-            ->method('find')
-            ->willReturnCallback(
-                function (array $filter, array $options) use ($candidate): ArrayCursor {
-                    if ($filter === $this->backfillFilter()) {
-                        $this->assertSame($this->candidateFindOptions(), $options);
-
-                        return new ArrayCursor([$candidate]);
-                    }
-
-                    $this->assertSame([
-                        'normalizedEmail' => [
-                            '$in' => ['array@example.com'],
-                        ],
-                    ], $filter);
-                    $this->assertSame($this->existingFindOptions(), $options);
-
-                    return new ArrayCursor([
-                        (object) ['normalizedEmail' => 'array@example.com'],
-                        ['_id' => 'existing-without-normalized-email'],
-                    ]);
-                }
-            );
-        $this->expectBulkWrite(
-            $collection,
-            $result,
-            [
-                [
-                    'updateOne' => [
-                        $this->updateFilter(null),
-                        ['$set' => ['normalizedEmail' => 'array@example.com']],
-                    ],
-                ],
-            ]
-        );
+        $this->expectArrayAccessBackfillFindCalls($collection, $candidate);
+        $this->expectBulkWrite($collection, $result, [$operation]);
         $result->expects($this->once())->method('getModifiedCount')->willReturn(1);
 
         $this->assertSuccessfulBackfill($tester, 1, 1);
@@ -228,6 +201,50 @@ final class BackfillUserNormalizedEmailsCommandTest extends UnitTestCase
             $this->successfulBackfillOperations($normalizedUnicodeEmail)
         );
         $result->expects($this->once())->method('getModifiedCount')->willReturn(2);
+    }
+
+    private function expectArrayAccessBackfillFindCalls(
+        Collection $collection,
+        ArrayObject $candidate
+    ): void {
+        $collection->expects($this->exactly(2))
+            ->method('find')
+            ->willReturnCallback(
+                fn (array $filter, array $options): ArrayCursor => $this
+                    ->arrayAccessBackfillCursor($filter, $options, $candidate)
+            );
+    }
+
+    /**
+     * @param array<
+     *     string,
+     *     array<string, list<string>>
+     *     |list<array<string, array<string, bool>|string>>
+     * > $filter
+     * @param array<string, array<string, int>|int> $options
+     */
+    private function arrayAccessBackfillCursor(
+        array $filter,
+        array $options,
+        ArrayObject $candidate
+    ): ArrayCursor {
+        if ($filter === $this->backfillFilter()) {
+            $this->assertSame($this->candidateFindOptions(), $options);
+
+            return new ArrayCursor([$candidate]);
+        }
+
+        $this->assertSame([
+            'normalizedEmail' => [
+                '$in' => ['array@example.com'],
+            ],
+        ], $filter);
+        $this->assertSame($this->existingFindOptions(), $options);
+
+        return new ArrayCursor([
+            (object) ['normalizedEmail' => 'array@example.com'],
+            ['_id' => 'existing-without-normalized-email'],
+        ]);
     }
 
     /**

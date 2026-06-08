@@ -15,12 +15,9 @@ use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
-
 use function mb_strtolower;
 use function mb_strtoupper;
-
 use PHPUnit\Framework\MockObject\MockObject;
-
 use function preg_quote;
 
 /**

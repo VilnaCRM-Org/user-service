@@ -11,15 +11,12 @@ use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
-
 use function mb_strtolower;
 use function sprintf;
 use function strtolower;
 use function strtoupper;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-
 use function trim;
 use function ucfirst;
 
