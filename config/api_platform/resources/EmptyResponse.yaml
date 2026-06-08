@@ -89,6 +89,7 @@ resources:
         read: false
         output: false
         openapi:
+          security: []
           summary: 'Start passkey sign-up'
           description: 'Creates WebAuthn public key creation options for a new passkey-backed account.'
           tags:
@@ -163,6 +164,7 @@ resources:
         read: false
         output: false
         openapi:
+          security: []
           summary: 'Complete passkey sign-up'
           description: 'Verifies WebAuthn attestation, creates the account, stores the passkey, and issues tokens.'
           tags:
@@ -286,6 +288,7 @@ resources:
         read: false
         output: false
         openapi:
+          security: []
           summary: 'Start passkey sign in'
           description: 'Creates WebAuthn public key request options for username-first passkey sign in.'
           tags:
@@ -325,6 +328,7 @@ resources:
         read: false
         output: false
         openapi:
+          security: []
           summary: 'Complete passkey sign in'
           description: 'Verifies WebAuthn assertion, updates the stored credential counter, and issues tokens.'
           tags:
