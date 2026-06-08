@@ -432,6 +432,23 @@ parse_status_line() {
   echo "UNKNOWN"
 }
 
+review_has_only_pending_remote_markers() {
+  local file="$1"
+  local normalized_output
+
+  normalized_output="$(tr -d '\r' < "$file")"
+
+  if ! grep -Eq -- '^(CI_COVERAGE: PENDING_REMOTE|GITHUB_COMPLETION_GATE: PENDING_REMOTE_CI)$' <<< "$normalized_output"; then
+    return 1
+  fi
+
+  if grep -Eq -- '^([A-Z0-9]+_)+[A-Z0-9]+: (FAIL|MISSING)$' <<< "$normalized_output"; then
+    return 1
+  fi
+
+  return 0
+}
+
 review_pass_has_zero_issues_line() {
   local file="$1"
   local second_line
@@ -1473,6 +1490,8 @@ while :; do
 
   all_pass=true
   fail_log=""
+  remote_pending_found=false
+  real_fail_found=false
 
   for agent in "${agents[@]}"; do
     ts=$(date +%Y%m%d_%H%M%S)
@@ -1518,6 +1537,11 @@ while :; do
 
     if [[ "$status" == "FAIL" ]]; then
       all_pass=false
+      if review_has_only_pending_remote_markers "$review_log"; then
+        remote_pending_found=true
+      else
+        real_fail_found=true
+      fi
       fail_log="${fail_log:-$log_dir/review-fail-iter${iter}-${ts}.md}"
       {
         echo "=== Agent: $agent ==="
@@ -1556,6 +1580,13 @@ while :; do
     fi
     echo "AI review PASS." >&2
     exit 0
+  fi
+
+  if [[ "$remote_pending_found" == true && "$real_fail_found" != true ]]; then
+    failure_reason="AI review is waiting for current-head remote CI/checks to complete."
+    publish_gate_result "PENDING" "$failure_reason" "$latest_review_log" "$ci_log" || true
+    echo "$failure_reason" >&2
+    exit 1
   fi
 
   if ! post_github_commit_status "failure" "${review_result_label} failed."; then
