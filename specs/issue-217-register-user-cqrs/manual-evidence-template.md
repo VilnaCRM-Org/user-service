@@ -21,8 +21,7 @@ backfill in production.
 - Environment: local Docker Compose test environment in
   `/home/kravtsov/Projects/user-service-issue217`
 - Release or commit SHA:
-  `1d9d737f560658122c10759c527d71bf7973eaee` plus the current uncommitted BMAD
-  remediation diff before the final PR push
+  `b3d0c8f0af323cc830c3ddcdf1a0161811c9a0d5`
 
 ## Backfill Dry Run
 
@@ -50,6 +49,7 @@ backfill in production.
 
 - Dry-run JSON report artifact path or link:
   `/tmp/normalized-email-backfill.json` inside the local PHP container
+- Dry-run elapsed time: less than 1 second in the isolated local test dataset
 - Dry-run JSON report contents:
 
   ```json
@@ -67,6 +67,26 @@ backfill in production.
 - `modified`: 0
 - `dryRun`: true
 - `duplicates`: []
+
+## Performance And Capacity Evidence
+
+- Related requirements: Performance Resource Sustainability, Operational
+  Excellence Releaseability, Observability Diagnosability, Manageability
+- Normal registration lookup budget: one indexed `normalizedEmail` lookup for
+  current records, with one legacy fallback lookup only during the
+  deploy-before-backfill window.
+- Batch registration lookup budget: one indexed `normalizedEmail` `$in` lookup
+  and one legacy fallback `$expr`/`$in` lookup for the whole batch. Evidence:
+  `tests/Unit/User/Infrastructure/Repository/MongoDBUserRepositoryFindByEmailsTest.php`
+  asserts two query builders for `findByEmails`.
+- Backfill cursor and write budget: `BackfillUserNormalizedEmailsBackfiller`
+  uses 100-document cursor batches and 100-operation bulk-write batches.
+- Local dry-run result: 0 matched, 0 modified, 0 duplicates, less than 1 second
+  elapsed in the isolated test dataset.
+- Production budget evidence required before mutating data: the release
+  operator must record dry-run start time, finish time, elapsed time, matched
+  count, modified count, and duplicate count from the JSON report. The mutating
+  run must use the same report fields and elapsed-time evidence.
 
 ## Duplicate Remediation Review
 
@@ -105,6 +125,26 @@ backfill in production.
   `make ci` pass
 - 2FA ambiguous email check result: automated coverage in 2FA ambiguity
   integration tests; final evidence is the required `make ci` pass
+
+## Monitoring Evidence
+
+- Related requirements: Manageability, Observability Diagnosability,
+  Dependability, Recoverability
+- Dashboard source: centralized production application and MongoDB logs. The
+  dashboard definitions are outside this repository, so release operators must
+  attach screenshots or links to the production release record.
+- Required release queries:
+  - `DuplicateEmailException` in `user-service`
+  - `E11000 duplicate key error` and `normalizedEmail`
+  - OAuth `duplicate_email` conflict responses
+  - `app:backfill-user-normalized-emails`
+- Alert thresholds:
+  - Any MongoDB duplicate-key error for `normalizedEmail` after the mutating
+    backfill finishes requires rollback assessment.
+  - Any backfill command failure or JSON report with non-empty `duplicates`
+    blocks the mutating run.
+  - Duplicate-email API/OAuth conflict rates must not remain above the
+    pre-release duplicate-remediation baseline for 10 consecutive minutes.
 
 ## Rollback Checklist
 

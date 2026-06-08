@@ -97,6 +97,42 @@ duplicate-key errors on `normalizedEmail`, and OAuth `duplicate_email` conflict
 responses. A short spike during duplicate remediation is acceptable; persistent
 new errors after backfill require rollback assessment.
 
+#### Release SLOs And Alerts
+
+The normalized-email rollout uses the centralized application log dashboard for
+release monitoring. This repository does not own the production dashboard
+configuration, so the release record must include screenshots or links for the
+following queries:
+
+- `DuplicateEmailException` in `user-service`: alert when the rate stays above
+  the pre-release baseline for 10 consecutive minutes after the mutating
+  backfill finishes.
+- `E11000 duplicate key error` and `normalizedEmail` in MongoDB/application
+  logs: alert on any occurrence after the mutating backfill finishes.
+- `duplicate_email` OAuth conflict responses: alert when the rate stays above
+  the duplicate-remediation baseline for 10 consecutive minutes.
+- `app:backfill-user-normalized-emails`: alert when the command exits with a
+  non-zero status or when the JSON report contains a non-empty `duplicates`
+  list.
+
+The release SLO is zero MongoDB duplicate-key errors for `normalizedEmail`
+after the mutating backfill. Duplicate-email API conflicts are expected only for
+legitimate client retries or pre-existing duplicate remediation and must not
+grow above the release baseline.
+
+#### Backfill Performance Budget
+
+`BackfillUserNormalizedEmailsBackfiller` scans and writes users in batches of
+100 documents. The dry-run report must capture `matched`, `modified`,
+`dryRun`, and `duplicates`; the production release record must also capture the
+dry-run start time, finish time, and elapsed time before approving a mutating
+run. The mutating run must keep the same report and elapsed-time evidence.
+
+Batch email lookup performs one indexed `normalizedEmail` lookup and one legacy
+fallback lookup for documents that do not yet have `normalizedEmail`. The
+legacy fallback is a deployment-window compatibility path and should disappear
+from normal traffic after a successful backfill.
+
 ### Rollback
 
 If the new version must be rolled back before the mutating backfill runs, deploy
