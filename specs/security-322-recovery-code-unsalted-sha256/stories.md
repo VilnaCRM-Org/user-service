@@ -6,12 +6,14 @@
 **so that** a leaked `recovery_codes` collection cannot be brute-forced offline.
 
 Change: `src/User/Domain/Entity/RecoveryCode.php`
+
 - `matchesCode()` now returns `password_verify($this->normalizeCode($plainCode), $this->codeHash)`.
 - Removed `legacyHash()`, `isPasswordHash()`, and the `LEGACY_HASH_ALGORITHM` constant.
 
 Covers: FR-1, FR-2, FR-3, NFR-Security, NFR-Maintainability.
 
 ### Test mapping (`tests/Unit/User/Domain/Entity/RecoveryCodeTest.php`)
+
 - **Positive**: `testConstructorStoresCodeAsPasswordHash` — Argon2id-stored code still matches
   its plaintext; a different random code does not.
 - **Positive (edge: case)**: `testMatchesCodeIsCaseInsensitive` — upper/lowercase variants of
@@ -27,11 +29,13 @@ Covers: FR-1, FR-2, FR-3, NFR-Security, NFR-Maintainability.
 **so that** the primary hashing path resists brute force on low-entropy codes per OWASP.
 
 Change: `src/User/Domain/Entity/RecoveryCode.php`
+
 - `HASH_MEMORY_COST` raised from `8192` to `19456` (KiB).
 
 Covers: FR-4, NFR-Security.
 
 ### Test mapping (`tests/Unit/User/Domain/Entity/RecoveryCodeTest.php`)
+
 - **Positive / edge (regression — FAILS before fix)**:
   `testConstructorUsesOwaspCompliantArgon2idMemoryCost` — newly constructed code is an
   `argon2id` hash whose `memory_cost` option is `>= 19456`. Before the fix it was `8192`.
