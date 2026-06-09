@@ -100,22 +100,22 @@ final readonly class AccessTokenValidator
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
 
-        $this->validateFirstPartyClaims($payload);
+        // Issuer and audience are validated unconditionally for EVERY token.
+        // This rejects tokens that are signed with the shared RSA key but were
+        // not minted as first-party access tokens — notably League OAuth2
+        // access tokens (aud=client_id, no iss), which previously bypassed this
+        // check and were silently elevated to ROLE_SERVICE.
+        $this->validateIssuerAndAudience($payload);
+        $this->validateSessionBinding($payload);
     }
 
     /**
      * @param array<string, array<int, string>|bool|float|int|string|null> $payload
      */
-    private function validateFirstPartyClaims(array $payload): void
+    private function validateSessionBinding(array $payload): void
     {
-        if (isset($payload['roles'])) {
-            $this->validateIssuerAndAudience($payload);
-
-            if (!isset($payload['sid'])) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
-        } elseif (($payload['iss'] ?? null) !== null) {
-            $this->validateIssuerAndAudience($payload);
+        if (isset($payload['roles']) && !isset($payload['sid'])) {
+            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
     }
 
@@ -213,7 +213,11 @@ final readonly class AccessTokenValidator
     {
         $rawRoles = $payload['roles'] ?? null;
         if ($rawRoles === null) {
-            return isset($payload['iss']) ? ['ROLE_USER'] : ['ROLE_SERVICE'];
+            // Never infer a privileged role from the ABSENCE of claims. A token
+            // without an explicit roles claim is treated as the least-privilege
+            // ROLE_USER; ROLE_SERVICE must be positively asserted in the signed
+            // first-party token.
+            return ['ROLE_USER'];
         }
 
         if (!is_array($rawRoles) || $rawRoles === []) {
