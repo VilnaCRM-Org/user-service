@@ -317,7 +317,8 @@ Ground rules:
    - Review PRs with `/pr-review-toolkit:review-pr` in addition to the
      project `code-review` skill.
    - Commit/push/open PRs through `/commit-commands:commit` or
-     `/commit-commands:commit-push-pr`.
+     `/commit-commands:commit-push-pr` — only after `make ci` and
+     `make ai-review-loop` pass; the plugin does not replace those gates.
    - Resolve library API questions through the Context7 MCP tools and find
      code through the Serena MCP tools instead of guessing or broad greps.
    - Treat `security-guidance` and `semgrep` hook warnings as blocking.
