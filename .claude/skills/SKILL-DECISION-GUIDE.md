@@ -93,6 +93,41 @@ What are you trying to do?
     └─ Update workspace.dsl → structurizr-architecture-sync
 ```
 
+## Installed Third-Party Plugin Auto-Triggers (Claude Code)
+
+The third-party plugins documented in `docs/claude-code-plugins.md` are
+installed at user scope in Claude Code. **Invoke them automatically whenever a
+trigger below matches — never wait for the user to name a plugin or command.**
+
+**Rules:**
+
+1. When a trigger matches, invoke the plugin capability proactively, exactly as
+   you would pick a project skill from the decision tree above.
+2. Project skills in `.claude/skills/` define repository policy and win on any
+   conflict; plugins complement them, they never replace them.
+3. If a plugin is unavailable in the current environment (for example a
+   non-Claude agent such as Codex, Copilot, or Cursor, or a host without the
+   plugins installed), record **"Not applicable — plugin not installed"** and
+   continue with the project skills alone.
+
+| Trigger (invoke without being asked)                               | Plugin                         | How to invoke                                                                                                                                                 |
+| ------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starting any non-trivial feature, refactor, or design decision     | `superpowers`                  | `superpowers:brainstorming` before coding; `superpowers:writing-plans` then `superpowers:executing-plans` for multi-step work                                 |
+| Implementing code for a planned feature                            | `superpowers`                  | `superpowers:test-driven-development` (red/green TDD)                                                                                                         |
+| Debugging a failure whose cause is not already known               | `superpowers`                  | `superpowers:systematic-debugging`                                                                                                                            |
+| Finishing a branch before handoff                                  | `superpowers`                  | `superpowers:verification-before-completion`, then `superpowers:finishing-a-development-branch`                                                               |
+| Large feature needing exploration, architecture, and review phases | `feature-dev`                  | `/feature-dev:feature-dev`                                                                                                                                    |
+| Editing or navigating PHP code                                     | `php-lsp`                      | Automatic (Intelephense diagnostics) — resolve new diagnostics before moving on                                                                               |
+| Finding symbols, references, or call sites across the codebase     | `serena`                       | Serena MCP tools (semantic search) instead of broad `grep`/file dumps — saves tokens                                                                          |
+| Unsure about a Symfony, API Platform, Doctrine ODM, or library API | `context7`                     | Context7 MCP (`resolve-library-id` → `query-docs`) instead of guessing from memory                                                                            |
+| Reviewing any PR or pre-push diff                                  | `pr-review-toolkit`            | `/pr-review-toolkit:review-pr <number>` plus its agents (`pr-test-analyzer`, `silent-failure-hunter`, `type-design-analyzer`)                                 |
+| Writing or editing any code                                        | `security-guidance`, `semgrep` | Automatic via hooks — treat their warnings as blocking and fix before continuing                                                                              |
+| Committing, pushing, or opening a PR                               | `commit-commands`              | `/commit-commands:commit` or `/commit-commands:commit-push-pr`, only after `make ci` and `make ai-review-loop` pass — the plugin does not replace those gates |
+| MongoDB schema design, query tuning, or index work                 | `mongodb`                      | `mongodb-schema-design`, `mongodb-query-optimizer`, `mongodb-connection` skills                                                                               |
+| Editing or auditing `CLAUDE.md`                                    | `claude-md-management`         | `/claude-md-management:revise-claude-md`                                                                                                                      |
+| Creating or updating skills under `.claude/skills/`                | `skill-creator`                | `skill-creator` skill (authoring, evals, benchmarking)                                                                                                        |
+| User asks for a recurring guardrail ("always/never do X")          | `hookify`                      | `/hookify:hookify`                                                                                                                                            |
+
 ## Scenario-Based Guide
 
 ### "Deptrac is failing with violations"
