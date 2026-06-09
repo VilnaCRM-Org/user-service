@@ -5,53 +5,79 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Provider;
 
 use App\User\Application\Provider\AccountLockoutProviderInterface;
-use Psr\Cache\CacheItemPoolInterface;
+use Redis;
 
 final readonly class RedisAccountLockoutProvider implements
     AccountLockoutProviderInterface
 {
     private const ATTEMPT_WINDOW_SECONDS = 3600;
 
+    /**
+     * Atomically increments the failure counter and, on the request that
+     * crosses the threshold, sets the lock. Keeping the read-modify-write in
+     * a single server-side script removes the lost-update race that let
+     * concurrent failed logins exceed the intended attempt cap.
+     *
+     * KEYS[1] attempts counter key
+     * KEYS[2] lock key
+     * ARGV[1] attempt window TTL (seconds)
+     * ARGV[2] max attempts threshold
+     * ARGV[3] lockout TTL (seconds)
+     *
+     * Returns 1 when the account is locked, 0 otherwise.
+     */
+    private const RECORD_FAILURE_LUA_SCRIPT = <<<'LUA'
+        local attempts = redis.call('INCR', KEYS[1])
+        if attempts == 1 then
+            redis.call('EXPIRE', KEYS[1], ARGV[1])
+        end
+        local maxAttempts = tonumber(ARGV[2])
+        if attempts < maxAttempts then
+            return 0
+        end
+        if attempts == maxAttempts then
+            redis.call('SET', KEYS[2], '1', 'EX', ARGV[3])
+        end
+        return 1
+        LUA;
+
     public function __construct(
-        private CacheItemPoolInterface $cachePool
+        private Redis $lockoutRedis
     ) {
     }
 
     #[\Override]
     public function isLocked(string $email): bool
     {
-        return $this->cachePool->getItem($this->lockKey($email))->isHit();
+        return (bool) $this->lockoutRedis->exists($this->lockKey($email));
     }
 
     #[\Override]
     public function recordFailure(string $email): bool
     {
-        $attemptsItem = $this->cachePool->getItem($this->attemptsKey($email));
-        $attempts = (int) $attemptsItem->get() + 1;
+        /** @var int|false $locked */
+        $locked = $this->lockoutRedis->eval(
+            self::RECORD_FAILURE_LUA_SCRIPT,
+            [
+                $this->attemptsKey($email),
+                $this->lockKey($email),
+                (string) self::ATTEMPT_WINDOW_SECONDS,
+                (string) AccountLockoutProviderInterface::MAX_ATTEMPTS,
+                (string) AccountLockoutProviderInterface::LOCKOUT_SECONDS,
+            ],
+            2,
+        );
 
-        $attemptsItem->set($attempts);
-        $attemptsItem->expiresAfter(self::ATTEMPT_WINDOW_SECONDS);
-        $this->cachePool->save($attemptsItem);
-
-        if ($attempts < AccountLockoutProviderInterface::MAX_ATTEMPTS) {
-            return false;
-        }
-
-        $lockItem = $this->cachePool->getItem($this->lockKey($email));
-        $lockItem->set(true);
-        $lockItem->expiresAfter(AccountLockoutProviderInterface::LOCKOUT_SECONDS);
-        $this->cachePool->save($lockItem);
-
-        return true;
+        return (int) $locked === 1;
     }
 
     #[\Override]
     public function clearFailures(string $email): void
     {
-        $this->cachePool->deleteItems([
+        $this->lockoutRedis->del(
             $this->attemptsKey($email),
             $this->lockKey($email),
-        ]);
+        );
     }
 
     #[\Override]

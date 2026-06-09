@@ -46,11 +46,10 @@ services:
     arguments:
       $cachePool: '@cache.user'
       $rateLimiterCachePool: '@cache.app'
-      $accountLockoutCachePool: '@cache.account_lockout'
 
   App\Tests\Behat\UserContext\SignInSecurityContext:
     arguments:
-      $cachePool: '@cache.account_lockout'
+      $lockoutRedis: '@app.account_lockout_redis_connection'
 
   App\OAuth\Infrastructure\Provider\GitHubOAuthProvider:
     class: App\OAuth\Infrastructure\Provider\DeterministicOAuthProvider
