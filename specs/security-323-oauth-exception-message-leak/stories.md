@@ -8,6 +8,7 @@
 or internal hostnames (CWE-209).
 
 **Change**: `src/OAuth/Application/EventListener/OAuthExceptionListener.php`
+
 - Add a static `detail` string to every entry in `ERROR_CODE_MAP`.
 - Build the JSON response `detail` from `$mapping['detail']` instead of
   `$exception->getMessage()`.
@@ -15,6 +16,7 @@ or internal hostnames (CWE-209).
 **Covers**: FR-1, FR-2, NFR-Security, NFR-Compatibility, NFR-Maintainability.
 
 **Test mapping** (`tests/Unit/OAuth/Application/EventListener/OAuthExceptionListenerTest.php`):
+
 - Positive: `testProviderExceptionReturns503` — status `503` + `error_code`
   `provider_unavailable` still returned; `testResponseBodyContainsRequiredFields` and
   `testResponseContentTypeIsProblemJson` confirm contract/Content-Type unchanged.
@@ -28,6 +30,7 @@ or internal hostnames (CWE-209).
   never appears in `detail` for any of them (defense-in-depth across all map entries).
 
 **Verification commands**:
+
 ```
 docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
@@ -43,6 +46,7 @@ docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
 **so that** removing the message from the client response does not reduce diagnosability.
 
 **Change**: `src/OAuth/Application/EventListener/OAuthExceptionListener.php`
+
 - Inject `Psr\Log\LoggerInterface` (autowired via existing `_defaults`).
 - On a handled exception, call `logger->error()` with the full message and a context array
   carrying `error_code` and the `exception` object.
@@ -50,6 +54,7 @@ docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
 **Covers**: FR-3, FR-4.
 
 **Test mapping** (same test file):
+
 - Positive: `testFullExceptionMessageIsLoggedServerSide` — asserts `logger->error()` is
   called once with a message containing the raw upstream text and a context array holding
   the same exception instance plus `error_code = provider_unavailable`.
@@ -60,6 +65,7 @@ docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
   `LoggerInterface`, proving the new constructor signature is wired correctly.
 
 **Verification commands**:
+
 ```
 # Full Unit suite (no regressions)
 docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
