@@ -6,13 +6,22 @@ which is preconfigured in Claude Code — no extra marketplace setup is needed.
 
 ## Prerequisites
 
+Node.js 20+ (with npm) and [uv](https://docs.astral.sh/uv/) must be available
+on the host — Node.js runs the intelephense, context7, and MongoDB servers,
+while `uvx` runs the serena semantic-code server:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+nvm install --lts            # Node.js + npm via nvm
+curl -LsSf https://astral.sh/uv/install.sh | sh   # uv/uvx
+```
+
+Then install the language tooling the plugins invoke:
+
 ```bash
 npm install -g intelephense   # PHP language server used by php-lsp
 uv tool install semgrep       # SAST engine used by the semgrep plugin
 ```
-
-`uv`/`uvx` (for the serena semantic-code server) and Node.js (for the
-context7 and MongoDB MCP servers) must also be available on the host.
 
 ## Installation
 
@@ -20,8 +29,10 @@ context7 and MongoDB MCP servers) must also be available on the host.
 for plugin in superpowers feature-dev php-lsp serena context7 \
   pr-review-toolkit security-guidance semgrep commit-commands \
   mongodb claude-md-management skill-creator hookify; do
-  claude plugin install "$plugin@claude-plugins-official"
+  claude plugin install "$plugin@claude-plugins-official" ||
+    { echo "Failed to install $plugin" >&2; exit 1; }
 done
+claude plugin list   # confirm every plugin shows "enabled"
 ```
 
 Plugins install at user scope by default, which is intentional here: the set
