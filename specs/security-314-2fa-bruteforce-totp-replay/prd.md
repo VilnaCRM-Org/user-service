@@ -8,7 +8,7 @@ brute-forced and replayed:
 1. **Brute force (CWE-307).** `CompleteTwoFactorCommandHandler` verified the
    code and, on failure, only published an event and threw — it never
    incremented a per-pending-session counter and never invalidated the
-   `PendingTwoFactor` (which is consumed only after a *successful* verification).
+   `PendingTwoFactor` (which is consumed only after a _successful_ verification).
    A single `pendingSessionId` could therefore be reused for unlimited guesses
    within its 5-minute TTL. The only throttle was the Symfony rate limiter,
    attached purely by REST path (`/api/signin/2fa`). The equivalent GraphQL

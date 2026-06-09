@@ -23,6 +23,7 @@ Files: `src/User/Domain/Entity/PendingTwoFactor.php`,
 `config/doctrine/User/PendingTwoFactor.mongodb.xml`.
 
 Test mapping:
+
 - Positive: `PendingTwoFactorTest::testRecordFailedAttemptIncrementsCounter`,
   `::testNewSessionHasNoFailedAttempts`.
 - Negative/edge: `PendingTwoFactorTest::testHasExhaustedAttemptsAtMaxFailedAttempts`,
@@ -44,6 +45,7 @@ Files: `src/User/Domain/Entity/User.php`,
 `config/doctrine/User/User.mongodb.xml`.
 
 Test mapping:
+
 - Positive: `UserTest::testRecordAcceptedTotpTimestepStoresLatestCounter`,
   `TOTPValidatorTest::testResolveAcceptedTimestepReturnsCurrentWindowTimestep`,
   `::testResolveAcceptedTimestepReturnsPreviousWindowTimestep`,
@@ -68,6 +70,7 @@ Files: `src/Shared/Application/Resolver/RateLimit/ApiRateLimitAuthTargetResolver
 `src/Shared/Application/Resolver/RateLimit/ApiRateLimitPayloadValueResolver.php`.
 
 Test mapping:
+
 - Positive: `ApiRateLimitAuthTargetResolverTest::testResolveAppliesTwoFactorIpLimiterToGraphQlCompleteTwoFactor`,
   `::testResolveAppliesBothLimitersToGraphQlCompleteTwoFactor`,
   `ApiRateLimitPayloadValueResolverTest::testResolveNestedReturnsValueFromNestedPath`.
