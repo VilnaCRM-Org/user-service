@@ -24,7 +24,7 @@ forged `X-Forwarded-For` is ignored.
 
 - Positive: `ApiRateLimitTrustedProxyIpKeyTest::testSignInIpKeyUsesRealClientIpWhenProxyIsTrusted`
   and `::testRegistrationIpKeyUsesRealClientIpWhenProxyIsTrusted` — trusted proxy
-  + `X-Forwarded-For` ⇒ key uses the real client IP.
+  - `X-Forwarded-For` ⇒ key uses the real client IP.
 - Negative (spoof): `::testForgedForwardedForFromUntrustedClientIsIgnored` —
   untrusted client's forged `X-Forwarded-For` is ignored; key falls back to
   `REMOTE_ADDR`.
