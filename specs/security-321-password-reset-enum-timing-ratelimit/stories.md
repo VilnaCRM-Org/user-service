@@ -9,6 +9,7 @@ exists.
 
 **Test mapping:**
 `tests/Unit/User/Application/CommandHandler/RequestPasswordResetCommandHandlerTest.php`
+
 - Positive: `testRequestPasswordResetForExistingUser` — token created, saved,
   event published, uniform response.
 - Negative/edge: `testRequestPasswordResetForNonExistingUser` — `create('')`
@@ -26,6 +27,7 @@ Wired in `config/packages/rate_limiter.yaml`, `config/services.yaml`
 
 **Test mapping:**
 `tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitRequestResolverLimitersTest.php`
+
 - Positive: `testResolveEndpointLimitersForPasswordResetRequest` — returns
   `password_reset_ip` with `ip:<addr>` key.
 - Negative: `testResolveEndpointLimitersSkipsPasswordResetIpForConfirmPath` —
@@ -41,6 +43,7 @@ email with `strtolower(trim($email))` before `rateLimiter->create()`.
 
 **Test mapping:**
 `tests/Unit/User/Infrastructure/Decorator/RateLimitedRequestPasswordResetHandlerDecoratorTest.php`
+
 - Positive: `testDelegatesWhenRateLimitAccepted` / `testThrowsExceptionWhenRateLimitExceeded`
   now assert the limiter is created with the normalized key.
 - Edge: `testNormalizesEmailBeforeUsingItAsLimiterKey` — `"  USER@Example.COM\t"`
@@ -54,6 +57,7 @@ email with `strtolower(trim($email))` before `rateLimiter->create()`.
 
 **Test mapping:**
 `tests/Unit/User/Application/DTO/RequestPasswordResetDtoTest.php`
+
 - Positive: `testValidEmailPassesValidation` — 0 violations.
 - Negative: `testBlankEmailFailsValidation`, `testMalformedEmailFailsValidation`
   — violations reported. FAIL pre-fix (no constraints).
