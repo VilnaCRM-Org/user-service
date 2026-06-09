@@ -29,7 +29,7 @@ without verifying ownership.
    `user@example.com` (Facebook does not verify ownership).
 3. Attacker signs in via "Sign in with Facebook".
 4. The adapter returned `OAuthUserProfile(email=user@example.com,
-   emailVerified=true)`.
+emailVerified=true)`.
 5. `OAuthUserResolver` found no existing Facebook `SocialIdentity`, passed the
    `emailVerified` gate, found the victim by email, and `handleAutoLink()`
    bound the attacker's Facebook identity to the victim's account — even
@@ -46,7 +46,7 @@ handle this correctly. Only Facebook was broken.
 - **FR-1**: `FacebookOAuthProvider::buildProfile()` MUST return an
   `OAuthUserProfile` with `emailVerified === false`, consistent with
   `emailAlwaysVerified() === false`. It MUST NOT hardcode `emailVerified:
-  true`.
+true`.
 - **FR-2**: When a Facebook profile reaches `OAuthUserResolver::resolve()` with
   no pre-existing `SocialIdentity`, the resolver MUST reject it with
   `UnverifiedProviderEmailException` (existing behaviour, now actually
@@ -54,7 +54,7 @@ handle this correctly. Only Facebook was broken.
   flip, no session issuance.
 - **FR-3**: Existing Facebook `SocialIdentity` records (already deliberately
   linked) continue to resolve to their user — the verified-email gate is only
-  reached for *new* identities, so already-linked sign-ins are unaffected.
+  reached for _new_ identities, so already-linked sign-ins are unaffected.
 
 ## Non-Functional Requirements
 

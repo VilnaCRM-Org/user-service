@@ -54,7 +54,7 @@ pre-existing) proves the consequence of `emailVerified === false`:
 
 - **Positive**: `testResolveReturnsExistingUserWhenIdentityExists` — when a
   `SocialIdentity(provider, providerId)` already exists, resolution returns the
-  linked user *before* the `emailVerified` gate, so unverified Facebook emails
+  linked user _before_ the `emailVerified` gate, so unverified Facebook emails
   do not break already-linked sign-ins.
 
 ## Verification commands
