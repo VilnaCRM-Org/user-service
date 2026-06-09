@@ -261,6 +261,48 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
         self::assertNotContains('resend_confirmation', $names);
     }
 
+    public function testResolveEndpointLimitersForPasswordResetRequest(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/reset-password',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $byName = array_column($limiters, 'key', 'name');
+
+        self::assertArrayHasKey('password_reset_ip', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['password_reset_ip']);
+    }
+
+    public function testResolveEndpointLimitersSkipsPasswordResetIpForConfirmPath(): void
+    {
+        $request = Request::create('/api/reset-password/confirm', 'POST', [], [], [], [
+            'REMOTE_ADDR' => '127.0.0.1',
+        ]);
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('password_reset_ip', $names);
+        self::assertContains('password_reset_confirm', $names);
+    }
+
+    public function testResolveEndpointLimitersSkipsPasswordResetIpForGetMethod(): void
+    {
+        $request = Request::create('/api/reset-password', 'GET');
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('password_reset_ip', $names);
+    }
+
     public function testResolveEndpointLimitersForSignIn(): void
     {
         $clientIp = $this->faker->ipv4();
