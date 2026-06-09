@@ -24,6 +24,11 @@ for plugin in superpowers feature-dev php-lsp serena context7 \
 done
 ```
 
+Plugins install at user scope by default, which is intentional here: the set
+applies to all of a developer's projects, and per-developer installs avoid
+forcing tooling on contributors. Use `--scope project` instead if you want
+the selection committed to `.claude/settings.json` and shared via the repo.
+
 ## What Each Plugin Covers
 
 | SDLC Phase | Plugin                 | Purpose                                                                    |
