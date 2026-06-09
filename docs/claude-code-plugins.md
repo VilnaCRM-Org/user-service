@@ -61,3 +61,10 @@ the selection committed to `.claude/settings.json` and shared via the repo.
 Built-in Claude Code commands already cover general code review
 (`/code-review`, `/security-review`, `/simplify`), so the standalone
 `code-review` and `code-simplifier` plugins are intentionally omitted.
+
+## When Agents Should Invoke These Plugins
+
+AI agents must trigger these plugins automatically when their conditions
+match, without explicit prompting. The trigger-to-plugin map is defined in
+`.claude/skills/SKILL-DECISION-GUIDE.md` (section "Installed Third-Party
+Plugin Auto-Triggers") and summarized in `AGENTS.md`.

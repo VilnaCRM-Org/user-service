@@ -293,6 +293,38 @@ This repository includes **AI-agnostic Skills** in `.claude/skills/`. Always use
 
 **For non-Claude agents:** Start with `.claude/skills/AI-AGENT-GUIDE.md` for usage instructions.
 
+## Third-Party Claude Code Plugins (Auto-Trigger)
+
+Claude Code sessions in this repository have the third-party plugins from
+`docs/claude-code-plugins.md` installed (superpowers, feature-dev, php-lsp,
+serena, context7, pr-review-toolkit, security-guidance, semgrep,
+commit-commands, mongodb, claude-md-management, skill-creator, hookify).
+
+**Invoke these plugins automatically when their trigger matches — do not wait
+for the user to name a plugin, skill, or slash command.** The full
+trigger-to-plugin map lives in `.claude/skills/SKILL-DECISION-GUIDE.md`
+(section "Installed Third-Party Plugin Auto-Triggers"); consult it during the
+same IDENTIFY step you already use for project skills.
+
+Ground rules:
+
+1. Project skills in `.claude/skills/` define repository policy and win on any
+   conflict; plugins complement them, they never replace them.
+2. Highlights of the mandatory pairings:
+   - Plan non-trivial work with `superpowers:brainstorming` /
+     `superpowers:writing-plans` before writing code, and debug unknown
+     failures with `superpowers:systematic-debugging`.
+   - Review PRs with `/pr-review-toolkit:review-pr` in addition to the
+     project `code-review` skill.
+   - Commit/push/open PRs through `/commit-commands:commit` or
+     `/commit-commands:commit-push-pr`.
+   - Resolve library API questions through the Context7 MCP tools and find
+     code through the Serena MCP tools instead of guessing or broad greps.
+   - Treat `security-guidance` and `semgrep` hook warnings as blocking.
+3. Non-Claude agents (Codex, Copilot, Cursor) and hosts without the plugins:
+   record **"Not applicable — plugin not installed"** for plugin steps and
+   follow the project skills alone.
+
 ## Architecture Deep Dive
 
 ### Layer Dependency Rules (CRITICAL)
