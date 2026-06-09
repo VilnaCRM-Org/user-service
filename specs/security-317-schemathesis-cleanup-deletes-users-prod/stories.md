@@ -3,6 +3,7 @@
 ## Story 1 — Confine the Schemathesis cleanup listener to the schemathesis environment (FR-1)
 
 **Change**
+
 - `config/services.yaml`: remove the `SchemathesisCleanupListener` service+`kernel.terminate`
   registration from the base file, and add the class to the `App\:` autowiring `exclude` list so
   it is never auto-defined in `dev`/`test`/`load_test`/`prod`.
@@ -11,6 +12,7 @@
   `$cache: '@cache.user'`, tagged `kernel.terminate`.
 
 **Test mapping**
+
 - Positive: in the `schemathesis` env the listener is wired and deletes — covered by
   `SchemathesisCleanupListenerEnvironmentGuardTest::testListenerDeletesWhenEnvironmentIsSchemathesis`
   and the existing `SchemathesisCleanupListenerCleanupTest` suite (built with the default
@@ -22,6 +24,7 @@
   by the `load_test` data-provider case in the guard test.
 
 **Verify**
+
 ```
 docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
@@ -32,12 +35,14 @@ docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
 ## Story 2 — Hard runtime environment guard in the listener (FR-2, FR-3)
 
 **Change**
+
 - `src/User/Infrastructure/EventListener/SchemathesisCleanupListener.php`: add
   `public const ENVIRONMENT = 'schemathesis'` and a `private readonly string $appEnv`
   constructor argument (first parameter). `__invoke` returns early when
   `$this->appEnv !== self::ENVIRONMENT`, before any matcher/extractor/repository work.
 
 **Test mapping**
+
 - Positive: deletion still happens when `appEnv === 'schemathesis'` —
   `testListenerDeletesWhenEnvironmentIsSchemathesis`.
 - Negative: a fully matching malicious batch request (cleanup header, 201, `/api/users/batch`,
@@ -49,6 +54,7 @@ docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
   `SchemathesisCleanupListenerHeaderStatusSkipTest` / `...PayloadSkipTest`.
 
 **Verify**
+
 ```
 # Psalm on changed PHP files
 docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \

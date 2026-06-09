@@ -46,7 +46,7 @@ invisible from the operation contract. (CWE-285 — Improper Authorization. HIGH
   or database schema changes. CI Schemathesis runs in the `schemathesis` environment, so cleanup
   continues to work there. Constructor signature change is internal-only (DI-wired service).
 - **NFR-Maintainability**: Changes follow existing repository conventions — the `$appEnv:
-  '%kernel.environment%'` injection idiom already used by
+'%kernel.environment%'` injection idiom already used by
   `TwoFactorEncryptionKeyConfigurationListener` / `OAuthEncryptionKeyConfigurationListener`, and
   the env-specific `services_<env>.yaml` loading convention of `MicroKernelTrait`. No new
   directories, no `*Service` suffixes, no Deptrac/threshold config edits, hexagonal boundaries
