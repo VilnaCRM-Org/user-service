@@ -2652,7 +2652,7 @@ components:
       properties:
         email:
           format: email
-          maxLength: 255
+          maxLength: 254
           externalDocs:
             url: 'https://schema.org/email'
           type: string
