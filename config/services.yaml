@@ -20,6 +20,10 @@ services:
       - '../src/Shared/Kernel.php'
       - '../src/OAuth/Infrastructure/Provider/DeterministicOAuthProvider.php'
       - '../src/Shared/Infrastructure/Bus/Event/DefensiveEventSubscriberDecorator.php'
+      # Destructive Schemathesis test-cleanup hook. Defined only in the
+      # schemathesis environment (config/services_schemathesis.yaml) so it is
+      # never autowired or active in dev/test/prod.
+      - '../src/User/Infrastructure/EventListener/SchemathesisCleanupListener.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -249,12 +253,6 @@ services:
   App\User\Infrastructure\Repository\MongoDBUserRepository:
     arguments:
       $batchSize: '%env(int:USER_INSERT_BATCH_SIZE)%'
-
-  App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
-    arguments:
-      $cache: '@cache.user'
-    tags:
-      - { name: kernel.event_listener, event: kernel.terminate }
 
   App\User\Application\EventListener\UserResolveListener:
     tags:

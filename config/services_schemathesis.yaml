@@ -3,3 +3,14 @@ services:
     class: App\Shared\Application\EventListener\UnlimitedApiRateLimitListener
     tags:
       - { name: kernel.event_listener, event: kernel.request, priority: 120 }
+
+  # Test-harness cleanup hook. Registered ONLY in the schemathesis
+  # environment so the destructive delete-by-request-body behaviour can
+  # never be reached in dev/test/prod. The listener also fail-closes at
+  # runtime via the injected $appEnv guard.
+  App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $cache: '@cache.user'
+    tags:
+      - { name: kernel.event_listener, event: kernel.terminate }

@@ -17,7 +17,10 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class SchemathesisCleanupListener
 {
+    public const ENVIRONMENT = 'schemathesis';
+
     public function __construct(
+        private readonly string $appEnv,
         private readonly UserRepositoryInterface $userRepository,
         private readonly EventBusInterface $eventBus,
         private readonly UuidFactory $uuidFactory,
@@ -31,6 +34,10 @@ final class SchemathesisCleanupListener
 
     public function __invoke(TerminateEvent $event): void
     {
+        if ($this->appEnv !== self::ENVIRONMENT) {
+            return;
+        }
+
         $request = $event->getRequest();
         $response = $event->getResponse();
 

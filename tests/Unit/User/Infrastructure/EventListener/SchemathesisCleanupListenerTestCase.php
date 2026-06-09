@@ -86,8 +86,9 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         );
     }
 
-    protected function createListener(): SchemathesisCleanupListener
-    {
+    protected function createListener(
+        string $appEnv = SchemathesisCleanupListener::ENVIRONMENT
+    ): SchemathesisCleanupListener {
         $cache = $this->createMock(TagAwareCacheInterface::class);
         $cache->method('invalidateTags')->willReturn(true);
 
@@ -99,6 +100,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
             );
 
         return new SchemathesisCleanupListener(
+            $appEnv,
             $this->repository,
             $this->eventBus,
             $this->uuidFactory,
