@@ -7,6 +7,7 @@ namespace App\User\Application\Validator;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -19,13 +20,13 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
         private TOTPValidatorInterface $totpVerifier,
         private TwoFactorSecretEncryptorInterface $encryptor,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
     public function verifyTotpOrFail(User $user, string $code): void
     {
-        $secret = $this->decryptSecret((string) $user->getTwoFactorSecret());
-        if (!$this->totpVerifier->verify($secret, $code)) {
+        if ($this->consumeTotp($user, $code) === null) {
             throw new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.');
         }
     }
@@ -78,14 +79,36 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
 
     private function tryVerifyTotp(User $user, string $code): ?string
     {
+        return $this->consumeTotp($user, $code) !== null
+            ? self::METHOD_TOTP
+            : null;
+    }
+
+    /**
+     * Verifies the TOTP code, rejects replays of an already-accepted time-step,
+     * and atomically advances the stored counter on success.
+     *
+     * @psalm-return int<0, max>|null
+     */
+    private function consumeTotp(User $user, string $code): ?int
+    {
         $secret = $user->getTwoFactorSecret();
         if ($secret === null) {
             return null;
         }
 
-        return $this->totpVerifier->verify($this->decryptSecret($secret), $code)
-            ? self::METHOD_TOTP
-            : null;
+        $timestep = $this->totpVerifier->resolveAcceptedTimestep(
+            $this->decryptSecret($secret),
+            $code
+        );
+        if ($timestep === null || $user->isTotpTimestepReplay($timestep)) {
+            return null;
+        }
+
+        $user->recordAcceptedTotpTimestep($timestep);
+        $this->userRepository->save($user);
+
+        return $timestep;
     }
 
     private function consumeRecoveryCodeOrFailByUserId(string $userId, string $code): void

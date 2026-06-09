@@ -231,6 +231,61 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         ));
     }
 
+    public function testInvokeIncrementsAndPersistsFailedAttemptOnInvalidCode(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->configureLookupsOnce($pending, $user);
+        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')->willReturn(null);
+
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('save')
+            ->with($pending);
+        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+
+        try {
+            $this->createHandler()->__invoke($this->createCommand($pending->getId(), '123456'));
+            $this->fail('Expected UnauthorizedHttpException.');
+        } catch (UnauthorizedHttpException) {
+            $this->assertSame(1, $pending->getFailedAttempts());
+        }
+    }
+
+    public function testInvokeInvalidatesPendingSessionAfterMaxFailedAttempts(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $pending->setFailedAttempts(PendingTwoFactor::MAX_FAILED_ATTEMPTS - 1);
+        $this->configureLookupsOnce($pending, $user);
+        $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')->willReturn(null);
+
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('delete')
+            ->with($pending);
+        $this->pendingTwoFactorRepository->expects($this->never())->method('save');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid two-factor code.');
+        $this->createHandler()->__invoke($this->createCommand($pending->getId(), '123456'));
+    }
+
+    public function testInvokeRejectsPendingSessionThatAlreadyExhaustedAttempts(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $pending->setFailedAttempts(PendingTwoFactor::MAX_FAILED_ATTEMPTS);
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('findById')
+            ->with($pending->getId())
+            ->willReturn($pending);
+        $this->userRepository->expects($this->never())->method('findById');
+        $this->twoFactorCodeVerifier->expects($this->never())->method('verifyAndResolveMethod');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid or expired two-factor session.');
+        $this->createHandler()->__invoke($this->createCommand($pending->getId(), '123456'));
+    }
+
     public function testInvokeSucceedsWithValidTotpCode(): void
     {
         $user = $this->createTwoFactorEnabledUser();

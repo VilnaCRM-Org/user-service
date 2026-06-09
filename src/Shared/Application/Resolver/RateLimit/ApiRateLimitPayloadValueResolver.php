@@ -31,6 +31,39 @@ final readonly class ApiRateLimitPayloadValueResolver
     }
 
     /**
+     * Reads a string value from a nested JSON payload path (e.g. GraphQL
+     * `variables.input.pendingSessionId`). Returns null when the path or value
+     * is missing.
+     *
+     * @param list<string> $path
+     * @param list<string> $keys
+     */
+    public function resolveNested(Request $request, array $path, array $keys): ?string
+    {
+        $rawPayload = trim($request->getContent());
+
+        try {
+            $payload = $this->serializer->decode(
+                $rawPayload,
+                JsonEncoder::FORMAT,
+                [JsonDecode::ASSOCIATIVE => true],
+            );
+        } catch (NotEncodableValueException) {
+            return null;
+        }
+
+        foreach ($path as $segment) {
+            if (!is_array($payload) || !is_array($payload[$segment] ?? null)) {
+                return null;
+            }
+
+            $payload = $payload[$segment];
+        }
+
+        return is_array($payload) ? $this->findStringValue($payload, $keys) : null;
+    }
+
+    /**
      * @param list<string> $keys
      */
     private function resolveJsonPayloadValue(string $rawPayload, array $keys): ?string

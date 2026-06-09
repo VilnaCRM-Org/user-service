@@ -233,11 +233,44 @@ final class UserTest extends UnitTestCase
     {
         $this->user->setTwoFactorEnabled(true);
         $this->user->setTwoFactorSecret($this->faker->sha256());
+        $this->user->recordAcceptedTotpTimestep(57_000_000);
 
         $this->user->disableTwoFactor();
 
         $this->assertFalse($this->user->isTwoFactorEnabled());
         $this->assertNull($this->user->getTwoFactorSecret());
+        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
+    }
+
+    public function testTotpTimestepIsNotReplayWhenNoneAccepted(): void
+    {
+        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
+        $this->assertFalse($this->user->isTotpTimestepReplay(57_000_000));
+    }
+
+    public function testRecordAcceptedTotpTimestepStoresLatestCounter(): void
+    {
+        $this->user->recordAcceptedTotpTimestep(57_000_000);
+
+        $this->assertSame(57_000_000, $this->user->getLastAcceptedTotpTimestep());
+    }
+
+    public function testIsTotpTimestepReplayRejectsCurrentAndOlderTimesteps(): void
+    {
+        $this->user->recordAcceptedTotpTimestep(57_000_000);
+
+        $this->assertTrue($this->user->isTotpTimestepReplay(57_000_000));
+        $this->assertTrue($this->user->isTotpTimestepReplay(56_999_999));
+        $this->assertFalse($this->user->isTotpTimestepReplay(57_000_001));
+    }
+
+    public function testSetLastAcceptedTotpTimestepSupportsHydration(): void
+    {
+        $this->user->setLastAcceptedTotpTimestep(57_000_000);
+        $this->assertSame(57_000_000, $this->user->getLastAcceptedTotpTimestep());
+
+        $this->user->setLastAcceptedTotpTimestep(null);
+        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
     }
 
     public function testUpgradePasswordHash(): void

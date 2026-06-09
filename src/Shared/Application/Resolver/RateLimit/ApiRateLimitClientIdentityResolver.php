@@ -53,7 +53,16 @@ final readonly class ApiRateLimitClientIdentityResolver
 
     public function resolvePendingSessionId(Request $request): ?string
     {
-        return $this->resolvePayloadValue($request, self::PENDING_SESSION_ID_KEYS);
+        $topLevel = $this->resolvePayloadValue($request, self::PENDING_SESSION_ID_KEYS);
+        if ($topLevel !== null) {
+            return $topLevel;
+        }
+
+        return $this->payloadValueResolver->resolveNested(
+            $request,
+            ['variables', 'input'],
+            self::PENDING_SESSION_ID_KEYS
+        );
     }
 
     public function resolveUserSubject(Request $request): ?string

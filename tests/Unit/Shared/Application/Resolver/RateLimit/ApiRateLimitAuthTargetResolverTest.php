@@ -358,4 +358,85 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         self::assertCount(1, $result);
         self::assertSame('twofa_verification_ip', $result[0]['name']);
     }
+
+    public function testResolveAppliesTwoFactorIpLimiterToGraphQlCompleteTwoFactor(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
+        $request = $this->createGraphQlCompleteTwoFactorRequest($clientIp, null);
+
+        $result = $resolver->resolve($request);
+
+        self::assertCount(1, $result);
+        self::assertSame('twofa_verification_ip', $result[0]['name']);
+        self::assertSame('ip:' . $clientIp, $result[0]['key']);
+    }
+
+    public function testResolveAppliesBothLimitersToGraphQlCompleteTwoFactor(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $sessionId = $this->faker->uuid();
+        $userId = $this->faker->uuid();
+
+        $this->stubPendingSession($sessionId, $userId);
+
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
+        $request = $this->createGraphQlCompleteTwoFactorRequest($clientIp, $sessionId);
+
+        $result = $resolver->resolve($request);
+
+        self::assertCount(2, $result);
+        self::assertSame('twofa_verification_ip', $result[0]['name']);
+        self::assertSame('twofa_verification_user', $result[1]['name']);
+        self::assertSame('user:' . $userId, $result[1]['key']);
+    }
+
+    public function testResolveIgnoresUnrelatedGraphQlMutation(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $resolver = $this->createAuthTargetResolver($this->pendingTwoFactorRepository);
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode(
+                ['query' => 'mutation { createUser(input: {}) { user { id } } }'],
+                JSON_THROW_ON_ERROR
+            )
+        );
+
+        self::assertSame([], $resolver->resolve($request));
+    }
+
+    private function createGraphQlCompleteTwoFactorRequest(
+        string $clientIp,
+        ?string $sessionId
+    ): Request {
+        $body = [
+            'query' => 'mutation completeTwoFactor($input: completeTwoFactorInput!) '
+                . '{ completeTwoFactor(input: $input) { authPayload { accessToken } } }',
+        ];
+
+        if ($sessionId !== null) {
+            $body['variables'] = [
+                'input' => [
+                    'pendingSessionId' => $sessionId,
+                    'twoFactorCode' => '123456',
+                ],
+            ];
+        }
+
+        return Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($body, JSON_THROW_ON_ERROR)
+        );
+    }
 }
