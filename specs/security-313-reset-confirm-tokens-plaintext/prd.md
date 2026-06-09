@@ -8,7 +8,7 @@ high-entropy raw token (`bin2hex(random_bytes($tokenLength))`) and that raw valu
 was both:
 
 1. **Stored** as the document identifier (`<id field-name="tokenValue"
-   strategy="NONE">`), and
+strategy="NONE">`), and
 2. **Emailed** to the user as the reset link credential.
 
 `MongoDBPasswordResetTokenRepository::findByToken()` looked the token up by exact

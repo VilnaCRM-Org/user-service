@@ -56,6 +56,7 @@ Tests: `tests/Unit/User/Infrastructure/Repository/MongoDBPasswordResetTokenRepos
 reloaded entity; `PasswordResetEmailSendEventFactory` emits the plaintext.
 
 Tests:
+
 - `tests/Unit/User/Application/CommandHandler/RequestPasswordResetCommandHandlerTest.php`
   — **Positive**: event factory receives the plaintext token; **Negative**:
   unknown user publishes nothing.
@@ -76,6 +77,7 @@ Schemathesis/seeder tests assert by hashed key; E2E/Memory helpers replay the
 plaintext captured at creation (`getPlainToken()` / `getLastPasswordResetToken()`).
 
 Tests:
+
 - `tests/Unit/DataFixtures/Seeder/PasswordResetTokenSeederTest.php` — **Positive**:
   seeded tokens are keyed by hash and resolvable via `findByToken(plain)`;
   **Edge**: existing-token refresh/extend/reset-usage paths still match by hash.
