@@ -1,6 +1,7 @@
 # Stories — issue #312
 
 ## Story 1: Make issuer/audience validation mandatory for every token
+
 - **As** the API security boundary, **I** reject any access token whose `iss`
   is not `vilnacrm-user-service` or whose `aud` does not contain
   `vilnacrm-api`, **so that** tokens minted for other audiences (League OAuth2
@@ -15,6 +16,7 @@
   - edge: token with valid iss/aud but no roles → `ROLE_USER`.
 
 ## Story 2: Never infer ROLE_SERVICE from missing claims
+
 - **As** the role extractor, **I** default a token without an explicit `roles`
   claim to `ROLE_USER`, **so that** absence of claims cannot grant service
   privileges (CWE-1188 insecure default).
@@ -24,6 +26,7 @@
   `testValidateAcceptsExplicitServiceTokenWithFirstPartyClaims`.
 
 ## Story 3: Defense-in-depth on the bulk-import endpoint
+
 - **As** the bulk user-import operation, **I** also enforce
   `is_granted('ROLE_SERVICE')` at the API Platform layer, **so that** the
   service-only restriction survives a firewall misconfiguration.
@@ -33,6 +36,7 @@
   (403 without ROLE_SERVICE, success with ROLE_SERVICE) continue to pass.
 
 ## Verification
+
 - Unit: `tests/Unit/Shared/Infrastructure/Validator/*`,
   `tests/Unit/Shared/Infrastructure/Adapter/DualAuthenticatorTest.php`.
 - E2E: `features/auth_gate.feature`, `features/user_operations.feature`,
