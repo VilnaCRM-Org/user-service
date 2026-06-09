@@ -45,7 +45,7 @@ final readonly class RequestPasswordResetCommandHandler implements
         $this->eventBus->publish(
             $this->eventFactory->create(
                 $user,
-                $token->getTokenValue(),
+                (string) $token->getPlainToken(),
                 (string) $this->uuidFactory->create()
             )
         );

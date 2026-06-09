@@ -20,6 +20,7 @@ use App\Tests\Unit\Shared\Application\Command\Fixture\RecordingAuthorizationCode
 use App\Tests\Unit\Shared\Application\Command\Fixture\RecordingClientManager;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\ConfirmationToken;
+use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
 use DateTimeImmutable;
@@ -78,7 +79,9 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         $storedTokens = $deps['passwordResetTokenRepository']->all();
         $this->assertCount(2, $storedTokens);
         $this->assertArrayHasKey(
-            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN,
+            PasswordResetToken::hashToken(
+                SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN
+            ),
             $storedTokens
         );
         $this->assertSame(1, $deps['passwordResetTokenRepository']->deleteCount());
@@ -395,11 +398,16 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     private function assertPasswordResetTokens(
         InMemoryPasswordResetTokenRepository $passwordResetTokenRepository
     ): void {
-        $confirmTokenLd = SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD;
+        $confirmTokenLd = PasswordResetToken::hashToken(
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD
+        );
+        $confirmTokenHash = PasswordResetToken::hashToken(
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN
+        );
         $storedTokens = $passwordResetTokenRepository->all();
         $this->assertCount(2, $storedTokens);
         $this->assertArrayHasKey(
-            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN,
+            $confirmTokenHash,
             $storedTokens
         );
         $this->assertArrayHasKey(
@@ -408,7 +416,7 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
         );
         $this->assertSame(
             SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID,
-            $storedTokens[SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN]->getUserID()
+            $storedTokens[$confirmTokenHash]->getUserID()
         );
         $this->assertSame(
             SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID,

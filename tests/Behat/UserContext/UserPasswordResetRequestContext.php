@@ -101,7 +101,12 @@ final class UserPasswordResetRequestContext implements Context
             );
         }
 
-        return $token->getTokenValue();
+        // Only the hash is persisted; the usable plaintext is captured at
+        // creation time and replayed here for the confirmation request.
+        $capturedPlainToken = UserContext::getLastPasswordResetToken();
+
+        return $token->getPlainToken()
+            ?? ($capturedPlainToken !== '' ? $capturedPlainToken : $token->getTokenValue());
     }
 
     private function requireCurrentUserEmail(): string

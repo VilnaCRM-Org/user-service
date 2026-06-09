@@ -126,6 +126,10 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
             ->with($tokenValue)
             ->willReturn($mocks['token']);
 
+        $mocks['token']->expects($this->once())
+            ->method('attachPlainToken')
+            ->with($tokenValue);
+
         $this->emailFactory->expects($this->once())
             ->method('create')
             ->with($mocks['token'], $mocks['user'])

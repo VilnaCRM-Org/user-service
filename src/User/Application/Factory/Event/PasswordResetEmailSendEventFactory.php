@@ -19,7 +19,7 @@ final class PasswordResetEmailSendEventFactory implements
         string $eventID,
     ): PasswordResetEmailSentEvent {
         return new PasswordResetEmailSentEvent(
-            $token->getTokenValue(),
+            $token->getPlainToken() ?? $token->getTokenValue(),
             $token->getUserID(),
             $user->getEmail(),
             $eventID,

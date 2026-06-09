@@ -10,19 +10,59 @@ class PasswordResetToken implements PasswordResetTokenInterface
 {
     private bool $isUsed;
 
+    private string $tokenValue;
+
+    /**
+     * Transient plaintext token. Only populated when the token is created or
+     * re-attached for delivery; it is never persisted (only the hash is).
+     */
+    private ?string $plainToken;
+
     public function __construct(
-        private string $tokenValue,
+        string $plainToken,
         private string $userID,
         private DateTimeImmutable $expiresAt,
         private DateTimeImmutable $createdAt
     ) {
+        $this->plainToken = $plainToken;
+        $this->tokenValue = self::hashToken($plainToken);
         $this->isUsed = false;
     }
 
+    public static function hashToken(string $plainToken): string
+    {
+        return hash('sha256', $plainToken);
+    }
+
+    /**
+     * Stored hash of the token (used as the document identifier).
+     */
     #[\Override]
     public function getTokenValue(): string
     {
         return $this->tokenValue;
+    }
+
+    /**
+     * Plaintext token to embed in the reset link; null once reconstituted
+     * from storage and not re-attached.
+     */
+    #[\Override]
+    public function getPlainToken(): ?string
+    {
+        return $this->plainToken;
+    }
+
+    #[\Override]
+    public function attachPlainToken(string $plainToken): void
+    {
+        $this->plainToken = $plainToken;
+    }
+
+    #[\Override]
+    public function matchesToken(string $plainToken): bool
+    {
+        return hash_equals($this->tokenValue, self::hashToken($plainToken));
     }
 
     #[\Override]

@@ -132,7 +132,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     private function createPasswordResetMocks(array $testData): array
     {
         $token = $this->createMock(PasswordResetTokenInterface::class);
-        $token->method('getTokenValue')->willReturn($testData['tokenValue']);
+        $token->method('getPlainToken')->willReturn($testData['tokenValue']);
 
         $user = $this->createMock(UserInterface::class);
         $user->method('getId')->willReturn($testData['userId']);

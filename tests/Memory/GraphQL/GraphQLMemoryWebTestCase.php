@@ -501,7 +501,7 @@ GRAPHQL;
         $this->assertInstanceOf(PasswordResetToken::class, $token);
         $this->passwordResetTokenRepository->save($token);
 
-        return $token->getTokenValue();
+        return $token->getPlainToken() ?? $token->getTokenValue();
     }
 
     /**

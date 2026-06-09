@@ -53,19 +53,40 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $this->repository->save($token);
     }
 
-    public function testFindByToken(): void
+    public function testFindByTokenLooksUpByHashNotPlaintext(): void
     {
         $tokenValue = $this->faker->uuid();
         $expectedToken = $this->createMock(PasswordResetTokenInterface::class);
 
         $this->setupFindOneByExpectation(
-            ['tokenValue' => $tokenValue],
+            ['tokenValue' => PasswordResetToken::hashToken($tokenValue)],
             $expectedToken
         );
 
         $result = $this->repository->findByToken($tokenValue);
 
         $this->assertSame($expectedToken, $result);
+    }
+
+    public function testFindByTokenDoesNotQueryWithRawPlaintext(): void
+    {
+        $tokenValue = $this->faker->uuid();
+
+        $repository = $this->getMockBuilder(MongoDBPasswordResetTokenRepository::class)
+            ->setConstructorArgs([$this->documentManager, $this->registry])
+            ->onlyMethods(['findOneBy'])
+            ->getMock();
+
+        $repository->expects($this->once())
+            ->method('findOneBy')
+            ->with($this->callback(
+                static fn (array $criteria): bool =>
+                    $criteria['tokenValue'] !== $tokenValue
+                    && $criteria['tokenValue'] === PasswordResetToken::hashToken($tokenValue)
+            ))
+            ->willReturn(null);
+
+        $this->assertNull($repository->findByToken($tokenValue));
     }
 
     public function testFindByUserID(): void
