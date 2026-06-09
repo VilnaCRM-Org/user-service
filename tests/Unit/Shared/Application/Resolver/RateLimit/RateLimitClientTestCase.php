@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Shared\Application\Resolver\RateLimit;
 use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -66,6 +67,19 @@ abstract class RateLimitClientTestCase extends UnitTestCase
         );
     }
 
+    protected function createGraphQlResolver(
+        ?ApiRateLimitClientIdentityResolver $clientIdentityResolver = null,
+        ?PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository = null,
+    ): ApiRateLimitGraphQlResolver {
+        $resolver = $clientIdentityResolver ?? $this->createClientIdentityResolver();
+
+        return new ApiRateLimitGraphQlResolver(
+            $this->createJsonSerializer(),
+            $resolver,
+            $pendingTwoFactorRepository,
+        );
+    }
+
     protected function createRequestResolver(
         ?JwtTokenConverterInterface $jwtConverter = null,
         ?PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository = null,
@@ -77,6 +91,10 @@ abstract class RateLimitClientTestCase extends UnitTestCase
             $this->createAuthTargetResolver(
                 $pendingTwoFactorRepository,
                 $clientIdentityResolver,
+            ),
+            $this->createGraphQlResolver(
+                $clientIdentityResolver,
+                $pendingTwoFactorRepository,
             ),
         );
     }
