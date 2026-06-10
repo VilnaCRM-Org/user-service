@@ -15,8 +15,10 @@ class PasswordResetToken implements PasswordResetTokenInterface
     /**
      * Transient plaintext token. Only populated when the token is created or
      * re-attached for delivery; it is never persisted (only the hash is).
+     * Defaults to null so reads stay safe after Doctrine hydration, which
+     * bypasses the constructor and never assigns this transient field.
      */
-    private ?string $plainToken;
+    private ?string $plainToken = null;
 
     public function __construct(
         string $plainToken,

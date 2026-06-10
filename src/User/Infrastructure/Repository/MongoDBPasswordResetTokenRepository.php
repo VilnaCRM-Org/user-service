@@ -40,7 +40,7 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
         return $this->findOneBy([
-            'tokenValue' => PasswordResetToken::hashToken($token),
+            'tokenValue' => hash('sha256', $token),
         ]);
     }
 

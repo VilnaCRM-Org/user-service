@@ -75,6 +75,30 @@ final class PasswordResetTokenHashingTest extends UnitTestCase
         $this->assertSame('re-attached-token', $token->getPlainToken());
     }
 
+    public function testGetPlainTokenIsNullAfterConstructorlessHydration(): void
+    {
+        // Doctrine ODM rebuilds entities without calling the constructor, so a
+        // typed transient property without a default would be uninitialized
+        // and reads would fatal. The null default keeps reads safe.
+        $token = (new \ReflectionClass(PasswordResetToken::class))
+            ->newInstanceWithoutConstructor();
+
+        $this->assertNull($token->getPlainToken());
+    }
+
+    public function testAttachPlainTokenWorksAfterConstructorlessHydration(): void
+    {
+        $token = (new \ReflectionClass(PasswordResetToken::class))
+            ->newInstanceWithoutConstructor();
+
+        $token->attachPlainToken('reattached-after-hydration');
+
+        $this->assertSame(
+            'reattached-after-hydration',
+            $token->getPlainToken()
+        );
+    }
+
     private function createToken(string $plainToken): PasswordResetToken
     {
         return new PasswordResetToken(
