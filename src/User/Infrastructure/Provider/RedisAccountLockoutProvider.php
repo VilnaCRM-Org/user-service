@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\User\Infrastructure\Provider;
 
 use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Infrastructure\Provider\Exception\AccountLockoutStorageException;
 use Redis;
 
 final readonly class RedisAccountLockoutProvider implements
@@ -13,10 +14,15 @@ final readonly class RedisAccountLockoutProvider implements
     private const ATTEMPT_WINDOW_SECONDS = 3600;
 
     /**
-     * Atomically increments the failure counter and, on the request that
-     * crosses the threshold, sets the lock. Keeping the read-modify-write in
-     * a single server-side script removes the lost-update race that let
-     * concurrent failed logins exceed the intended attempt cap.
+     * Atomically increments the failure counter and, on every request that is
+     * at or above the threshold, (re)applies the lock. Keeping the
+     * read-modify-write in a single server-side script removes the lost-update
+     * race that let concurrent failed logins exceed the intended attempt cap.
+     *
+     * The lock is refreshed (not just set on the exact crossing attempt) so
+     * that once the shorter lock TTL expires while the longer attempt window is
+     * still open, any further over-threshold failure re-persists the lockout
+     * instead of silently letting it lapse.
      *
      * KEYS[1] attempts counter key
      * KEYS[2] lock key
@@ -35,9 +41,7 @@ final readonly class RedisAccountLockoutProvider implements
         if attempts < maxAttempts then
             return 0
         end
-        if attempts == maxAttempts then
-            redis.call('SET', KEYS[2], '1', 'EX', ARGV[3])
-        end
+        redis.call('SET', KEYS[2], '1', 'EX', ARGV[3])
         return 1
         LUA;
 
@@ -55,7 +59,7 @@ final readonly class RedisAccountLockoutProvider implements
     #[\Override]
     public function recordFailure(string $email): bool
     {
-        /** @var int|false $locked */
+        /** @var int|string|false $locked */
         $locked = $this->lockoutRedis->eval(
             self::RECORD_FAILURE_LUA_SCRIPT,
             [
@@ -67,6 +71,10 @@ final readonly class RedisAccountLockoutProvider implements
             ],
             2,
         );
+
+        if ($locked === false) {
+            throw new AccountLockoutStorageException();
+        }
 
         return (int) $locked === 1;
     }

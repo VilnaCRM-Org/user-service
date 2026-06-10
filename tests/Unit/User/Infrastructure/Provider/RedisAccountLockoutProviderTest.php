@@ -6,6 +6,7 @@ namespace App\Tests\Unit\User\Infrastructure\Provider;
 
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Infrastructure\Provider\Exception\AccountLockoutStorageException;
 use App\User\Infrastructure\Provider\RedisAccountLockoutProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use Redis;
@@ -113,11 +114,43 @@ final class RedisAccountLockoutProviderTest extends UnitTestCase
         );
     }
 
-    public function testRecordFailureTreatsFalseEvalResultAsNotLocked(): void
+    /**
+     * Regression: the lock must be (re)applied on every at-or-above-threshold
+     * failure, not only on the exact crossing attempt. With a lock TTL shorter
+     * than the attempt window, gating the SET on `attempts == maxAttempts`
+     * would let the lockout silently lapse after the lock expires while the
+     * counter is still over threshold. The script therefore SETs the lock
+     * whenever the below-threshold early return is not taken.
+     */
+    public function testRecordFailureReappliesLockOnEveryOverThresholdFailure(): void
+    {
+        $capturedArguments = $this->captureEvalArguments(1);
+
+        $this->service->recordFailure(self::EMAIL);
+
+        [$script] = $capturedArguments();
+
+        $this->assertStringContainsString('SET', $script);
+        $this->assertStringNotContainsString(
+            'attempts == maxAttempts',
+            $script,
+            'Lock SET must not be gated on the exact threshold-crossing attempt'
+        );
+    }
+
+    /**
+     * The lockout counter is a brute-force security control, so a failed Redis
+     * eval (the script returning false on a storage error) must fail closed by
+     * raising an exception rather than silently reporting "not locked", which
+     * would otherwise disable enforcement whenever the backing store errors.
+     */
+    public function testRecordFailureFailsClosedWhenEvalReturnsFalse(): void
     {
         $this->redis->method('eval')->willReturn(false);
 
-        $this->assertFalse($this->service->recordFailure(self::EMAIL));
+        $this->expectException(AccountLockoutStorageException::class);
+
+        $this->service->recordFailure(self::EMAIL);
     }
 
     /**
