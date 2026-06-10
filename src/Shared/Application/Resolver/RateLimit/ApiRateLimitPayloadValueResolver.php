@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Shared\Application\Resolver\RateLimit;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,17 +39,7 @@ final readonly class ApiRateLimitPayloadValueResolver
      */
     public function resolveNested(Request $request, array $path, array $keys): ?string
     {
-        $rawPayload = trim($request->getContent());
-
-        try {
-            $payload = $this->serializer->decode(
-                $rawPayload,
-                JsonEncoder::FORMAT,
-                [JsonDecode::ASSOCIATIVE => true],
-            );
-        } catch (NotEncodableValueException) {
-            return null;
-        }
+        $payload = $this->decodeJsonPayload($request->getContent());
 
         foreach ($path as $segment) {
             if (!is_array($payload) || !is_array($payload[$segment] ?? null)) {
@@ -68,21 +57,27 @@ final readonly class ApiRateLimitPayloadValueResolver
      */
     private function resolveJsonPayloadValue(string $rawPayload, array $keys): ?string
     {
-        try {
-            $jsonPayload = $this->serializer->decode(
-                $rawPayload,
-                JsonEncoder::FORMAT,
-                [JsonDecode::ASSOCIATIVE => true],
-            );
-        } catch (NotEncodableValueException) {
-            return null;
-        }
+        $jsonPayload = $this->decodeJsonPayload($rawPayload);
 
         if (!is_array($jsonPayload)) {
             return null;
         }
 
         return $this->findStringValue($jsonPayload, $keys);
+    }
+
+    /**
+     * Decodes a JSON payload into an associative structure, returning null when
+     * the payload is not valid JSON. The serializer decodes JSON objects to
+     * associative arrays by default, which every caller relies on.
+     */
+    private function decodeJsonPayload(string $rawPayload): mixed
+    {
+        try {
+            return $this->serializer->decode($rawPayload, JsonEncoder::FORMAT);
+        } catch (NotEncodableValueException) {
+            return null;
+        }
     }
 
     /**

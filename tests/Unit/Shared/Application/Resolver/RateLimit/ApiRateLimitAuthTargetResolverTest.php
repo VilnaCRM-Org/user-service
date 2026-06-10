@@ -8,6 +8,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetResolverTestCase
 {
+    private const COMPLETE_TWO_FACTOR_MUTATION = <<<'GRAPHQL'
+        mutation completeTwoFactor($input: completeTwoFactorInput!) {
+            completeTwoFactor(input: $input) { authPayload { accessToken } }
+        }
+        GRAPHQL;
+
     public function testResolveReturnsEmptyArrayForUnrelatedPath(): void
     {
         $resolver = $this->createAuthTargetResolver();
@@ -415,10 +421,7 @@ final class ApiRateLimitAuthTargetResolverTest extends ApiRateLimitAuthTargetRes
         string $clientIp,
         ?string $sessionId
     ): Request {
-        $body = [
-            'query' => 'mutation completeTwoFactor($input: completeTwoFactorInput!) '
-                . '{ completeTwoFactor(input: $input) { authPayload { accessToken } } }',
-        ];
+        $body = ['query' => self::COMPLETE_TWO_FACTOR_MUTATION];
 
         if ($sessionId !== null) {
             $body['variables'] = [

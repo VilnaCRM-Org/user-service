@@ -200,12 +200,19 @@ class User implements UserInterface
         $this->lastAcceptedTotpTimestep = $timestep;
     }
 
+    /**
+     * @psalm-api
+     *
+     * @internal For Doctrine ODM hydration and test fixtures only.
+     */
     public function getLastAcceptedTotpTimestep(): ?int
     {
         return $this->lastAcceptedTotpTimestep;
     }
 
     /**
+     * @psalm-api
+     *
      * @internal For Doctrine ODM hydration and test fixtures only.
      */
     public function setLastAcceptedTotpTimestep(?int $lastAcceptedTotpTimestep): void

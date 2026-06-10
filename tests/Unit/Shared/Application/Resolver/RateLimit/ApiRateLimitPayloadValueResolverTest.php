@@ -161,7 +161,7 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
     }
 
     /**
-     * @param array<string, mixed> $body
+     * @param array{variables: array<string, array<string, string>|string>} $body
      */
     private function createGraphQlRequest(array $body): Request
     {

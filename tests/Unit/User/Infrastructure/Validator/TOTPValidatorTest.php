@@ -125,4 +125,30 @@ final class TOTPValidatorTest extends UnitTestCase
             $verifier->resolveAcceptedTimestep(self::SECRET, '000000', 1_700_000_000)
         );
     }
+
+    public function testResolveAcceptedTimestepReturnsZeroForFirstWindowAtEpoch(): void
+    {
+        $totp = TOTP::create(self::SECRET);
+        $totp->setEpoch(0);
+        $period = $totp->getPeriod();
+        // Any timestamp inside the first period [0, period) maps to time-step 0.
+        $timestamp = intdiv($period, 2);
+        $firstWindowCode = $totp->at($timestamp);
+
+        $verifier = new TOTPValidator();
+
+        $this->assertSame(
+            0,
+            $verifier->resolveAcceptedTimestep(self::SECRET, $firstWindowCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsNullForNegativeTimestamp(): void
+    {
+        $verifier = new TOTPValidator();
+
+        $this->assertNull(
+            $verifier->resolveAcceptedTimestep(self::SECRET, '123456', -1)
+        );
+    }
 }

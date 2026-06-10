@@ -68,10 +68,16 @@ final class TOTPValidator implements TOTPValidatorInterface
     }
 
     /**
+     * Derives the absolute TOTP time-step counter for a given point in time.
+     * Only invoked after OTPHP has accepted the timestamp (it rejects negative
+     * values), so the resulting counter is always non-negative.
+     *
+     * @param int<0, max> $timestamp
+     *
      * @psalm-return int<0, max>
      */
     private function timestepAt(int $timestamp, int $period): int
     {
-        return (int) max(0, intdiv($timestamp - self::DEFAULT_EPOCH, $period));
+        return intdiv($timestamp, $period);
     }
 }

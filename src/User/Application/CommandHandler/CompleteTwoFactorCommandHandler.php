@@ -51,7 +51,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         assert(is_string($method));
         $rememberMe = $pendingSession->isRememberMe();
         $this->consumePendingSessionOrFail($pendingSession->getId());
-        $this->consumeRecoveryCodeIfNeeded($user, $command, $method, $pendingSession);
+        $this->consumeRecoveryCodeIfNeeded($user, $command, $method);
 
         return $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
     }
@@ -160,8 +160,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     private function consumeRecoveryCodeIfNeeded(
         User $user,
         CompleteTwoFactorCommand $command,
-        string $method,
-        PendingTwoFactor $pendingSession
+        string $method
     ): void {
         if ($method !== TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE) {
             return;
@@ -175,7 +174,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         } catch (UnauthorizedHttpException) {
             // The pending session was already consumed before this point, so the
             // brute-force counter is no longer applicable here.
-            $this->handleTwoFactorFailure($command, $pendingSession, false);
+            $this->failWithoutCountingAttempt($command);
         }
     }
 
@@ -219,13 +218,19 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
 
     private function handleTwoFactorFailure(
         CompleteTwoFactorCommand $command,
-        PendingTwoFactor $pendingSession,
-        bool $countAttempt = true
+        PendingTwoFactor $pendingSession
     ): never {
-        if ($countAttempt) {
-            $this->registerFailedAttempt($pendingSession);
-        }
+        $this->registerFailedAttempt($pendingSession);
+        $this->publishFailureAndThrow($command);
+    }
 
+    private function failWithoutCountingAttempt(CompleteTwoFactorCommand $command): never
+    {
+        $this->publishFailureAndThrow($command);
+    }
+
+    private function publishFailureAndThrow(CompleteTwoFactorCommand $command): never
+    {
         $this->events->publishFailed(
             $command->pendingSessionId,
             $command->ipAddress,

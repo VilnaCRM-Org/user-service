@@ -311,6 +311,21 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         $this->assertResponseTokens($response, 'access-token', 'refresh-token');
     }
 
+    public function testInvokeFailsWithoutCountingAttemptWhenRecoveryConsumeFails(): void
+    {
+        $user = $this->createTwoFactorEnabledUser();
+        $pending = $this->createPendingSession($user->getId(), '+5 minutes');
+        $this->arrangeRecoveryConsumeFailureAfterSessionConsumed($pending, $user);
+
+        try {
+            $this->createHandler()->__invoke($this->createCommand($pending->getId(), 'AB12-CD34'));
+            $this->fail('Expected UnauthorizedHttpException.');
+        } catch (UnauthorizedHttpException $exception) {
+            $this->assertSame('Invalid two-factor code.', $exception->getMessage());
+            $this->assertSame(0, $pending->getFailedAttempts());
+        }
+    }
+
     public function testInvokeThrowsUnauthorizedWhenPendingSessionConsumeFails(): void
     {
         $user = $this->createTwoFactorEnabledUser();
@@ -346,6 +361,39 @@ final class CompleteTwoFactorCommandHandlerTest extends UnitTestCase
         } catch (UnauthorizedHttpException $exception) {
             $this->assertSame('Invalid two-factor code.', $exception->getMessage());
         }
+    }
+
+    private function arrangeRecoveryConsumeFailureAfterSessionConsumed(
+        PendingTwoFactor $pending,
+        User $user
+    ): void {
+        $this->configureLookupsOnce($pending, $user);
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('verifyAndResolveMethod')
+            ->with($user, 'AB12-CD34')
+            ->willReturn(TwoFactorCodeValidatorInterface::METHOD_RECOVERY_CODE);
+        $this->pendingTwoFactorRepository->expects($this->once())
+            ->method('consumeIfActive')
+            ->with($pending->getId(), $this->isInstanceOf(DateTimeImmutable::class))
+            ->willReturn(true);
+        $this->twoFactorCodeVerifier->expects($this->once())
+            ->method('consumeRecoveryCodeOrFail')
+            ->with($user, 'AB12-CD34')
+            ->willThrowException(
+                new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
+            );
+        $this->expectNoBruteForceCounterAdvance($pending);
+    }
+
+    private function expectNoBruteForceCounterAdvance(PendingTwoFactor $pending): void
+    {
+        // The brute-force counter must NOT advance once the session is consumed.
+        $this->pendingTwoFactorRepository->expects($this->never())->method('save');
+        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
+        $this->events->expects($this->once())
+            ->method('publishFailed')
+            ->with($pending->getId(), $this->isType('string'), 'invalid_code');
+        $this->events->expects($this->never())->method('publishCompleted');
     }
 
     private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
