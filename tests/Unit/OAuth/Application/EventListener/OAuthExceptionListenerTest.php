@@ -179,13 +179,7 @@ final class OAuthExceptionListenerTest extends UnitTestCase
     {
         $clientId = 'Iv1.' . $this->faker->bothify('????????????????');
         $secret = $this->faker->sha256();
-        $rawUpstreamMessage = sprintf(
-            'Client error: `POST https://github.com/login/oauth/access_token'
-            . '?client_id=%s&client_secret=%s` resulted in a 401 Unauthorized'
-            . ' {"error":"bad_verification_code"} at internal-host-12.local',
-            $clientId,
-            $secret,
-        );
+        $rawUpstreamMessage = $this->buildLeakyUpstreamMessage($clientId, $secret);
 
         $event = $this->createExceptionEvent(
             new OAuthProviderException('github', $rawUpstreamMessage)
@@ -202,8 +196,7 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         $this->assertStringNotContainsString('internal-host-12.local', $detail);
         $this->assertStringNotContainsString('401', $detail);
         $this->assertSame(
-            'The authentication provider is currently unavailable.'
-            . ' Please try again later.',
+            'The authentication provider is currently unavailable. Try again later.',
             $detail,
         );
     }
@@ -234,10 +227,30 @@ final class OAuthExceptionListenerTest extends UnitTestCase
             ->with(
                 $this->stringContains($rawUpstreamMessage),
                 $this->callback(
-                    static fn (array $context): bool =>
-                        ($context['exception'] ?? null) === $exception
-                        && $context['error_code'] === 'provider_unavailable'
+                    static function (array $context) use ($exception): bool {
+                        return ($context['exception'] ?? null) === $exception
+                            && $context['error_code'] === 'provider_unavailable';
+                    }
                 )
+            );
+
+        $listener = new OAuthExceptionListener($logger);
+        $listener($this->createExceptionEvent($exception));
+    }
+
+    public function testLoggedMessagePrefixesTheRawExceptionMessage(): void
+    {
+        $rawUpstreamMessage = 'sensitive upstream detail ' . $this->faker->uuid();
+        $exception = new OAuthProviderException('github', $rawUpstreamMessage);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('error')
+            ->with(
+                $this->identicalTo(
+                    'OAuth flow failed: ' . $exception->getMessage()
+                ),
+                $this->anything()
             );
 
         $listener = new OAuthExceptionListener($logger);
@@ -295,6 +308,22 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         $this->assertArrayHasKey('detail', $body);
         $this->assertArrayHasKey('status', $body);
         $this->assertArrayHasKey('error_code', $body);
+    }
+
+    private function buildLeakyUpstreamMessage(string $clientId, string $secret): string
+    {
+        $url = sprintf(
+            'https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s',
+            $clientId,
+            $secret,
+        );
+
+        return sprintf(
+            'Client error: `POST %s` resulted in a 401 Unauthorized %s at %s',
+            $url,
+            '{"error":"bad_verification_code"}',
+            'internal-host-12.local',
+        );
     }
 
     private function extractDetail(ExceptionEvent $event): string

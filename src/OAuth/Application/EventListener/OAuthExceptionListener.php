@@ -70,9 +70,11 @@ final class OAuthExceptionListener
         OAuthProviderException::class => [
             'error_code' => 'provider_unavailable',
             'status' => Response::HTTP_SERVICE_UNAVAILABLE,
-            'detail' => 'The authentication provider is currently unavailable. Please try again later.',
+            'detail' => 'The authentication provider is currently unavailable. Try again later.',
         ],
     ];
+
+    private const LOG_MESSAGE_PREFIX = 'OAuth flow failed: ';
 
     public function __construct(
         private readonly LoggerInterface $logger,
@@ -88,14 +90,25 @@ final class OAuthExceptionListener
             return;
         }
 
-        $this->logger->error('OAuth flow failed: ' . $exception->getMessage(), [
-            'error_code' => $mapping['error_code'],
-            'exception' => $exception,
-        ]);
+        $this->logger->error(
+            self::LOG_MESSAGE_PREFIX . $exception->getMessage(),
+            [
+                'error_code' => $mapping['error_code'],
+                'exception' => $exception,
+            ]
+        );
 
+        $event->setResponse($this->buildProblemResponse($mapping));
+    }
+
+    /**
+     * @param array{error_code: string, status: int, detail: string} $mapping
+     */
+    private function buildProblemResponse(array $mapping): JsonResponse
+    {
         $status = $mapping['status'];
 
-        $event->setResponse(new JsonResponse(
+        return new JsonResponse(
             [
                 'type' => "/errors/{$status}",
                 'title' => 'An error occurred',
@@ -105,6 +118,6 @@ final class OAuthExceptionListener
             ],
             $status,
             ['Content-Type' => 'application/problem+json']
-        ));
+        );
     }
 }
