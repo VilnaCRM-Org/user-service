@@ -70,6 +70,43 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->assertPasswordResetResponse($response);
     }
 
+    public function testRequestPasswordResetThrowsWhenPlainTokenMissing(): void
+    {
+        $email = $this->faker->email();
+        $userId = $this->faker->uuid();
+
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn($userId);
+
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getPlainToken')->willReturn(null);
+
+        $this->userRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($userId)
+            ->willReturn($token);
+
+        $this->eventFactory
+            ->expects($this->never())
+            ->method('create');
+
+        $this->eventBus
+            ->expects($this->never())
+            ->method('publish');
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Password reset plain token is missing.');
+
+        $this->handler->__invoke(new RequestPasswordResetCommand($email));
+    }
+
     public function testRequestPasswordResetForNonExistingUser(): void
     {
         $email = $this->faker->email();

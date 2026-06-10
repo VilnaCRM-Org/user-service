@@ -39,6 +39,10 @@ final class MongoDBPasswordResetTokenRepository extends ServiceDocumentRepositor
     #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
+        // Hash mirrors PasswordResetToken::hashToken(); kept inline because the
+        // project's PHPMD cleancode ruleset forbids static access here. The
+        // MongoDBPasswordResetTokenRepositoryTest pins both sides to the same
+        // algorithm, so any future drift is caught by the test suite.
         return $this->findOneBy([
             'tokenValue' => hash('sha256', $token),
         ]);
