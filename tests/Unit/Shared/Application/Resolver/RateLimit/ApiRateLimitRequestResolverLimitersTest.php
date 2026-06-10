@@ -343,7 +343,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
             [],
             ['REMOTE_ADDR' => '203.0.113.11', 'CONTENT_TYPE' => 'application/json'],
             json_encode([
-                'query' => 'mutation($input: signInInput!) { signIn(input: $input) { user { id } } }',
+                'query' => 'mutation { signIn(input: $input) { id } }',
                 'variables' => ['input' => ['email' => $email, 'password' => 'secret']],
             ], JSON_THROW_ON_ERROR)
         );

@@ -6,7 +6,6 @@ namespace App\Shared\Application\Resolver\RateLimit;
 
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -17,12 +16,20 @@ use Symfony\Component\Serializer\SerializerInterface;
  * per-endpoint sign-in, refresh, 2FA and password-reset throttles.
  *
  * Security: CWE-799 - GraphQL endpoint bypasses per-endpoint rate limiters (#315).
+ *
+ * @psalm-type GraphQlPayloadValue = array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>|scalar|null
  */
 final readonly class ApiRateLimitGraphQlResolver
 {
     private const GRAPHQL_PATH = '/api/graphql';
-    private const MUTATION_FIELD_PATTERN =
-        '/\b(signIn|refreshToken|completeTwoFactor|confirmPasswordReset|signOut|signOutAll)\b/';
+
+    /**
+     * Captures every GraphQL field invocation (an identifier directly followed by
+     * an argument list). The allowlist of throttled mutations is enforced by the
+     * match expression in {@see resolveMutationTargets()} so that unknown fields
+     * resolve to no rate-limiter targets.
+     */
+    private const MUTATION_FIELD_PATTERN = '/([A-Za-z_][A-Za-z0-9_]*)\s*\(/';
 
     public function __construct(
         private SerializerInterface $serializer,
@@ -45,14 +52,28 @@ final readonly class ApiRateLimitGraphQlResolver
             return [];
         }
 
-        $query = $payload['query'] ?? null;
-        if (!is_string($query)) {
+        $query = $this->resolveQuery($payload);
+        if ($query === null) {
             return [];
         }
 
         $input = $this->resolveInput($payload);
 
         return $this->resolveTargetsForMutations($request, $query, $input);
+    }
+
+    /**
+     * @param array<string, GraphQlPayloadValue> $payload
+     */
+    private function resolveQuery(array $payload): ?string
+    {
+        if (!array_key_exists('query', $payload)) {
+            return null;
+        }
+
+        $query = $payload['query'];
+
+        return is_string($query) ? $query : null;
     }
 
     private function isGraphQlMutationRequest(Request $request): bool
@@ -62,7 +83,7 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      *
      * @return list<array{name: string, key: string}>
      */
@@ -71,12 +92,8 @@ final readonly class ApiRateLimitGraphQlResolver
         string $query,
         array $input
     ): array {
-        if (preg_match_all(self::MUTATION_FIELD_PATTERN, $query, $matches) === false) {
-            return [];
-        }
-
         $targets = [];
-        foreach (array_unique($matches[1]) as $mutation) {
+        foreach ($this->extractMutationNames($query) as $mutation) {
             foreach ($this->resolveMutationTargets($request, $mutation, $input) as $target) {
                 $targets[] = $target;
             }
@@ -86,7 +103,17 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @return array<int, string>
+     */
+    private function extractMutationNames(string $query): array
+    {
+        preg_match_all(self::MUTATION_FIELD_PATTERN, $query, $matches);
+
+        return array_unique($matches[1]);
+    }
+
+    /**
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      *
      * @return list<array{name: string, key: string}>
      */
@@ -111,7 +138,7 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      *
      * @return list<array{name: string, key: string}>
      */
@@ -131,7 +158,7 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      *
      * @return list<array{name: string, key: string}>
      */
@@ -151,7 +178,7 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      */
     private function resolveTwoFactorUserId(array $input): ?string
     {
@@ -179,27 +206,29 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return array<string, GraphQlPayloadValue>|null
      */
     private function decodePayload(string $content): ?array
     {
         try {
-            $decoded = $this->serializer->decode(
-                $content,
-                JsonEncoder::FORMAT,
-                [JsonDecode::ASSOCIATIVE => true],
-            );
+            // JsonEncoder decodes JSON objects to associative arrays by default,
+            // so nested GraphQL variables are returned as arrays we can traverse.
+            $decoded = $this->serializer->decode($content, JsonEncoder::FORMAT);
         } catch (NotEncodableValueException) {
             return null;
         }
 
-        return is_array($decoded) ? $decoded : null;
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param array<string, GraphQlPayloadValue> $payload
      *
-     * @return array<string, mixed>
+     * @return array<string, array<int, string>|bool|float|int|string|null>
      */
     private function resolveInput(array $payload): array
     {
@@ -208,13 +237,16 @@ final readonly class ApiRateLimitGraphQlResolver
             return [];
         }
 
-        $input = $variables['input'] ?? $variables;
+        $input = array_key_exists('input', $variables) ? $variables['input'] : $variables;
+        if (!is_array($input)) {
+            return [];
+        }
 
-        return is_array($input) ? $input : [];
+        return $input;
     }
 
     /**
-     * @param array<string, mixed> $input
+     * @param array<string, array<int, string>|bool|float|int|string|null> $input
      */
     private function resolveInputString(array $input, string $key): ?string
     {
