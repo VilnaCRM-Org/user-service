@@ -38,6 +38,10 @@ services:
       $innerLogger: '@App\Tests\Behat\Support\RecordingLogger.inner'
     public: true
 
+  App\Tests\Behat\Support\PasswordResetTokenRecorder:
+    public: true
+    tags: ['app.event_subscriber']
+
   App\Tests\Behat\:
     resource: '../tests/Behat/*'
     exclude: '../tests/Behat/Support/*'
