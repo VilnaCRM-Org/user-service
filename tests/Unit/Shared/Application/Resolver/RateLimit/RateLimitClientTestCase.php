@@ -12,9 +12,12 @@ use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Repository\PendingTwoFactorRepositoryInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 abstract class RateLimitClientTestCase extends UnitTestCase
 {
+    protected const GRAPHQL_ENDPOINT = '/api/graphql';
+
     protected JwtTokenConverterInterface $jwtConverter;
 
     #[\Override]
@@ -96,6 +99,30 @@ abstract class RateLimitClientTestCase extends UnitTestCase
                 $clientIdentityResolver,
                 $pendingTwoFactorRepository,
             ),
+        );
+    }
+
+    /**
+     * @param array<string, array<string, scalar|null>|scalar|null> $variables
+     */
+    protected function createGraphQlRequest(
+        string $query,
+        array $variables = [],
+        string $clientIp = '203.0.113.7'
+    ): Request {
+        $body = ['query' => $query];
+        if ($variables !== []) {
+            $body['variables'] = $variables;
+        }
+
+        return Request::create(
+            self::GRAPHQL_ENDPOINT,
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($body, JSON_THROW_ON_ERROR)
         );
     }
 }
