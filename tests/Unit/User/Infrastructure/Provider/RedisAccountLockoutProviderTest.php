@@ -120,6 +120,31 @@ final class RedisAccountLockoutProviderTest extends UnitTestCase
         $this->assertFalse($this->service->recordFailure(self::EMAIL));
     }
 
+    /**
+     * phpredis can surface the Lua integer reply as a numeric string when a
+     * serializer is configured. The provider must normalize the reply with an
+     * integer cast before the strict locked comparison, otherwise a string
+     * "1" would never be recognized as a lock and the account would stay open.
+     */
+    public function testRecordFailureCastsNumericStringEvalResultToLocked(): void
+    {
+        $this->redis->method('eval')->willReturn('1');
+
+        $this->assertTrue($this->service->recordFailure(self::EMAIL));
+    }
+
+    /**
+     * A numeric-string "0" reply must likewise be cast before comparison so a
+     * below-threshold failure is reported as not locked rather than leaking the
+     * raw Redis reply through the strict comparison.
+     */
+    public function testRecordFailureCastsNumericStringZeroEvalResultToNotLocked(): void
+    {
+        $this->redis->method('eval')->willReturn('0');
+
+        $this->assertFalse($this->service->recordFailure(self::EMAIL));
+    }
+
     public function testClearFailuresDeletesAttemptAndLockKeys(): void
     {
         $this->redis
