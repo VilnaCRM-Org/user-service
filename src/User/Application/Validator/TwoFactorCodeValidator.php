@@ -32,6 +32,14 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
     }
 
     #[\Override]
+    public function verifyTotpForSetupOrFail(User $user, string $code): void
+    {
+        if (!$this->isTotpCode($code) || !$this->verifyTotpWithoutConsuming($user, $code)) {
+            throw new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.');
+        }
+    }
+
+    #[\Override]
     public function verifyAndConsumeOrFail(User $user, string $code): void
     {
         if ($this->isTotpCode($code)) {
@@ -109,6 +117,24 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
         $this->userRepository->save($user);
 
         return $timestep;
+    }
+
+    /**
+     * Verifies a TOTP code without recording or advancing the replay time-step.
+     * Used by the one-time setup-confirmation flow so it does not consume the
+     * window the following sign-in completion needs.
+     */
+    private function verifyTotpWithoutConsuming(User $user, string $code): bool
+    {
+        $secret = $user->getTwoFactorSecret();
+        if ($secret === null) {
+            return false;
+        }
+
+        return $this->totpVerifier->resolveAcceptedTimestep(
+            $this->decryptSecret($secret),
+            $code
+        ) !== null;
     }
 
     private function consumeRecoveryCodeOrFailByUserId(string $userId, string $code): void
