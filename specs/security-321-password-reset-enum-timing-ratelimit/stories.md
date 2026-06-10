@@ -73,11 +73,16 @@ by the resolver/decorator unit tests above plus CI.
 
 ## Verification commands (one-off containers)
 
+> Local verification examples. Replace `$REPO` with your checkout path,
+> `$VENDOR` with a directory holding an installed `vendor/`, and
+> `$PHP_IMAGE` with your locally built PHP image tag (e.g. the project's
+> `*-php:latest` image). Adapt paths/tags to your environment.
+
 ```sh
 # Unit (targeted + full)
-docker run --rm -v /home/kravtsov/Projects/secfix-321:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app \
-  -e APP_ENV=test --entrypoint sh secfix-312-php:latest -lc \
+docker run --rm -v "$REPO":/app \
+  -v "$VENDOR":/app/vendor:ro -w /app \
+  -e APP_ENV=test --entrypoint sh "$PHP_IMAGE" -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit \
    --filter "PasswordReset|RequestPasswordReset" --no-coverage'
 
