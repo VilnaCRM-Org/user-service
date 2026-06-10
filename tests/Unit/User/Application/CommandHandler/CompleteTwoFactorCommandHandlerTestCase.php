@@ -57,6 +57,10 @@ abstract class CompleteTwoFactorCommandHandlerTestCase extends UnitTestCase
         $this->configureLookupsOnce($pending, $user);
         $this->twoFactorCodeVerifier->method('verifyAndResolveMethod')->willReturn(null);
         $this->events->method('publishFailed');
+        // The brute-force counter must advance (persisted) on an invalid code that
+        // has not yet exhausted the attempt cap.
+        $this->pendingTwoFactorRepository->expects($this->once())->method('save')->with($pending);
+        $this->pendingTwoFactorRepository->expects($this->never())->method('delete');
         try {
             $this->createHandler()->__invoke(new CompleteTwoFactorCommand(
                 $pending->getId(),

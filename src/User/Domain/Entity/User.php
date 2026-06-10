@@ -193,10 +193,19 @@ class User implements UserInterface
 
     /**
      * Records a successfully accepted TOTP time-step so the same (or older)
-     * code can never be replayed within its validity window.
+     * code can never be replayed within its validity window. The watermark only
+     * ever moves forward, so out-of-order writes cannot re-open acceptance of an
+     * already-consumed time-step.
      */
     public function recordAcceptedTotpTimestep(int $timestep): void
     {
+        if (
+            $this->lastAcceptedTotpTimestep !== null
+            && $timestep <= $this->lastAcceptedTotpTimestep
+        ) {
+            return;
+        }
+
         $this->lastAcceptedTotpTimestep = $timestep;
     }
 

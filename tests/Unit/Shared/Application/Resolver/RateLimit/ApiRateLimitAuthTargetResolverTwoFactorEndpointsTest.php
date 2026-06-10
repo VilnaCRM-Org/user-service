@@ -159,6 +159,7 @@ final class ApiRateLimitAuthTargetResolverTwoFactorEndpointsTest extends
 
         self::assertCount(2, $result);
         self::assertSame('twofa_verification_ip', $result[0]['name']);
+        self::assertSame('ip:' . $clientIp, $result[0]['key']);
         self::assertSame('twofa_verification_user', $result[1]['name']);
         self::assertSame('user:' . $userId, $result[1]['key']);
     }

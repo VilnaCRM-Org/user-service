@@ -2,10 +2,10 @@
 
 Verification commands (one-off containers; never `make start`):
 
-```
-# Unit (focused)
-docker run --rm -v /home/kravtsov/Projects/secfix-314:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
+```bash
+# Unit (focused). Replace ${PROJECT_ROOT} / ${VENDOR_DIR} with your local paths.
+docker run --rm -v ${PROJECT_ROOT}:/app \
+  -v ${VENDOR_DIR}:/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --filter "TwoFactor|TOTP" --no-coverage'
 
