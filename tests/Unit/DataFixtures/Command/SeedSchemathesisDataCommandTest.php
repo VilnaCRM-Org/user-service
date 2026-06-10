@@ -398,29 +398,30 @@ final class SeedSchemathesisDataCommandTest extends UnitTestCase
     private function assertPasswordResetTokens(
         InMemoryPasswordResetTokenRepository $passwordResetTokenRepository
     ): void {
-        $confirmTokenLd = PasswordResetToken::hashToken(
-            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD
-        );
-        $confirmTokenHash = PasswordResetToken::hashToken(
-            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN
-        );
         $storedTokens = $passwordResetTokenRepository->all();
         $this->assertCount(2, $storedTokens);
-        $this->assertArrayHasKey(
-            $confirmTokenHash,
-            $storedTokens
+        $this->assertStoredPasswordResetToken(
+            $storedTokens,
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN
         );
-        $this->assertArrayHasKey(
-            $confirmTokenLd,
-            $storedTokens
+        $this->assertStoredPasswordResetToken(
+            $storedTokens,
+            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_TOKEN_LD
         );
+    }
+
+    /**
+     * @param array<string, PasswordResetToken> $storedTokens
+     */
+    private function assertStoredPasswordResetToken(
+        array $storedTokens,
+        string $plainToken
+    ): void {
+        $tokenHash = PasswordResetToken::hashToken($plainToken);
+        $this->assertArrayHasKey($tokenHash, $storedTokens);
         $this->assertSame(
             SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID,
-            $storedTokens[$confirmTokenHash]->getUserID()
-        );
-        $this->assertSame(
-            SchemathesisFixtures::PASSWORD_RESET_CONFIRM_USER_ID,
-            $storedTokens[$confirmTokenLd]->getUserID()
+            $storedTokens[$tokenHash]->getUserID()
         );
     }
 

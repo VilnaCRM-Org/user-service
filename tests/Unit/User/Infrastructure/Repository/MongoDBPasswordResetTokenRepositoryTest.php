@@ -80,8 +80,7 @@ final class MongoDBPasswordResetTokenRepositoryTest extends UnitTestCase
         $repository->expects($this->once())
             ->method('findOneBy')
             ->with($this->callback(
-                static fn (array $criteria): bool =>
-                    $criteria['tokenValue'] !== $tokenValue
+                static fn (array $criteria): bool => $criteria['tokenValue'] !== $tokenValue
                     && $criteria['tokenValue'] === PasswordResetToken::hashToken($tokenValue)
             ))
             ->willReturn(null);

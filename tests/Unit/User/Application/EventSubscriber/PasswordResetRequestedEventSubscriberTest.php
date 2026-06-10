@@ -116,6 +116,15 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
      */
     private function setupSuccessfulFlow(string $tokenValue, array $mocks): void
     {
+        $this->setupLookupExpectations($tokenValue, $mocks);
+        $this->setupEmailDispatchExpectations($mocks);
+    }
+
+    /**
+     * @param array<string, \PHPUnit\Framework\MockObject\MockObject> $mocks
+     */
+    private function setupLookupExpectations(string $tokenValue, array $mocks): void
+    {
         $this->userRepository->expects($this->once())
             ->method('findById')
             ->with($this->anything())
@@ -129,7 +138,13 @@ final class PasswordResetRequestedEventSubscriberTest extends UnitTestCase
         $mocks['token']->expects($this->once())
             ->method('attachPlainToken')
             ->with($tokenValue);
+    }
 
+    /**
+     * @param array<string, \PHPUnit\Framework\MockObject\MockObject> $mocks
+     */
+    private function setupEmailDispatchExpectations(array $mocks): void
+    {
         $this->emailFactory->expects($this->once())
             ->method('create')
             ->with($mocks['token'], $mocks['user'])
