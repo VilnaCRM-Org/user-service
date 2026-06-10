@@ -3,28 +3,29 @@
 Verification commands (one-off containers; never `make start`):
 
 ```bash
+# Run from the repository root. APP_IMAGE defaults to the project's PHP image;
+# override it if your local build is tagged differently.
+APP_ROOT="$(git rev-parse --show-toplevel)"
+APP_IMAGE="${APP_IMAGE:-user-service-php:latest}"
+
 # Unit (Cors filter)
-docker run --rm -v /home/kravtsov/Projects/secfix-319:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro \
-  -w /app -e APP_ENV=test --entrypoint sh secfix-312-php:latest \
+docker run --rm -v "$APP_ROOT":/app \
+  -w /app -e APP_ENV=test --entrypoint sh "$APP_IMAGE" \
   -lc 'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --filter "Cors" --no-coverage 2>&1 | tail -25'
 
 # Deptrac
-docker run --rm -v /home/kravtsov/Projects/secfix-319:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro \
-  -w /app -e APP_ENV=test --entrypoint sh secfix-312-php:latest \
+docker run --rm -v "$APP_ROOT":/app \
+  -w /app -e APP_ENV=test --entrypoint sh "$APP_IMAGE" \
   -lc 'php -d memory_limit=-1 vendor/bin/deptrac analyse --config-file=deptrac.yaml --no-progress 2>&1 | tail -6'
 
 # Psalm (changed file)
-docker run --rm -v /home/kravtsov/Projects/secfix-319:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro \
-  -w /app -e APP_ENV=test --entrypoint sh secfix-312-php:latest \
+docker run --rm -v "$APP_ROOT":/app \
+  -w /app -e APP_ENV=test --entrypoint sh "$APP_IMAGE" \
   -lc 'php -d memory_limit=-1 vendor/bin/psalm --no-cache --no-progress tests/Unit/Config/CorsAllowOriginDefaultTest.php 2>&1 | tail -15'
 
 # php-cs-fixer (changed file)
-docker run --rm -v /home/kravtsov/Projects/secfix-319:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro \
-  -w /app -e APP_ENV=test --entrypoint sh secfix-312-php:latest \
+docker run --rm -v "$APP_ROOT":/app \
+  -w /app -e APP_ENV=test --entrypoint sh "$APP_IMAGE" \
   -lc 'PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --config=.php-cs-fixer.dist.php --path-mode=intersection tests/Unit/Config/CorsAllowOriginDefaultTest.php 2>&1 | tail -15'
 ```
 
