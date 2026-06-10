@@ -5,54 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Domain\Entity;
 
 use App\Shared\Domain\Collection\DomainEventCollection;
-use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\User;
-use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\EmailChangedEvent;
 use App\User\Domain\Event\PasswordChangedEvent;
 use App\User\Domain\Event\UserConfirmedEvent;
-use App\User\Domain\Factory\ConfirmationTokenFactory;
-use App\User\Domain\Factory\ConfirmationTokenFactoryInterface;
-use App\User\Domain\Factory\Event\UserConfirmedEventFactoryInterface;
-use App\User\Domain\Factory\Event\UserUpdateEventFactoryInterface;
-use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\ValueObject\UserUpdate;
 
-final class UserTest extends UnitTestCase
+final class UserTest extends UserTestCase
 {
-    private UserInterface $user;
-    private UserConfirmedEventFactoryInterface $userConfirmedEventFactory;
-    private UserUpdateEventFactoryInterface $userUpdateEventFactory;
-    private UserFactoryInterface $userFactory;
-    private ConfirmationTokenFactoryInterface $confirmationTokenFactory;
-    private UuidTransformer $uuidTransformer;
-
-    #[\Override]
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->userConfirmedEventFactory =
-            $this->createMock(UserConfirmedEventFactoryInterface::class);
-        $this->userUpdateEventFactory =
-            $this->createMock(UserUpdateEventFactoryInterface::class);
-        $this->userFactory = new UserFactory();
-        $this->confirmationTokenFactory = new ConfirmationTokenFactory(
-            $this->faker->numberBetween(1, 10)
-        );
-        $this->uuidTransformer = new UuidTransformer(new UuidFactory());
-
-        $this->user = $this->userFactory->create(
-            $this->faker->email(),
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
-        );
-    }
-
     public function testNewUserIsNotConfirmedByDefault(): void
     {
         $user = $this->userFactory->create(
@@ -118,7 +78,7 @@ final class UserTest extends UnitTestCase
             $this->userUpdateEventFactory
         );
 
-        $this->testUpdateMakeAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
+        $this->makeUpdateAssertions($events, $updateData, $hashedNewPassword, $expectedEvent);
     }
 
     public function testUpdateEmitsPasswordChangedEventWhenPasswordDiffers(): void
@@ -196,83 +156,6 @@ final class UserTest extends UnitTestCase
         $this->assertEquals($confirmed, $this->user->isConfirmed());
     }
 
-    public function testTwoFactorIsDisabledByDefault(): void
-    {
-        $user = $this->userFactory->create(
-            $this->faker->email(),
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->uuidTransformer->transformFromString($this->faker->uuid())
-        );
-
-        $this->assertFalse($user->isTwoFactorEnabled());
-        $this->assertNull($user->getTwoFactorSecret());
-    }
-
-    public function testSetTwoFactorData(): void
-    {
-        $secret = $this->faker->sha256();
-
-        $this->user->setTwoFactorEnabled(true);
-        $this->user->setTwoFactorSecret($secret);
-
-        $this->assertTrue($this->user->isTwoFactorEnabled());
-        $this->assertSame($secret, $this->user->getTwoFactorSecret());
-    }
-
-    public function testEnableTwoFactor(): void
-    {
-        $this->assertFalse($this->user->isTwoFactorEnabled());
-
-        $this->user->enableTwoFactor();
-
-        $this->assertTrue($this->user->isTwoFactorEnabled());
-    }
-
-    public function testDisableTwoFactor(): void
-    {
-        $this->user->setTwoFactorEnabled(true);
-        $this->user->setTwoFactorSecret($this->faker->sha256());
-        $this->user->recordAcceptedTotpTimestep(57_000_000);
-
-        $this->user->disableTwoFactor();
-
-        $this->assertFalse($this->user->isTwoFactorEnabled());
-        $this->assertNull($this->user->getTwoFactorSecret());
-        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
-    }
-
-    public function testTotpTimestepIsNotReplayWhenNoneAccepted(): void
-    {
-        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
-        $this->assertFalse($this->user->isTotpTimestepReplay(57_000_000));
-    }
-
-    public function testRecordAcceptedTotpTimestepStoresLatestCounter(): void
-    {
-        $this->user->recordAcceptedTotpTimestep(57_000_000);
-
-        $this->assertSame(57_000_000, $this->user->getLastAcceptedTotpTimestep());
-    }
-
-    public function testIsTotpTimestepReplayRejectsCurrentAndOlderTimesteps(): void
-    {
-        $this->user->recordAcceptedTotpTimestep(57_000_000);
-
-        $this->assertTrue($this->user->isTotpTimestepReplay(57_000_000));
-        $this->assertTrue($this->user->isTotpTimestepReplay(56_999_999));
-        $this->assertFalse($this->user->isTotpTimestepReplay(57_000_001));
-    }
-
-    public function testSetLastAcceptedTotpTimestepSupportsHydration(): void
-    {
-        $this->user->setLastAcceptedTotpTimestep(57_000_000);
-        $this->assertSame(57_000_000, $this->user->getLastAcceptedTotpTimestep());
-
-        $this->user->setLastAcceptedTotpTimestep(null);
-        $this->assertNull($this->user->getLastAcceptedTotpTimestep());
-    }
-
     public function testUpgradePasswordHash(): void
     {
         $newHash = $this->faker->sha256();
@@ -318,7 +201,7 @@ final class UserTest extends UnitTestCase
         );
     }
 
-    private function testUpdateMakeAssertions(
+    private function makeUpdateAssertions(
         DomainEventCollection $events,
         UserUpdate $updateData,
         string $hashedNewPassword,
