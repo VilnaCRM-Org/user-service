@@ -100,11 +100,6 @@ final readonly class AccessTokenValidator
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
 
-        // Issuer and audience are validated unconditionally for EVERY token.
-        // This rejects tokens that are signed with the shared RSA key but were
-        // not minted as first-party access tokens — notably League OAuth2
-        // access tokens (aud=client_id, no iss), which previously bypassed this
-        // check and were silently elevated to ROLE_SERVICE.
         $this->validateIssuerAndAudience($payload);
         $this->validateSessionBinding($payload);
     }
@@ -114,7 +109,7 @@ final readonly class AccessTokenValidator
      */
     private function validateSessionBinding(array $payload): void
     {
-        if (isset($payload['roles']) && !isset($payload['sid'])) {
+        if (array_key_exists('roles', $payload) && !isset($payload['sid'])) {
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
     }
@@ -211,15 +206,11 @@ final readonly class AccessTokenValidator
      */
     private function extractRoles(array $payload): array
     {
-        $rawRoles = $payload['roles'] ?? null;
-        if ($rawRoles === null) {
-            // Never infer a privileged role from the ABSENCE of claims. A token
-            // without an explicit roles claim is treated as the least-privilege
-            // ROLE_USER; ROLE_SERVICE must be positively asserted in the signed
-            // first-party token.
+        if (!array_key_exists('roles', $payload)) {
             return ['ROLE_USER'];
         }
 
+        $rawRoles = $payload['roles'];
         if (!is_array($rawRoles) || $rawRoles === []) {
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
