@@ -103,13 +103,19 @@ final readonly class ApiRateLimitGraphQlResolver
     }
 
     /**
-     * @return array<int, string>
+     * Returns one entry per field invocation so that repeated throttled
+     * mutations (e.g. aliased duplicates that GraphQL executes more than once)
+     * each consume a rate-limiter token instead of collapsing into a single
+     * hit. Deduplicating here would let an attacker batch N identical sensitive
+     * mutations into one request for the price of a single limiter consumption.
+     *
+     * @return list<string>
      */
     private function extractMutationNames(string $query): array
     {
         preg_match_all(self::MUTATION_FIELD_PATTERN, $query, $matches);
 
-        return array_unique($matches[1]);
+        return $matches[1];
     }
 
     /**

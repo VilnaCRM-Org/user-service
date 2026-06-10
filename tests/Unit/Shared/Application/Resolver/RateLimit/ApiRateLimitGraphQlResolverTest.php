@@ -165,18 +165,24 @@ final class ApiRateLimitGraphQlResolverTest extends RateLimitClientTestCase
         self::assertContains('password_reset_confirm', $names);
     }
 
-    public function testDuplicateMutationOccurrencesProduceSingleTargetSet(): void
+    public function testDuplicateMutationOccurrencesEachConsumeALimiterHit(): void
     {
         $request = $this->createGraphQlRequest(
-            'mutation { refreshToken(input: {a: 1}) { id } refreshToken(input: {b: 2}) { id } }',
+            'mutation { a: refreshToken(input: {x: 1}) { id } b: refreshToken(input: {y: 2}) { id } }',
             [],
             '198.51.100.8'
         );
 
         $targets = $this->createGraphQlResolver()->resolve($request);
 
+        // Each aliased occurrence executes server-side, so each must consume a
+        // separate limiter token. Collapsing duplicates would let an attacker
+        // batch N identical sensitive mutations for the cost of a single hit.
         self::assertSame(
-            [['name' => 'refresh_token', 'key' => 'ip:198.51.100.8']],
+            [
+                ['name' => 'refresh_token', 'key' => 'ip:198.51.100.8'],
+                ['name' => 'refresh_token', 'key' => 'ip:198.51.100.8'],
+            ],
             $targets
         );
     }
