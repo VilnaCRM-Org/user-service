@@ -29,14 +29,15 @@ or internal hostnames (CWE-209).
   type with a unique secret token embedded in its constructor message; asserts the secret
   never appears in `detail` for any of them (defense-in-depth across all map entries).
 
-**Verification commands**:
+**Verification commands** (run from the repository root):
 
 ```
-docker run --rm -v /home/kravtsov/Projects/secfix-323:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
-  --entrypoint sh secfix-312-php:latest -lc \
-  'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit \
-   --filter "OAuthException|ExceptionListener" --no-coverage'
+# Full unit suite (repository-standard entry point)
+make unit-tests
+
+# Scoped to this story's tests only
+docker compose exec php php -d memory_limit=-1 vendor/bin/phpunit \
+  --testsuite=Unit --filter "OAuthException|ExceptionListener" --no-coverage
 ```
 
 ## Story 2 — Log the full exception server-side
