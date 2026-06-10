@@ -35,38 +35,46 @@ final class CorsAllowOriginDefaultTest extends UnitTestCase
         self::assertSame(
             self::DENY_ALL_REGEX,
             $value,
-            'The committed .env (baked into the prod image) must default to the '
-            . 'deny-all CORS regex, not a working localhost allow-list.'
+            'The committed .env (baked into the prod image) must default to a deny-all CORS regex.'
         );
     }
 
-    public function testCommittedEnvDefaultDoesNotAllowLocalhostOrAnyOrigin(): void
+    public function testCommittedEnvDefaultIsNotEmptyFailOpenValue(): void
     {
         $value = $this->corsAllowOriginFrom('/.env');
 
         self::assertNotSame(
             '',
             $value,
-            'An empty CORS_ALLOW_ORIGIN compiles to the regex "{}i" which matches '
-            . 'every origin (fail-open); the default must be a deny-all pattern.'
+            'An empty CORS_ALLOW_ORIGIN compiles to "{}i" which matches every origin (fail-open).'
         );
+    }
 
-        $pattern = '{' . $value . '}i';
+    /**
+     * @dataProvider deniedOriginsProvider
+     */
+    public function testCommittedEnvDefaultDeniesEveryOrigin(string $origin): void
+    {
+        $value = $this->corsAllowOriginFrom('/.env');
 
-        foreach ([
-            'http://localhost',
-            'http://localhost:3000',
-            'http://127.0.0.1',
-            'http://127.0.0.1:8080',
-            'https://app.vilnacrm.com',
-            'http://evil.example.com',
-        ] as $origin) {
-            self::assertSame(
-                0,
-                preg_match($pattern, $origin),
-                sprintf('Origin "%s" must be denied by the committed CORS default.', $origin)
-            );
-        }
+        self::assertSame(
+            0,
+            preg_match('{' . $value . '}i', $origin),
+            sprintf('Origin "%s" must be denied by the committed CORS default.', $origin)
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function deniedOriginsProvider(): iterable
+    {
+        yield 'localhost' => ['http://localhost'];
+        yield 'localhost with port' => ['http://localhost:3000'];
+        yield 'loopback' => ['http://127.0.0.1'];
+        yield 'loopback with port' => ['http://127.0.0.1:8080'];
+        yield 'production host' => ['https://app.vilnacrm.com'];
+        yield 'attacker host' => ['http://evil.example.com'];
     }
 
     public function testDevEnvKeepsLocalhostAllowList(): void
