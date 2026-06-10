@@ -35,10 +35,10 @@ forged `X-Forwarded-For` is ignored.
 
 **Verification commands** (one-off containers; vendor mounted read-only):
 
-```
+```bash
 docker run --rm -v /home/kravtsov/Projects/secfix-316:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app \
-  -e APP_ENV=test --entrypoint sh secfix-312-php:latest -lc \
+  -e APP_ENV=test --entrypoint sh secfix-316-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --filter "RateLimit" --no-coverage'
 ```
 
@@ -63,22 +63,22 @@ an untrusted client IP **so that** the fix cannot silently regress.
 
 **Verification commands**
 
-```
+```bash
 # Unit (full suite — no regressions)
-docker run --rm ... -e APP_ENV=test --entrypoint sh secfix-312-php:latest -lc \
+docker run --rm ... -e APP_ENV=test --entrypoint sh secfix-316-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --no-coverage'
 
 # Deptrac (0 violations)
-docker run --rm ... --entrypoint sh secfix-312-php:latest -lc \
+docker run --rm ... --entrypoint sh secfix-316-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/deptrac analyse --config-file=deptrac.yaml --no-progress'
 
 # Psalm (no errors)
-docker run --rm ... --entrypoint sh secfix-312-php:latest -lc \
+docker run --rm ... --entrypoint sh secfix-316-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/psalm --no-cache --no-progress \
    tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitTrustedProxyIpKeyTest.php'
 
 # PHP CS Fixer (0 of N files)
-docker run --rm ... --entrypoint sh secfix-312-php:latest -lc \
+docker run --rm ... --entrypoint sh secfix-316-php:latest -lc \
   'PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes \
    --config=.php-cs-fixer.dist.php --path-mode=intersection \
    tests/Unit/Shared/Application/Resolver/RateLimit/ApiRateLimitTrustedProxyIpKeyTest.php'
