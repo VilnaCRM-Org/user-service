@@ -46,25 +46,25 @@ Covers: FR-4, NFR-Security.
 # Unit (RecoveryCode filter)
 docker run --rm -v /home/kravtsov/Projects/secfix-322:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
-  --entrypoint sh secfix-312-php:latest -lc \
+  --entrypoint sh secfix-322-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --filter "RecoveryCode" --no-coverage'
 
 # Deptrac (architecture boundaries)
 docker run --rm -v /home/kravtsov/Projects/secfix-322:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
-  --entrypoint sh secfix-312-php:latest -lc \
+  --entrypoint sh secfix-322-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/deptrac analyse --config-file=deptrac.yaml --no-progress'
 
 # Psalm (static analysis on changed file)
 docker run --rm -v /home/kravtsov/Projects/secfix-322:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
-  --entrypoint sh secfix-312-php:latest -lc \
+  --entrypoint sh secfix-322-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/psalm --no-cache --no-progress src/User/Domain/Entity/RecoveryCode.php'
 
 # php-cs-fixer (style)
 docker run --rm -v /home/kravtsov/Projects/secfix-322:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
-  --entrypoint sh secfix-312-php:latest -lc \
+  --entrypoint sh secfix-322-php:latest -lc \
   'PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes \
    --config=.php-cs-fixer.dist.php --path-mode=intersection \
    src/User/Domain/Entity/RecoveryCode.php tests/Unit/User/Domain/Entity/RecoveryCodeTest.php'
