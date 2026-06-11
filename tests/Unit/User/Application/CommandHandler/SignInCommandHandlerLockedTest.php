@@ -41,12 +41,12 @@ final class SignInCommandHandlerLockedTest extends SignInCommandHandlerTestCase
         $invocation = $this->credentialValidator->expects($this->once())
             ->method('validate');
 
-        if (
-            is_string($email)
-            && is_string($password)
-            && is_string($ipAddress)
-            && is_string($userAgent)
-        ) {
+        $arguments = array_filter(
+            [$email, $password, $ipAddress, $userAgent],
+            'is_string'
+        );
+
+        if (count($arguments) === 4) {
             $invocation->with($email, $password, $ipAddress, $userAgent);
         }
 

@@ -155,8 +155,22 @@ RUN set -eux; \
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
+# Pin Xdebug to a known-good 3.4.x release compatible with PHP 8.4 and retry the
+# install so a transient pecl/registry hiccup ("No releases available", curl
+# exit 35) does not fail the dev image build.
+ARG XDEBUG_VERSION=3.4.5
 RUN set -eux; \
-    install-php-extensions xdebug
+    attempt=1; \
+    max_attempts=5; \
+    until install-php-extensions "xdebug-${XDEBUG_VERSION}"; do \
+        if [ "${attempt}" -ge "${max_attempts}" ]; then \
+            echo "install-php-extensions xdebug-${XDEBUG_VERSION} failed after ${attempt} attempts" >&2; \
+            exit 1; \
+        fi; \
+        echo "install-php-extensions xdebug-${XDEBUG_VERSION} attempt ${attempt} failed; retrying" >&2; \
+        attempt=$((attempt + 1)); \
+        sleep $((attempt * 3)); \
+    done
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile
