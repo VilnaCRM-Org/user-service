@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\EventListener;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\User\Domain\Collection\UserCollection;
-use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
 use App\User\Infrastructure\Resolver\SchemathesisEmailResolver;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use Symfony\Component\Uid\Factory\UuidFactory;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 final class SchemathesisCleanupListener
 {
@@ -22,13 +17,8 @@ final class SchemathesisCleanupListener
     public function __construct(
         private readonly string $appEnv,
         private readonly UserRepositoryInterface $userRepository,
-        private readonly EventBusInterface $eventBus,
-        private readonly UuidFactory $uuidFactory,
-        private readonly UserDeletedEventFactoryInterface $eventFactory,
         private readonly SchemathesisCleanupResolver $schemathesisCleanupMatcher,
-        private readonly SchemathesisEmailResolver $emailExtractor,
-        private readonly TagAwareCacheInterface $cache,
-        private readonly CacheKeyBuilder $cacheKeyBuilder
+        private readonly SchemathesisEmailResolver $emailExtractor
     ) {
     }
 
@@ -50,6 +40,12 @@ final class SchemathesisCleanupListener
         // loop is disrupted and in-flight connections are reset mid-run
         // ("Connection reset by peer"). The response has already been sent, so a
         // failed cleanup is harmless beyond a leftover test user.
+        //
+        // The cleanup is intentionally DELETE-ONLY: it must not emit domain
+        // events or invalidate cache. That terminate-phase work runs synchronous
+        // subscribers inside the worker loop and was the source of the connection
+        // resets. The test database is reset between Schemathesis runs, so cache
+        // consistency during a run is irrelevant.
         try {
             $this->deleteUsers($this->emailExtractor->extract($request));
         } catch (\Throwable $exception) {
@@ -78,40 +74,6 @@ final class SchemathesisCleanupListener
             return;
         }
 
-        $collection = new UserCollection($users);
-        $this->userRepository->deleteBatch($collection);
-        $this->publishUserDeletedEvents($collection);
-        $this->cache->invalidateTags($this->buildInvalidationTags($collection));
-    }
-
-    private function publishUserDeletedEvents(UserCollection $users): void
-    {
-        foreach ($users as $user) {
-            $this->eventBus->publish(
-                $this->eventFactory->create(
-                    $user,
-                    (string) $this->uuidFactory->create()
-                )
-            );
-        }
-    }
-
-    /**
-     * @return array<string>
-     *
-     * @psalm-return list{0: string, 1?: string,...}
-     */
-    private function buildInvalidationTags(UserCollection $users): array
-    {
-        $tagsToInvalidate = ['user.collection'];
-
-        foreach ($users as $user) {
-            $tagsToInvalidate[] = 'user.' . $user->getId();
-            $tagsToInvalidate[] = 'user.email.' . $this->cacheKeyBuilder->hashEmail(
-                $user->getEmail()
-            );
-        }
-
-        return $tagsToInvalidate;
+        $this->userRepository->deleteBatch(new UserCollection($users));
     }
 }

@@ -57,7 +57,7 @@ final class SchemathesisCleanupListenerEnvironmentGuardTest extends
             ->method('findByEmail')
             ->with($email)
             ->willReturn($user);
-        $this->expectations->expectBatchDeleteAndEvents([$user]);
+        $this->expectations->expectBatchDelete();
 
         $listener($event);
     }

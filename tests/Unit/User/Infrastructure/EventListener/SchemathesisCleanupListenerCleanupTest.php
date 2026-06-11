@@ -26,7 +26,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             ->with($email)
             ->willReturn($user);
 
-        $this->expectations->expectBatchDeleteAndEvents([$user]);
+        $this->expectations->expectBatchDelete();
 
         ($this->listener)($event);
     }
@@ -48,7 +48,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail($emails, $users);
-        $this->expectations->expectBatchDeleteAndEvents($users);
+        $this->expectations->expectBatchDelete();
 
         ($this->listener)($event);
     }
@@ -65,8 +65,6 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             ->with($email)
             ->willReturn(null);
         $this->repository->expects($this->never())->method('deleteBatch');
-        $this->eventFactory->expects($this->never())->method('create');
-        $this->eventBus->expects($this->never())->method('publish');
 
         ($this->listener)($event);
     }
@@ -86,7 +84,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
         $existingUser = $this->userWithEmail($emails[1]);
 
         $this->expectations->expectBatchFindByEmail($emails, [null, $existingUser]);
-        $this->expectations->expectBatchDeleteAndEvents([$existingUser]);
+        $this->expectations->expectBatchDelete();
 
         ($this->listener)($event);
     }
@@ -110,7 +108,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail($emails, $users);
-        $this->expectations->expectBatchDeleteAndEvents($users);
+        $this->expectations->expectBatchDelete();
 
         ($this->listener)($event);
     }
@@ -133,7 +131,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail([$emails[0], $emails[1]], $users);
-        $this->expectations->expectBatchDeleteAndEvents($users);
+        $this->expectations->expectBatchDelete();
 
         ($this->listener)($event);
     }
