@@ -45,7 +45,19 @@ final class SchemathesisCleanupListener
             return;
         }
 
-        $this->deleteUsers($this->emailExtractor->extract($request));
+        // Best-effort, test-only cleanup running on kernel.terminate inside the
+        // FrankenPHP worker: it must NEVER let an exception escape, or the worker
+        // loop is disrupted and in-flight connections are reset mid-run
+        // ("Connection reset by peer"). The response has already been sent, so a
+        // failed cleanup is harmless beyond a leftover test user.
+        try {
+            $this->deleteUsers($this->emailExtractor->extract($request));
+        } catch (\Throwable $exception) {
+            error_log(sprintf(
+                'Schemathesis cleanup skipped: %s',
+                $exception->getMessage()
+            ));
+        }
     }
 
     /**

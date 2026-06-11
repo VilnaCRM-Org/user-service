@@ -137,4 +137,23 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
 
         ($this->listener)($event);
     }
+
+    public function testListenerSwallowsCleanupFailuresToProtectWorker(): void
+    {
+        $email = $this->faker->email();
+
+        $request = $this->schemathesisRequest('/api/users', ['email' => $email]);
+        $event = $this->terminateEvent($request, Response::HTTP_CREATED);
+
+        $this->repository->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willThrowException(new \RuntimeException('storage unavailable'));
+        $this->repository->expects($this->never())->method('deleteBatch');
+
+        // A failure during terminate-phase cleanup must NOT escape the listener:
+        // an uncaught exception would disrupt the FrankenPHP worker loop and reset
+        // in-flight connections. The call therefore completes without throwing.
+        ($this->listener)($event);
+    }
 }
