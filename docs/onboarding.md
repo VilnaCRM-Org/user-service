@@ -160,6 +160,10 @@ We use **GitHub Actions** with a variety of checks (17 CI checks, specifically),
 Additionally, we use:
 
 - **Local AI review loop** (`make ai-review-loop`) for fast feedback after `make ci`.
+  The local reviewer checks FR/NFR coverage, system design tradeoffs, design
+  pattern fit, code smells, and repository architecture rules.
+  Codex reads the repository reviewer prompt directly; Claude keeps `/review`
+  and receives the same policy through the loop.
 - **BMAD FR/NFR review gate** (`BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`) for implemented work with BMAD specs, expanded quality scoring, and whole-codebase impact analysis.
 - **CodeRabbit** for code reviews and AI suggestions (final external check).
 - **Snyk** for security scanning.
