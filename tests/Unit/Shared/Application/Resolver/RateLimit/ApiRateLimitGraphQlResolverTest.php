@@ -168,7 +168,7 @@ final class ApiRateLimitGraphQlResolverTest extends RateLimitClientTestCase
     public function testDuplicateMutationOccurrencesEachConsumeALimiterHit(): void
     {
         $request = $this->createGraphQlRequest(
-            'mutation { a: refreshToken(input: {x: 1}) { id } b: refreshToken(input: {y: 2}) { id } }',
+            'mutation { a: refreshToken(input: {}) { id } b: refreshToken(input: {}) { id } }',
             [],
             '198.51.100.8'
         );
