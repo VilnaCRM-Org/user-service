@@ -75,6 +75,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $email = $this->faker->email();
 
         $this->setupUserNotFoundExpectations($email);
+        $this->setupTokenAlwaysGeneratedExpectations();
         $this->setupNeverCalledExpectations();
 
         $command = new RequestPasswordResetCommand($email);
@@ -92,11 +93,22 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->willReturn(null);
     }
 
+    private function setupTokenAlwaysGeneratedExpectations(): void
+    {
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+
+        $this->passwordResetTokenFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with('')
+            ->willReturn($token);
+    }
+
     private function setupNeverCalledExpectations(): void
     {
-        $this->passwordResetTokenFactory
+        $this->passwordResetTokenRepository
             ->expects($this->never())
-            ->method('create');
+            ->method('save');
 
         $this->eventFactory
             ->expects($this->never())

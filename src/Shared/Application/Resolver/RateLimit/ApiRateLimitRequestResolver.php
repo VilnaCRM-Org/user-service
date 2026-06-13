@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 final readonly class ApiRateLimitRequestResolver
 {
+    private const PASSWORD_RESET_PATH = '/api/reset-password';
     private const PASSWORD_RESET_CONFIRM_PATH = '/api/reset-password/confirm';
     private const RECOVERY_CODES_PATH = '/api/2fa/recovery-codes';
     private const SIGNOUT_PATH = '/api/signout';
@@ -76,6 +77,7 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveTokenExchangeLimiter($request, $path, $method),
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
+            $this->resolvePasswordResetLimiter($request, $path, $method),
             $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
             $this->resolveOAuthSocialLimiter($request, $path, $method),
         ]));
@@ -229,6 +231,23 @@ final readonly class ApiRateLimitRequestResolver
         }
 
         return null;
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'password_reset_ip', key: string}|null
+     */
+    private function resolvePasswordResetLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        if ($method !== 'POST' || $path !== self::PASSWORD_RESET_PATH) {
+            return null;
+        }
+
+        return ['name' => 'password_reset_ip', 'key' => $this->buildIpKey($request)];
     }
 
     /**

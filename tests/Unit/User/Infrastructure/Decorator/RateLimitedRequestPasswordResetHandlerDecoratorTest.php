@@ -73,12 +73,43 @@ final class RateLimitedRequestPasswordResetHandlerDecoratorTest extends UnitTest
         $this->decorator->__invoke($command);
     }
 
+    public function testNormalizesEmailBeforeUsingItAsLimiterKey(): void
+    {
+        $command = new RequestPasswordResetCommand("  USER@Example.COM\t");
+        $response = new RequestPasswordResetCommandResponse();
+
+        $this->rateLimiterFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with('user@example.com')
+            ->willReturn($this->limiter);
+
+        $this->limiter
+            ->expects($this->once())
+            ->method('consume')
+            ->with(1)
+            ->willReturn($this->rateLimit);
+
+        $this->rateLimit
+            ->expects($this->once())
+            ->method('isAccepted')
+            ->willReturn(true);
+
+        $this->innerHandler
+            ->expects($this->once())
+            ->method('__invoke')
+            ->with($command)
+            ->willReturn($response);
+
+        $this->assertSame($response, $this->decorator->__invoke($command));
+    }
+
     private function expectRateLimitCheck(string $email, bool $accepted): void
     {
         $this->rateLimiterFactory
             ->expects($this->once())
             ->method('create')
-            ->with($email)
+            ->with(strtolower(trim($email)))
             ->willReturn($this->limiter);
 
         $this->limiter
