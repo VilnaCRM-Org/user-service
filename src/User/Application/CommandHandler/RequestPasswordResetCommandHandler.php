@@ -13,6 +13,7 @@ use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use LogicException;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class RequestPasswordResetCommandHandler implements
@@ -35,17 +36,25 @@ final readonly class RequestPasswordResetCommandHandler implements
     ): RequestPasswordResetCommandResponse {
         $user = $this->userRepository->findByEmail($command->email);
 
+        // Always generate a token so both branches perform the same
+        // CSPRNG work, preventing a user-enumeration timing oracle
+        // (CWE-208) on the deliberately uniform 204 response.
+        $token = $this->tokenFactory->create(
+            $user instanceof UserInterface ? $user->getId() : ''
+        );
+
         if (!$user instanceof UserInterface) {
             return new RequestPasswordResetCommandResponse();
         }
 
-        $token = $this->tokenFactory->create($user->getId());
         $this->tokenRepository->save($token);
 
         $this->eventBus->publish(
             $this->eventFactory->create(
                 $user,
-                $token->getTokenValue(),
+                $token->getPlainToken() ?? throw new LogicException(
+                    'Password reset plain token is missing.'
+                ),
                 (string) $this->uuidFactory->create()
             )
         );

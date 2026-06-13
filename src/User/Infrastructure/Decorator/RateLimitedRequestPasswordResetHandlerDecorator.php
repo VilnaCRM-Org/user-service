@@ -27,12 +27,17 @@ final readonly class RateLimitedRequestPasswordResetHandlerDecorator implements
         return $this->inner->__invoke($command);
     }
 
-    private function checkRateLimit(string $key): void
+    private function checkRateLimit(string $email): void
     {
-        $limiter = $this->rateLimiter->create($key);
+        $limiter = $this->rateLimiter->create($this->normalizeEmail($email));
 
         if (!$limiter->consume(1)->isAccepted()) {
             throw new PasswordResetRateLimitExceededException();
         }
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return strtolower(trim($email));
     }
 }

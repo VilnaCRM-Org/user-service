@@ -178,6 +178,7 @@ services:
         user_delete: '@limiter.user_delete'
         resend_confirmation: '@limiter.resend_confirmation'
         resend_confirmation_target: '@limiter.resend_confirmation_target'
+        password_reset_ip: '@limiter.password_reset_ip'
         password_reset_confirm: '@limiter.password_reset_confirm'
         recovery_codes: '@limiter.recovery_codes'
         signout: '@limiter.signout'
@@ -298,18 +299,9 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
-  cache.account_lockout:
-    class: Symfony\Component\Cache\Adapter\RedisAdapter
-    arguments:
-      - '@app.account_lockout_redis_connection'
-      - 'account_lockout'
-      - 0
-    tags:
-      - { name: kernel.reset, method: reset }
-
   App\User\Infrastructure\Provider\RedisAccountLockoutProvider:
     arguments:
-      $cachePool: '@cache.account_lockout'
+      $lockoutRedis: '@app.account_lockout_redis_connection'
 
   App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor:
     arguments:

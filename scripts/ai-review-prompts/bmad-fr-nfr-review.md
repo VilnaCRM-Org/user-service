@@ -351,7 +351,7 @@ Then include these sections using the exact section names:
   score, status
 - CI Gate: required/applicable checks, status, conclusion, run URL, score,
   status
-- Required Fixes: file path, short description, expected fix
+- Required Fixes:
 
 For PASS, every listed section except Required Fixes must include scored
 evidence at `{SCORE_THRESHOLD}/5` or higher. The NFR Catalog Scorecard must
@@ -361,3 +361,8 @@ cover `{NFR_CATEGORIES}`. The Expanded Quality Scorecard must cover
 `{IMPACT_SURFACES}`. The Test Case Matrix, Automated Test And CI Coverage, and
 Flaky Test Risk sections must include concrete evidence and scored PASS rows,
 not generic statements.
+
+The Required Fixes section heading must be exactly `Required Fixes:`. Do not
+append descriptive text to that heading. For PASS, the Required Fixes section
+body must be exactly `None.`. For FAIL, include a numbered list where each item
+has a file path, short description, and expected fix.

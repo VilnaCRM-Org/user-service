@@ -76,7 +76,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->userRepository->method('findByEmail')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
-            ->method('verifyAndConsumeOrFail')
+            ->method('verifyTotpForSetupOrFail')
             ->with($user, '000000')
             ->willThrowException(
                 new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
@@ -96,7 +96,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUser($this->faker->email());
         $this->userRepository->method('findByEmail')->willReturn($user);
-        $this->twoFactorCodeVerifier->expects($this->never())->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->expects($this->never())->method('verifyTotpForSetupOrFail');
         $this->expectException(UnauthorizedHttpException::class);
         $this->createHandler()->__invoke(new ConfirmTwoFactorCommand(
             $user->getEmail(),
@@ -126,7 +126,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $user = $this->createUserWithSecret();
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, 'current-session-id', 1);
 
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
@@ -142,7 +142,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $currentSessionId = 'current-session-id';
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, $currentSessionId, 0);
 
         $this->authSessionRepository->expects($this->never())->method('save');
@@ -157,7 +157,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUserWithSecret();
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->configureRecoveryAndSessions();
 
         $this->events->expects($this->once())
@@ -174,7 +174,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $user = $this->createUserWithSecret();
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, 'current-session-id', 1);
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
 
@@ -203,7 +203,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     private function expectTotpVerification(User $user, string $code): void
     {
         $this->twoFactorCodeVerifier->expects($this->once())
-            ->method('verifyAndConsumeOrFail')
+            ->method('verifyTotpForSetupOrFail')
             ->with($user, $code);
     }
 

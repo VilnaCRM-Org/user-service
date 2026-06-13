@@ -16,6 +16,7 @@ class User implements UserInterface
     private bool $confirmed;
     private bool $twoFactorEnabled;
     private ?string $twoFactorSecret;
+    private ?int $lastAcceptedTotpTimestep;
 
     public function __construct(
         private string $email,
@@ -26,6 +27,7 @@ class User implements UserInterface
         $this->confirmed = false;
         $this->twoFactorEnabled = false;
         $this->twoFactorSecret = null;
+        $this->lastAcceptedTotpTimestep = null;
     }
 
     #[\Override]
@@ -111,6 +113,7 @@ class User implements UserInterface
     {
         $this->twoFactorEnabled = false;
         $this->twoFactorSecret = null;
+        $this->lastAcceptedTotpTimestep = null;
     }
 
     #[\Override]
@@ -176,6 +179,48 @@ class User implements UserInterface
     public function getTwoFactorSecret(): ?string
     {
         return $this->twoFactorSecret;
+    }
+
+    /**
+     * Returns true when the supplied TOTP time-step has already been accepted
+     * (or precedes the last accepted one), which means the code is a replay.
+     */
+    public function isTotpTimestepReplay(int $timestep): bool
+    {
+        return $this->lastAcceptedTotpTimestep !== null
+            && $timestep <= $this->lastAcceptedTotpTimestep;
+    }
+
+    /**
+     * Records a successfully accepted TOTP time-step so the same (or older)
+     * code can never be replayed within its validity window. Callers MUST gate
+     * this on {@see isTotpTimestepReplay()} — the validator rejects replayed or
+     * older codes before recording — so only forward-moving time-steps ever
+     * reach this setter.
+     */
+    public function recordAcceptedTotpTimestep(int $timestep): void
+    {
+        $this->lastAcceptedTotpTimestep = $timestep;
+    }
+
+    /**
+     * @psalm-api
+     *
+     * @internal For Doctrine ODM hydration and test fixtures only.
+     */
+    public function getLastAcceptedTotpTimestep(): ?int
+    {
+        return $this->lastAcceptedTotpTimestep;
+    }
+
+    /**
+     * @psalm-api
+     *
+     * @internal For Doctrine ODM hydration and test fixtures only.
+     */
+    public function setLastAcceptedTotpTimestep(?int $lastAcceptedTotpTimestep): void
+    {
+        $this->lastAcceptedTotpTimestep = $lastAcceptedTotpTimestep;
     }
 
     /**

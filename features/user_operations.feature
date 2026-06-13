@@ -146,7 +146,7 @@ Feature: User Operations
     And violation should be "Duplicate email in a batch"
 
   Scenario: Getting a user
-    Given I am authenticated as user "get-auth@test.com"
+    Given I am authenticated as user "get-auth@test.com" with id "8be90127-9840-4235-a6da-39b8debfb220"
     And user with id "8be90127-9840-4235-a6da-39b8debfb220" exists
     When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"
     Then the response status code should be 200

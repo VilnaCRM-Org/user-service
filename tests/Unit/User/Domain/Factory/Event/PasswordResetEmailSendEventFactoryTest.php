@@ -8,6 +8,7 @@ use App\Shared\Domain\ValueObject\Uuid;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\Event\PasswordResetEmailSendEventFactory;
 use App\User\Domain\Entity\PasswordResetToken;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
 use App\User\Domain\Factory\UserFactory;
 
@@ -23,10 +24,26 @@ final class PasswordResetEmailSendEventFactoryTest extends UnitTestCase
         $event = $factory->create($token, $user, $eventId);
 
         $this->assertInstanceOf(PasswordResetEmailSentEvent::class, $event);
-        $this->assertSame($token->getTokenValue(), $event->tokenValue);
+        $this->assertSame($token->getPlainToken(), $event->tokenValue);
+        $this->assertNotSame($token->getTokenValue(), $event->tokenValue);
         $this->assertSame($token->getUserID(), $event->userId);
         $this->assertSame($user->getEmail(), $event->email);
         $this->assertSame($eventId, $event->eventId());
+    }
+
+    public function testCreateThrowsWhenPlainTokenMissing(): void
+    {
+        $user = $this->createUser();
+        $token = $this->createMock(PasswordResetTokenInterface::class);
+        $token->method('getPlainToken')->willReturn(null);
+        $factory = new PasswordResetEmailSendEventFactory();
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage(
+            'Plain password reset token must be attached before sending email.'
+        );
+
+        $factory->create($token, $user, $this->faker->uuid());
     }
 
     private function createUser(): \App\User\Domain\Entity\User

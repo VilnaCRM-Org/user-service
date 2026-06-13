@@ -343,8 +343,16 @@ fi
 if [[ "${1:-}" == "pr" && "${2:-}" == "checks" ]]; then
   printf 'pr checks %s\n' "$*" >> "${GH_PR_CHECKS_ARGS_LOG:-/dev/null}"
   if [[ "$*" != *"--required"* ]]; then
+    if [[ "${GH_REQUIRED_CHECKS_NONE_ERROR-false}" == "true" ]]; then
+      printf '3\037\n'
+      exit 0
+    fi
     echo "required check query must use gh pr checks --required" >&2
     exit 2
+  fi
+  if [[ "${GH_REQUIRED_CHECKS_NONE_ERROR-false}" == "true" ]]; then
+    echo "no required checks reported on the 'feature/pr-287' branch" >&2
+    exit 1
   fi
   if [[ "${GH_REQUIRED_CHECKS_FAIL-false}" == "true" ]]; then
     exit 1
@@ -759,6 +767,129 @@ SCRIPT
   assert_success
   assert_output --partial "ai-review-loop"
   assert_output --partial "bmad-fr-nfr-review-gate"
+}
+
+@test "review prompt requires system design patterns and code smell review" {
+  run grep -F "Functional requirements: verify the changed behavior satisfies the PR/spec/story intent" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "System design" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Design patterns" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Code smells" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "FR/NFR coverage" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Software engineering best practices" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "SOLID, DRY, KISS" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Repository architecture" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "DDD" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "CQRS" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Hexagonal Architecture" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Domain stays framework-free" scripts/ai-review-prompts/review.md
+  assert_success
+}
+
+@test "review prompt prevents non-applicable design noise" {
+  run grep -F "Only fail for concrete, material issues in the changed code or directly affected behavior." scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "If a pattern, system-design concern, or code smell is not applicable to the PR scope, do not invent an issue." scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Do not demand heavyweight design work for a trivial localized change." scripts/ai-review-prompts/review.md
+  assert_success
+}
+
+@test "review prompt retains complete applicable NFR checklist" {
+  run grep -F "security, performance, reliability, observability, maintainability, backwards compatibility, and testability" scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Focus on correctness, FR/NFR coverage, system design, design patterns, code smells, security, performance, architecture, tests, and repository rules." scripts/ai-review-prompts/review.md
+  assert_success
+
+  run grep -F "Category: one of correctness, FR/NFR coverage, system design, design patterns, code smells, security, performance, architecture, tests, repository rules" scripts/ai-review-prompts/review.md
+  assert_success
+}
+
+@test "bmad review prompt keeps Required Fixes heading parseable" {
+  run grep -F -- "- Required Fixes:" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "The Required Fixes section heading must be exactly \`Required Fixes:\`." scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "For PASS, the Required Fixes section" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "body must be exactly \`None.\`." scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_success
+
+  run grep -F "Required Fixes: file path" scripts/ai-review-prompts/bmad-fr-nfr-review.md
+  assert_failure
+}
+
+@test "fix prompt constrains design smell remediation to PR scope" {
+  run grep -F "system design, design pattern, and code smell findings" scripts/ai-review-prompts/fix.md
+  assert_success
+
+  run grep -F "smallest coherent change" scripts/ai-review-prompts/fix.md
+  assert_success
+
+  run grep -F "Preserve repository architecture rules: Domain stays framework-free, Application owns use cases/contracts, and Infrastructure owns external adapters." scripts/ai-review-prompts/fix.md
+  assert_success
+
+  run grep -F "Do not add design patterns just to satisfy a label" scripts/ai-review-prompts/fix.md
+  assert_success
+}
+
+@test "code-review gate policy classifies only review-loop validation support files" {
+  local support_pattern
+  support_pattern="$(sed -n "s/^GATE_DEFINITION_VALIDATION_SUPPORT_FILE_PATTERN='\\(.*\\)'$/\\1/p" .claude/skills/code-review/SKILL.md | head -n 1)"
+  [ -n "$support_pattern" ]
+
+  run bash -c "sed -n \"s/^\\(GATE_DEFINITION_VALIDATION_SUPPORT_FILE_PATTERN\\|gate_definition_validation_support_file_pattern\\)='\\(.*\\)'$/\\2/p\" .claude/skills/code-review/SKILL.md | sort -u | wc -l | tr -d '[:space:]'"
+  assert_success
+  assert_output "1"
+
+  run env support_pattern="$support_pattern" bash -c "printf '%s\n' \
+    'docs/onboarding.md' \
+    'tests/CLI/bats/make_ai_review_loop_tests.bats' \
+    'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/architecture.md' \
+    'specs/autonomous/20260607-154408-bmad-fr-nfr-reviewer-system-design-patterns/manual-evidence.md' \
+    | grep -E \"\$support_pattern\""
+  assert_success
+  assert_output --partial "docs/onboarding.md"
+  assert_output --partial "tests/CLI/bats/make_ai_review_loop_tests.bats"
+  assert_output --partial "architecture.md"
+  assert_output --partial "manual-evidence.md"
+
+  run env support_pattern="$support_pattern" bash -c "printf '%s\n' \
+    'docs/api.md' \
+    'tests/Unit/User/Application/UserTest.php' \
+    'specs/autonomous/20260607-154408-new-user-endpoint/architecture.md' \
+    'specs/autonomous/20260607-154408-customer-review-endpoint/architecture.md' \
+    'specs/autonomous/20260607-154408-customer-review-workflow/manual-evidence.md' \
+    'specs/autonomous/20260607-154408-product-review-api/prd.md' \
+    | grep -E \"\$support_pattern\""
+  assert_failure
 }
 
 @test "ai-review-loop fails with helpful message when Codex command is missing" {
@@ -1383,6 +1514,49 @@ SCRIPT
   assert_output --partial "AI review PASS."
 }
 
+@test "ai-review-loop claude agent receives repository review criteria" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  mkdir -p "$bin_dir"
+
+  cat > "$bin_dir/claude" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+has_review=false
+has_code_smells=false
+
+for arg in "$@"; do
+  if [[ "$arg" == "/review" ]]; then
+    has_review=true
+  fi
+
+  if [[ "$arg" == *"Code smells"* ]]; then
+    has_code_smells=true
+  fi
+done
+
+if [[ "$has_review" != true || "$has_code_smells" != true ]]; then
+  echo "ERROR: expected /review and Code smells criteria in args: $*" >&2
+  exit 2
+fi
+
+echo "STATUS: PASS"
+echo "0 issues."
+SCRIPT
+  chmod +x "$bin_dir/claude"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    AI_REVIEW_AGENT=claude \
+    AI_REVIEW_CLAUDE_CMD=claude \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "./scripts/ai-review-loop.sh 2>&1"
+  assert_success
+  assert_output --partial "AI review PASS."
+}
+
 @test "ai-review-loop claude agent separates stderr from stdout" {
   local bin_dir="${BATS_TEST_TMPDIR}/bin"
   mkdir -p "$bin_dir"
@@ -1486,6 +1660,96 @@ SCRIPT
   assert_output --partial "AI review PASS."
 
   run grep -F "refs/heads/${base_name}" "$prompt_capture"
+  assert_success
+}
+
+@test "ai-review-loop prefers origin base over stale local branch" {
+  local remote_dir="${BATS_TEST_TMPDIR}/remote.git"
+  local seed_dir="${BATS_TEST_TMPDIR}/seed"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local prompt_capture="${BATS_TEST_TMPDIR}/prompt.txt"
+  local project_root
+  project_root="$(pwd)"
+
+  mkdir -p "$seed_dir" "$repo_dir/scripts/ai-review-prompts" "$bin_dir"
+  git init --bare -q "$remote_dir"
+
+  git -C "$seed_dir" init -q
+  git -C "$seed_dir" config user.email "ci@example.test"
+  git -C "$seed_dir" config user.name "CI"
+  printf "origin-base\n" > "$seed_dir/file.txt"
+  git -C "$seed_dir" add file.txt
+  git -C "$seed_dir" commit -qm "origin base"
+  git -C "$seed_dir" branch -M main
+  git -C "$seed_dir" remote add origin "$remote_dir"
+  git -C "$seed_dir" push -q origin main
+
+  cp "$project_root/scripts/ai-review-loop.sh" "$repo_dir/scripts/ai-review-loop.sh"
+  cp "$project_root/scripts/ai-review-prompts/review.md" "$repo_dir/scripts/ai-review-prompts/review.md"
+  cp "$project_root/scripts/ai-review-prompts/fix.md" "$repo_dir/scripts/ai-review-prompts/fix.md"
+  chmod +x "$repo_dir/scripts/ai-review-loop.sh"
+
+  git -C "$repo_dir" init -q
+  git -C "$repo_dir" config user.email "ci@example.test"
+  git -C "$repo_dir" config user.name "CI"
+  printf "stale-local\n" > "$repo_dir/file.txt"
+  git -C "$repo_dir" add file.txt
+  git -C "$repo_dir" commit -qm "stale local main"
+  git -C "$repo_dir" branch main
+  git -C "$repo_dir" remote add origin "$remote_dir"
+  git -C "$repo_dir" fetch -q origin main
+
+  cat > "$bin_dir/codex" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "exec" && "${2:-}" == "--help" ]]; then
+  echo "--output-last-message"
+  exit 0
+fi
+
+if [[ "${1:-}" == "exec" ]]; then
+  output_file=""
+  while [[ $# -gt 0 ]]; do
+    if [[ "$1" == "--output-last-message" ]]; then
+      output_file="${2:-}"
+      shift 2
+      continue
+    fi
+    shift
+  done
+
+  prompt="$(cat)"
+  printf "%s" "$prompt" > "${PROMPT_CAPTURE}"
+
+  cat > "$output_file" <<'STATUS'
+STATUS: PASS
+0 issues.
+STATUS
+  exit 0
+fi
+
+echo "unexpected codex invocation: $*" >&2
+exit 2
+SCRIPT
+  chmod +x "$bin_dir/codex"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    PROMPT_CAPTURE="$prompt_capture" \
+    AI_REVIEW_CODEX_CMD=codex \
+    AI_REVIEW_BASE=main \
+    AI_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    AI_REVIEW_VERIFY_CMD=true \
+    AI_REVIEW_MAX_ITER=1 \
+    bash -c "cd '$repo_dir' && ./scripts/ai-review-loop.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+
+  run grep -F "refs/remotes/origin/main" "$prompt_capture"
   assert_success
 }
 
@@ -4268,6 +4532,40 @@ SCRIPT
 
   assert_success
   assert_output --partial "AI review PASS."
+}
+
+@test "bmad-fr-nfr-review-gate falls back to visible checks when GitHub reports no required checks" {
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+  local repo_dir="${BATS_TEST_TMPDIR}/repo"
+  local spec_dir="${BATS_TEST_TMPDIR}/specs/example"
+  local checks_args_log="${BATS_TEST_TMPDIR}/checks-args.log"
+  local unavailable_tmp="${BATS_TEST_TMPDIR}/missing-tmp"
+
+  mkdir -p "$bin_dir" "$spec_dir"
+  prepare_clean_bmad_gate_repo "$repo_dir"
+  printf "# PRD\n\nFR-01: Works.\n" > "${spec_dir}/prd.md"
+  write_bmad_pass_codex_stub "$bin_dir"
+  write_successful_bmad_gh_stub "$bin_dir"
+
+  run env \
+    PATH="$bin_dir:$PATH" \
+    TMPDIR="$unavailable_tmp" \
+    GH_REQUIRED_CHECKS_NONE_ERROR=true \
+    GH_PR_CHECKS_ARGS_LOG="$checks_args_log" \
+    AI_REVIEW_CODEX_CMD=codex \
+    BMAD_REVIEW_SPEC_PATH="$spec_dir" \
+    BMAD_REVIEW_BASE=HEAD \
+    BMAD_REVIEW_LOG_DIR="${BATS_TEST_TMPDIR}/ai-review" \
+    BMAD_REVIEW_VERIFY_CMD=true \
+    BMAD_REVIEW_MAX_ITER=1 \
+    bash -c "cd '$repo_dir' && ./scripts/bmad-fr-nfr-review-gate.sh 2>&1"
+
+  assert_success
+  assert_output --partial "AI review PASS."
+  run grep -F -- "pr checks pr checks --required" "$checks_args_log"
+  assert_success
+  run grep -F -- "pr checks pr checks --json name,bucket" "$checks_args_log"
+  assert_success
 }
 
 @test "bmad-fr-nfr-review-gate fails closed when required check query fails" {
