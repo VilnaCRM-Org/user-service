@@ -167,7 +167,8 @@ final class UserContext implements Context
         $token = $this->userManagement->passwordResetTokenFactory->create($user->getId());
         $this->userManagement->passwordResetTokenRepository->save($token);
 
-        self::$lastPasswordResetToken = $token->getTokenValue();
+        self::$lastPasswordResetToken =
+            $token->getPlainToken() ?? $token->getTokenValue();
         self::$currentTokenUserEmail = $email;
     }
 

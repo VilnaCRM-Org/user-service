@@ -13,6 +13,7 @@ use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use LogicException;
 use Symfony\Component\Uid\Factory\UuidFactory;
 
 final readonly class RequestPasswordResetCommandHandler implements
@@ -51,7 +52,9 @@ final readonly class RequestPasswordResetCommandHandler implements
         $this->eventBus->publish(
             $this->eventFactory->create(
                 $user,
-                $token->getTokenValue(),
+                $token->getPlainToken() ?? throw new LogicException(
+                    'Password reset plain token is missing.'
+                ),
                 (string) $this->uuidFactory->create()
             )
         );
