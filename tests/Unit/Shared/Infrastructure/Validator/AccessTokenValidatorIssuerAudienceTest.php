@@ -58,12 +58,57 @@ final class AccessTokenValidatorIssuerAudienceTest extends AccessTokenValidatorT
         $this->validator->validate($token);
     }
 
-    public function testValidateReturnsServiceRoleForOauthTokenWithoutIss(): void
+    public function testValidateRejectsOauthTokenWithoutIss(): void
     {
-        $subject = $this->faker->email();
+        // Regression for the ROLE_SERVICE privilege-escalation: a League OAuth2
+        // access token is signed with the shared RSA key but carries
+        // aud=client_id and no iss/roles claim. It must be rejected outright,
+        // never silently elevated to ROLE_SERVICE.
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $this->faker->email(),
+            'aud' => 'some-oauth-client-id',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->validator->validate($token);
+    }
+
+    public function testValidateRejectsTokenWithApiAudienceButNoIssuer(): void
+    {
+        // Even when a non-first-party token happens to carry aud=vilnacrm-api,
+        // the absence of a valid issuer must cause rejection (no ROLE_SERVICE
+        // inference from missing claims).
+        $token = $this->createValidToken();
+        $payload = [
+            'sub' => $this->faker->email(),
+            'aud' => 'vilnacrm-api',
+            'nbf' => time() - 10,
+            'exp' => time() + 900,
+        ];
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->validator->validate($token);
+    }
+
+    public function testValidateDefaultsToRoleUserWhenRolesClaimAbsent(): void
+    {
+        // A fully validated first-party token (valid iss + aud) that omits the
+        // explicit roles claim must default to the least-privilege ROLE_USER,
+        // never ROLE_SERVICE.
+        $subject = $this->faker->uuid();
         $token = $this->createValidToken();
         $payload = [
             'sub' => $subject,
+            'iss' => 'vilnacrm-user-service',
             'aud' => 'vilnacrm-api',
             'nbf' => time() - 10,
             'exp' => time() + 900,
@@ -74,7 +119,24 @@ final class AccessTokenValidatorIssuerAudienceTest extends AccessTokenValidatorT
         $result = $this->validator->validate($token);
 
         $this->assertSame($subject, $result['subject']);
-        $this->assertSame('', $result['sid']);
+        $this->assertSame(['ROLE_USER'], $result['roles']);
+    }
+
+    public function testValidateAcceptsExplicitServiceTokenWithFirstPartyClaims(): void
+    {
+        // ROLE_SERVICE remains valid only when positively asserted inside a
+        // fully validated first-party token (iss + aud + sid + roles).
+        $subject = $this->faker->uuid();
+        $sid = $this->faker->uuid();
+        $token = $this->createValidToken();
+        $payload = $this->buildPayload($subject, $sid, ['ROLE_SERVICE']);
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $result = $this->validator->validate($token);
+
+        $this->assertSame($subject, $result['subject']);
+        $this->assertSame($sid, $result['sid']);
         $this->assertSame(['ROLE_SERVICE'], $result['roles']);
     }
 

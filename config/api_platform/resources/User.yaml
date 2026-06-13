@@ -43,6 +43,10 @@ resources:
         input: 'App\User\Application\DTO\UserRegisterBatchDto'
         processor: 'App\User\Application\Processor\RegisterUserBatchProcessor'
         uriTemplate: 'users/batch'
+        # Defense-in-depth: the bulk user-import endpoint is service-only.
+        # The firewall already gates it on ROLE_SERVICE; this operation-level
+        # check ensures the restriction survives any firewall misconfiguration.
+        security: "is_granted('ROLE_SERVICE')"
         denormalizationContext:
           allow_extra_attributes: false
       confirm_http:
