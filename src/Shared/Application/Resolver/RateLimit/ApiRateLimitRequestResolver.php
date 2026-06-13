@@ -79,8 +79,20 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveTokenExchangeLimiter($request, $path, $method),
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
-            $this->resolvePasswordResetLimiter($request, $path, $method),
-            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
+            $this->resolveFixedPostIpLimiter(
+                $request,
+                $path,
+                $method,
+                self::PASSWORD_RESET_PATH,
+                'password_reset_ip'
+            ),
+            $this->resolveFixedPostIpLimiter(
+                $request,
+                $path,
+                $method,
+                self::PASSWORD_RESET_CONFIRM_PATH,
+                'password_reset_confirm'
+            ),
             $this->resolveOAuthSocialLimiter($request, $path, $method),
         ]));
     }
@@ -238,35 +250,20 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<string>|null
      *
-     * @psalm-return array{name: 'password_reset_ip', key: string}|null
+     * @psalm-return array{name: string, key: string}|null
      */
-    private function resolvePasswordResetLimiter(
+    private function resolveFixedPostIpLimiter(
         Request $request,
         string $path,
-        string $method
+        string $method,
+        string $expectedPath,
+        string $name
     ): ?array {
-        if ($method !== 'POST' || $path !== self::PASSWORD_RESET_PATH) {
+        if ($method !== 'POST' || $path !== $expectedPath) {
             return null;
         }
 
-        return ['name' => 'password_reset_ip', 'key' => $this->buildIpKey($request)];
-    }
-
-    /**
-     * @return array<string>|null
-     *
-     * @psalm-return array{name: 'password_reset_confirm', key: string}|null
-     */
-    private function resolvePasswordResetConfirmLimiter(
-        Request $request,
-        string $path,
-        string $method
-    ): ?array {
-        if ($method !== 'POST' || $path !== self::PASSWORD_RESET_CONFIRM_PATH) {
-            return null;
-        }
-
-        return ['name' => 'password_reset_confirm', 'key' => $this->buildIpKey($request)];
+        return ['name' => $name, 'key' => $this->buildIpKey($request)];
     }
 
     /**
