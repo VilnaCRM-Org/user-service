@@ -6,12 +6,29 @@ SCHEMATHESIS_IMAGE=${SCHEMATHESIS_IMAGE:-schemathesis/schemathesis:4.9.5}
 SCHEMATHESIS_API_PORT=${SCHEMATHESIS_API_PORT:-8081}
 SCHEMATHESIS_BASE_URL=${SCHEMATHESIS_BASE_URL:-http://localhost:${SCHEMATHESIS_API_PORT}}
 SCHEMATHESIS_REPORT_DIR=$(mktemp -d "${TMPDIR:-/tmp}/schemathesis-report.XXXXXX")
+# Per-request timeout (seconds) bounding each Schemathesis network call.
+SCHEMATHESIS_REQUEST_TIMEOUT=${SCHEMATHESIS_REQUEST_TIMEOUT:-30}
+# Throttle requests so the FrankenPHP worker is not flooded; keeps the run well
+# under the worker loop fuse and avoids saturating keep-alive connections.
+SCHEMATHESIS_RATE_LIMIT=${SCHEMATHESIS_RATE_LIMIT:-30/s}
+
+# Keep the FrankenPHP worker alive for the whole validation run. The worker
+# normally recycles after FRANKENPHP_LOOP_MAX (500) requests; when it recycles
+# mid keep-alive batch the server closes in-flight connections, which
+# Schemathesis reports as "Connection reset by peer" / "Remote end closed
+# connection without response" network errors even though every reachable test
+# case passes. Disabling the fuse (-1) for this short-lived validation stack
+# prevents those resets without touching the prod/load-test defaults, which
+# still resolve to 500 via the unchanged docker-compose `:-500` fallback.
+export FRANKENPHP_LOOP_MAX="${FRANKENPHP_LOOP_MAX:--1}"
 
 readonly ROOT_DIR
 readonly SCHEMATHESIS_IMAGE
 readonly SCHEMATHESIS_API_PORT
 readonly SCHEMATHESIS_BASE_URL
 readonly SCHEMATHESIS_REPORT_DIR
+readonly SCHEMATHESIS_REQUEST_TIMEOUT
+readonly SCHEMATHESIS_RATE_LIMIT
 
 cleanup() {
     local exit_code=$?
@@ -107,7 +124,10 @@ run_schemathesis() {
         --checks all \
         /data/spec.yaml \
         --url "${SCHEMATHESIS_BASE_URL}" \
+        --request-timeout "${SCHEMATHESIS_REQUEST_TIMEOUT}" \
+        --rate-limit "${SCHEMATHESIS_RATE_LIMIT}" \
         --header 'X-Schemathesis-Test: cleanup-users' \
+        --header 'Connection: close' \
         "$@" 2>&1 | tee "${log_file}"
     local status=${PIPESTATUS[0]}
     set -e
