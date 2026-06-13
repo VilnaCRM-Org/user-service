@@ -9,6 +9,7 @@ services:
   # never be reached in dev/test/prod. The listener also fail-closes at
   # runtime via the injected $appEnv guard.
   App\User\Infrastructure\EventListener\SchemathesisCleanupListener:
+    autowire: true
     arguments:
       $appEnv: '%kernel.environment%'
     tags:
