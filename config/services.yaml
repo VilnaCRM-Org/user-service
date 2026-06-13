@@ -300,18 +300,9 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
-  cache.account_lockout:
-    class: Symfony\Component\Cache\Adapter\RedisAdapter
-    arguments:
-      - '@app.account_lockout_redis_connection'
-      - 'account_lockout'
-      - 0
-    tags:
-      - { name: kernel.reset, method: reset }
-
   App\User\Infrastructure\Provider\RedisAccountLockoutProvider:
     arguments:
-      $cachePool: '@cache.account_lockout'
+      $lockoutRedis: '@app.account_lockout_redis_connection'
 
   App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor:
     arguments:
