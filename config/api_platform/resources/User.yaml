@@ -16,6 +16,7 @@ resources:
 
     operations:
       ApiPlatform\Metadata\GetCollection:
+        provider: 'App\User\Application\Provider\UserCollectionProvider'
         paginationClientItemsPerPage: true
         paginationClientPartial: true
         paginationMaximumItemsPerPage: 100
@@ -25,6 +26,7 @@ resources:
           vary: ['Accept', 'Accept-Language', 'Authorization']
         etag: true
       ApiPlatform\Metadata\Get:
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
         cacheHeaders:
           max_age: 600
           public: false
@@ -67,9 +69,10 @@ resources:
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
-        security: "is_granted('ROLE_USER')"
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
       - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
         security: "is_granted('ROLE_USER')"
+        provider: 'App\User\Application\Provider\UserCollectionProvider'
       - class: 'ApiPlatform\Metadata\GraphQl\DeleteMutation'
         normalizationContext:
           groups: ['deleteMutationOutput']

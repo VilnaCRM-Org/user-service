@@ -276,11 +276,16 @@ Feature: Authentication Gate and Access Control
     When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb220"
     Then the response status code should be 401
 
-  Scenario: Authenticated user can GET single user
-    Given I am authenticated as user "get-user@test.com"
-    And user with id "8be90127-9840-4235-a6da-39b8debfb247" exists
+  Scenario: Authenticated user can GET their own user record
+    Given I am authenticated as user "get-user@test.com" with id "8be90127-9840-4235-a6da-39b8debfb247"
     When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb247"
     Then the response status code should be 200
+
+  Scenario: Authenticated user cannot GET another user's record
+    Given I am authenticated as user "get-user-owner@test.com" with id "8be90127-9840-4235-a6da-39b8debfb248"
+    And user with id "8be90127-9840-4235-a6da-39b8debfb249" exists
+    When GET request is send to "/api/users/8be90127-9840-4235-a6da-39b8debfb249"
+    Then the response status code should be 403
 
   # Password change without newPassword does not revoke sessions (FR-19)
 
