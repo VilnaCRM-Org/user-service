@@ -373,4 +373,53 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
         self::assertContains('user_collection', $names);
     }
+
+    public function testResolveEndpointLimitersForGraphQlSignInMutation(): void
+    {
+        $email = $this->faker->email();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '203.0.113.11', 'CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'query' => 'mutation { signIn(input: $input) { id } }',
+                'variables' => ['input' => ['email' => $email, 'password' => 'secret']],
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $byName = array_column(
+            $this->resolver->resolveEndpointLimiters($request),
+            'key',
+            'name'
+        );
+
+        self::assertSame('ip:203.0.113.11', $byName['signin_ip']);
+        self::assertSame('email:' . strtolower(trim($email)), $byName['signin_email']);
+    }
+
+    public function testResolveEndpointLimitersForGraphQlRefreshTokenMutation(): void
+    {
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '203.0.113.12', 'CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'query' => 'mutation { refreshToken(input: {refreshToken: "x"}) { user { id } } }',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $byName = array_column(
+            $this->resolver->resolveEndpointLimiters($request),
+            'key',
+            'name'
+        );
+
+        self::assertSame('ip:203.0.113.12', $byName['refresh_token']);
+    }
 }

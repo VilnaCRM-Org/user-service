@@ -19,6 +19,7 @@ final readonly class ApiRateLimitRequestResolver
     public function __construct(
         private ApiRateLimitClientIdentityResolver $clientIdentityResolver,
         private ApiRateLimitAuthTargetResolver $authTargetResolver,
+        private ApiRateLimitGraphQlResolver $graphQlResolver,
     ) {
     }
 
@@ -60,6 +61,7 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveAuthenticatedSecurityLimiters($request, $path, $method)
         );
         $this->appendTargets($targets, $this->authTargetResolver->resolve($request));
+        $this->appendTargets($targets, $this->graphQlResolver->resolve($request));
 
         return $targets;
     }
