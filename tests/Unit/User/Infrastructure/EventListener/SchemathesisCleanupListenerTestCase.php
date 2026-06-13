@@ -14,6 +14,7 @@ use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
 use App\User\Infrastructure\Resolver\SchemathesisEmailResolver;
 use App\User\Infrastructure\Resolver\SchemathesisSingleUserEmailResolver;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
@@ -27,6 +28,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
     protected SchemathesisEmailResolver $emailExtractor;
     protected SchemathesisCleanupListener $listener;
     protected UserRepositoryInterface $repository;
+    protected LoggerInterface&MockObject $logger;
     protected SchemathesisCleanupListenerTestExpectations $expectations;
 
     #[\Override]
@@ -36,6 +38,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         $this->schemathesisCleanupMatcher = new SchemathesisCleanupResolver();
         $this->emailExtractor = $this->createEmailExtractor();
         $this->repository = $this->createMock(UserRepositoryInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->listener = $this->createListener();
         $this->expectations = $this->createExpectations();
     }
@@ -76,7 +79,8 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
             $appEnv,
             $this->repository,
             $this->schemathesisCleanupMatcher,
-            $this->emailExtractor
+            $this->emailExtractor,
+            $this->logger
         );
     }
 

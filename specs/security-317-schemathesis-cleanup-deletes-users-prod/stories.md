@@ -25,7 +25,7 @@
 
 **Verify**
 
-```
+```bash
 docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
@@ -55,7 +55,7 @@ docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
 
 **Verify**
 
-```
+```bash
 # Psalm on changed PHP files
 docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
   -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \

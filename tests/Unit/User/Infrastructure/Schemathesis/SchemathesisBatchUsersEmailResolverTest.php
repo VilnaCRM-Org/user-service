@@ -69,6 +69,16 @@ final class SchemathesisBatchUsersEmailResolverTest extends UnitTestCase
         );
     }
 
+    public function testExtractReturnsEmptyWhenUsersIsNotArray(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        /** @var array{users?: array<int, array{email?: string|null}|scalar|null>} $payload */
+        $payload = ['users' => 'not-an-array'];
+
+        $this->assertSame([], $emailResolver->extract($payload));
+    }
+
     public function testExtractSkipsNonArrayUsers(): void
     {
         $emailResolver = new SchemathesisBatchUsersEmailResolver();

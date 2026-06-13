@@ -151,7 +151,9 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
 
         // A failure during terminate-phase cleanup must NOT escape the listener:
         // an uncaught exception would disrupt the FrankenPHP worker loop and reset
-        // in-flight connections. The call therefore completes without throwing.
+        // in-flight connections. The failure is logged and swallowed instead.
+        $this->logger->expects($this->once())->method('warning');
+
         ($this->listener)($event);
     }
 }

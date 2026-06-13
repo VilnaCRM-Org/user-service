@@ -8,6 +8,8 @@ use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
 use App\User\Infrastructure\Resolver\SchemathesisEmailResolver;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 
 final class SchemathesisCleanupListener
@@ -18,7 +20,8 @@ final class SchemathesisCleanupListener
         private readonly string $appEnv,
         private readonly UserRepositoryInterface $userRepository,
         private readonly SchemathesisCleanupResolver $schemathesisCleanupMatcher,
-        private readonly SchemathesisEmailResolver $emailExtractor
+        private readonly SchemathesisEmailResolver $emailExtractor,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -35,24 +38,17 @@ final class SchemathesisCleanupListener
             return;
         }
 
-        // Best-effort, test-only cleanup running on kernel.terminate inside the
-        // FrankenPHP worker: it must NEVER let an exception escape, or the worker
-        // loop is disrupted and in-flight connections are reset mid-run
-        // ("Connection reset by peer"). The response has already been sent, so a
-        // failed cleanup is harmless beyond a leftover test user.
-        //
-        // The cleanup is intentionally DELETE-ONLY: it must not emit domain
-        // events or invalidate cache. That terminate-phase work runs synchronous
-        // subscribers inside the worker loop and was the source of the connection
-        // resets. The test database is reset between Schemathesis runs, so cache
-        // consistency during a run is irrelevant.
+        $this->performBestEffortCleanup($request);
+    }
+
+    private function performBestEffortCleanup(Request $request): void
+    {
         try {
             $this->deleteUsers($this->emailExtractor->extract($request));
-        } catch (\Throwable $exception) {
-            error_log(sprintf(
-                'Schemathesis cleanup skipped: %s',
-                $exception->getMessage()
-            ));
+        } catch (\Throwable) {
+            $this->logger->warning(
+                'Schemathesis test cleanup skipped after a failure.'
+            );
         }
     }
 

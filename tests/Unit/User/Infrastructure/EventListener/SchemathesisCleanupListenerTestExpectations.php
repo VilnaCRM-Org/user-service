@@ -55,6 +55,10 @@ final class SchemathesisCleanupListenerTestExpectations
     {
         $this->repository->expects($this->testCase->once())
             ->method('deleteBatch')
-            ->with($this->testCase->isInstanceOf(UserCollection::class));
+            ->with($this->testCase->callback(
+                static fn (mixed $collection): bool =>
+                    $collection instanceof UserCollection
+                    && array_is_list($collection->users)
+            ));
     }
 }
