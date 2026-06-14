@@ -66,3 +66,4 @@ _bmad-output/
 /config/jwt/*.pem
 /config/reference.php
 ###< league/oauth2-server-bundle ###
+.claude/worktrees/
