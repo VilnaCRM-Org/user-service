@@ -19,8 +19,9 @@ changes across 5 files.
 
 - Replace `localstack/localstack:3.4.0` with `floci/floci:latest-compat` in
   all four compose files.
-- Replace the `awslocal` CLI with the plain `aws` CLI (bundled and pre-configured
-  in the compat image) in `infrastructure/docker/php/init-aws.sh`.
+- Replace the `awslocal` CLI with the plain `aws` CLI (bundled in the compat
+  image) in `infrastructure/docker/php/init-aws.sh`, passing the Floci endpoint
+  explicitly via `--endpoint-url http://localhost:4566 --no-sign-request`.
 - Add `FLOCI_HOSTNAME=localstack` so SQS `QueueUrl` responses use the
   compose service name instead of `localhost`.
 - Remove the now-unnecessary `SERVICES=sqs` env var and the
@@ -39,8 +40,11 @@ changes across 5 files.
 ## Proposed Design
 
 **`infrastructure/docker/php/init-aws.sh`** — replace `awslocal` with `aws`.
-In `floci/floci:latest-compat` the AWS CLI is pre-configured with the local
-endpoint, so no `--endpoint-url` flag is required.
+The `awslocal` wrapper injected the LocalStack endpoint and dummy credentials
+automatically; the plain `aws` CLI does not, so the script targets Floci
+explicitly with `--endpoint-url http://localhost:4566` and skips request signing
+with `--no-sign-request`. The script also sets `set -eu` so a failed
+`create-queue` aborts container init instead of silently continuing.
 
 **All four compose files** — identical pattern per file:
 
