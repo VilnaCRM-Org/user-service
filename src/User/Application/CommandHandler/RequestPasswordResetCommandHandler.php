@@ -9,6 +9,7 @@ use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\DTO\RequestPasswordResetCommandResponse;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
@@ -52,6 +53,15 @@ final readonly class RequestPasswordResetCommandHandler implements
             return new RequestPasswordResetCommandResponse();
         }
 
+        $this->persistAndPublish($user, $token);
+
+        return new RequestPasswordResetCommandResponse();
+    }
+
+    private function persistAndPublish(
+        UserInterface $user,
+        PasswordResetTokenInterface $token
+    ): void {
         $this->tokenRepository->save($token);
 
         $this->eventBus->publish(
@@ -63,7 +73,5 @@ final readonly class RequestPasswordResetCommandHandler implements
                 (string) $this->uuidFactory->create()
             )
         );
-
-        return new RequestPasswordResetCommandResponse();
     }
 }

@@ -78,22 +78,7 @@ final class RateLimitedRequestPasswordResetHandlerDecoratorTest extends UnitTest
         $command = new RequestPasswordResetCommand("  USER@Example.COM\t");
         $response = new RequestPasswordResetCommandResponse();
 
-        $this->rateLimiterFactory
-            ->expects($this->once())
-            ->method('create')
-            ->with('user@example.com')
-            ->willReturn($this->limiter);
-
-        $this->limiter
-            ->expects($this->once())
-            ->method('consume')
-            ->with(1)
-            ->willReturn($this->rateLimit);
-
-        $this->rateLimit
-            ->expects($this->once())
-            ->method('isAccepted')
-            ->willReturn(true);
+        $this->expectRateLimitCheck('user@example.com', true);
 
         $this->innerHandler
             ->expects($this->once())
