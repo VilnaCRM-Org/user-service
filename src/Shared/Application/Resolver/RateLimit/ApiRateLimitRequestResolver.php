@@ -79,6 +79,20 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveTokenExchangeLimiter($request, $path, $method),
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
+            ...$this->resolvePasswordResetLimiters($request, $path, $method),
+            $this->resolveOAuthSocialLimiter($request, $path, $method),
+        ]));
+    }
+
+    /**
+     * @return list<array{name: string, key: string}>
+     */
+    private function resolvePasswordResetLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
+        return array_values(array_filter([
             $this->resolveFixedPostIpLimiter(
                 $request,
                 $path,
@@ -93,7 +107,6 @@ final readonly class ApiRateLimitRequestResolver
                 self::PASSWORD_RESET_CONFIRM_PATH,
                 'password_reset_confirm'
             ),
-            $this->resolveOAuthSocialLimiter($request, $path, $method),
         ]));
     }
 
