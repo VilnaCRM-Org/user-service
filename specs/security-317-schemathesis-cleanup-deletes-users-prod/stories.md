@@ -8,8 +8,8 @@
   registration from the base file, and add the class to the `App\:` autowiring `exclude` list so
   it is never auto-defined in `dev`/`test`/`load_test`/`prod`.
 - `config/services_schemathesis.yaml`: declare the listener here (loaded only in the
-  `schemathesis` env by `MicroKernelTrait`), injecting `$appEnv: '%kernel.environment%'` and
-  `$cache: '@cache.user'`, tagged `kernel.terminate`.
+  `schemathesis` env by `MicroKernelTrait`), injecting `$appEnv: '%kernel.environment%'`
+  (the remaining collaborators are autowired) and tagged `kernel.terminate`.
 
 **Test mapping**
 
@@ -26,8 +26,8 @@
 **Verify**
 
 ```bash
-docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
+docker run --rm -v "$(pwd)":/app \
+  -v "$(pwd)/vendor":/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/phpunit --testsuite=Unit --filter "Schemathesis|Cleanup" --no-coverage 2>&1 | tail -25'
 ```
@@ -57,8 +57,8 @@ docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
 
 ```bash
 # Psalm on changed PHP files
-docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
+docker run --rm -v "$(pwd)":/app \
+  -v "$(pwd)/vendor":/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/psalm --no-cache --no-progress \
    src/User/Infrastructure/EventListener/SchemathesisCleanupListener.php \
@@ -66,14 +66,14 @@ docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
    tests/Unit/User/Infrastructure/EventListener/SchemathesisCleanupListenerEnvironmentGuardTest.php 2>&1 | tail -15'
 
 # Deptrac (architecture boundaries)
-docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
+docker run --rm -v "$(pwd)":/app \
+  -v "$(pwd)/vendor":/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
   'php -d memory_limit=-1 vendor/bin/deptrac analyse --config-file=deptrac.yaml --no-progress 2>&1 | tail -6'
 
 # php-cs-fixer (style)
-docker run --rm -v /home/kravtsov/Projects/secfix-317:/app \
-  -v /home/kravtsov/Projects/user-service/vendor:/app/vendor:ro -w /app -e APP_ENV=test \
+docker run --rm -v "$(pwd)":/app \
+  -v "$(pwd)/vendor":/app/vendor:ro -w /app -e APP_ENV=test \
   --entrypoint sh secfix-312-php:latest -lc \
   'PHP_CS_FIXER_IGNORE_ENV=1 vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes \
    --config=.php-cs-fixer.dist.php --path-mode=intersection \

@@ -143,16 +143,23 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
         $request = $this->schemathesisRequest('/api/users', ['email' => $email]);
         $event = $this->terminateEvent($request, Response::HTTP_CREATED);
 
+        $exception = new \RuntimeException('storage unavailable');
         $this->repository->expects($this->once())
             ->method('findByEmail')
             ->with($email)
-            ->willThrowException(new \RuntimeException('storage unavailable'));
+            ->willThrowException($exception);
         $this->repository->expects($this->never())->method('deleteBatch');
 
         // A failure during terminate-phase cleanup must NOT escape the listener:
         // an uncaught exception would disrupt the FrankenPHP worker loop and reset
-        // in-flight connections. The failure is logged and swallowed instead.
-        $this->logger->expects($this->once())->method('warning');
+        // in-flight connections. The failure is logged (with exception context for
+        // diagnosis) and swallowed instead.
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Schemathesis test cleanup skipped after a failure.',
+                ['exception' => $exception, 'environment' => 'schemathesis']
+            );
 
         ($this->listener)($event);
     }

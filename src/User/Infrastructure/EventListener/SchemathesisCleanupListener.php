@@ -45,9 +45,10 @@ final class SchemathesisCleanupListener
     {
         try {
             $this->deleteUsers($this->emailExtractor->extract($request));
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
             $this->logger->warning(
-                'Schemathesis test cleanup skipped after a failure.'
+                'Schemathesis test cleanup skipped after a failure.',
+                ['exception' => $exception, 'environment' => $this->appEnv]
             );
         }
     }
