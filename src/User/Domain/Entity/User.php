@@ -72,6 +72,11 @@ class User implements UserInterface
         return $this->normalizedEmail;
     }
 
+    /**
+     * @psalm-api
+     *
+     * @internal For Doctrine ORM hydration and test fixtures only. Kept in sync automatically when the email changes.
+     */
     public function setNormalizedEmail(string $normalizedEmail): void
     {
         $this->normalizedEmail = $normalizedEmail;
