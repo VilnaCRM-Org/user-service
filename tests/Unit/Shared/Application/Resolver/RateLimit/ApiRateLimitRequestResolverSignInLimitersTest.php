@@ -137,18 +137,10 @@ final class ApiRateLimitRequestResolverSignInLimitersTest extends RateLimitClien
         $email = $this->faker->email();
         $password = $this->faker->password();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'query' => 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { id } }',
-                'variables' => ['input' => ['email' => $email, 'password' => $password]],
-            ], JSON_THROW_ON_ERROR)
-        );
+        $request = $this->graphQlRequest($clientIp, [
+            'query' => 'mutation SignIn($input: SignInInput!) { signIn(input: $input) { id } }',
+            'variables' => ['input' => ['email' => $email, 'password' => $password]],
+        ]);
 
         $byName = array_column(
             $this->resolver->resolveEndpointLimiters($request),
@@ -164,18 +156,10 @@ final class ApiRateLimitRequestResolverSignInLimitersTest extends RateLimitClien
     {
         $clientIp = $this->faker->ipv4();
         $refreshToken = $this->faker->sha256();
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'query' => 'mutation { refreshToken(input: {refreshToken: "'
-                    . $refreshToken . '"}) { user { id } } }',
-            ], JSON_THROW_ON_ERROR)
-        );
+        $request = $this->graphQlRequest($clientIp, [
+            'query' => 'mutation { refreshToken(input: {refreshToken: "'
+                . $refreshToken . '"}) { user { id } } }',
+        ]);
 
         $byName = array_column(
             $this->resolver->resolveEndpointLimiters($request),
@@ -184,5 +168,21 @@ final class ApiRateLimitRequestResolverSignInLimitersTest extends RateLimitClien
         );
 
         self::assertSame('ip:' . $clientIp, $byName['refresh_token']);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function graphQlRequest(string $clientIp, array $payload): Request
+    {
+        return Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($payload, JSON_THROW_ON_ERROR)
+        );
     }
 }
