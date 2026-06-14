@@ -4,183 +4,68 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
-use App\Shared\Infrastructure\Factory\UuidFactory;
-use App\Shared\Infrastructure\Transformer\UuidTransformer;
-use App\Tests\Unit\UnitTestCase;
-use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Factory\UserFactory;
-use App\User\Domain\Factory\UserFactoryInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Builder;
 use Doctrine\ODM\MongoDB\Query\Query;
+
+use function implode;
+
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\MockObject;
 
-final class MongoDBUserRepositoryTest extends UnitTestCase
+use function mb_strtolower;
+use function mb_strtoupper;
+
+use RuntimeException;
+
+use function sprintf;
+use function trim;
+
+final class MongoDBUserRepositoryTest extends MongoDBUserRepositoryTestCase
 {
-    private const BATCH_SIZE = 3;
-    private DocumentManager|MockObject $documentManager;
-    private ManagerRegistry|MockObject $registry;
-    private MongoDBUserRepository $userRepository;
-    private UserFactoryInterface $userFactory;
-    private UuidTransformer $transformer;
-
-    #[\Override]
-    protected function setUp(): void
+    public function testConstructorThrowsExceptionForInvalidBatchSizes(): void
     {
-        parent::setUp();
+        foreach ([0, -1] as $batchSize) {
+            $registry = $this->createMock(ManagerRegistry::class);
+            $documentManager = $this->createMock(DocumentManager::class);
 
-        $this->documentManager =
-            $this->createMock(DocumentManager::class);
-        $this->registry =
-            $this->createMock(ManagerRegistry::class);
-        $this->userRepository =
-            $this->getRepository(self::BATCH_SIZE);
-        $this->userFactory = new UserFactory();
-        $this->transformer = new UuidTransformer(new UuidFactory());
-    }
+            try {
+                new MongoDBUserRepository(
+                    $documentManager,
+                    $registry,
+                    $batchSize
+                );
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame(
+                    'Batch size must be greater than zero.',
+                    $exception->getMessage()
+                );
+                continue;
+            }
 
-    public function testConstructorThrowsExceptionForZeroBatchSize(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
-
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
-
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            0
-        );
-    }
-
-    public function testConstructorThrowsExceptionForNegativeBatchSize(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Batch size must be greater than zero.');
-
-        $registry = $this->createMock(ManagerRegistry::class);
-        $documentManager = $this->createMock(DocumentManager::class);
-
-        new MongoDBUserRepository(
-            $documentManager,
-            $registry,
-            -1
-        );
+            $this->fail('Expected invalid batch size exception.');
+        }
     }
 
     public function testFindByEmailReturnsUser(): void
     {
         $email = $this->faker->email();
-        $initials = $this->faker->name();
-        $password = $this->faker->password();
+        $expectedUser = $this->createUserWithEmail($email);
 
-        $expectedUser = $this->userFactory->create(
-            $email,
-            $initials,
-            $password,
-            $this->transformer->transformFromString($this->faker->uuid())
-        );
+        $repository = $this->createRepositoryMock(['findOneBy']);
 
-        $this->testFindByEmailReturnsUserSetExpectations($expectedUser, $email);
+        $repository->expects($this->once())
+            ->method('findOneBy')
+            ->with(['email' => $email])
+            ->willReturn($expectedUser);
 
-        $user = $this->userRepository->findByEmail($email);
+        $this->userRepository = $repository;
 
-        $this->assertSame($expectedUser, $user);
-    }
-
-    public function testFindByEmailsReturnsUsersForNormalizedUniqueEmails(): void
-    {
-        $firstEmail = $this->faker->unique()->email();
-        $secondEmail = $this->faker->unique()->email();
-        $firstUser = $this->createUserWithEmail($firstEmail);
-        $secondUser = $this->createUserWithEmail($secondEmail);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            [$firstEmail, $secondEmail],
-            [$firstUser, $secondUser]
-        );
-
-        $users = $repository->findByEmails([$firstEmail, $firstEmail, $secondEmail]);
-
-        $this->assertSame([$firstUser, $secondUser], iterator_to_array($users));
-    }
-
-    public function testFindByEmailsQueriesOriginalAndNormalizedEmailCandidates(): void
-    {
-        $email = $this->faker->unique()->email();
-        $inputEmail = mb_strtoupper($email);
-        $user = $this->createUserWithEmail($email);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            [$inputEmail, mb_strtolower($email)],
-            [$user]
-        );
-
-        $users = $repository->findByEmails([$inputEmail]);
-
-        $this->assertSame([$user], iterator_to_array($users));
-    }
-
-    public function testFindByEmailsQueriesTrimmedAndNormalizedEmailCandidates(): void
-    {
-        $email = $this->faker->unique()->email();
-        $trimmedEmail = mb_strtoupper($email);
-        $inputEmail = '  ' . $trimmedEmail . '  ';
-        $user = $this->createUserWithEmail($email);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            [$inputEmail, $trimmedEmail, mb_strtolower($email)],
-            [$user]
-        );
-
-        $users = $repository->findByEmails([$inputEmail]);
-
-        $this->assertSame([$user], iterator_to_array($users));
-    }
-
-    public function testFindByEmailsReturnsEmptyArrayWhenInputIsEmpty(): void
-    {
-        [$repository] = $this->createQueryBuilderRepository();
-
-        $repository->expects($this->never())
-            ->method('createQueryBuilder');
-
-        $this->assertCount(0, $repository->findByEmails([]));
-    }
-
-    public function testFindByEmailsSkipsNonUserResults(): void
-    {
-        $email = $this->faker->unique()->email();
-        $user = $this->createUserWithEmail($email);
-        [$repository, $queryBuilder, $query] = $this->createQueryBuilderRepository();
-
-        $this->expectFindByEmailsQuery(
-            $repository,
-            $queryBuilder,
-            $query,
-            [$email],
-            [$user, new \stdClass()]
-        );
-
-        $this->assertSame([$user], iterator_to_array($repository->findByEmails([$email])));
+        $this->assertSame($expectedUser, $this->userRepository->findByEmail($email));
     }
 
     public function testFindById(): void
@@ -188,14 +73,7 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $id = $this->faker->uuid();
         $expectedUser = $this->createMock(UserInterface::class);
 
-        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
-            ->setConstructorArgs([
-                $this->documentManager,
-                $this->registry,
-                self::BATCH_SIZE,
-            ])
-            ->onlyMethods(['find'])
-            ->getMock();
+        $repository = $this->createRepositoryMock(['find']);
 
         $repository->expects($this->once())
             ->method('find')
@@ -209,12 +87,16 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
 
     public function testSaveUser(): void
     {
-        $user = $this->createMock(UserInterface::class);
+        $email = '  ' . mb_strtoupper($this->faker->unique()->email(), 'UTF-8') . '  ';
+        $user = $this->createUserWithEmail($email);
 
         $this->documentManager
             ->expects($this->once())
             ->method('persist')
-            ->with($user);
+            ->with($this->callback(
+                static fn (User $persistedUser): bool => $persistedUser === $user
+                    && $persistedUser->getNormalizedEmail() === mb_strtolower(trim($email), 'UTF-8')
+            ));
 
         $this->documentManager
             ->expects($this->once())
@@ -223,273 +105,110 @@ final class MongoDBUserRepositoryTest extends UnitTestCase
         $this->userRepository->save($user);
     }
 
+    public function testSaveDetachesFailedUserWhenFlushFails(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $error = new RuntimeException(
+            'E11000 duplicate key error index: _id_',
+            11000
+        );
+
+        $this->expectPersistFlushFailureAndDetach($user, $error);
+
+        $this->expectExceptionObject($error);
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveConvertsDuplicateKeyFailureToDuplicateEmailException(): void
+    {
+        $email = $this->faker->email();
+        $user = $this->createMock(UserInterface::class);
+        $error = $this->duplicateNormalizedEmailException($email);
+
+        $user->method('getEmail')->willReturn($email);
+        $this->expectPersistFlushFailureAndDetach($user, $error);
+        $this->expectException(DuplicateEmailException::class);
+        $this->expectExceptionMessage(sprintf('Email "%s" is already registered', $email));
+
+        $this->userRepository->save($user);
+    }
+
+    public function testSaveRethrowsDuplicateEmailFailureForDifferentEmail(): void
+    {
+        $email = $this->faker->unique()->email();
+        $otherEmail = $this->faker->unique()->email();
+        $user = $this->createMock(UserInterface::class);
+        $error = $this->duplicateNormalizedEmailException($otherEmail);
+
+        $user->method('getEmail')->willReturn($email);
+        $this->expectPersistFlushFailureAndDetach($user, $error);
+        $this->expectExceptionObject($error);
+
+        $this->userRepository->save($user);
+    }
+
     public function testDeleteUser(): void
     {
         $user = $this->createMock(UserInterface::class);
 
-        $this->documentManager
-            ->expects($this->once())
-            ->method('remove')
-            ->with($user);
-
-        $this->documentManager
-            ->expects($this->once())
-            ->method('flush');
+        $this->expectDocumentRemove($user);
+        $this->expectDocumentFlush();
 
         $this->userRepository->delete($user);
     }
 
-    public function testSaveBatch(): void
-    {
-        $users = $this->getUsersForBatchSave(self::BATCH_SIZE + 1);
-
-        $this->testSaveBatchSetDocumentManagerExpectations($users);
-
-        $this->userRepository->saveBatch($users);
-    }
-
-    public function testSaveBatchWithPartialBatch(): void
-    {
-        $batchSize = self::BATCH_SIZE;
-        $totalUsers = $batchSize + 1;
-        $users = $this->getUsersForBatchSave($totalUsers);
-
-        $this->testSaveBatchSetDocumentManagerExpectations($users);
-
-        $this->userRepository->saveBatch($users);
-    }
-
     public function testDeleteAll(): void
     {
-        [$queryBuilder] = $this->setupDeleteQueryBuilder();
+        $queryBuilder = $this->createMock(Builder::class);
+        $query = $this->createMock(Query::class);
 
-        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
-            ->setConstructorArgs([
-                $this->documentManager,
-                $this->registry,
-                self::BATCH_SIZE,
-            ])
-            ->onlyMethods(['createQueryBuilder'])
-            ->getMock();
+        $repository = $this->createRepositoryMock(['createQueryBuilder']);
 
         $repository->expects($this->once())
             ->method('createQueryBuilder')
             ->willReturn($queryBuilder);
-
-        $repository->deleteAll();
-    }
-
-    public function testDeleteBatch(): void
-    {
-        $totalUsers = self::BATCH_SIZE + 1;
-        $users = $this->getUsersForBatchSave($totalUsers);
-
-        $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
-        $expectedFlushCalls = $fullBatches + 1;
-        $expectedClearCalls = $expectedFlushCalls;
-
-        $this->documentManager
-            ->expects($this->exactly($totalUsers))
-            ->method('remove')
-            ->with($this->isInstanceOf(User::class));
-
-        $this->documentManager
-            ->expects($this->exactly($expectedFlushCalls))
-            ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly($expectedClearCalls))
-            ->method('clear');
-
-        $this->userRepository->deleteBatch($users);
-    }
-
-    public function testDeleteBatchWithExactBatchSize(): void
-    {
-        $users = $this->getUsersForBatchSave(self::BATCH_SIZE);
-
-        $this->documentManager
-            ->expects($this->exactly(self::BATCH_SIZE))
-            ->method('remove')
-            ->with($this->isInstanceOf(User::class));
-
-        $this->documentManager
-            ->expects($this->exactly(2))
-            ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly(2))
-            ->method('clear');
-
-        $this->userRepository->deleteBatch($users);
-    }
-
-    /**
-     * @return array{Builder, Query}
-     */
-    private function setupDeleteQueryBuilder(): array
-    {
-        $queryBuilder = $this->createMock(Builder::class);
-        $query = $this->createMock(Query::class);
 
         $queryBuilder->expects($this->once())->method('remove')->willReturnSelf();
         $queryBuilder->expects($this->once())->method('getQuery')->willReturn($query);
         $query->expects($this->once())->method('execute');
 
-        return [$queryBuilder, $query];
+        $repository->deleteAll();
     }
 
-    private function getUsersForBatchSave(int $count): UserCollection
-    {
-        $users = [];
-        for ($i = 0; $i < $count; ++$i) {
-            $users[] = $this->userFactory->create(
-                $this->faker->unique()->email(),
-                $this->faker->name(),
-                $this->faker->password(),
-                $this->transformer->transformFromString($this->faker->uuid())
-            );
-        }
-
-        return new UserCollection($users);
+    private function expectPersistFlushFailureAndDetach(
+        object $document,
+        RuntimeException $error
+    ): void {
+        $this->documentManager->expects($this->once())->method('persist')->with($document);
+        $this->documentManager->expects($this->once())->method('flush')->willThrowException($error);
+        $this->documentManager->expects($this->once())->method('detach')->with($document);
     }
 
-    private function testSaveBatchSetDocumentManagerExpectations(UserCollection $users): void
+    private function expectDocumentRemove(object $document): void
     {
-        $totalUsers = count($users);
-        $fullBatches = (int) floor($totalUsers / self::BATCH_SIZE);
-
-        $expectedFlushCalls = $fullBatches + 1;
-        $expectedClearCalls = $expectedFlushCalls;
-
         $this->documentManager
-            ->expects($this->exactly($totalUsers))
-            ->method('persist')
-            ->with($this->isInstanceOf(User::class));
+            ->expects($this->once())
+            ->method('remove')
+            ->with($document);
+    }
 
+    private function expectDocumentFlush(): void
+    {
         $this->documentManager
-            ->expects($this->exactly($expectedFlushCalls))
+            ->expects($this->once())
             ->method('flush');
-
-        $this->documentManager
-            ->expects($this->exactly($expectedClearCalls))
-            ->method('clear');
     }
 
-    private function getRepository(int $batchSize): MongoDBUserRepository
+    private function duplicateNormalizedEmailException(string $email): RuntimeException
     {
-        $this->registry
-            ->expects($this->atLeastOnce())
-            ->method('getManagerForClass')
-            ->with(User::class)
-            ->willReturn($this->documentManager);
-
-        return new MongoDBUserRepository(
-            $this->documentManager,
-            $this->registry,
-            $batchSize
-        );
-    }
-
-    private function testFindByEmailReturnsUserSetExpectations(
-        UserInterface $user,
-        string $email
-    ): void {
-        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
-            ->setConstructorArgs([
-                $this->documentManager,
-                $this->registry,
-                self::BATCH_SIZE,
-            ])
-            ->onlyMethods(['findOneBy'])
-            ->getMock();
-
-        $repository->expects($this->once())
-            ->method('findOneBy')
-            ->with(['email' => $email])
-            ->willReturn($user);
-
-        $this->userRepository = $repository;
-    }
-
-    /**
-     * @return array{MongoDBUserRepository, Builder, Query}
-     */
-    private function createQueryBuilderRepository(): array
-    {
-        $queryBuilder = $this->createMock(Builder::class);
-        $query = $this->createMock(Query::class);
-        $repository = $this->getMockBuilder(MongoDBUserRepository::class)
-            ->setConstructorArgs([
-                $this->documentManager,
-                $this->registry,
-                self::BATCH_SIZE,
-            ])
-            ->onlyMethods(['createQueryBuilder'])
-            ->getMock();
-
-        return [$repository, $queryBuilder, $query];
-    }
-
-    /**
-     * @param list<string> $emails
-     * @param list<object> $queryResult
-     */
-    private function expectFindByEmailsQuery(
-        MongoDBUserRepository $repository,
-        Builder $queryBuilder,
-        Query $query,
-        array $emails,
-        array $queryResult
-    ): void {
-        $this->expectQueryBuilder($repository, $queryBuilder, $emails);
-        $this->expectQueryExecution($queryBuilder, $query, $queryResult);
-    }
-
-    /**
-     * @param list<string> $emails
-     */
-    private function expectQueryBuilder(
-        MongoDBUserRepository $repository,
-        Builder $queryBuilder,
-        array $emails
-    ): void {
-        $repository->expects($this->once())
-            ->method('createQueryBuilder')
-            ->willReturn($queryBuilder);
-        $queryBuilder->expects($this->once())
-            ->method('field')
-            ->with('email')
-            ->willReturnSelf();
-        $queryBuilder->expects($this->once())
-            ->method('in')
-            ->with($emails)
-            ->willReturnSelf();
-    }
-
-    /**
-     * @param list<object> $queryResult
-     */
-    private function expectQueryExecution(
-        Builder $queryBuilder,
-        Query $query,
-        array $queryResult
-    ): void {
-        $queryBuilder->expects($this->once())
-            ->method('getQuery')
-            ->willReturn($query);
-        $query->expects($this->once())
-            ->method('execute')
-            ->willReturn($queryResult);
-    }
-
-    private function createUserWithEmail(string $email): User
-    {
-        return $this->userFactory->create(
-            $email,
-            $this->faker->name(),
-            $this->faker->password(),
-            $this->transformer->transformFromString($this->faker->uuid())
-        );
+        return new RuntimeException(sprintf(
+            implode(' ', [
+                'E11000 duplicate key error index:',
+                'normalizedEmail_1 dup key:',
+                '{ normalizedEmail: "%s" }',
+            ]),
+            mb_strtolower($email, 'UTF-8')
+        ), 11000);
     }
 }

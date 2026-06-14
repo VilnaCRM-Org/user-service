@@ -667,6 +667,30 @@ paths:
                 detail: 'Provider mismatch: expected github, got google'
                 status: 400
                 error_code: provider_mismatch
+        '409':
+          description: 'RFC 7807 problem response.'
+          content:
+            application/problem+json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  detail: { type: string }
+                  status: { type: integer }
+                  error_code: { type: string }
+                required:
+                  - type
+                  - title
+                  - detail
+                  - status
+                  - error_code
+              example:
+                type: /errors/409
+                title: 'An error occurred'
+                detail: 'Email address matches multiple local users; automatic linking is blocked.'
+                status: 409
+                error_code: duplicate_email
         '422':
           description: 'RFC 7807 problem response.'
           content:
@@ -678,7 +702,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   status: { type: integer }
-                  error_code: { type: string, enum: [invalid_state, provider_email_unavailable] }
+                  error_code: { type: string, enum: [invalid_state, provider_email_unavailable, unverified_provider_email] }
                 required:
                   - type
                   - title

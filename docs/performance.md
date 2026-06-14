@@ -25,6 +25,13 @@ To ensure our User Service is optimized for high performance, we conducted exten
 - `GET /api/users` now supports opt-in partial pagination through the `partial` query parameter, letting clients skip the extra pagination count query when they do not need a total item count.
 - `POST /api/users/batch` now preloads existing users with a single bulk email lookup instead of performing one duplicate-email query per incoming user.
 - Batch registration assembly now lives in a dedicated factory, which keeps the hot path explicit and makes the bulk-lookup behavior easier to validate with repository and cache tests.
+- Issue 217 normalized-email registration lookup uses the unique partial
+  `normalizedEmail` index for the normal path and performs one legacy fallback
+  query only for documents not yet backfilled. Unit tests assert the batch
+  lookup uses exactly two query builders: indexed lookup plus fallback.
+- Issue 217 normalized-email backfill scans and writes in 100-document batches.
+  Release evidence must include dry-run and mutating-run elapsed time, matched
+  count, modified count, and duplicate count from the JSON report.
 
 ## PR 278 Performance Report
 

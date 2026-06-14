@@ -12,16 +12,20 @@ use App\OAuth\Domain\Exception\ProviderMismatchException;
 use App\OAuth\Domain\Exception\StateExpiredException;
 use App\OAuth\Domain\Exception\UnsupportedProviderException;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
+use App\User\Domain\Exception\DuplicateEmailException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Throwable;
 
 /**
  * @psalm-api
  */
 final class OAuthExceptionListener
 {
+    private const OAUTH_SOCIAL_CALLBACK_PATTERN = '#^/api/auth/social/[^/]+/callback$#';
+
     /**
      * Maps each handled OAuth exception to a stable client contract.
      *
@@ -67,6 +71,11 @@ final class OAuthExceptionListener
             'status' => Response::HTTP_UNPROCESSABLE_ENTITY,
             'detail' => 'The authentication provider did not return a verified email address.',
         ],
+        DuplicateEmailException::class => [
+            'error_code' => 'duplicate_email',
+            'status' => Response::HTTP_CONFLICT,
+            'detail' => 'Email address matches multiple local users; automatic linking is blocked.',
+        ],
         OAuthProviderException::class => [
             'error_code' => 'provider_unavailable',
             'status' => Response::HTTP_SERVICE_UNAVAILABLE,
@@ -84,9 +93,9 @@ final class OAuthExceptionListener
     public function __invoke(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
-        $mapping = self::ERROR_CODE_MAP[$exception::class] ?? null;
+        $mapping = $this->mappingFor($exception);
 
-        if ($mapping === null) {
+        if ($mapping === null || $this->shouldIgnoreException($event, $exception)) {
             return;
         }
 
@@ -99,6 +108,20 @@ final class OAuthExceptionListener
         );
 
         $event->setResponse($this->buildProblemResponse($mapping));
+    }
+
+    /**
+     * @return array{error_code: string, status: int, detail: string}|null
+     */
+    private function mappingFor(Throwable $exception): ?array
+    {
+        return self::ERROR_CODE_MAP[$exception::class] ?? null;
+    }
+
+    private function shouldIgnoreException(ExceptionEvent $event, Throwable $exception): bool
+    {
+        return $exception instanceof DuplicateEmailException
+            && !$this->isOAuthSocialCallbackRequest($event);
     }
 
     /**
@@ -119,5 +142,13 @@ final class OAuthExceptionListener
             $status,
             ['Content-Type' => 'application/problem+json']
         );
+    }
+
+    private function isOAuthSocialCallbackRequest(ExceptionEvent $event): bool
+    {
+        return preg_match(
+            self::OAUTH_SOCIAL_CALLBACK_PATTERN,
+            $event->getRequest()->getPathInfo()
+        ) === 1;
     }
 }

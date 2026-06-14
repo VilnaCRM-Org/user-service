@@ -9,20 +9,21 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RequestPasswordResetCommand;
 use App\User\Application\CommandHandler\RequestPasswordResetCommandHandler;
 use App\User\Application\DTO\RequestPasswordResetCommandResponse;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetRequestedEvent;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\PasswordResetRequestedEventFactoryInterface;
 use App\User\Domain\Factory\PasswordResetTokenFactoryInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use Symfony\Component\Uid\Uuid;
 
 final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
 {
-    private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private PasswordResetTokenRepositoryInterface&MockObject $passwordResetTokenRepository;
     private PasswordResetTokenFactoryInterface&MockObject $passwordResetTokenFactory;
     private EventBusInterface&MockObject $eventBus;
@@ -36,7 +37,8 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->passwordResetTokenRepository = $this->createMock(
             PasswordResetTokenRepositoryInterface::class
         );
@@ -48,7 +50,7 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->eventFactory = $this->createMock(PasswordResetRequestedEventFactoryInterface::class);
 
         $this->handler = new RequestPasswordResetCommandHandler(
-            $this->userRepository,
+            $this->findUserByEmailQueryHandler,
             $this->passwordResetTokenRepository,
             $this->passwordResetTokenFactory,
             $this->eventBus,
@@ -96,11 +98,32 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $this->assertPasswordResetResponse($response);
     }
 
+    public function testRequestPasswordResetForDuplicateEmailReturnsNeutralResponse(): void
+    {
+        $email = $this->faker->email();
+
+        $this->findUserByEmailQueryHandler
+            ->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        // The duplicate-email branch must still perform the same constant-time
+        // CSPRNG token work as the not-found branch (CWE-208), so the factory is
+        // invoked with an empty user id exactly once and nothing is persisted.
+        $this->setupTokenAlwaysGeneratedExpectations();
+        $this->setupNeverCalledExpectations();
+
+        $command = new RequestPasswordResetCommand($email);
+        $response = $this->handler->__invoke($command);
+
+        $this->assertPasswordResetResponse($response);
+    }
+
     private function setupUserNotFoundExpectations(string $email): void
     {
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($email)
             ->willReturn(null);
     }
@@ -139,9 +162,9 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
         $token = $this->createMock(PasswordResetTokenInterface::class);
         $token->method('getPlainToken')->willReturn(null);
 
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($email)
             ->willReturn($user);
 
@@ -205,16 +228,16 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
      */
     private function setupPasswordResetExpectations(array $testData, array $mocks): void
     {
-        $this->setupUserRepositoryExpectations($testData['email'], $mocks['user']);
+        $this->setupUserLookupExpectations($testData['email'], $mocks['user']);
         $this->setupTokenFactoryExpectations($testData['userId'], $mocks['token']);
         $this->setupEventExpectations($testData, $mocks);
     }
 
-    private function setupUserRepositoryExpectations(string $email, UserInterface $user): void
+    private function setupUserLookupExpectations(string $email, UserInterface $user): void
     {
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($email)
             ->willReturn($user);
     }

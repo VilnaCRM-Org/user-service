@@ -7,7 +7,7 @@ namespace App\Tests\Unit\User\Application\Command;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserCommand;
 
-final class SignUpCommandTest extends UnitTestCase
+final class RegisterUserCommandTest extends UnitTestCase
 {
     public function testConstructor(): void
     {

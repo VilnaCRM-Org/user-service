@@ -11,13 +11,15 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use DateTimeImmutable;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -28,7 +30,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 {
     private const FIXED_BOUNDARY_TIMESTAMP = 1_700_000_000;
 
-    private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private RecoveryCodeBatchFactoryInterface&MockObject $recoveryCodeBatchFactory;
@@ -41,7 +43,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->recoveryCodeBatchFactory = $this->createMock(
@@ -62,7 +65,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $sessionId = (string) new Ulid();
         $session = $this->createRecentSession($user->getId(), $sessionId);
 
-        $this->userRepository->expects($this->once())->method('findByEmail')
+        $this->findUserByEmailQueryHandler->expects($this->once())->method('find')
             ->with($user->getEmail())->willReturn($user);
         $this->authSessionRepository->expects($this->once())->method('findById')
             ->with($sessionId)->willReturn($session);
@@ -85,8 +88,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     public function testInvokeThrows403WhenTwoFactorNotEnabled(): void
     {
         $user = $this->createPlainUser();
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')->willReturn($user);
         $this->authSessionRepository->expects($this->never())->method('findById');
         $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
         $this->expectException(AccessDeniedHttpException::class);
@@ -98,8 +101,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
 
     public function testInvokeThrows401WhenUserNotFound(): void
     {
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')->willReturn(null);
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')->willReturn(null);
         $this->authSessionRepository->expects($this->never())->method('findById');
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Authentication required.');
@@ -108,12 +111,29 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         );
     }
 
+    public function testInvokeThrows401WhenEmailIsAmbiguous(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->authSessionRepository->expects($this->never())->method('findById');
+        $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
+        $this->recoveryCodeBatchFactory->expects($this->never())->method('create');
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($email, (string) new Ulid())
+        );
+    }
+
     public function testInvokeThrows403WhenSessionNotFound(): void
     {
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')->willReturn($user);
         $this->authSessionRepository->expects($this->once())
             ->method('findById')->with($sessionId)->willReturn(null);
         $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
@@ -129,8 +149,8 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $user = $this->createTwoFactorEnabledUser();
         $sessionId = (string) new Ulid();
         $session = $this->createExpiredSudoSession($user->getId(), $sessionId);
-        $this->userRepository->expects($this->once())
-            ->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')->willReturn($user);
         $this->authSessionRepository->expects($this->once())
             ->method('findById')->with($sessionId)->willReturn($session);
         $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
@@ -153,7 +173,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private function createHandler(): RegenerateRecoveryCodesCommandHandler
     {
         return new RegenerateRecoveryCodesCommandHandler(
-            $this->userRepository,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
             $this->recoveryCodeBatchFactory,
@@ -244,7 +264,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         $sessionId = (string) new Ulid();
         $session = $this->createFixedBoundarySudoSession($user->getId(), $sessionId);
 
-        $this->userRepository->expects($this->once())->method('findByEmail')
+        $this->findUserByEmailQueryHandler->expects($this->once())->method('find')
             ->with($user->getEmail())->willReturn($user);
         $this->authSessionRepository->expects($this->once())->method('findById')
             ->with($sessionId)->willReturn($session);

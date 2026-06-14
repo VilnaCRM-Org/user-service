@@ -6,6 +6,7 @@ namespace App\Tests\Unit\OAuth\Application\Resolver;
 
 use App\OAuth\Application\Factory\OAuthUserFactory;
 use App\OAuth\Application\Resolver\OAuthUserResolver;
+use App\OAuth\Application\Service\SocialIdentityLinker;
 use App\OAuth\Domain\Entity\SocialIdentity;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
@@ -16,6 +17,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\EventIdFactoryInterface;
 use App\User\Application\Factory\IdFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\UserNotFoundException;
@@ -30,6 +32,7 @@ final class OAuthUserResolverTest extends UnitTestCase
 
     private SocialIdentityRepositoryInterface&MockObject $socialIdentityRepo;
     private UserRepositoryInterface&MockObject $userRepo;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private PasswordHasherInterface&MockObject $passwordHasher;
     private IdFactoryInterface&MockObject $idFactory;
     private EventIdFactoryInterface&MockObject $eventIdFactory;
@@ -44,13 +47,18 @@ final class OAuthUserResolverTest extends UnitTestCase
 
         $this->socialIdentityRepo = $this->createMock(SocialIdentityRepositoryInterface::class);
         $this->userRepo = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->passwordHasher = $this->createMock(PasswordHasherInterface::class);
         $this->idFactory = $this->createMock(IdFactoryInterface::class);
         $this->eventIdFactory = $this->createMock(EventIdFactoryInterface::class);
         $this->userFactory = new UserFactory();
         $this->uuidTransformer = new UuidTransformer(new UuidFactory());
 
-        $this->configureFactories();
+        $this->idFactory->method('create')
+            ->willReturnCallback(fn () => $this->faker->uuid());
+        $this->eventIdFactory->method('generate')
+            ->willReturnCallback(fn () => $this->faker->uuid());
         $this->resolver = $this->createResolver();
     }
 
@@ -104,21 +112,47 @@ final class OAuthUserResolverTest extends UnitTestCase
         );
     }
 
-    public function testResolveAutoLinksExistingUserByEmail(): void
+    public function testResolveAutoLinksExistingUserByNormalizedEmail(): void
     {
         $provider = $this->createProvider();
         $email = $this->faker->safeEmail();
+        $submittedEmail = mb_strtoupper($email, 'UTF-8');
         $user = $this->createUser($email);
-        $profile = $this->createProfile($email);
+        $profile = $this->createProfile($submittedEmail);
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')
-            ->with($email)->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')
+            ->with($submittedEmail)
+            ->willReturn($user);
 
         $this->socialIdentityRepo->expects($this->once())
             ->method('save');
 
         $result = $this->resolver->resolve($provider, $profile);
+
+        $this->assertSame($user, $result->user);
+        $this->assertFalse($result->newlyCreated);
+    }
+
+    public function testResolveAutoLinksExistingUserByTrimmedSubmittedEmail(): void
+    {
+        $provider = $this->createProvider();
+        $email = ucfirst($this->faker->userName()) . '@' . $this->faker->domainName();
+        $submittedEmail = sprintf('  %s  ', $email);
+        $user = $this->createUser($email);
+        $user->setConfirmed(true);
+
+        $this->arrangeNoIdentityMatch();
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($submittedEmail)
+            ->willReturn($user);
+
+        $this->socialIdentityRepo->expects($this->once())
+            ->method('save');
+        $this->userRepo->expects($this->never())->method('save');
+
+        $result = $this->resolver->resolve($provider, $this->createProfile($submittedEmail));
 
         $this->assertSame($user, $result->user);
         $this->assertFalse($result->newlyCreated);
@@ -132,8 +166,9 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->assertFalse($user->isConfirmed());
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')
-            ->with($email)->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')
+            ->with($email)
+            ->willReturn($user);
 
         $this->userRepo->expects($this->once())->method('save');
 
@@ -148,10 +183,16 @@ final class OAuthUserResolverTest extends UnitTestCase
     public function testResolveCreatesNewUserWhenNoMatch(): void
     {
         $provider = $this->createProvider();
-        $email = $this->faker->safeEmail();
+        $email = strtolower($this->faker->safeEmail());
         $hashedPassword = $this->faker->sha256();
 
-        $this->arrangeNewUserResolution($hashedPassword);
+        $this->arrangeNoIdentityMatch();
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willReturn(null);
+        $this->passwordHasher->method('hash')
+            ->willReturn($hashedPassword);
 
         $this->userRepo->expects($this->once())->method('save');
         $this->socialIdentityRepo->expects($this->once())
@@ -170,7 +211,7 @@ final class OAuthUserResolverTest extends UnitTestCase
     public function testResolveHashesGeneratedPasswordUsingExpectedEntropyLength(): void
     {
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
         $this->passwordHasher->expects($this->once())
             ->method('hash')
             ->with($this->callback(
@@ -274,7 +315,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         $this->createUser($email);
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->expects($this->never())->method('findByEmail');
+        $this->findUserByEmailQueryHandler->expects($this->never())->method('find');
         $this->userRepo->expects($this->never())->method('save');
         $this->socialIdentityRepo->expects($this->never())->method('save');
 
@@ -289,7 +330,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         $provider = OAuthProvider::fromString($this->faker->word());
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->expects($this->never())->method('findByEmail');
+        $this->findUserByEmailQueryHandler->expects($this->never())->method('find');
         $this->userRepo->expects($this->never())->method('save');
         $this->socialIdentityRepo->expects($this->never())->method('save');
 
@@ -310,7 +351,8 @@ final class OAuthUserResolverTest extends UnitTestCase
         $user->setConfirmed(true);
 
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')
+        $this->findUserByEmailQueryHandler->method('find')
+            ->with($email)
             ->willReturn($user);
 
         $this->userRepo->expects($this->never())->method('save');
@@ -351,7 +393,7 @@ final class OAuthUserResolverTest extends UnitTestCase
         ?string $hashedPassword = null,
     ): void {
         $this->arrangeNoIdentityMatch();
-        $this->userRepo->method('findByEmail')->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
         $this->passwordHasher->method('hash')
             ->willReturn($hashedPassword ?? $this->faker->sha256());
     }
@@ -408,22 +450,14 @@ final class OAuthUserResolverTest extends UnitTestCase
         return OAuthProvider::fromString($this->faker->word());
     }
 
-    private function configureFactories(): void
-    {
-        $this->idFactory->method('create')
-            ->willReturnCallback(fn () => $this->faker->uuid());
-
-        $this->eventIdFactory->method('generate')
-            ->willReturnCallback(fn () => $this->faker->uuid());
-    }
-
     private function createResolver(): OAuthUserResolver
     {
         return new OAuthUserResolver(
             $this->socialIdentityRepo,
             $this->userRepo,
-            $this->idFactory,
+            $this->findUserByEmailQueryHandler,
             $this->createOAuthUserFactory(),
+            new SocialIdentityLinker($this->socialIdentityRepo, $this->idFactory),
         );
     }
 

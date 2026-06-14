@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -24,6 +25,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private AuthenticatedUserResolver $authenticatedUserResolver,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
@@ -51,10 +53,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 
     private function resolveUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
-        if (!$user instanceof User) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
-        }
+        $user = $this->authenticatedUserResolver->resolve($email);
 
         if ($user->getTwoFactorSecret() === null) {
             throw new UnauthorizedHttpException('Bearer', 'Two-factor setup not initiated.');

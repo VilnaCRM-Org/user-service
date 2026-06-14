@@ -35,6 +35,50 @@ final class OAuthSocialCallbackEndpointFactoryTest extends UnitTestCase
         $factory->createEndpoint($openApi);
     }
 
+    public function testCreateEndpointDocumentsDuplicateEmailConflict(): void
+    {
+        $paths = $this->createMock(Paths::class);
+        $openApi = $this->createMock(OpenApi::class);
+        $openApi->method('getPaths')->willReturn($paths);
+
+        $paths->expects($this->once())
+            ->method('addPath')
+            ->with(
+                '/api/auth/social/{provider}/callback',
+                $this->callback(
+                    fn (PathItem $pathItem): bool => $this
+                        ->assertDuplicateEmailConflictDocumented($pathItem)
+                ),
+            );
+
+        $factory = new OAuthSocialCallbackEndpointFactory(
+            '/api',
+            $this->createSupportedProvidersProvider(),
+        );
+        $factory->createEndpoint($openApi);
+    }
+
+    private function assertDuplicateEmailConflictDocumented(PathItem $pathItem): bool
+    {
+        $operation = $pathItem->getGet();
+        $this->assertNotNull($operation);
+        $responses = $operation->getResponses();
+        $this->assertIsArray($responses);
+        $this->assertArrayHasKey(409, $responses);
+
+        $content = $responses[409]->getContent();
+        $this->assertNotNull($content);
+        $mediaType = $content['application/problem+json'] ?? null;
+        $this->assertNotNull($mediaType);
+        $this->assertSame('duplicate_email', $mediaType->getExample()['error_code'] ?? null);
+        $this->assertSame(
+            'Email address matches multiple local users; automatic linking is blocked.',
+            $mediaType->getExample()['detail'] ?? null
+        );
+
+        return true;
+    }
+
     private function createSupportedProvidersProvider(): OAuthSupportedProvidersProvider
     {
         return new OAuthSupportedProvidersProvider(

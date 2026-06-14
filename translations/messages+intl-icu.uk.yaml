@@ -1,4 +1,6 @@
 email:
+  not:
+    unique: 'Ця email-адреса вже зареєстрована'
   password:
     changed:
       subject: 'Повідомлення про зміну пароля'

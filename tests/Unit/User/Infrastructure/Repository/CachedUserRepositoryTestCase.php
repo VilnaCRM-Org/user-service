@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Repository;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
@@ -42,7 +43,8 @@ abstract class CachedUserRepositoryTestCase extends UnitTestCase
             $this->cache,
             $this->cacheKeyBuilder,
             $this->logger,
-            $this->documentManager
+            $this->documentManager,
+            new EmailNormalizer()
         );
     }
 
