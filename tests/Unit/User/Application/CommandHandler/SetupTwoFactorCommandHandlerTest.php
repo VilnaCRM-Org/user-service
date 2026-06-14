@@ -12,8 +12,10 @@ use App\User\Application\CommandHandler\SetupTwoFactorCommandHandler;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\TOTPSecretFactoryInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -78,6 +80,28 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         $handler->__invoke(new SetupTwoFactorCommand($email));
     }
 
+    public function testInvokeThrowsUnauthorizedWhenEmailIsAmbiguous(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler
+            ->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->totpSecretFactory
+            ->expects($this->never())
+            ->method('create');
+        $this->twoFactorSecretEncryptor
+            ->expects($this->never())
+            ->method('encrypt');
+        $this->userRepository
+            ->expects($this->never())
+            ->method('save');
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->createHandler()->__invoke(new SetupTwoFactorCommand($email));
+    }
+
     public function testInvokeThrowsConflictWhenTwoFactorAlreadyEnabled(): void
     {
         $user = $this->createUser($this->faker->email());
@@ -103,7 +127,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
     {
         return new SetupTwoFactorCommandHandler(
             $this->userRepository,
-            $this->findUserByEmailQueryHandler,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->twoFactorSecretEncryptor,
             $this->totpSecretFactory,
         );

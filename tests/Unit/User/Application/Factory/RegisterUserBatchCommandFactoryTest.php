@@ -8,8 +8,8 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\DTO\UserRegisterBatchDto;
 use App\User\Application\Factory\RegisterUserBatchCommandFactory;
-use InvalidArgumentException;
 use ReflectionClass;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
 {
@@ -46,7 +46,7 @@ final class RegisterUserBatchCommandFactoryTest extends UnitTestCase
     {
         $factory = new RegisterUserBatchCommandFactory();
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(BadRequestHttpException::class);
         $this->expectExceptionMessage(
             'Batch user payload must contain string email, initials, and password fields.'
         );

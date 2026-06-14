@@ -6,14 +6,13 @@ namespace App\User\Application\CommandHandler;
 
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\DisableTwoFactorCommand;
-use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Publisher\TwoFactorPublisherInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @psalm-api
@@ -22,7 +21,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
+        private AuthenticatedUserResolver $authenticatedUserResolver,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private TwoFactorPublisherInterface $events,
@@ -47,10 +46,7 @@ final readonly class DisableTwoFactorCommandHandler implements CommandHandlerInt
 
     private function resolveUser(string $email): User
     {
-        $user = $this->findUserByEmailQueryHandler->find($email);
-        if (!$user instanceof User) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
-        }
+        $user = $this->authenticatedUserResolver->resolve($email);
 
         if (!$user->isTwoFactorEnabled()) {
             throw new AccessDeniedHttpException('Two-factor authentication is not enabled.');

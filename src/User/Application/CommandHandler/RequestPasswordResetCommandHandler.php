@@ -39,10 +39,13 @@ final readonly class RequestPasswordResetCommandHandler implements
         try {
             $user = $this->findUserByEmailQueryHandler->find($command->email);
         } catch (DuplicateEmailException) {
-            return new RequestPasswordResetCommandResponse();
+            // Treat an ambiguous (duplicate) email like a not-found lookup so
+            // the duplicate-email branch flows through the same constant-time
+            // token-generation path below instead of short-circuiting here.
+            $user = null;
         }
 
-        // Always generate a token so both branches perform the same
+        // Always generate a token so every branch performs the same
         // CSPRNG work, preventing a user-enumeration timing oracle
         // (CWE-208) on the deliberately uniform 204 response.
         $token = $this->tokenFactory->create(

@@ -8,18 +8,17 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\SetupTwoFactorCommand;
 use App\User\Application\DTO\SetupTwoFactorCommandResponse;
 use App\User\Application\Factory\TOTPSecretFactoryInterface;
-use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
-        private FindUserByEmailQueryHandlerInterface $findUserByEmailQueryHandler,
+        private AuthenticatedUserResolver $authenticatedUserResolver,
         private TwoFactorSecretEncryptorInterface $twoFactorSecretEncryptor,
         private TOTPSecretFactoryInterface $totpSecretFactory,
     ) {
@@ -50,11 +49,6 @@ final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInter
 
     private function resolveUser(string $email): User
     {
-        $user = $this->findUserByEmailQueryHandler->find($email);
-        if (!$user instanceof User) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
-        }
-
-        return $user;
+        return $this->authenticatedUserResolver->resolve($email);
     }
 }

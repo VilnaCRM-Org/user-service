@@ -107,6 +107,10 @@ final class RequestPasswordResetCommandHandlerTest extends UnitTestCase
             ->method('find')
             ->with($email)
             ->willThrowException(new DuplicateEmailException($email));
+        // The duplicate-email branch must still perform the same constant-time
+        // CSPRNG token work as the not-found branch (CWE-208), so the factory is
+        // invoked with an empty user id exactly once and nothing is persisted.
+        $this->setupTokenAlwaysGeneratedExpectations();
         $this->setupNeverCalledExpectations();
 
         $command = new RequestPasswordResetCommand($email);

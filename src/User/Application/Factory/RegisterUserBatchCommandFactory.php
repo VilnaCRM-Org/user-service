@@ -8,7 +8,7 @@ use App\User\Application\Command\RegisterUserBatchCommand;
 use App\User\Application\DTO\BatchUserRegistrationInput;
 use App\User\Application\DTO\BatchUserRegistrationInputCollection;
 use App\User\Application\DTO\UserRegisterBatchDto;
-use InvalidArgumentException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final readonly class RegisterUserBatchCommandFactory implements
     RegisterUserBatchCommandFactoryInterface
@@ -35,7 +35,7 @@ final readonly class RegisterUserBatchCommandFactory implements
                 || !is_string($user['initials'])
                 || !is_string($user['password'])
             ) {
-                throw new InvalidArgumentException(
+                throw new BadRequestHttpException(
                     'Batch user payload must contain string email, initials, and password fields.'
                 );
             }

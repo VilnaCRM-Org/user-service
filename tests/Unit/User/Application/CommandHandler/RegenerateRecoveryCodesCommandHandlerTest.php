@@ -12,9 +12,11 @@ use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\CommandHandler\RegenerateRecoveryCodesCommandHandler;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
@@ -109,6 +111,23 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
         );
     }
 
+    public function testInvokeThrows401WhenEmailIsAmbiguous(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler->expects($this->once())
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->authSessionRepository->expects($this->never())->method('findById');
+        $this->recoveryCodeRepository->expects($this->never())->method('deleteByUserId');
+        $this->recoveryCodeBatchFactory->expects($this->never())->method('create');
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->createHandler()->__invoke(
+            new RegenerateRecoveryCodesCommand($email, (string) new Ulid())
+        );
+    }
+
     public function testInvokeThrows403WhenSessionNotFound(): void
     {
         $user = $this->createTwoFactorEnabledUser();
@@ -154,7 +173,7 @@ final class RegenerateRecoveryCodesCommandHandlerTest extends UnitTestCase
     private function createHandler(): RegenerateRecoveryCodesCommandHandler
     {
         return new RegenerateRecoveryCodesCommandHandler(
-            $this->findUserByEmailQueryHandler,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->recoveryCodeRepository,
             $this->authSessionRepository,
             $this->recoveryCodeBatchFactory,

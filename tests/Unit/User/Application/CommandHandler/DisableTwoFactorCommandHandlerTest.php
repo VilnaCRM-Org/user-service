@@ -10,8 +10,10 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\CommandHandler\DisableTwoFactorCommandHandler;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -140,6 +142,27 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         ));
     }
 
+    public function testDuplicateEmailThrowsUnauthorizedWithoutSideEffects(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->twoFactorCodeVerifier->expects($this->never())
+            ->method('verifyAndConsumeOrFail');
+        $this->userRepository->expects($this->never())->method('save');
+        $this->recoveryCodeRepository->expects($this->never())
+            ->method('deleteByUserId');
+        $this->events->expects($this->never())->method('publishDisabled');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->createHandler()->__invoke(
+            new DisableTwoFactorCommand($email, '123456')
+        );
+    }
+
     public function testEmitsTwoFactorDisabledEvent(): void
     {
         $user = $this->createTwoFactorEnabledUser();
@@ -200,7 +223,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     {
         return new DisableTwoFactorCommandHandler(
             $this->userRepository,
-            $this->findUserByEmailQueryHandler,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->recoveryCodeRepository,
             $this->twoFactorCodeVerifier,
             $this->events,
