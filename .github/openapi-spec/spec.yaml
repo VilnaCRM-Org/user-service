@@ -702,7 +702,7 @@ paths:
                   title: { type: string }
                   detail: { type: string }
                   status: { type: integer }
-                  error_code: { type: string, enum: [invalid_state, provider_email_unavailable] }
+                  error_code: { type: string, enum: [invalid_state, provider_email_unavailable, unverified_provider_email] }
                 required:
                   - type
                   - title

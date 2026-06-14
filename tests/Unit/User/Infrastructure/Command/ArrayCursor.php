@@ -73,6 +73,7 @@ final class ArrayCursor implements CursorInterface, Iterator
     #[\Override]
     public function setTypeMap(array $typemap): void
     {
+        unset($typemap);
     }
 
     #[\Override]

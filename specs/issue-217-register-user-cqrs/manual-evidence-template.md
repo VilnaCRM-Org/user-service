@@ -8,20 +8,20 @@ This file is the manual evidence source for:
 BMAD_REVIEW_MANUAL_EVIDENCE=specs/issue-217-register-user-cqrs/manual-evidence-template.md
 ```
 
-Scope: local test-environment release-readiness evidence for PR #282. No
+Scope: local test-environment release-readiness evidence for PR #<PR_NUMBER>. No
 production data was read or mutated. Production release operators must keep the
 same checklist with production artifact paths before running the mutating
 backfill in production.
 
 ## Tester
 
-- Tester: OpenAI Codex
+- Tester: <tester-name>
 - Role: implementation and PR validation agent
-- Date: 2026-06-08T09:58:12+03:00
+- Date: <ISO-8601 timestamp>
 - Environment: local Docker Compose test environment in
-  `/home/kravtsov/Projects/user-service-issue217`
+  `<workspace-path>`
 - Release or commit SHA:
-  `b3d0c8f0af323cc830c3ddcdf1a0161811c9a0d5`
+  `<commit-sha>`
 
 ## Backfill Dry Run
 

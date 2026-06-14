@@ -20,6 +20,7 @@ COOKIE;
     private const UNPROCESSABLE_ENTITY_ERROR_CODES = [
         'invalid_state',
         'provider_email_unavailable',
+        'unverified_provider_email',
     ];
     private const PROBLEM_RESPONSE_SPECS = [
         HttpResponse::HTTP_BAD_REQUEST => [
