@@ -51,14 +51,20 @@ final class SchemathesisCleanupListenerTestExpectations
             ->willReturnCallback(($this->expectSequential)($expectedCalls, $users));
     }
 
-    public function expectBatchDelete(): void
+    /**
+     * @param array<int, UserInterface> $expectedUsers
+     */
+    public function expectBatchDelete(array $expectedUsers): void
     {
+        $expectedUsers = array_values($expectedUsers);
+
         $this->repository->expects($this->testCase->once())
             ->method('deleteBatch')
             ->with($this->testCase->callback(
                 static fn (mixed $collection): bool =>
                     $collection instanceof UserCollection
                     && array_is_list($collection->users)
+                    && $collection->users === $expectedUsers
             ));
     }
 }

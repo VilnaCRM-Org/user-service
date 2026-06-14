@@ -26,7 +26,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             ->with($email)
             ->willReturn($user);
 
-        $this->expectations->expectBatchDelete();
+        $this->expectations->expectBatchDelete([$user]);
 
         ($this->listener)($event);
     }
@@ -48,7 +48,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail($emails, $users);
-        $this->expectations->expectBatchDelete();
+        $this->expectations->expectBatchDelete($users);
 
         ($this->listener)($event);
     }
@@ -84,7 +84,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
         $existingUser = $this->userWithEmail($emails[1]);
 
         $this->expectations->expectBatchFindByEmail($emails, [null, $existingUser]);
-        $this->expectations->expectBatchDelete();
+        $this->expectations->expectBatchDelete([$existingUser]);
 
         ($this->listener)($event);
     }
@@ -108,7 +108,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail($emails, $users);
-        $this->expectations->expectBatchDelete();
+        $this->expectations->expectBatchDelete($users);
 
         ($this->listener)($event);
     }
@@ -131,7 +131,7 @@ final class SchemathesisCleanupListenerCleanupTest extends SchemathesisCleanupLi
             $this->userWithEmail($emails[1]),
         ];
         $this->expectations->expectBatchFindByEmail([$emails[0], $emails[1]], $users);
-        $this->expectations->expectBatchDelete();
+        $this->expectations->expectBatchDelete($users);
 
         ($this->listener)($event);
     }

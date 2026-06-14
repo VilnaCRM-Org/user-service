@@ -41,6 +41,4 @@ jobs:
 
       - name: Run Schemathesis Validation
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: |
-          chmod +x ./scripts/schemathesis-validate.sh
-          make schemathesis-validate
+        run: make schemathesis-validate
