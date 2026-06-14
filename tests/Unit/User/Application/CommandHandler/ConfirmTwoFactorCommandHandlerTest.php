@@ -104,11 +104,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->twoFactorCodeVerifier->expects($this->never())->method('verifyTotpForSetupOrFail');
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createHandler()->__invoke(new ConfirmTwoFactorCommand(
-            $user->getEmail(),
-            '123456',
-            $this->faker->uuid()
-        ));
+        $this->invokeExpectingUnauthorized($user->getEmail());
     }
 
     public function testUserNotFoundThrowsUnauthorized(): void
@@ -117,12 +113,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->expectException(UnauthorizedHttpException::class);
 
-        $handler = $this->createHandler();
-        $handler->__invoke(new ConfirmTwoFactorCommand(
-            $this->faker->email(),
-            '123456',
-            $this->faker->uuid()
-        ));
+        $this->invokeExpectingUnauthorized($this->faker->email());
     }
 
     public function testDuplicateEmailThrowsUnauthorizedWithoutSideEffects(): void
@@ -134,11 +125,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Authentication required.');
-        $this->createHandler()->__invoke(new ConfirmTwoFactorCommand(
-            $email,
-            '123456',
-            $this->faker->uuid()
-        ));
+        $this->invokeExpectingUnauthorized($email);
     }
 
     public function testRevokesOtherSessionsOnSuccess(): void
@@ -307,6 +294,13 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $command = new ConfirmTwoFactorCommand($email, $code, $sessionId);
 
         return $handler->__invoke($command);
+    }
+
+    private function invokeExpectingUnauthorized(string $email): void
+    {
+        $this->createHandler()->__invoke(
+            new ConfirmTwoFactorCommand($email, '123456', $this->faker->uuid())
+        );
     }
 
     private function createHandler(): ConfirmTwoFactorCommandHandler
