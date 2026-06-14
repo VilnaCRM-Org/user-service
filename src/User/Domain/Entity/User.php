@@ -16,6 +16,7 @@ class User implements UserInterface
     private bool $confirmed;
     private bool $twoFactorEnabled;
     private ?string $twoFactorSecret;
+    private string $normalizedEmail = '';
     private ?int $lastAcceptedTotpTimestep;
 
     public function __construct(
@@ -24,6 +25,7 @@ class User implements UserInterface
         private string $password,
         private UuidInterface $id,
     ) {
+        $this->normalizedEmail = self::normalizeEmail($email);
         $this->confirmed = false;
         $this->twoFactorEnabled = false;
         $this->twoFactorSecret = null;
@@ -62,6 +64,22 @@ class User implements UserInterface
     public function setEmail(string $email): void
     {
         $this->email = $email;
+        $this->normalizedEmail = self::normalizeEmail($email);
+    }
+
+    public function getNormalizedEmail(): string
+    {
+        return $this->normalizedEmail;
+    }
+
+    /**
+     * @psalm-api
+     *
+     * @internal For Doctrine ORM hydration and test fixtures only. Kept in sync automatically when the email changes.
+     */
+    public function setNormalizedEmail(string $normalizedEmail): void
+    {
+        $this->normalizedEmail = $normalizedEmail;
     }
 
     public function getInitials(): string
@@ -250,6 +268,7 @@ class User implements UserInterface
 
         $oldEmail = $this->email;
         $this->email = $newEmail;
+        $this->normalizedEmail = self::normalizeEmail($newEmail);
         $this->confirmed = false;
 
         return new DomainEventCollection(
@@ -277,5 +296,15 @@ class User implements UserInterface
                 $eventID
             )
         );
+    }
+
+    /**
+     * Pure, framework-free email normalization. Mirrors the application-layer
+     * EmailNormalizer so persisted normalizedEmail values stay consistent with
+     * the lookup keys used for case-insensitive uniqueness.
+     */
+    private static function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email), 'UTF-8');
     }
 }

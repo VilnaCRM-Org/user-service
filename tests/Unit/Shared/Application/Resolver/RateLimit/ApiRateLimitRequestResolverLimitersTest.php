@@ -160,72 +160,88 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
         self::assertSame('ip:' . $clientIp, $byName['email_confirmation']);
     }
 
-    public function testResolveEndpointLimitersForUserUpdatePatch(): void
+    public function testResolveEndpointLimitersForPasswordResetRequest(): void
     {
-        $userId = $this->faker->uuid();
-        $request = Request::create('/api/users/' . $userId, 'PATCH');
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create(
+            '/api/reset-password',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp]
+        );
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $byName = array_column($limiters, 'key', 'name');
 
-        self::assertArrayHasKey('user_update', $byName);
-        self::assertSame('user:' . $userId, $byName['user_update']);
+        self::assertArrayHasKey('password_reset_ip', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['password_reset_ip']);
     }
 
-    public function testResolveEndpointLimitersForUserUpdatePut(): void
+    public function testResolveEndpointLimitersSkipsPasswordResetIpForConfirmPath(): void
     {
-        $userId = $this->faker->uuid();
-        $request = Request::create('/api/users/' . $userId, 'PUT');
+        $request = Request::create('/api/reset-password/confirm', 'POST', [], [], [], [
+            'REMOTE_ADDR' => '127.0.0.1',
+        ]);
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('password_reset_ip', $names);
+        self::assertContains('password_reset_confirm', $names);
+    }
+
+    public function testResolveEndpointLimitersSkipsPasswordResetIpForGetMethod(): void
+    {
+        $request = Request::create('/api/reset-password', 'GET');
+
+        $limiters = $this->resolver->resolveEndpointLimiters($request);
+        $names = array_column($limiters, 'name');
+
+        self::assertNotContains('password_reset_ip', $names);
+    }
+
+    public function testResolveEndpointLimitersForSignIn(): void
+    {
+        $clientIp = $this->faker->ipv4();
+        $request = Request::create('/api/signin', 'POST', [], [], [], ['REMOTE_ADDR' => $clientIp]);
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $byName = array_column($limiters, 'key', 'name');
 
-        self::assertArrayHasKey('user_update', $byName);
-        self::assertSame('user:' . $userId, $byName['user_update']);
+        self::assertArrayHasKey('signin_ip', $byName);
+        self::assertSame('ip:' . $clientIp, $byName['signin_ip']);
     }
 
-    public function testResolveEndpointLimitersForUserDelete(): void
+    public function testResolveEndpointLimitersForSignInWithEmailInBody(): void
     {
-        $userId = $this->faker->uuid();
-        $request = Request::create('/api/users/' . $userId, 'DELETE');
+        $email = $this->faker->email();
+        $request = Request::create(
+            '/api/signin',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['email' => $email], JSON_THROW_ON_ERROR)
+        );
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $byName = array_column($limiters, 'key', 'name');
 
-        self::assertArrayHasKey('user_delete', $byName);
-        self::assertSame('user:' . $userId, $byName['user_delete']);
+        self::assertArrayHasKey('signin_email', $byName);
+        self::assertSame('email:' . strtolower(trim($email)), $byName['signin_email']);
     }
 
-    public function testResolveEndpointLimitersSkipsUserMutationForBatchPath(): void
+    public function testResolveEndpointLimitersForSignInTwoFactor(): void
     {
-        $request = Request::create('/api/users/batch', 'PATCH');
+        $request = Request::create('/api/signin/2fa', 'POST');
 
         $limiters = $this->resolver->resolveEndpointLimiters($request);
         $names = array_column($limiters, 'name');
 
-        self::assertNotContains('user_update', $names);
-    }
-
-    public function testResolveEndpointLimitersSkipsUserMutationForConfirmPath(): void
-    {
-        $request = Request::create('/api/users/confirm', 'PATCH');
-
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
-
-        self::assertNotContains('user_update', $names);
-    }
-
-    public function testResolveEndpointLimitersSkipsUserMutationForGetRequest(): void
-    {
-        $userId = $this->faker->uuid();
-        $request = Request::create('/api/users/' . $userId, 'GET');
-
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
-
-        self::assertNotContains('user_update', $names);
-        self::assertNotContains('user_delete', $names);
+        self::assertContains('twofa_verification_ip', $names);
     }
 
     public function testResolveEndpointLimitersReturnsEmptyForUnrecognizedApiPath(): void
@@ -255,5 +271,54 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
         $names = array_column($limiters, 'name');
 
         self::assertContains('user_collection', $names);
+    }
+
+    public function testResolveEndpointLimitersForGraphQlSignInMutation(): void
+    {
+        $email = $this->faker->email();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '203.0.113.11', 'CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'query' => 'mutation { signIn(input: $input) { id } }',
+                'variables' => ['input' => ['email' => $email, 'password' => 'secret']],
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $byName = array_column(
+            $this->resolver->resolveEndpointLimiters($request),
+            'key',
+            'name'
+        );
+
+        self::assertSame('ip:203.0.113.11', $byName['signin_ip']);
+        self::assertSame('email:' . strtolower(trim($email)), $byName['signin_email']);
+    }
+
+    public function testResolveEndpointLimitersForGraphQlRefreshTokenMutation(): void
+    {
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => '203.0.113.12', 'CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'query' => 'mutation { refreshToken(input: {refreshToken: "x"}) { user { id } } }',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $byName = array_column(
+            $this->resolver->resolveEndpointLimiters($request),
+            'key',
+            'name'
+        );
+
+        self::assertSame('ip:203.0.113.12', $byName['refresh_token']);
     }
 }

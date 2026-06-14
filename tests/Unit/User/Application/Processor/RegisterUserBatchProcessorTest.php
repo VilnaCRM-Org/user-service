@@ -56,12 +56,14 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
 
     public function testProcess(): void
     {
+        $usersData = $this->getUsersData();
         $users = $this->getUsers();
 
-        $this->setExpectations($users);
+        $batchDto = new UserRegisterBatchDto($usersData);
+        $this->setExpectations($batchDto, $users);
 
         $response = $this->processor->process(
-            new UserRegisterBatchDto($users),
+            $batchDto,
             $this->operation,
             [],
             ['operation' => $this->operation]
@@ -81,8 +83,10 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
     /**
      * @param array<UserInterface> $users
      */
-    private function setExpectations(array $users): void
-    {
+    private function setExpectations(
+        UserRegisterBatchDto $batchDto,
+        array $users
+    ): void {
         $this->operation->expects($this->once())
             ->method('getNormalizationContext')
             ->willReturn(['groups' => ['output']]);
@@ -93,7 +97,7 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
             new RegisterUserBatchCommandResponse($userCollection);
         $this->commandFactory->expects($this->once())
             ->method('create')
-            ->with($userCollection)
+            ->with($batchDto)
             ->willReturn($command);
 
         $this->commandBus->expects($this->once())
@@ -102,6 +106,23 @@ final class RegisterUserBatchProcessorTest extends UnitTestCase
             ->willReturn($commandResponse);
 
         $this->setExpectationsForSerializer($commandResponse, $users);
+    }
+
+    /**
+     * @return list<array{email: string, initials: string, password: string}>
+     */
+    private function getUsersData(): array
+    {
+        $users = [];
+        for ($i = 0; $i < self::BATCH_SIZE; $i++) {
+            $users[] = [
+                'email' => $this->faker->email(),
+                'initials' => $this->faker->name(),
+                'password' => $this->faker->password(),
+            ];
+        }
+
+        return $users;
     }
 
     /**

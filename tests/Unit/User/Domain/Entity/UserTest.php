@@ -140,6 +140,64 @@ final class UserTest extends UserTestCase
         $this->assertEquals($email, $this->user->getEmail());
     }
 
+    public function testConstructorNormalizesEmail(): void
+    {
+        $user = new User(
+            '  Mixed.Case@Example.COM ',
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->uuidTransformer->transformFromString($this->faker->uuid())
+        );
+
+        $this->assertSame('mixed.case@example.com', $user->getNormalizedEmail());
+    }
+
+    public function testSetEmailKeepsNormalizedEmailInSync(): void
+    {
+        $this->user->setEmail('  New.Address@Example.COM ');
+
+        $this->assertSame('  New.Address@Example.COM ', $this->user->getEmail());
+        $this->assertSame(
+            'new.address@example.com',
+            $this->user->getNormalizedEmail()
+        );
+    }
+
+    public function testProcessNewEmailKeepsNormalizedEmailInSync(): void
+    {
+        $eventID = $this->faker->uuid();
+        $newEmail = '  Updated.User@Example.ORG ';
+        $updateData = new UserUpdate(
+            $newEmail,
+            $this->faker->name(),
+            $this->faker->password(),
+            $this->faker->password(),
+        );
+        $this->stubEmailChangedEvent($newEmail, $eventID);
+
+        $this->user->update(
+            $updateData,
+            $this->faker->sha256(),
+            $eventID,
+            $this->userUpdateEventFactory
+        );
+
+        $this->assertSame(
+            'updated.user@example.org',
+            $this->user->getNormalizedEmail()
+        );
+    }
+
+    public function testSetNormalizedEmailOverridesStoredValue(): void
+    {
+        $this->user->setNormalizedEmail('hydrated@example.com');
+
+        $this->assertSame(
+            'hydrated@example.com',
+            $this->user->getNormalizedEmail()
+        );
+    }
+
     public function testSetInitials(): void
     {
         $initials = $this->faker->name();
@@ -172,6 +230,17 @@ final class UserTest extends UserTestCase
         $this->user->setPassword($newPassword);
 
         $this->assertSame($newPassword, $this->user->getPassword());
+    }
+
+    private function stubEmailChangedEvent(string $newEmail, string $eventID): void
+    {
+        $this->userUpdateEventFactory->method('createEmailChanged')
+            ->willReturn(new EmailChangedEvent(
+                (string) $this->user->getId(),
+                $newEmail,
+                $this->user->getEmail(),
+                $eventID
+            ));
     }
 
     private function assertUserNotConfirmed(User $user): void

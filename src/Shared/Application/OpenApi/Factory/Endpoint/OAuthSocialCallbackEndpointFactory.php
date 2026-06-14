@@ -20,6 +20,33 @@ COOKIE;
     private const UNPROCESSABLE_ENTITY_ERROR_CODES = [
         'invalid_state',
         'provider_email_unavailable',
+        'unverified_provider_email',
+    ];
+    private const PROBLEM_RESPONSE_SPECS = [
+        HttpResponse::HTTP_BAD_REQUEST => [
+            'status' => HttpResponse::HTTP_BAD_REQUEST,
+            'detail' => 'Provider mismatch: expected github, got google',
+            'errorCode' => 'provider_mismatch',
+            'supportedErrorCodes' => [],
+        ],
+        HttpResponse::HTTP_CONFLICT => [
+            'status' => HttpResponse::HTTP_CONFLICT,
+            'detail' => 'Email address matches multiple local users; automatic linking is blocked.',
+            'errorCode' => 'duplicate_email',
+            'supportedErrorCodes' => [],
+        ],
+        HttpResponse::HTTP_UNPROCESSABLE_ENTITY => [
+            'status' => HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
+            'detail' => 'Invalid or already consumed OAuth state',
+            'errorCode' => 'invalid_state',
+            'supportedErrorCodes' => self::UNPROCESSABLE_ENTITY_ERROR_CODES,
+        ],
+        HttpResponse::HTTP_SERVICE_UNAVAILABLE => [
+            'status' => HttpResponse::HTTP_SERVICE_UNAVAILABLE,
+            'detail' => 'OAuth provider github error: Mock provider token exchange failed.',
+            'errorCode' => 'provider_unavailable',
+            'supportedErrorCodes' => [],
+        ],
     ];
 
     private string $endpointUri = '/auth/social/{provider}/callback';
@@ -94,29 +121,30 @@ COOKIE;
     /**
      * @return array<int, Model\Response>
      *
-     * @psalm-return array{200: Model\Response, 400: Model\Response, 422: Model\Response, 503: Model\Response}
+     * @psalm-return array{
+     *     200: Model\Response,
+     *     400: Model\Response,
+     *     409: Model\Response,
+     *     422: Model\Response,
+     *     503: Model\Response
+     * }
      */
     private function createResponses(): array
     {
-        return [
+        $responses = [
             HttpResponse::HTTP_OK => $this->createSuccessResponse(),
-            HttpResponse::HTTP_BAD_REQUEST => $this->createProblemResponse(
-                HttpResponse::HTTP_BAD_REQUEST,
-                'Provider mismatch: expected github, got google',
-                'provider_mismatch',
-            ),
-            HttpResponse::HTTP_UNPROCESSABLE_ENTITY => $this->createProblemResponse(
-                HttpResponse::HTTP_UNPROCESSABLE_ENTITY,
-                'Invalid or already consumed OAuth state',
-                'invalid_state',
-                self::UNPROCESSABLE_ENTITY_ERROR_CODES,
-            ),
-            HttpResponse::HTTP_SERVICE_UNAVAILABLE => $this->createProblemResponse(
-                HttpResponse::HTTP_SERVICE_UNAVAILABLE,
-                'OAuth provider github error: Mock provider token exchange failed.',
-                'provider_unavailable',
-            ),
         ];
+
+        foreach (self::PROBLEM_RESPONSE_SPECS as $status => $responseSpec) {
+            $responses[$status] = $this->createProblemResponse(
+                $responseSpec['status'],
+                $responseSpec['detail'],
+                $responseSpec['errorCode'],
+                $responseSpec['supportedErrorCodes'],
+            );
+        }
+
+        return $responses;
     }
 
     private function createSuccessResponse(): Model\Response

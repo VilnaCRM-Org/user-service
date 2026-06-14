@@ -7,6 +7,9 @@ namespace App\Tests\Unit\User\Infrastructure\Repository;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 
+use function mb_strtolower;
+use function mb_strtoupper;
+
 final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepositoryTestCase
 {
     public function testSaveDelegatesToInnerRepository(): void
@@ -97,6 +100,24 @@ final class CachedUserRepositoryWriteOperationsTest extends CachedUserRepository
             ->willReturn(new UserCollection([$user]));
 
         $result = $this->repository->findByEmails([$firstEmail, $secondEmail]);
+
+        self::assertSame([$user], iterator_to_array($result));
+    }
+
+    public function testFindByEmailCaseInsensitiveDelegatesNormalizedLookup(): void
+    {
+        $email = $this->faker->unique()->email();
+        $inputEmail = '  ' . mb_strtoupper($email, 'UTF-8') . '  ';
+        $normalizedEmail = mb_strtolower($email, 'UTF-8');
+        $user = $this->createUserMock($this->faker->uuid(), $email);
+        $expectedUsers = new UserCollection([$user]);
+
+        $this->innerRepository->expects($this->once())
+            ->method('findByEmailCaseInsensitive')
+            ->with($normalizedEmail)
+            ->willReturn($expectedUsers);
+
+        $result = $this->repository->findByEmailCaseInsensitive($inputEmail);
 
         self::assertSame([$user], iterator_to_array($result));
     }

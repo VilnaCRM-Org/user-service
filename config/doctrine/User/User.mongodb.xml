@@ -10,6 +10,7 @@
         <id field-name="id" type="domain_uuid" strategy="NONE" />
 
         <field field-name="email" type="string" />
+        <field field-name="normalizedEmail" type="string" />
         <field field-name="initials" type="string" />
         <field field-name="password" type="string" />
         <field field-name="confirmed" type="boolean" />
@@ -18,8 +19,17 @@
         <field field-name="lastAcceptedTotpTimestep" type="int" nullable="true" />
 
         <indexes>
-            <!-- Unique constraint on email -->
             <index unique="true">
+                <key name="normalizedEmail" />
+                <partial-filter-expression>
+                    <and>
+                        <field name="normalizedEmail" operator="exists" value="true" />
+                        <field name="normalizedEmail" operator="gt" value="" />
+                    </and>
+                </partial-filter-expression>
+            </index>
+
+            <index>
                 <key name="email" />
             </index>
 

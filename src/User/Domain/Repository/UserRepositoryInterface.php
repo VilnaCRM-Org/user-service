@@ -17,6 +17,8 @@ interface UserRepositoryInterface
 
     public function findByEmail(string $email): ?UserInterface;
 
+    public function findByEmailCaseInsensitive(string $email): UserCollection;
+
     /**
      * @param array<int, string> $emails
      */

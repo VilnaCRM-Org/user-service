@@ -7,10 +7,10 @@ namespace App\User\Infrastructure\Repository;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;
 
 use function array_map;
-use function array_merge;
 use function array_unique;
 use function array_values;
 
@@ -20,6 +20,11 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use InvalidArgumentException;
 
 use function mb_strtolower;
+use function spl_object_id;
+use function str_contains;
+
+use Throwable;
+
 use function trim;
 
 /**
@@ -28,6 +33,8 @@ use function trim;
 final class MongoDBUserRepository extends ServiceDocumentRepository implements
     UserRepositoryInterface
 {
+    private const DUPLICATE_KEY_ERROR_CODE = 11000;
+
     public function __construct(
         private readonly DocumentManager $documentManager,
         ManagerRegistry $registry,
@@ -42,8 +49,22 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     #[\Override]
     public function save(object $user): void
     {
-        $this->documentManager->persist($user);
-        $this->documentManager->flush();
+        try {
+            $this->prepareForPersistence($user);
+            $this->documentManager->persist($user);
+            $this->documentManager->flush();
+        } catch (Throwable $error) {
+            $this->documentManager->detach($user);
+
+            if (
+                $user instanceof UserInterface
+                && $this->isDuplicateEmailKeyError($error, $user->getEmail())
+            ) {
+                throw new DuplicateEmailException($user->getEmail(), $error);
+            }
+
+            throw $error;
+        }
     }
 
     #[\Override]
@@ -65,33 +86,32 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
     /**
      * @param array<int, string> $emails
      *
-     * Matches each email exactly, with defensive trimmed and lowercase
-     * candidates for callers that pass already-normalized user input variants.
+     * Matches current normalized records and migration-scoped legacy records.
      */
     #[\Override]
     public function findByEmails(array $emails): UserCollection
     {
-        $uniqueEmails = $this->uniqueEmailCandidates($emails);
+        $uniqueEmails = $this->uniqueNormalizedEmailCandidates($emails);
 
         if ($uniqueEmails === []) {
             return new UserCollection();
         }
 
-        $result = $this->createQueryBuilder()
-            ->field('email')->in($uniqueEmails)
-            ->getQuery()
-            ->execute();
-        $users = [];
+        return $this->combineUserCollections(
+            $this->findByNormalizedEmails($uniqueEmails),
+            $this->findLegacyByNormalizedEmails($uniqueEmails)
+        );
+    }
 
-        foreach ($result as $user) {
-            if (!$user instanceof UserInterface) {
-                continue;
-            }
+    #[\Override]
+    public function findByEmailCaseInsensitive(string $email): UserCollection
+    {
+        $normalizedEmail = $this->normalizeEmail($email);
 
-            $users[] = $user;
-        }
-
-        return new UserCollection($users);
+        return $this->combineUserCollections(
+            $this->findByNormalizedEmail($normalizedEmail),
+            $this->findLegacyByNormalizedEmails([$normalizedEmail])
+        );
     }
 
     /**
@@ -129,41 +149,185 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
      *
      * @return list<string>
      */
-    private function uniqueEmailCandidates(array $emails): array
+    private function uniqueNormalizedEmailCandidates(array $emails): array
     {
-        $trimmedEmails = array_map(
-            static fn (string $email): string => trim($email),
+        return array_values(array_unique(array_map(
+            $this->normalizeEmail(...),
             $emails
-        );
-
-        return array_values(array_unique(array_merge(
-            $emails,
-            $trimmedEmails,
-            array_map(
-                static fn (string $email): string => mb_strtolower($email),
-                $trimmedEmails
-            )
         )));
+    }
+
+    private function isDuplicateEmailKeyError(Throwable $error, string $email): bool
+    {
+        return $this->isDuplicateKeyError($error)
+            && str_contains($error->getMessage(), 'normalizedEmail')
+            && str_contains($error->getMessage(), $this->normalizeEmail($email));
+    }
+
+    private function prepareForPersistence(object $user): void
+    {
+        if (!$user instanceof User) {
+            return;
+        }
+
+        $user->setNormalizedEmail($this->normalizeEmail($user->getEmail()));
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email), 'UTF-8');
+    }
+
+    /**
+     * @param list<string> $normalizedEmails
+     */
+    private function findByNormalizedEmails(array $normalizedEmails): UserCollection
+    {
+        $result = $this->createQueryBuilder()
+            ->field('normalizedEmail')->in($normalizedEmails)
+            ->getQuery()
+            ->execute();
+
+        return $this->userCollectionFromResult($result);
+    }
+
+    private function findByNormalizedEmail(string $normalizedEmail): UserCollection
+    {
+        $result = $this->createQueryBuilder()
+            ->field('normalizedEmail')
+            ->equals($normalizedEmail)
+            ->getQuery()
+            ->execute();
+
+        return $this->userCollectionFromResult($result);
+    }
+
+    /**
+     * @param list<string> $normalizedEmails
+     */
+    private function findLegacyByNormalizedEmails(array $normalizedEmails): UserCollection
+    {
+        $queryBuilder = $this->createQueryBuilder();
+
+        $result = $queryBuilder
+            ->addAnd(
+                $this->legacyNormalizedEmailExpression(),
+                $this->legacyEmailExpression($normalizedEmails)
+            )
+            ->getQuery()
+            ->execute();
+
+        return $this->userCollectionFromResult($result);
+    }
+
+    /** @return array{'$or': list<array{normalizedEmail: array{'$exists': false}|string}>} */
+    private function legacyNormalizedEmailExpression(): array
+    {
+        return [
+            '$or' => [
+                ['normalizedEmail' => ['$exists' => false]],
+                ['normalizedEmail' => ''],
+            ],
+        ];
+    }
+
+    /**
+     * @param list<string> $normalizedEmails
+     *
+     * @return array{
+     *     '$expr': array{
+     *         '$in': array{
+     *             0: array{'$toLower': array{'$trim': array{input: string}}},
+     *             1: list<string>
+     *         }
+     *     }
+     * }
+     */
+    private function legacyEmailExpression(array $normalizedEmails): array
+    {
+        return [
+            '$expr' => [
+                '$in' => [
+                    [
+                        '$toLower' => [
+                            '$trim' => [
+                                'input' => '$email',
+                            ],
+                        ],
+                    ],
+                    $normalizedEmails,
+                ],
+            ],
+        ];
+    }
+
+    private function combineUserCollections(
+        UserCollection $currentUsers,
+        UserCollection $legacyUsers
+    ): UserCollection {
+        $users = [];
+        $indexedUsers = [];
+
+        foreach ([$currentUsers, $legacyUsers] as $collection) {
+            foreach ($collection->users as $user) {
+                $userId = $user->getId();
+                $index = $userId !== ''
+                    ? $userId
+                    : 'object:' . spl_object_id($user);
+
+                if (isset($indexedUsers[$index])) {
+                    continue;
+                }
+
+                $indexedUsers[$index] = true;
+                $users[] = $user;
+            }
+        }
+
+        return new UserCollection($users);
+    }
+
+    /**
+     * @param iterable<object> $result
+     */
+    private function userCollectionFromResult(iterable $result): UserCollection
+    {
+        $users = [];
+
+        foreach ($result as $user) {
+            if (!$user instanceof UserInterface) {
+                continue;
+            }
+
+            $users[] = $user;
+        }
+
+        return new UserCollection($users);
+    }
+
+    private function isDuplicateKeyError(Throwable $error): bool
+    {
+        return $error->getCode() === self::DUPLICATE_KEY_ERROR_CODE
+            || str_contains($error->getMessage(), 'E11000');
     }
 
     private function persistUsersInBatch(UserCollection $users): void
     {
         $usersForPersistence = $users->users;
+        $persistedUsers = new UserCollection();
 
-        array_walk(
-            $usersForPersistence,
-            function (User $user, int $index): void {
-                $position = $index + 1;
-                $this->documentManager->persist($user);
+        foreach ($usersForPersistence as $index => $user) {
+            $position = $index + 1;
+            $persistedUsers->add($user);
+            $this->prepareForPersistence($user);
+            $this->documentManager->persist($user);
 
-                if ($position % $this->batchSize === 0) {
-                    $this->documentManager->flush();
-                    $this->documentManager->clear();
-                }
+            if ($position % $this->batchSize === 0) {
+                $this->flushPersistedUsers($persistedUsers);
+                $persistedUsers = new UserCollection();
             }
-        );
-        $this->documentManager->flush();
-        $this->documentManager->clear();
+        }
+        $this->flushPersistedUsers($persistedUsers);
     }
 
     private function removeUsersInBatch(UserCollection $users): void
@@ -184,5 +348,32 @@ final class MongoDBUserRepository extends ServiceDocumentRepository implements
         );
         $this->documentManager->flush();
         $this->documentManager->clear();
+    }
+
+    private function flushPersistedUsers(UserCollection $users): void
+    {
+        try {
+            $this->documentManager->flush();
+        } catch (Throwable $error) {
+            $this->documentManager->clear();
+            $this->throwDuplicateEmailExceptionForBatchFlush($error, $users);
+
+            throw $error;
+        }
+
+        $this->documentManager->clear();
+    }
+
+    private function throwDuplicateEmailExceptionForBatchFlush(
+        Throwable $error,
+        UserCollection $users
+    ): void {
+        foreach ($users as $user) {
+            if (!$this->isDuplicateEmailKeyError($error, $user->getEmail())) {
+                continue;
+            }
+
+            throw new DuplicateEmailException($user->getEmail(), $error);
+        }
     }
 }

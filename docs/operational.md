@@ -53,3 +53,108 @@ To keep quality controls predictable for autonomous AI agents and humans, use th
 5. After merge, ensure subsequent branches run with a green `make ci` baseline.
 
 This process allows controlled exceptions without normalizing "merge with red CI" as standard practice.
+
+## Normalized Email Backfill Runbook
+
+The user service stores `normalizedEmail` for case-insensitive email uniqueness.
+Existing MongoDB users created before this field exists must be scanned before
+the backfill mutates data.
+
+### Deployment Order
+
+1. Deploy the application version that writes `normalizedEmail` for new and
+   updated users.
+2. Confirm MongoDB has the unique partial index on non-empty `normalizedEmail`
+   values after schema creation.
+3. Run the backfill in dry-run mode and write a report:
+
+   ```bash
+   docker compose exec php php bin/console app:backfill-user-normalized-emails --dry-run --report-file=/tmp/normalized-email-backfill.json
+   ```
+
+4. Review the JSON report. Continue only when `duplicates` is empty.
+5. Run the mutating backfill and keep its report as the release artifact:
+
+   ```bash
+   docker compose exec php php bin/console app:backfill-user-normalized-emails --report-file=/tmp/normalized-email-backfill.json
+   ```
+
+6. Run a smoke registration check for a new user and a case-variant duplicate.
+
+### Duplicate Remediation
+
+If the dry-run report contains duplicate normalized emails, stop the rollout and
+do not run the mutating command. A data owner must decide which account remains
+active, which account is merged or disabled, and whether customer notification is
+required. Record the decision with the report before retrying dry-run mode.
+
+Automation must not merge, delete, or silently select one duplicate account.
+
+### Monitoring
+
+During rollout, watch application logs for `DuplicateEmailException`, MongoDB
+duplicate-key errors on `normalizedEmail`, and OAuth `duplicate_email` conflict
+responses. A short spike during duplicate remediation is acceptable; persistent
+new errors after backfill require rollback assessment.
+
+#### Release SLOs And Alerts
+
+The normalized-email rollout uses the centralized application log dashboard for
+release monitoring. This repository does not own the production dashboard
+configuration, so the release record must include screenshots or links for the
+following queries:
+
+- `DuplicateEmailException` in `user-service`: alert when the rate stays above
+  the pre-release baseline for 10 consecutive minutes after the mutating
+  backfill finishes.
+- `E11000 duplicate key error` and `normalizedEmail` in MongoDB/application
+  logs: alert on any occurrence after the mutating backfill finishes.
+- `duplicate_email` OAuth conflict responses: alert when the rate stays above
+  the duplicate-remediation baseline for 10 consecutive minutes.
+- `app:backfill-user-normalized-emails`: alert when the command exits with a
+  non-zero status or when the JSON report contains a non-empty `duplicates`
+  list.
+
+The release SLO is zero MongoDB duplicate-key errors for `normalizedEmail`
+after the mutating backfill. Duplicate-email API conflicts are expected only for
+legitimate client retries or pre-existing duplicate remediation and must not
+grow above the release baseline.
+
+#### Backfill Performance Budget
+
+`BackfillUserNormalizedEmailsBackfiller` scans and writes users in batches of
+100 documents. The dry-run report must capture `matched`, `modified`,
+`dryRun`, and `duplicates`; the production release record must also capture the
+dry-run start time, finish time, and elapsed time before approving a mutating
+run. The mutating run must keep the same report and elapsed-time evidence.
+
+Batch email lookup performs one indexed `normalizedEmail` lookup and one legacy
+fallback lookup for documents that do not yet have `normalizedEmail`. The
+legacy fallback is a deployment-window compatibility path and should disappear
+from normal traffic after a successful backfill.
+
+### Rollback
+
+If the new version must be rolled back before the mutating backfill runs, deploy
+the previous application version and leave legacy documents unchanged. If
+rollback is required after the mutating backfill, deploy the previous version
+only after confirming it ignores unknown MongoDB fields. Keep the
+`normalizedEmail` field and index in place until a separate, reviewed rollback
+plan removes them.
+
+### Release Checklist
+
+- Dry-run report is attached to the release record.
+- Duplicate list is empty, or each duplicate has a recorded human remediation
+  decision.
+- Mutating report is attached after execution.
+- Registration duplicate smoke check passed.
+- OAuth social callback duplicate conflict check passed.
+- Password reset still returns a neutral response for ambiguous email data.
+- 2FA setup rejects ambiguous email data without persisting a secret.
+
+Use
+`specs/issue-217-register-user-cqrs/manual-evidence-template.md`
+to record the tester, date, dry-run JSON artifact, duplicate-remediation
+decision, rollout checks, and rollback evidence before running the BMAD
+FR/NFR review gate with `BMAD_REVIEW_MANUAL_EVIDENCE`.

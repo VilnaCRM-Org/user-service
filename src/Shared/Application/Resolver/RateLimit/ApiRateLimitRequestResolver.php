@@ -79,22 +79,70 @@ final readonly class ApiRateLimitRequestResolver
             $this->resolveTokenExchangeLimiter($request, $path, $method),
             $this->resolveEmailConfirmationLimiter($request, $path, $method),
             $this->resolveUserCollectionLimiter($request, $path, $method),
-            $this->resolveFixedPostIpLimiter(
-                $request,
-                $path,
-                $method,
-                self::PASSWORD_RESET_PATH,
-                'password_reset_ip'
-            ),
-            $this->resolveFixedPostIpLimiter(
-                $request,
-                $path,
-                $method,
-                self::PASSWORD_RESET_CONFIRM_PATH,
-                'password_reset_confirm'
-            ),
+            $this->resolvePasswordResetLimiter($request, $path, $method),
+            $this->resolvePasswordResetConfirmLimiter($request, $path, $method),
             $this->resolveOAuthSocialLimiter($request, $path, $method),
         ]));
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'email_confirmation', key: string}|null
+     */
+    private function resolveEmailConfirmationLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        return $this->resolveExactPathIpLimiter(
+            $request,
+            $path,
+            $method,
+            'PATCH',
+            '/api/users/confirm',
+            'email_confirmation'
+        );
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'password_reset_ip', key: string}|null
+     */
+    private function resolvePasswordResetLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        return $this->resolveExactPathIpLimiter(
+            $request,
+            $path,
+            $method,
+            'POST',
+            self::PASSWORD_RESET_PATH,
+            'password_reset_ip'
+        );
+    }
+
+    /**
+     * @return array<string>|null
+     *
+     * @psalm-return array{name: 'password_reset_confirm', key: string}|null
+     */
+    private function resolvePasswordResetConfirmLimiter(
+        Request $request,
+        string $path,
+        string $method
+    ): ?array {
+        return $this->resolveExactPathIpLimiter(
+            $request,
+            $path,
+            $method,
+            'POST',
+            self::PASSWORD_RESET_CONFIRM_PATH,
+            'password_reset_confirm'
+        );
     }
 
     /**
@@ -213,18 +261,21 @@ final readonly class ApiRateLimitRequestResolver
     /**
      * @return array<string>|null
      *
-     * @psalm-return array{name: 'email_confirmation', key: string}|null
+     * @psalm-return array{name: string, key: string}|null
      */
-    private function resolveEmailConfirmationLimiter(
+    private function resolveExactPathIpLimiter(
         Request $request,
         string $path,
-        string $method
+        string $method,
+        string $expectedMethod,
+        string $expectedPath,
+        string $name
     ): ?array {
-        if ($method === 'PATCH' && $path === '/api/users/confirm') {
-            return ['name' => 'email_confirmation', 'key' => $this->buildIpKey($request)];
+        if ($method !== $expectedMethod || $path !== $expectedPath) {
+            return null;
         }
 
-        return null;
+        return ['name' => $name, 'key' => $this->buildIpKey($request)];
     }
 
     /**
@@ -245,25 +296,6 @@ final readonly class ApiRateLimitRequestResolver
         }
 
         return null;
-    }
-
-    /**
-     * @return array<string>|null
-     *
-     * @psalm-return array{name: string, key: string}|null
-     */
-    private function resolveFixedPostIpLimiter(
-        Request $request,
-        string $path,
-        string $method,
-        string $expectedPath,
-        string $name
-    ): ?array {
-        if ($method !== 'POST' || $path !== $expectedPath) {
-            return null;
-        }
-
-        return ['name' => $name, 'key' => $this->buildIpKey($request)];
     }
 
     /**

@@ -52,6 +52,8 @@ CQRS is a design pattern that separates the responsibilities of handling command
 
 In User Service, CQRS allows us to encapsulate behavior and reuse it in different scenarios. Commands and Queries have all the needed data for instructions, that were encapsulated, to be completed. After being dispatched, they are automatically processed by corresponding handlers.
 
+Commands are write-side requests and should not be used as mutable response containers. For example, user registration keeps `RegisterUserCommand` immutable, checks duplicates through an application query handler, and returns created-user data through an explicit command response DTO.
+
 All interfaces related to Commands can be found in `Shared/Domain/Bus/Command`.
 
 This is the list of currently available Commands, which can be found in `User/Application/Command` folder:
