@@ -243,11 +243,11 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForGraphQlRefreshTokenMutation(): void
     {
         $refreshToken = $this->faker->sha256();
-        $request = $this->createGraphQlRequest(
-            'mutation { refreshToken(input: {refreshToken: "' . $refreshToken . '"}) { user { id } } }',
-            [],
-            '203.0.113.12'
+        $mutation = sprintf(
+            'mutation { refreshToken(input: {refreshToken: "%s"}) { user { id } } }',
+            $refreshToken
         );
+        $request = $this->createGraphQlRequest($mutation, [], '203.0.113.12');
 
         $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
