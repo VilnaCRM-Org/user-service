@@ -69,6 +69,18 @@ final class SchemathesisBatchUsersEmailResolverTest extends UnitTestCase
         );
     }
 
+    public function testExtractReturnsEmptyWhenUsersIsNotArray(): void
+    {
+        $emailResolver = new SchemathesisBatchUsersEmailResolver();
+
+        // A malformed Schemathesis payload where "users" is a scalar instead of
+        // a list; the resolver must guard against it and return no emails.
+        /** @var array{users: string} $payload */
+        $payload = ['users' => 'not-an-array'];
+
+        $this->assertSame([], $emailResolver->extract($payload));
+    }
+
     public function testExtractSkipsNonArrayUsers(): void
     {
         $emailResolver = new SchemathesisBatchUsersEmailResolver();

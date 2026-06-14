@@ -23,7 +23,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveGlobalLimiterReturnsAnonymousWhenNoAuth(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create('/api/users', 'GET', [], [], [], ['REMOTE_ADDR' => $clientIp]);
+        $request = $this->createRequestWithIp('/api/users', 'GET', $clientIp);
 
         $result = $this->resolver->resolveGlobalLimiter($request);
 
@@ -45,7 +45,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
         $clientIp = $this->faker->ipv4();
         $resolver = $this->createRequestResolver($jwtConverter);
-        $request = Request::create('/api/users', 'GET', [], [], [], ['REMOTE_ADDR' => $clientIp]);
+        $request = $this->createRequestWithIp('/api/users', 'GET', $clientIp);
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
         $result = $resolver->resolveGlobalLimiter($request);
@@ -57,10 +57,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForRegistrationPost(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create('/api/users', 'POST', [], [], [], ['REMOTE_ADDR' => $clientIp]);
+        $request = $this->createRequestWithIp('/api/users', 'POST', $clientIp);
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('registration', $byName);
         self::assertSame('ip:' . $clientIp, $byName['registration']);
@@ -69,10 +68,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForUserCollectionGet(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create('/api/users', 'GET', [], [], [], ['REMOTE_ADDR' => $clientIp]);
+        $request = $this->createRequestWithIp('/api/users', 'GET', $clientIp);
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('user_collection', $byName);
         self::assertSame('ip:' . $clientIp, $byName['user_collection']);
@@ -80,12 +78,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
     public function testResolveEndpointLimitersForOauthTokenPath(): void
     {
-        $request = Request::create('/api/token', 'POST', [], [], [], [
-            'REMOTE_ADDR' => '127.0.0.1',
-        ]);
+        $request = $this->createRequestWithIp('/api/token', 'POST', '127.0.0.1');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('refresh_token', $byName);
         self::assertSame('ip:127.0.0.1', $byName['refresh_token']);
@@ -93,17 +88,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
     public function testResolveEndpointLimitersForOauthAlternatePath(): void
     {
-        $request = Request::create(
-            '/api/oauth/token',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => '127.0.0.1']
-        );
+        $request = $this->createRequestWithIp('/api/oauth/token', 'POST', '127.0.0.1');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertContains('oauth_token', $names);
     }
@@ -111,13 +98,13 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersOauthTokenUsesClientIdFromBasicAuth(): void
     {
         $clientId = $this->faker->lexify('client???');
-        $request = Request::create('/api/token', 'POST', [], [], [], [
-            'REMOTE_ADDR' => '127.0.0.1',
-        ]);
-        $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
+        $request = $this->createRequestWithIp('/api/token', 'POST', '127.0.0.1');
+        $request->headers->set(
+            'Authorization',
+            'Basic ' . base64_encode($clientId . ':' . $this->faker->password())
+        );
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertSame('ip:127.0.0.1', $byName['refresh_token']);
     }
@@ -125,18 +112,13 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersOauthAlternatePathUsesClientIdFromBasicAuth(): void
     {
         $clientId = $this->faker->lexify('client???');
-        $request = Request::create(
-            '/api/oauth/token',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => '127.0.0.1']
+        $request = $this->createRequestWithIp('/api/oauth/token', 'POST', '127.0.0.1');
+        $request->headers->set(
+            'Authorization',
+            'Basic ' . base64_encode($clientId . ':' . $this->faker->password())
         );
-        $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertSame('client:' . $clientId, $byName['oauth_token']);
     }
@@ -144,17 +126,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForEmailConfirmation(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/users/confirm',
-            'PATCH',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
-        );
+        $request = $this->createRequestWithIp('/api/users/confirm', 'PATCH', $clientIp);
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('email_confirmation', $byName);
         self::assertSame('ip:' . $clientIp, $byName['email_confirmation']);
@@ -163,17 +137,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForPasswordResetRequest(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/reset-password',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
-        );
+        $request = $this->createRequestWithIp('/api/reset-password', 'POST', $clientIp);
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('password_reset_ip', $byName);
         self::assertSame('ip:' . $clientIp, $byName['password_reset_ip']);
@@ -181,12 +147,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
     public function testResolveEndpointLimitersSkipsPasswordResetIpForConfirmPath(): void
     {
-        $request = Request::create('/api/reset-password/confirm', 'POST', [], [], [], [
-            'REMOTE_ADDR' => '127.0.0.1',
-        ]);
+        $request = $this->createRequestWithIp('/api/reset-password/confirm', 'POST', '127.0.0.1');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('password_reset_ip', $names);
         self::assertContains('password_reset_confirm', $names);
@@ -196,8 +159,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $request = Request::create('/api/reset-password', 'GET');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('password_reset_ip', $names);
     }
@@ -205,10 +167,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForSignIn(): void
     {
         $clientIp = $this->faker->ipv4();
-        $request = Request::create('/api/signin', 'POST', [], [], [], ['REMOTE_ADDR' => $clientIp]);
+        $request = $this->createRequestWithIp('/api/signin', 'POST', $clientIp);
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('signin_ip', $byName);
         self::assertSame('ip:' . $clientIp, $byName['signin_ip']);
@@ -217,18 +178,12 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForSignInWithEmailInBody(): void
     {
         $email = $this->faker->email();
-        $request = Request::create(
+        $request = $this->createJsonPostRequest(
             '/api/signin',
-            'POST',
-            [],
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
             json_encode(['email' => $email], JSON_THROW_ON_ERROR)
         );
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('signin_email', $byName);
         self::assertSame('email:' . strtolower(trim($email)), $byName['signin_email']);
@@ -238,8 +193,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $request = Request::create('/api/signin/2fa', 'POST');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertContains('twofa_verification_ip', $names);
     }
@@ -257,8 +211,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $request = Request::create('/api/users.json', 'POST');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertContains('registration', $names);
     }
@@ -267,8 +220,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $request = Request::create('/api/users.jsonld', 'GET');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertContains('user_collection', $names);
     }
@@ -276,24 +228,13 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     public function testResolveEndpointLimitersForGraphQlSignInMutation(): void
     {
         $email = $this->faker->email();
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => '203.0.113.11', 'CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'query' => 'mutation { signIn(input: $input) { id } }',
-                'variables' => ['input' => ['email' => $email, 'password' => 'secret']],
-            ], JSON_THROW_ON_ERROR)
+        $request = $this->createGraphQlRequest(
+            'mutation { signIn(input: $input) { id } }',
+            ['input' => ['email' => $email, 'password' => $this->faker->password()]],
+            '203.0.113.11'
         );
 
-        $byName = array_column(
-            $this->resolver->resolveEndpointLimiters($request),
-            'key',
-            'name'
-        );
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertSame('ip:203.0.113.11', $byName['signin_ip']);
         self::assertSame('email:' . strtolower(trim($email)), $byName['signin_email']);
@@ -301,23 +242,14 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
     public function testResolveEndpointLimitersForGraphQlRefreshTokenMutation(): void
     {
-        $request = Request::create(
-            '/api/graphql',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => '203.0.113.12', 'CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'query' => 'mutation { refreshToken(input: {refreshToken: "x"}) { user { id } } }',
-            ], JSON_THROW_ON_ERROR)
+        $refreshToken = $this->faker->sha256();
+        $mutation = sprintf(
+            'mutation { refreshToken(input: {refreshToken: "%s"}) { user { id } } }',
+            $refreshToken
         );
+        $request = $this->createGraphQlRequest($mutation, [], '203.0.113.12');
 
-        $byName = array_column(
-            $this->resolver->resolveEndpointLimiters($request),
-            'key',
-            'name'
-        );
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertSame('ip:203.0.113.12', $byName['refresh_token']);
     }

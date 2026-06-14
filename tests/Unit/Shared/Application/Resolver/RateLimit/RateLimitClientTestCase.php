@@ -102,6 +102,50 @@ abstract class RateLimitClientTestCase extends UnitTestCase
         );
     }
 
+    protected function createRequestWithIp(
+        string $path,
+        string $method,
+        string $clientIp
+    ): Request {
+        return Request::create($path, $method, [], [], [], ['REMOTE_ADDR' => $clientIp]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function resolveEndpointLimiterKeysByName(
+        ApiRateLimitRequestResolver $resolver,
+        Request $request
+    ): array {
+        return array_column($resolver->resolveEndpointLimiters($request), 'key', 'name');
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function resolveEndpointLimiterNames(
+        ApiRateLimitRequestResolver $resolver,
+        Request $request
+    ): array {
+        return array_column($resolver->resolveEndpointLimiters($request), 'name');
+    }
+
+    protected function createJsonPostRequest(
+        string $path,
+        string $body,
+        string $clientIp = '127.0.0.1'
+    ): Request {
+        return Request::create(
+            $path,
+            'POST',
+            [],
+            [],
+            [],
+            ['REMOTE_ADDR' => $clientIp, 'CONTENT_TYPE' => 'application/json'],
+            $body
+        );
+    }
+
     /**
      * @param array<string, array<string, scalar|null>|scalar|null> $variables
      */
