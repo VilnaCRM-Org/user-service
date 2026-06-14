@@ -170,7 +170,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
         $returnedUsers = $this->fetchReturnedUsers($client, $owner['user']);
 
         $this->assertReturnedUsersAreWellFormed($returnedUsers);
-        $this->assertReturnedFixturesArePresent($returnedUsers, $owner, $peer);
+        $this->assertReturnedCollectionIsScopedToOwner($returnedUsers, $owner, $peer);
     }
 
     private function exerciseConfirmUser(KernelBrowser $client, int $iteration): void
@@ -355,11 +355,32 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
     }
 
     /**
+     * @param list<array{id: string, email: string}> $returnedUsers
+     */
+    private function assertReturnedUsersDoNotContain(
+        array $returnedUsers,
+        string $userId,
+        string $email,
+    ): void {
+        $expectedId = $this->buildGetUserId($userId);
+        $matchesFixture = array_filter(
+            $returnedUsers,
+            static fn (array $returnedUser): bool => $returnedUser['id'] === $expectedId
+                && $returnedUser['email'] === $email,
+        );
+
+        $this->assertSame([], $matchesFixture);
+    }
+
+    /**
+     * The secured `users` query is scoped to the authenticated caller, so the
+     * owner must see only their own record and never another user's PII.
+     *
      * @param array{user: \App\User\Domain\Entity\User, password: string} $owner
      * @param array{user: \App\User\Domain\Entity\User, password: string} $peer
      * @param list<array{id: string, email: string}> $returnedUsers
      */
-    private function assertReturnedFixturesArePresent(
+    private function assertReturnedCollectionIsScopedToOwner(
         array $returnedUsers,
         array $owner,
         array $peer,
@@ -369,7 +390,7 @@ final class GraphQLUserOperationMemoryTest extends GraphQLMemoryWebTestCase
             $owner['user']->getId(),
             $owner['user']->getEmail(),
         );
-        $this->assertReturnedUsersContain(
+        $this->assertReturnedUsersDoNotContain(
             $returnedUsers,
             $peer['user']->getId(),
             $peer['user']->getEmail(),

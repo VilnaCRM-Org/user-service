@@ -34,6 +34,8 @@ final readonly class PasswordResetRequestedEventSubscriber implements
             return;
         }
 
+        $token->attachPlainToken($event->token);
+
         $this->commandBus->dispatch(
             $this->cmdFactory->create(
                 $this->emailFactory->create($token, $user)

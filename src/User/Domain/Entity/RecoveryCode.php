@@ -10,8 +10,7 @@ final class RecoveryCode
 {
     public const COUNT = 8;
     public const SEGMENT_LENGTH = 4;
-    private const LEGACY_HASH_ALGORITHM = 'sha256';
-    private const HASH_MEMORY_COST = 8192;
+    private const HASH_MEMORY_COST = 19456;
     private const HASH_TIME_COST = PASSWORD_ARGON2_DEFAULT_TIME_COST;
     private const HASH_THREADS = 1;
 
@@ -59,12 +58,7 @@ final class RecoveryCode
 
     public function matchesCode(string $plainCode): bool
     {
-        $normalizedCode = $this->normalizeCode($plainCode);
-        if ($this->isPasswordHash($this->codeHash)) {
-            return password_verify($normalizedCode, $this->codeHash);
-        }
-
-        return hash_equals($this->codeHash, $this->legacyHash($normalizedCode));
+        return password_verify($this->normalizeCode($plainCode), $this->codeHash);
     }
 
     /** @psalm-suppress PossiblyUnusedMethod */
@@ -83,20 +77,8 @@ final class RecoveryCode
         ]);
     }
 
-    private function legacyHash(string $value): string
-    {
-        return hash(self::LEGACY_HASH_ALGORITHM, $value);
-    }
-
     private function normalizeCode(string $value): string
     {
         return strtolower($value);
-    }
-
-    private function isPasswordHash(string $value): bool
-    {
-        $info = password_get_info($value);
-
-        return (string) ($info['algoName'] ?? 'unknown') !== 'unknown';
     }
 }

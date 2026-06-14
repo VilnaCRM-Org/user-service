@@ -65,7 +65,11 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 
     private function verifyTotpOrFail(User $user, string $code): void
     {
-        $this->twoFactorCodeVerifier->verifyAndConsumeOrFail($user, $code);
+        // Setup confirmation is a one-time enable step and must not consume the
+        // TOTP replay time-step; otherwise a sign-in completion using a code from
+        // the same 30s window is wrongly rejected as a replay. Replay protection
+        // remains enforced on the sign-in completion and disable flows.
+        $this->twoFactorCodeVerifier->verifyTotpForSetupOrFail($user, $code);
     }
 
     /**

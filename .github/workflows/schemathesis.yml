@@ -8,13 +8,37 @@ jobs:
   schemathesis:
     name: Schemathesis
     runs-on: ubuntu-latest
-
+    env:
+      # Disable FrankenPHP worker recycling for this ephemeral validation stack.
+      # The worker normally recycles after FRANKENPHP_LOOP_MAX (500) requests,
+      # closing in-flight keep-alive connections mid-batch -> Schemathesis
+      # "Connection reset by peer" / "Remote end closed connection" network
+      # errors even though every reachable case passes. `make start` (below)
+      # propagates this into the php/workers containers via docker-compose's
+      # ${FRANKENPHP_LOOP_MAX:-500} fallback; prod/load-test defaults are untouched.
+      FRANKENPHP_LOOP_MAX: '-1'
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping Schemathesis for Dependabot PR"
+
       - name: Checkout Repository
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@v4
 
+      - uses: shivammathur/setup-php@v2
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        with:
+          php-version: ${{ vars.PHP_VERSION }}
+
+      - name: Install Dependencies
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
       - name: Start Application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Run Schemathesis Validation
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make schemathesis-validate

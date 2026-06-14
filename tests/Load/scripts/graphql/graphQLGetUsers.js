@@ -38,10 +38,13 @@ export default function getUsers() {
     utils.getJsonHeaderWithAuth(user.accessToken)
   );
 
+  // The users query is scoped to the authenticated caller (object-level
+  // authorization), so it returns only the caller's own record regardless of
+  // how many records are requested via `first`.
   utils.checkResponse(
     response,
-    'users returned',
-    res => JSON.parse(res.body).data.users.edges.length === usersToGetInOneRequest
+    'own user returned',
+    res => JSON.parse(res.body).data.users.edges.length === 1
   );
 }
 

@@ -62,9 +62,9 @@ As you will see, we use Make commands to manage the project. Run `make help` aft
    [GraphQL docs](https://localhost/api/graphql/graphql_playground) (available when running locally)
 
    You can also view the API specifications directly on GitHub:
-
-   - [OpenAPI Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/openapi-spec/spec.yaml)
-   - [GraphQL Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/graphql-spec/spec)
+   [OpenAPI Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/openapi-spec/spec.yaml)
+   and
+   [GraphQL Specification](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/graphql-spec/spec).
 
 5. **FAQ**
 
@@ -175,6 +175,19 @@ make bmalph-setup
 This repository keeps BMAD planning artifacts under `specs/` instead of the upstream `_bmad-output/planning-artifacts` default. `make bmalph-setup` rewrites the local `_bmad/config.yaml` so planning runs use `specs/`; rerun it after any direct `bmalph upgrade --force` if you need to restore the repo defaults.
 
 For autonomous specs-first planning from a short request, use the `bmad-autonomous-planning` skill in the current AI session. The canonical workflow lives in `.claude/skills/bmad-autonomous-planning/SKILL.md`, and Codex can start from `.agents/skills/bmad-autonomous-planning/SKILL.md`.
+
+After implementing a BMAD-scoped PR, feature, or bugfix, run:
+
+```bash
+BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate
+```
+
+This gate requires 5/5 evidence for every applicable FR/NFR, pinned NFR catalog
+category, expanded quality dimension, graph-backed whole-codebase impact
+surface, manual-test expectation, GitHub review gate, and CI gate. You can
+pass Graphify, codebase-memory, Deptrac, or manual relationship context with
+`BMAD_REVIEW_IMPACT_CONTEXT=path/to/context.md`; otherwise the wrapper creates
+a bounded local graph/relationship impact context.
 
 `bmalph init` writes local `_bmad/` and `.ralph/` assets into the workspace. Those directories are ignored in git here, so prefer the dry-run preview before enabling the local workflow files.
 

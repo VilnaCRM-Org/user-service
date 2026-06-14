@@ -25,10 +25,10 @@ ARG SYMFONY_VERSION=""
 ENV SYMFONY_VERSION=${SYMFONY_VERSION}
 
 ARG APCU_VERSION=v5.1.28
-ARG MONGODB_VERSION=2.2.1
+ARG MONGODB_VERSION=2.3.0
 ARG REDIS_VERSION=6.3.0
 ARG APCU_SHA256=ca9c1820810a168786f8048a4c3f8c9e3fd941407ad1553259fb2e30b5f057bf
-ARG MONGODB_SHA256=b923617bec3cde420d80bf78aeb05002be3c0e930b93adaacaa5c2e0c25adb42
+ARG MONGODB_SHA256=7e7c4fbdc991bad24524316096d4ac9cd805632c9ba7f9886682db843d60166c
 ARG REDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
 
 ENV APP_ENV=prod
@@ -155,8 +155,22 @@ RUN set -eux; \
 
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
+# Pin Xdebug to a known-good 3.4.x release compatible with PHP 8.4 and retry the
+# install so a transient pecl/registry hiccup ("No releases available", curl
+# exit 35) does not fail the dev image build.
+ARG XDEBUG_VERSION=3.4.5
 RUN set -eux; \
-    install-php-extensions xdebug
+    attempt=1; \
+    max_attempts=5; \
+    until install-php-extensions "xdebug-${XDEBUG_VERSION}"; do \
+        if [ "${attempt}" -ge "${max_attempts}" ]; then \
+            echo "install-php-extensions xdebug-${XDEBUG_VERSION} failed after ${attempt} attempts" >&2; \
+            exit 1; \
+        fi; \
+        echo "install-php-extensions xdebug-${XDEBUG_VERSION} attempt ${attempt} failed; retrying" >&2; \
+        attempt=$((attempt + 1)); \
+        sleep $((attempt * 3)); \
+    done
 
 COPY --link infrastructure/docker/php/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
 COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile

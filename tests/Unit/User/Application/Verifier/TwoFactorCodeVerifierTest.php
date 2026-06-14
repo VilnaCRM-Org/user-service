@@ -13,14 +13,18 @@ use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
+use App\User\Domain\Repository\UserRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class TwoFactorCodeVerifierTest extends UnitTestCase
 {
+    private const ACCEPTED_TIMESTEP = 57_000_000;
+
     private TOTPValidatorInterface&MockObject $totpVerifier;
     private TwoFactorSecretEncryptorInterface&MockObject $encryptor;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
+    private UserRepositoryInterface&MockObject $userRepository;
     private TwoFactorCodeValidator $verifier;
 
     #[\Override]
@@ -31,11 +35,13 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $this->totpVerifier = $this->createMock(TOTPValidatorInterface::class);
         $this->encryptor = $this->createMock(TwoFactorSecretEncryptorInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
+        $this->userRepository = $this->createMock(UserRepositoryInterface::class);
 
         $this->verifier = new TwoFactorCodeValidator(
             $this->totpVerifier,
             $this->encryptor,
             $this->recoveryCodeRepository,
+            $this->userRepository,
         );
     }
 
@@ -48,7 +54,10 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $user = $this->createUserMock($secret);
 
         $this->encryptor->method('decrypt')->with($secret)->willReturn($decryptedSecret);
-        $this->totpVerifier->method('verify')->with($decryptedSecret, $code)->willReturn(true);
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->with($decryptedSecret, $code)
+            ->willReturn(self::ACCEPTED_TIMESTEP);
+        $this->userRepository->expects($this->once())->method('save')->with($user);
 
         $this->verifier->verifyTotpOrFail($user, $code);
         $this->addToAssertionCount(1);
@@ -63,7 +72,8 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $user = $this->createUserMock($secret);
 
         $this->encryptor->method('decrypt')->with($secret)->willReturn($decryptedSecret);
-        $this->totpVerifier->method('verify')->willReturn(false);
+        $this->totpVerifier->method('resolveAcceptedTimestep')->willReturn(null);
+        $this->userRepository->expects($this->never())->method('save');
 
         $this->expectException(UnauthorizedHttpException::class);
         $this->expectExceptionMessage('Invalid two-factor code.');
@@ -80,9 +90,56 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $user = $this->createUserMock($secret);
 
         $this->encryptor->method('decrypt')->willReturn($decryptedSecret);
-        $this->totpVerifier->method('verify')->willReturn(true);
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->willReturn(self::ACCEPTED_TIMESTEP);
 
         $this->verifier->verifyAndConsumeOrFail($user, $code);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testVerifyAndConsumeOrFailRejectsReplayedTotpCode(): void
+    {
+        $secret = $this->faker->sha256();
+        $decryptedSecret = $this->faker->sha256();
+        $code = '123456';
+
+        $user = $this->createMock(User::class);
+        $user->method('getTwoFactorSecret')->willReturn($secret);
+        $user->method('isTotpTimestepReplay')
+            ->with(self::ACCEPTED_TIMESTEP)
+            ->willReturn(true);
+        $user->expects($this->never())->method('recordAcceptedTotpTimestep');
+
+        $this->encryptor->method('decrypt')->willReturn($decryptedSecret);
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->willReturn(self::ACCEPTED_TIMESTEP);
+        $this->userRepository->expects($this->never())->method('save');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Invalid two-factor code.');
+
+        $this->verifier->verifyAndConsumeOrFail($user, $code);
+    }
+
+    public function testVerifyTotpOrFailAdvancesAndPersistsAcceptedTimestep(): void
+    {
+        $secret = $this->faker->sha256();
+        $decryptedSecret = $this->faker->sha256();
+        $code = '123456';
+
+        $user = $this->createMock(User::class);
+        $user->method('getTwoFactorSecret')->willReturn($secret);
+        $user->method('isTotpTimestepReplay')->willReturn(false);
+        $user->expects($this->once())
+            ->method('recordAcceptedTotpTimestep')
+            ->with(self::ACCEPTED_TIMESTEP);
+
+        $this->encryptor->method('decrypt')->willReturn($decryptedSecret);
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->willReturn(self::ACCEPTED_TIMESTEP);
+        $this->userRepository->expects($this->once())->method('save')->with($user);
+
+        $this->verifier->verifyTotpOrFail($user, $code);
         $this->addToAssertionCount(1);
     }
 
@@ -168,7 +225,8 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $user = $this->createUserMock($secret);
 
         $this->encryptor->method('decrypt')->willReturn($decryptedSecret);
-        $this->totpVerifier->method('verify')->willReturn(true);
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->willReturn(self::ACCEPTED_TIMESTEP);
 
         $result = $this->verifier->verifyAndResolveMethod($user, $code);
 
@@ -182,7 +240,25 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $user = $this->createUserMock($secret);
 
         $this->encryptor->method('decrypt')->willReturn($this->faker->sha256());
-        $this->totpVerifier->method('verify')->willReturn(false);
+        $this->totpVerifier->method('resolveAcceptedTimestep')->willReturn(null);
+
+        $result = $this->verifier->verifyAndResolveMethod($user, '123456');
+
+        $this->assertNull($result);
+    }
+
+    public function testVerifyAndResolveMethodReturnsNullForReplayedTotpCode(): void
+    {
+        $secret = $this->faker->sha256();
+
+        $user = $this->createMock(User::class);
+        $user->method('getTwoFactorSecret')->willReturn($secret);
+        $user->method('isTotpTimestepReplay')->willReturn(true);
+
+        $this->encryptor->method('decrypt')->willReturn($this->faker->sha256());
+        $this->totpVerifier->method('resolveAcceptedTimestep')
+            ->willReturn(self::ACCEPTED_TIMESTEP);
+        $this->userRepository->expects($this->never())->method('save');
 
         $result = $this->verifier->verifyAndResolveMethod($user, '123456');
 
@@ -279,9 +355,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $this->encryptor->method('decrypt')
             ->willThrowException(new \RuntimeException('Decryption failed'));
         $this->totpVerifier->expects($this->once())
-            ->method('verify')
+            ->method('resolveAcceptedTimestep')
             ->with($plainSecret, $code)
-            ->willReturn(true);
+            ->willReturn(self::ACCEPTED_TIMESTEP);
 
         $this->verifier->verifyTotpOrFail($user, $code);
         $this->addToAssertionCount(1);
