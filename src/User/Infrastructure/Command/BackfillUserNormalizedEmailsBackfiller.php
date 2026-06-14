@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Command;
 
-use App\User\Application\Service\EmailNormalizer;
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\User\Domain\Entity\User;
 use ArrayAccess;
 use Doctrine\ODM\MongoDB\DocumentManager;

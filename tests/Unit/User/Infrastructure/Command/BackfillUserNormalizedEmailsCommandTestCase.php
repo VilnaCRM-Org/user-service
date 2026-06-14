@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\Command;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Entity\User;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsCommand;

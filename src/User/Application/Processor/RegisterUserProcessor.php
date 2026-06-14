@@ -7,7 +7,6 @@ namespace App\User\Application\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\User\Application\DTO\UserRegisterDto;
-use App\User\Application\Service\RegisterUserCommandDispatcher;
 use App\User\Domain\Entity\UserInterface;
 
 /**

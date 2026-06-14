@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\User\Application\Query;
 
-use App\User\Application\Service\EmailNormalizer;
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Repository\UserRepositoryInterface;

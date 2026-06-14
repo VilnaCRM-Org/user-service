@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\User\Application\CommandHandler;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\Factory\UserPasswordHashFactory;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\Event\UserRegisteredEventFactoryInterface;

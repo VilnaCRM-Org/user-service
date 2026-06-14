@@ -12,8 +12,8 @@ use App\User\Application\Command\RegisterUserCommand;
 use App\User\Application\DTO\RegisterUserCommandResponse;
 use App\User\Application\DTO\UserRegisterDto;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Processor\RegisterUserCommandDispatcher;
 use App\User\Application\Processor\RegisterUserProcessor;
-use App\User\Application\Service\RegisterUserCommandDispatcher;
 use App\User\Domain\Entity\UserInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 

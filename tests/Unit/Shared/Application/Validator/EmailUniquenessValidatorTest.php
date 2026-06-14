@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\Shared\Application\Validator\EmailUniquenessValidator;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+
 use function mb_strtolower;
 use function sprintf;
 use function strtolower;
 use function strtoupper;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+
 use function trim;
 use function ucfirst;
 

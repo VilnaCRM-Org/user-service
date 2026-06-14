@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\User\Application\Validator;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Exception\DuplicateEmailException;

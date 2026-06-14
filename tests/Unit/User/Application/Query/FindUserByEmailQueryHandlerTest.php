@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Query;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Query\FindUserByEmailQueryHandler;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Exception\DuplicateEmailException;

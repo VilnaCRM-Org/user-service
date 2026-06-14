@@ -9,8 +9,8 @@ namespace App\Tests\Integration\User\Infrastructure\Repository;
  * @psalm-type NEmailDoc = array<string, NEmailDocValue>|\ArrayAccess<string, NEmailDocValue>
  */
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Tests\Integration\User\UserIntegrationTestCase;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Infrastructure\Command\BackfillUserNormalizedEmailsBackfiller;

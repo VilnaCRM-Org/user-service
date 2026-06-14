@@ -10,9 +10,11 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  * @psalm-type TestBackfillId = object|int|string|null
  */
 
-use App\User\Application\Service\EmailNormalizer;
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use ArrayObject;
+
 use function mb_strtoupper;
+
 use MongoDB\BulkWriteResult;
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;

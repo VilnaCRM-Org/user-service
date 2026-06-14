@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\User\Infrastructure\Repository;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;

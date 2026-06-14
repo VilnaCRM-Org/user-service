@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\Validator;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;

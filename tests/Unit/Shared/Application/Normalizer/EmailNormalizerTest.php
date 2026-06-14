@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\User\Application\Service;
+namespace App\Tests\Unit\Shared\Application\Normalizer;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Service\EmailNormalizer;
 
 final class EmailNormalizerTest extends UnitTestCase
 {

@@ -9,8 +9,10 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  * @psalm-type TestDocument = array<string, TestDocumentValue>
  */
 
-use App\User\Application\Service\EmailNormalizer;
+use App\Shared\Application\Normalizer\EmailNormalizer;
+
 use function mb_strtoupper;
+
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;
 

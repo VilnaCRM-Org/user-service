@@ -19,7 +19,9 @@ use App\User\Domain\Factory\UserFactoryInterface;
 use League\Bundle\OAuth2ServerBundle\Event\UserResolveEvent;
 use League\Bundle\OAuth2ServerBundle\Model\AbstractClient;
 use League\Bundle\OAuth2ServerBundle\ValueObject\Grant;
+
 use function mb_strtoupper;
+
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\PasswordHasher\PasswordHasherInterface;

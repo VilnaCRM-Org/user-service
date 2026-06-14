@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\CommandHandler;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Domain\Bus\Event\EventBusInterface;
 use App\Shared\Infrastructure\Factory\UuidFactory as IdFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
@@ -15,7 +16,6 @@ use App\User\Application\Factory\SignUpCommandFactory;
 use App\User\Application\Factory\SignUpCommandFactoryInterface;
 use App\User\Application\Factory\UserPasswordHashFactory;
 use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Application\Transformer\SignUpTransformer;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Entity\UserInterface;

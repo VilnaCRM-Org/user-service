@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Shared\Application\Validator;
 
+use App\Shared\Application\Normalizer\EmailNormalizer;
 use App\Shared\Application\Provider\Http\RouteIdentifierProvider;
 use App\Shared\Application\Validator\Constraint\UniqueEmail;
 use App\Shared\Application\Validator\EmailUniquenessValidator;
@@ -11,7 +12,6 @@ use App\Shared\Application\Validator\UniqueEmailConstraintValidator;
 use App\Shared\Infrastructure\Factory\UuidFactory;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
-use App\User\Application\Service\EmailNormalizer;
 use App\User\Domain\Collection\UserCollection;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Factory\UserFactory;
