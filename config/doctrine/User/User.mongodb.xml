@@ -16,6 +16,7 @@
         <field field-name="confirmed" type="boolean" />
         <field field-name="twoFactorEnabled" type="boolean" />
         <field field-name="twoFactorSecret" type="string" nullable="true" />
+        <field field-name="lastAcceptedTotpTimestep" type="int" nullable="true" />
 
         <indexes>
             <index unique="true">

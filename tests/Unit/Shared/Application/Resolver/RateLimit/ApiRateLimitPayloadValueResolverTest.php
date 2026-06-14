@@ -108,6 +108,74 @@ final class ApiRateLimitPayloadValueResolverTest extends UnitTestCase
         self::assertSame($fallback, $resolver->resolve($request, ['key_a', 'key_b', 'key_c']));
     }
 
+    public function testResolveNestedReturnsValueFromNestedPath(): void
+    {
+        $value = $this->faker->uuid();
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest([
+            'variables' => ['input' => ['pendingSessionId' => $value]],
+        ]);
+
+        self::assertSame(
+            $value,
+            $resolver->resolveNested($request, ['variables', 'input'], ['pendingSessionId'])
+        );
+    }
+
+    public function testResolveNestedReturnsNullWhenPathSegmentMissing(): void
+    {
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest(['variables' => []]);
+
+        self::assertNull(
+            $resolver->resolveNested($request, ['variables', 'input'], ['pendingSessionId'])
+        );
+    }
+
+    public function testResolveNestedReturnsNullWhenSegmentIsNotArray(): void
+    {
+        $resolver = $this->createResolver();
+        $request = $this->createGraphQlRequest(['variables' => ['input' => 'not-an-array']]);
+
+        self::assertNull(
+            $resolver->resolveNested($request, ['variables', 'input'], ['pendingSessionId'])
+        );
+    }
+
+    public function testResolveNestedReturnsNullForMalformedJson(): void
+    {
+        $resolver = $this->createResolver();
+        $request = Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{not-json'
+        );
+
+        self::assertNull(
+            $resolver->resolveNested($request, ['variables', 'input'], ['pendingSessionId'])
+        );
+    }
+
+    /**
+     * @param array{variables: array<string, array<string, string>|string>} $body
+     */
+    private function createGraphQlRequest(array $body): Request
+    {
+        return Request::create(
+            '/api/graphql',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode($body, JSON_THROW_ON_ERROR)
+        );
+    }
+
     private function createResolver(): ApiRateLimitPayloadValueResolver
     {
         return new ApiRateLimitPayloadValueResolver($this->createJsonSerializer());

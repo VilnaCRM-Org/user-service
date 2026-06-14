@@ -140,7 +140,7 @@ Feature: User GraphQL Operations
     Then graphql error message should be 'Item "/api/users/8be90127-9840-4235-a6da-39b8debfb112" not found.'
 
   Scenario: Getting user
-    Given I am authenticated as user "gql-ops-auth19@test.com"
+    Given I am authenticated as user "gql-ops-auth19@test.com" with id "8be90127-9840-4235-a6da-39b8debfb113"
     And requesting to return user's id and email
     And user with id "8be90127-9840-4235-a6da-39b8debfb113" exists
     And getting user with id "8be90127-9840-4235-a6da-39b8debfb113"

@@ -85,14 +85,19 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $this->assertAccessTokenResponse($response);
     }
 
-    public function testOauthClientCredentialsAccessTokenCanReachProtectedServiceRoute(): void
+    public function testOauthClientCredentialsAccessTokenIsRejectedAtProtectedServiceRoute(): void
     {
+        // Regression for the ROLE_SERVICE privilege-escalation (#312): a League
+        // OAuth2 client_credentials access token (aud=client_id, no iss/roles)
+        // must NOT be auto-elevated to a first-party ROLE_SERVICE principal.
+        // It is now rejected with 401 at the protected bulk-import route because
+        // issuer/audience validation is mandatory and ROLE_SERVICE is never
+        // inferred from missing claims.
         $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
         $accessToken = $this->obtainAccessToken($kernel, $clientId, $clientSecret);
         $batchResponse = $this->sendAuthenticatedBatchRequest($kernel, $accessToken);
-        $this->assertNotSame(Response::HTTP_UNAUTHORIZED, $batchResponse->getStatusCode());
-        $this->assertNotSame(Response::HTTP_FORBIDDEN, $batchResponse->getStatusCode());
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $batchResponse->getStatusCode());
     }
 
     private function resolveKernel(): HttpKernelInterface
