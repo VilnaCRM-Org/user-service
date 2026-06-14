@@ -74,7 +74,7 @@ final class SchemathesisBatchUsersEmailResolverTest extends UnitTestCase
         $emailResolver = new SchemathesisBatchUsersEmailResolver();
 
         /** @var array{users?: array<int, array{email?: string|null}|scalar|null>} $payload */
-        $payload = ['users' => 'not-an-array'];
+        $payload = json_decode('{"users":"not-an-array"}', true, 512, JSON_THROW_ON_ERROR);
 
         $this->assertSame([], $emailResolver->extract($payload));
     }
