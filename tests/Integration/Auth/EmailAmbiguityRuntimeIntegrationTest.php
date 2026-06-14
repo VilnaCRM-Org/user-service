@@ -68,7 +68,7 @@ final class EmailAmbiguityRuntimeIntegrationTest extends UserIntegrationTestCase
             ['HTTP_AUTHORIZATION' => sprintf('Bearer %s', $accessToken)]
         );
 
-        $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
         $this->clearUserDocumentState();
 
         $reloadedUser = $this->userRepository()->findById($user->getId());
