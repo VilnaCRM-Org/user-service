@@ -99,7 +99,10 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $clientId = $this->faker->lexify('client???');
         $request = $this->createRequestWithIp('/api/token', 'POST', '127.0.0.1');
-        $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
+        $request->headers->set(
+            'Authorization',
+            'Basic ' . base64_encode($clientId . ':' . $this->faker->password())
+        );
 
         $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
@@ -110,7 +113,10 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
     {
         $clientId = $this->faker->lexify('client???');
         $request = $this->createRequestWithIp('/api/oauth/token', 'POST', '127.0.0.1');
-        $request->headers->set('Authorization', 'Basic ' . base64_encode($clientId . ':secret'));
+        $request->headers->set(
+            'Authorization',
+            'Basic ' . base64_encode($clientId . ':' . $this->faker->password())
+        );
 
         $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
@@ -224,7 +230,7 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
         $email = $this->faker->email();
         $request = $this->createGraphQlRequest(
             'mutation { signIn(input: $input) { id } }',
-            ['input' => ['email' => $email, 'password' => 'secret']],
+            ['input' => ['email' => $email, 'password' => $this->faker->password()]],
             '203.0.113.11'
         );
 
@@ -236,8 +242,9 @@ final class ApiRateLimitRequestResolverLimitersTest extends RateLimitClientTestC
 
     public function testResolveEndpointLimitersForGraphQlRefreshTokenMutation(): void
     {
+        $refreshToken = $this->faker->sha256();
         $request = $this->createGraphQlRequest(
-            'mutation { refreshToken(input: {refreshToken: "x"}) { user { id } } }',
+            'mutation { refreshToken(input: {refreshToken: "' . $refreshToken . '"}) { user { id } } }',
             [],
             '203.0.113.12'
         );
