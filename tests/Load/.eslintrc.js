@@ -12,6 +12,8 @@ module.exports = {
     'eslint:recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
+    'plugin:import/typescript',
+    'plugin:jsx-a11y/recommended',
     'plugin:jest-dom/recommended',
     'plugin:eslint-comments/recommended',
   ],
@@ -49,6 +51,8 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'import/no-unresolved': 'off',
     'import/extensions': 'off',
+
+    'jsx-a11y/anchor-is-valid': 'off',
   },
   overrides: [
     {

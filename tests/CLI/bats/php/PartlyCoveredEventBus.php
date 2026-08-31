@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Bus\Event;
 
 use App\Shared\Domain\Bus\Event\DomainEvent;
-use App\Shared\Domain\Bus\Event\EventBusInterface;
+use App\Shared\Domain\Bus\Event\EventBus;
 use Symfony\Component\Messenger\MessageBus;
 
-final class PartlyCoveredEventBus implements EventBusInterface
+final class PartlyCoveredEventBus implements EventBus
 {
     private MessageBus $bus;
 
