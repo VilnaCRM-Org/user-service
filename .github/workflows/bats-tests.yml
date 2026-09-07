@@ -4,53 +4,22 @@ on:
   pull_request:
     branches: ['main']
 
-permissions:
-  contents: read
-
 jobs:
   bats_core_tests:
     runs-on: ubuntu-latest
     name: Run Bats Core Tests
     steps:
-      - name: Dependabot skip
-        if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
-        run: echo "Skipping Bats for Dependabot PR"
-
       - name: Checkout Repository
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Setup Docker
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: docker/setup-docker-action@v4
-
-      - uses: shivammathur/setup-php@v2
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-
-      - name: Install Dependencies
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start Application
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Setup Bats and bats libs
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: bats-core/bats-action@2.0.0
+        uses: bats-core/bats-action@e424f8b8f722bf06a64acb1e10d8c437cd4170e6 # 2.0.0
         with:
-          bats-version: 1.13.0
-
-      - name: Install Bats plugins
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: |
-          git clone https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
-          git clone https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
+          support-path: ${{ github.workspace }}/tests/CLI/bats/bats-support
+          assert-path: ${{ github.workspace }}/tests/CLI/bats/bats-assert
 
       - name: Run Bats tests
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make bats

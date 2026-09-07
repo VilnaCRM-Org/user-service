@@ -9,37 +9,21 @@ jobs:
     name: Psalm
     runs-on: ubuntu-latest
     steps:
-      - name: Dependabot skip
-        if: github.event.pull_request.user.login == 'dependabot[bot]'
-        run: echo "Skipping Psalm for Dependabot PR"
-
       - name: Checkout code
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
-      - name: Setup PHP
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-          tools: composer
-          coverage: none
-          ini-values: memory_limit=-1
-
-      - name: Install dependencies
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: composer install --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
+      - name: Start application
+        run: make start
 
       - name: Psalm
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: vendor/bin/psalm --output-format=github --no-diff
+        run: make psalm
 
       - name: Psalm Security
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: vendor/bin/psalm --taint-analysis --output-format=sarif --report=results.sarif --no-diff
+        run: |
+          rm -f results.sarif
+          make psalm-security-sarif
 
       - name: Upload Security Analysis results to GitHub
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: github/codeql-action/upload-sarif@v1
+        uses: github/codeql-action/upload-sarif@v3.25.4
         with:
           sarif_file: results.sarif
