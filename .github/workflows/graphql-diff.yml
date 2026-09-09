@@ -64,8 +64,8 @@ jobs:
 
       - name: GraphQL Inspector
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: kamilkisiela/graphql-inspector@release-1701263349990
+        uses: graphql-hive/graphql-inspector@7180fcae8260a734d526d66157c1a361c00f04d6 # release-1787234790800
         with:
-          schema: 'master:.github/graphql-spec/spec'
+          schema: '${{ github.event.pull_request.base.ref }}:.github/graphql-spec/spec'
         env:
           GITHUB_TOKEN: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
