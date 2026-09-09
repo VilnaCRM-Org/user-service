@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+expected_processes=10
+
+status="$(supervisorctl status 'messenger-consume:*')" || exit 1
+
+printf '%s\n' "$status" | awk -v expected_processes="$expected_processes" '
+    BEGIN {
+        for (process = 0; process < expected_processes; process++) {
+            expected[sprintf("messenger-consume:messenger-consume_%02d", process)] = 1
+        }
+    }
+
+    NF == 0 {
+        next
+    }
+
+    !($1 in expected) || $1 in seen || $2 != "RUNNING" {
+        unhealthy = 1
+        next
+    }
+
+    {
+        seen[$1] = 1
+        running_processes++
+    }
+
+    END {
+        exit unhealthy || running_processes != expected_processes ? 1 : 0
+    }
+'

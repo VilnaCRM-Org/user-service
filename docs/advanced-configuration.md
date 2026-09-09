@@ -27,9 +27,9 @@ The User Service utilizes environment variables for configuration to ensure that
 
 - `AWS_SQS_VERSION`: The AWS SQS API version.
 - `AWS_SQS_REGION`: The AWS region for SQS.
-- `AWS_SQS_ENDPOINT_BASE`: The SQS endpoint base (e.g., `localstack` for local development).
-- `AWS_SQS_KEY`: The AWS access key for SQS.
-- `AWS_SQS_SECRET`: The AWS secret key for SQS.
+- `AWS_SQS_ENDPOINT_BASE`: The LocalStack endpoint base for `dev`, `test`, `load_test`, and `schemathesis`.
+- `AWS_SQS_KEY`: The LocalStack access key for development and test environments only.
+- `AWS_SQS_SECRET`: The LocalStack secret key for development and test environments only.
 - `LOCALSTACK_PORT`: The port on which LocalStack is running.
 
 #### Messenger Transports
@@ -59,6 +59,17 @@ The User Service utilizes environment variables for configuration to ensure that
 
 In production, the application throws an explicit runtime configuration error if `OAUTH_ENCRYPTION_KEY` is empty.
 Password grant is intentionally disabled (`enable_password_grant: false`); use authorization code + PKCE or client credentials grants.
+
+#### Social sign-in
+
+`SOCIAL_OAUTH_ENABLED` defaults to `true` in every environment, including production.
+Enabled deployments support GitHub, Google, Facebook, and Twitter and require their
+configured provider credentials. Set `SOCIAL_OAUTH_ENABLED=false` explicitly for a
+deployment without social sign-in, such as the AWS PoC. The disabled factories do not
+resolve provider credentials and return empty provider and provider-name collections;
+social sign-in endpoints return `unsupported_provider`. Set the flag back to `true`
+with valid provider credentials to re-enable social sign-in without a source change.
+Local registration, password sign-in, and token flows remain unchanged.
 
 #### JWT
 
@@ -231,3 +242,45 @@ User batch endpoint testing requires additional settings, such as the size of th
 Learn more about [OAuth Server Bundle](https://oauth2.thephpleague.com/).
 
 Learn more about [Community and Support](community-and-support.md).
+
+### SQS credentials in AWS
+
+Production SQS health checks use the AWS SDK default credential provider chain
+and the regional AWS endpoint. ECS deployments must attach a task role with
+`sqs:GetQueueUrl` on the preprovisioned `health-check-queue`. Health checks only
+look up this queue; they never create it. LocalStack setup must create it before
+running application health checks. The ECS
+execution role does not provide application credentials. Do not inject static
+AWS access keys or mount shared AWS credential files into the application.
+
+Deploy this configuration in the application image before removing the legacy
+health-check IAM user and access key from an existing infrastructure stack.
+Development and test environments retain explicit LocalStack endpoint and dummy
+credentials. A non-production AWS deployment should run with `APP_ENV=prod`.
+
+See the [AWS SDK credential provider documentation](https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/defaultprovider-provider.html).
+
+### Production web and worker containers
+
+Build the web image from the `frankenphp_prod` target. Its production Caddy
+configuration serves HTTP on port 80 behind the ALB HTTPS listener and forces
+`APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener. The development
+Caddy configuration and its arbitrary listener/configuration overrides do not
+apply to this production target.
+
+Build the worker image from the `app_workers` target. Supervisor runs ten
+production consumers for `send-email`, `insert-user-batch`, and `domain-events`.
+Failed-message transports are not consumed automatically. Worker output goes
+to standard output and standard error for collection by the container platform.
+The container health check requires all ten expected consumers to be running;
+a missing, stopped, or unexpected process makes the check fail. This process
+check does not prove message delivery or downstream service availability.
+
+### SES delivery with task credentials
+
+The application includes the Symfony Amazon Mailer SDK transport. Use
+`ses+api://default?region=eu-central-1` as the mailer DSN for the TEST PoC, with
+the approved sending identity and recipient restrictions on the ECS task role.
+Do not put AWS access keys in the DSN. SES sandbox identity and recipient
+verification still apply; installing the transport does not configure or
+verify those identities.
