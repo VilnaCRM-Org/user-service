@@ -1,0 +1,29 @@
+{
+	admin localhost:2019
+	auto_https off
+	frankenphp {
+		worker {
+			file /srv/app/public/index.php
+			env APP_RUNTIME Runtime\FrankenPhpSymfony\Runtime
+			env APP_ENV prod
+			env APP_DEBUG 0
+		}
+	}
+}
+
+:80 {
+	log {
+		output stderr
+		format json
+	}
+
+	root * /srv/app/public
+	encode zstd gzip
+	header -Server
+	vulcain
+	php_server {
+		env APP_ENV prod
+		env APP_DEBUG 0
+	}
+	file_server
+}

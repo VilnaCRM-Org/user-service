@@ -19,7 +19,7 @@ final class OAuthProviderCollectionFactoryTest extends UnitTestCase
     {
         parent::setUp();
 
-        $this->factory = new OAuthProviderCollectionFactory();
+        $this->factory = new OAuthProviderCollectionFactory(true);
     }
 
     public function testCreateBuildsCollectionFromIterable(): void
@@ -49,6 +49,25 @@ final class OAuthProviderCollectionFactoryTest extends UnitTestCase
         $this->assertCount(2, $collection);
         $this->assertSame($github, $collection->get('github'));
         $this->assertSame($google, $collection->get('google'));
+    }
+
+    public function testDisabledFactoryDoesNotInstantiateTaggedProviders(): void
+    {
+        $providers = (static function (): \Generator {
+            yield throw new \LogicException('Disabled providers must not be resolved');
+        })();
+
+        $collection = (new OAuthProviderCollectionFactory(false))->create($providers);
+
+        self::assertCount(0, $collection);
+    }
+
+    public function testExplicitOptInPreservesEnabledProviders(): void
+    {
+        $provider = $this->createProviderMock('github');
+        $collection = (new OAuthProviderCollectionFactory(true))->create([$provider]);
+
+        self::assertSame($provider, $collection->get('github'));
     }
 
     private function createProviderMock(string $name): OAuthProviderInterface

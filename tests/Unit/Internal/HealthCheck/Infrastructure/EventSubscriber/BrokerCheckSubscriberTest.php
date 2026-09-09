@@ -15,8 +15,9 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 final class BrokerCheckSubscriberTest extends UnitTestCase
 {
-    private SqsClient|MockObject $sqsClient;
+    private SqsClient&MockObject $sqsClient;
     private BrokerCheckSubscriber $subscriber;
+    private string $queueName;
 
     #[\Override]
     protected function setUp(): void
@@ -24,50 +25,48 @@ final class BrokerCheckSubscriberTest extends UnitTestCase
         parent::setUp();
 
         $this->sqsClient = $this->createMock(SqsClient::class);
-        $this->subscriber = new BrokerCheckSubscriber($this->sqsClient);
+        $this->queueName = $this->faker->lexify('health-check-????????');
+        $this->subscriber = new BrokerCheckSubscriber($this->sqsClient, $this->queueName);
     }
 
-    public function testOnHealthCheckCreatesQueue(): void
+    public function testOnHealthCheckReadsExistingQueue(): void
     {
         $result = new Result(
-            ['QueueUrl' => 'http://example.com/queue/health-check-queue']
+            ['QueueUrl' => $this->faker->url()]
         );
 
         $this->sqsClient->expects($this->once())
             ->method('__call')
             ->with($this->equalTo(
-                'createQueue'
-            ), $this->equalTo([['QueueName' => 'health-check-queue']]))
+                'getQueueUrl'
+            ), $this->equalTo([['QueueName' => $this->queueName]]))
             ->willReturn($result);
 
         $event = new HealthCheckEvent();
         $this->subscriber->onHealthCheck($event);
     }
 
-    public function testOnHealthCheckHandlesQueueAlreadyExistsException(): void
+    public function testOnHealthCheckPropagatesMissingQueueException(): void
     {
         $command = $this->createMock(CommandInterface::class);
 
         $this->sqsClient->expects($this->once())
             ->method('__call')
             ->with($this->equalTo(
-                'createQueue'
-            ), $this->equalTo([['QueueName' => 'health-check-queue']]))
+                'getQueueUrl'
+            ), $this->equalTo([['QueueName' => $this->queueName]]))
             ->willThrowException(new AwsException(
-                'Queue already exists',
+                'Queue does not exist',
                 $command,
                 [
-                    'code' => 'QueueAlreadyExists',
+                    'code' => 'AWS.SimpleQueueService.NonExistentQueue',
                 ]
             ));
 
-        try {
-            $event = new HealthCheckEvent();
-            $this->subscriber->onHealthCheck($event);
-        } catch (AwsException $e) {
-            $this->assertEquals('Queue already exists', $e->getMessage());
-            $this->assertEquals('QueueAlreadyExists', $e->getAwsErrorCode());
-        }
+        $this->expectException(AwsException::class);
+        $this->expectExceptionMessage('Queue does not exist');
+
+        $this->subscriber->onHealthCheck(new HealthCheckEvent());
     }
 
     public function testGetSubscribedEvents(): void

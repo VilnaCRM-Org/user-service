@@ -25,10 +25,10 @@ ARG SYMFONY_VERSION=""
 ENV SYMFONY_VERSION=${SYMFONY_VERSION}
 
 ARG APCU_VERSION=v5.1.28
-ARG MONGODB_VERSION=2.3.0
+ARG MONGODB_VERSION=2.4.1
 ARG REDIS_VERSION=6.3.0
 ARG APCU_SHA256=ca9c1820810a168786f8048a4c3f8c9e3fd941407ad1553259fb2e30b5f057bf
-ARG MONGODB_SHA256=7e7c4fbdc991bad24524316096d4ac9cd805632c9ba7f9886682db843d60166c
+ARG MONGODB_SHA256=a57dc6bd18938ac2396086d9eec44bc82e7d17c399844923b04fe4cdff895ac0
 ARG REDIS_SHA256=0d5141f634bd1db6c1ddcda053d25ecf2c4fc1c395430d534fd3f8d51dd7f0b5
 
 ENV APP_ENV=prod
@@ -189,6 +189,7 @@ ENV FRANKENPHP_CONFIG="import worker.Caddyfile"
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
+COPY --link infrastructure/docker/caddy/Caddyfile.prod /etc/caddy/Caddyfile
 COPY --link infrastructure/docker/php/worker.Caddyfile /etc/caddy/worker.Caddyfile
 
 COPY --link composer.* symfony.* ./
@@ -206,5 +207,8 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
 COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY --link --chmod=755 infrastructure/supervisor/worker-healthcheck /usr/local/bin/worker-healthcheck
+
+HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 CMD ["/usr/local/bin/worker-healthcheck"]
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

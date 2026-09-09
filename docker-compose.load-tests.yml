@@ -24,6 +24,7 @@ services:
       - /srv/app/vendor
       - caddy_data:/data
       - caddy_config:/config
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./infrastructure/docker/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint:ro
       - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
     environment:
