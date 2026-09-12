@@ -678,3 +678,6 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo "ℹ️  No unresolved comments found"; \
 		echo "📄 Report saved to: $$output_file"; \
 	fi
+
+test-poc-publisher: ## Verify the offline TEST image publisher contracts.
+	python3 -B -m unittest discover -s tests/CLI -p 'test_poc_*.py'

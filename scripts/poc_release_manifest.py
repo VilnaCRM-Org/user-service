@@ -210,3 +210,113 @@ def validate_release_manifest(
         raise
     except (KeyError, TypeError, ValueError, RecursionError):
         raise ReleaseManifestError("manifest-json") from None
+
+
+def build_release_evidence(
+    *,
+    source_sha,
+    publisher_run_id,
+    platform,
+    registry,
+    web,
+    worker,
+    workflow_sha,
+    quality_job_id,
+    build_job_id,
+    build_artifact,
+):
+    """Encode native observations supplied by the trusted publisher."""
+    registry.validate()
+    _require(_hex(source_sha, 40) and _hex(workflow_sha, 40), "evidence-sha")
+    _require(
+        all(_positive(v) for v in (publisher_run_id, quality_job_id, build_job_id)),
+        "evidence-id",
+    )
+    _require(platform in ("linux/amd64", "linux/arm64"), "platform")
+    common = {
+        "repository": REPOSITORY,
+        "source_sha": source_sha,
+        "publisher_run_id": publisher_run_id,
+        "publisher_run_attempt": 1,
+        "workflow_sha": workflow_sha,
+    }
+    quality = {
+        **common,
+        "schema_version": "poc-quality-v1",
+        "quality_job_id": quality_job_id,
+        "command": "make ci",
+        "conclusion": "success",
+    }
+    provenance = {
+        **common,
+        "schema_version": "poc-build-provenance-v1",
+        "platform": platform,
+        "build_job_id": build_job_id,
+        "build_artifact": _artifact(build_artifact),
+        "registry": asdict(registry),
+        "web": _image("web", web, source_sha, publisher_run_id, platform),
+        "worker": _image("worker", worker, source_sha, publisher_run_id, platform),
+    }
+    return tuple(
+        (json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        for value in (provenance, quality)
+    )
+
+
+def _evidence_document(raw):
+    _require(type(raw) is bytes and 0 < len(raw) <= MAX_MANIFEST_BYTES, "evidence-size")
+    try:
+        document = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_nonfinite)
+        _require(type(document) is dict, "evidence-fields")
+        return document
+    except ReleaseManifestError:
+        raise
+    except (ValueError, TypeError, RecursionError):
+        raise ReleaseManifestError("evidence-json") from None
+
+
+def validate_release_evidence(
+    provenance_bytes,
+    quality_bytes,
+    *,
+    manifest,
+    workflow_sha,
+    quality_job_id,
+    build_job_id,
+):
+    """Compare evidence with separately authenticated manifest and native job IDs."""
+    provenance, quality = map(_evidence_document, (provenance_bytes, quality_bytes))
+    try:
+        registry = RegistryReleaseBinding(
+            **{
+                key: manifest[key]
+                for key in RegistryReleaseBinding.__dataclass_fields__
+            }
+        )
+        source, run, platform = (
+            manifest[k] for k in ("source_sha", "publisher_run_id", "platform")
+        )
+        expected = build_release_evidence(
+            source_sha=source,
+            publisher_run_id=run,
+            platform=platform,
+            registry=registry,
+            web=BuildResult(source, run, platform, **manifest["web"]),
+            worker=BuildResult(source, run, platform, **manifest["worker"]),
+            workflow_sha=workflow_sha,
+            quality_job_id=quality_job_id,
+            build_job_id=build_job_id,
+            build_artifact=provenance["build_artifact"],
+        )
+        _require(
+            all(
+                json.dumps(actual, sort_keys=True)
+                == json.dumps(json.loads(want), sort_keys=True)
+                for actual, want in zip((provenance, quality), expected, strict=True)
+            ),
+            "evidence-binding",
+        )
+    except (KeyError, TypeError, ValueError) as error:
+        if isinstance(error, ReleaseManifestError):
+            raise
+        raise ReleaseManifestError("evidence-fields") from None
