@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: 'composer'
     directory: '/'
     schedule:
-      interval: 'monthly'
+      interval: 'weekly'
     reviewers:
       - 'Kravalg'
     groups:
@@ -19,6 +19,7 @@ updates:
     directory: '/tests/Load'
     schedule:
       interval: 'monthly'
+    open-pull-requests-limit: 5
     reviewers:
       - 'Kravalg'
     groups:

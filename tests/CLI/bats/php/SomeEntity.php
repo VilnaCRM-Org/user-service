@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\User\Application\Command;
+namespace App\CompanySubdomain\SomeModule\Domain\Entity;
 
 use App\CompanySubdomain\SomeModule\Application\Command\SomeCommand;
 

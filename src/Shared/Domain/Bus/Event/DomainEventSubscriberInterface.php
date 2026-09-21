@@ -7,7 +7,7 @@ namespace App\Shared\Domain\Bus\Event;
 interface DomainEventSubscriberInterface
 {
     /**
-     * @return array<class-string<DomainEvent>>
+     * @return array<DomainEvent>
      */
     public function subscribedTo(): array;
 }

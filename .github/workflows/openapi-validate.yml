@@ -4,32 +4,20 @@ on:
   pull_request:
     branches: ['main']
 
+permissions:
+  contents: read
+
 jobs:
   validate-openapi:
     name: Spectral Lint
     runs-on: ubuntu-latest
+
     steps:
-      - name: Dependabot skip
-        if: github.event.pull_request.user.login == 'dependabot[bot]'
-        run: echo "Skipping OpenAPI validation for Dependabot PR"
-
       - name: Checkout Repository
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-
-      - name: Install Dependencies
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start Application
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Validate OpenAPI spec
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make validate-openapi-spec

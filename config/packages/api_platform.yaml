@@ -1,53 +1,34 @@
 api_platform:
-  title: 'User Service API'
-  description: 'This API provides endpoints to manage user data within a VilnaCRM.'
+  title: 'PHP Service Template API'
+  description: 'This API provides endpoints to manage php service template data within a VilnaCRM.'
   version: '1.0.0'
 
   use_symfony_listeners: false
-
-  graphql:
-    graphiql: false
-    max_query_depth: 20
-    max_query_complexity: 500
 
   openapi:
     overrideResponses: false
     contact:
       name: 'VilnaCRM Support'
-      url: 'https://vilnacrm.com'
+      url: 'https://github.com/VilnaCRM-Org/php-service-template'
       email: 'support@vilnacrm.com'
     license:
       name: 'CC0-1.0'
       url: 'https://creativecommons.org/publicdomain/zero/1.0/'
 
+  graphql:
+    enabled: true
+    graphiql:
+      enabled: false
+
   defaults:
     extra_properties:
       rfc_7807_compliant_errors: true
 
-  mapping:
-    paths: ['%kernel.project_dir%/config/api_platform/resources']
-
-  # Tell API Platform where your domain classes live
-  resource_class_directories:
-    - '%kernel.project_dir%/src/User/Domain/Entity'
-    - '%kernel.project_dir%/src/OAuth/Domain/Entity'
-
   formats:
     json: ['application/json']
-    graphql: ['application/graphql']
-    jsonld: ['application/ld+json']
 
   error_formats:
     jsonproblem: ['application/problem+json']
 
-  oauth:
-    enabled: false
-
-  # Disable Doctrine ORM support (using MongoDB ODM only)
-  doctrine: false
-
-when@prod:
-  api_platform:
-    graphql:
-      introspection:
-        enabled: false
+  resource_class_directories:
+    - '%kernel.project_dir%/src/Internal/HealthCheck/Domain/ValueObject'

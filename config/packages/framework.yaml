@@ -1,25 +1,8 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
-  set_locale_from_accept_language: true
-  set_content_language_from_locale: true
-  handle_all_throwables: true
-  default_locale: en
-  enabled_locales: [en, uk]
   secret: '%env(APP_SECRET)%'
-  # Trust only the directly-connected reverse proxy (Caddy/FrankenPHP, AWS App
-  # Runner LB) so getClientIp() returns the real client IP for IP-keyed rate
-  # limiters instead of the shared load-balancer address. The default REMOTE_ADDR
-  # token trusts a single hop, so X-Forwarded-For from untrusted clients is
-  # ignored and cannot be spoofed. Override TRUSTED_PROXIES with the exact proxy
-  # CIDR in production. Only X-Forwarded-For is trusted; other X-Forwarded-*
-  # headers are ignored.
-  trusted_proxies: '%env(TRUSTED_PROXIES)%'
-  trusted_headers: '%env(TRUSTED_HEADERS)%'
   #csrf_protection: true
   http_method_override: false
-  serializer:
-    mapping:
-      paths: ['%kernel.project_dir%/config/serialization']
 
   # Enables session support. Note that the session will ONLY be started if you read or write from it.
   # Remove or comment this section to explicitly disable session support.
