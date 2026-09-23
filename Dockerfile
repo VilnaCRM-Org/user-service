@@ -218,6 +218,7 @@ RUN rm -Rf infrastructure/docker/
 FROM frankenphp_base AS app_workers
 
 RUN apk add --no-cache supervisor=~4.2
+RUN mkdir -p /run
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 

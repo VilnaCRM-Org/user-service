@@ -34,12 +34,3 @@ doctrine_mongodb:
           dir: '%kernel.project_dir%/config/doctrine/OAuth/Domain'
           prefix: 'App\OAuth\Domain\Entity'
           alias: OAuthDomain
-
-when@prod:
-  doctrine_mongodb:
-    connections:
-      default:
-        options:
-          tls: true
-          tlsCAFile: '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem'
-          retryWrites: false

@@ -9,30 +9,20 @@ use Symfony\Component\Yaml\Yaml;
 
 final class DocumentDbTlsRuntimeConfigTest extends UnitTestCase
 {
-    private const CA_BUNDLE_PATH =
-        '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem';
-
-    public function testProductionMongoDbConnectionUsesTheImageCaBundle(): void
+    public function testConnectionUsesUriOptionsWithoutOverridingDocumentDbOrLocalMongo(): void
     {
         $config = Yaml::parseFile(
             dirname(__DIR__, 3) . '/config/packages/doctrine_mongodb.yaml'
         );
 
-        $productionConnection =
-            $config['when@prod']['doctrine_mongodb']['connections']['default'];
-        $productionOptions = $productionConnection['options'];
+        $connection = $config['doctrine_mongodb']['connections']['default'];
 
-        self::assertSame([], $config['doctrine_mongodb']['connections']['default']['options']);
+        self::assertSame('%env(MONGODB_URL)%', $connection['server']);
+        self::assertSame([], $connection['options']);
         self::assertTrue(
             $config['doctrine_mongodb']['document_managers']['default']['auto_mapping']
         );
-        self::assertTrue($productionOptions['tls']);
-        self::assertSame(
-            self::CA_BUNDLE_PATH,
-            $productionOptions['tlsCAFile']
-        );
-        self::assertFalse($productionOptions['retryWrites']);
-        self::assertArrayNotHasKey('document_managers', $config['when@prod']['doctrine_mongodb']);
+        self::assertArrayNotHasKey('when@prod', $config);
     }
 
 }

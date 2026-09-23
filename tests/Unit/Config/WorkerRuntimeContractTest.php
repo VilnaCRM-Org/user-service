@@ -56,6 +56,7 @@ SH;
     {
         $workerStage = $this->workerDockerStage();
 
+        self::assertStringContainsString('RUN mkdir -p /run', $workerStage);
         self::assertStringContainsString(
             $this->workerHealthcheckCopy(),
             $workerStage

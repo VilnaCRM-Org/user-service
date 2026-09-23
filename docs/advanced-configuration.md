@@ -17,8 +17,11 @@ The User Service utilizes environment variables for configuration to ensure that
 #### Database
 
 - `DATABASE_URL`: The URL for connecting to the MariaDB/MySQL database, including credentials, host, port, and database name (e.g., `mysql://root:root@database:3306/db?serverVersion=11.4`).
-- `MONGODB_URL`: The MongoDB or DocumentDB connection URI. Production enables TLS and uses the verified CA bundle at `/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem` supplied by the application image.
+- `MONGODB_URL`: The MongoDB or DocumentDB connection URI. DocumentDB deployments must include `tls=true`, `tlsCAFile=/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem`, and `retryWrites=false` in the URI. The application image supplies the verified CA bundle. Local MongoDB uses its own URI without TLS.
 - `USER_INSERT_BATCH_SIZE`: The size of a batch for bulk user inserts to the database.
+
+The base Compose production image listens on HTTP port 80 for a TLS-terminating
+load balancer. The development override publishes HTTPS and HTTP/3 on port 443.
 
 #### Redis
 
@@ -29,8 +32,8 @@ The User Service utilizes environment variables for configuration to ensure that
 - `AWS_SQS_VERSION`: The AWS SQS API version.
 - `AWS_SQS_REGION`: The AWS region for SQS.
 - `AWS_SQS_ENDPOINT_BASE`: The LocalStack endpoint base for `dev`, `test`, `load_test`, and `schemathesis`.
-- `AWS_SQS_KEY`: The LocalStack access key for development and test environments only.
-- `AWS_SQS_SECRET`: The LocalStack secret key for development and test environments only.
+- `AWS_SQS_KEY`: The LocalStack access key for `dev`, `test`, `load_test`, and `schemathesis` only.
+- `AWS_SQS_SECRET`: The LocalStack secret key for `dev`, `test`, `load_test`, and `schemathesis` only.
 - `LOCALSTACK_PORT`: The port on which LocalStack is running.
 
 #### Messenger Transports
