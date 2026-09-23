@@ -16,18 +16,17 @@ final class EnvironmentKernelTest extends UnitTestCase
         $kernel = new EnvironmentKernel('prod', false, dirname(__DIR__, 4));
 
         self::assertSame($kernel->getCacheDir(), $kernel->getBuildDir());
-        self::assertStringContainsString('var/cache/behat-environment/prod', $kernel->getCacheDir());
+        self::assertStringContainsString(
+            'var/cache/behat-environment/prod',
+            $kernel->getCacheDir()
+        );
     }
 
     public function testOnlyMongoTransportOptionsAreOverriddenForBehat(): void
     {
         $dsn = 'mongodb://database:27017';
         $driverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
-        $options = [
-            'tls' => true,
-            'tlsCAFile' => '/test/documentdb-ca.pem',
-            'retryWrites' => false,
-        ];
+        $options = ['tls' => true, 'tlsCAFile' => '/ca.pem', 'retryWrites' => false];
         $container = new ContainerBuilder();
         $container->setDefinition(
             'doctrine_mongodb.odm.default_connection',
