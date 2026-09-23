@@ -28,7 +28,12 @@ class ReleaseEvidenceTests(unittest.TestCase):
         )
         self.verification = {
             key: self.arguments[key]
-            for key in ("workflow_sha", "quality_job_id", "build_job_id")
+            for key in (
+                "workflow_sha",
+                "quality_job_id",
+                "build_job_id",
+                "build_artifact",
+            )
         }
         self.verification["manifest"] = self.manifest
 
@@ -57,6 +62,15 @@ class ReleaseEvidenceTests(unittest.TestCase):
                 codec.validate_release_evidence(
                     *documents, **dict(self.verification, manifest=changed)
                 )
+
+    def test_provenance_artifact_must_match_prepared_artifact(self):
+        documents = codec.build_release_evidence(**self.arguments)
+        provenance = json.loads(documents[0])
+        provenance["build_artifact"]["artifact_id"] += 1
+        with self.assertRaisesRegex(codec.ReleaseManifestError, "evidence-binding"):
+            codec.validate_release_evidence(
+                json.dumps(provenance).encode(), documents[1], **self.verification
+            )
 
     def test_closed_documents_and_strict_integer_types(self):
         documents = codec.build_release_evidence(**self.arguments)

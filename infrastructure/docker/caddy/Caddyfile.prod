@@ -18,7 +18,13 @@
 :80 {
 	log {
 		output stderr
-		format json
+		format filter {
+			request>uri query {
+				replace code REDACTED
+				replace state REDACTED
+			}
+			wrap json
+		}
 	}
 
 	root * /srv/app/public

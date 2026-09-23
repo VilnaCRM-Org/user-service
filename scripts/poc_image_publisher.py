@@ -671,6 +671,7 @@ def manifest(document, run_id, workflow_sha, directory):
         workflow_sha=workflow_sha,
         quality_job_id=prepared["quality_job_id"],
         build_job_id=prepared["build_job_id"],
+        build_artifact=prepared["build_artifact"],
     )
     (directory / "release-manifest.json").write_bytes(raw)
 

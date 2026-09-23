@@ -283,6 +283,7 @@ def validate_release_evidence(
     workflow_sha,
     quality_job_id,
     build_job_id,
+    build_artifact,
 ):
     """Compare evidence with separately authenticated manifest and native job IDs."""
     provenance, quality = map(_evidence_document, (provenance_bytes, quality_bytes))
@@ -306,7 +307,7 @@ def validate_release_evidence(
             workflow_sha=workflow_sha,
             quality_job_id=quality_job_id,
             build_job_id=build_job_id,
-            build_artifact=provenance["build_artifact"],
+            build_artifact=build_artifact,
         )
         _require(
             all(
