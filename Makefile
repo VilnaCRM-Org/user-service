@@ -50,7 +50,7 @@ SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
 BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
-BEHAT_ENV     = env APP_DEBUG=0
+BEHAT_ENV     = env APP_ENV=test APP_DEBUG=0
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer

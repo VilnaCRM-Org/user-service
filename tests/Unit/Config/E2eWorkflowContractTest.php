@@ -20,4 +20,16 @@ final class E2eWorkflowContractTest extends UnitTestCase
         self::assertSame('make behat', $runCommands['Run Behat Tests']);
         self::assertNotContains('make e2e-tests', $runCommands);
     }
+
+    public function testBehatTargetUsesTheTestEnvironment(): void
+    {
+        $makefile = (string) file_get_contents(
+            dirname(__DIR__, 3) . '/Makefile'
+        );
+
+        self::assertMatchesRegularExpression(
+            '/^BEHAT_ENV\s*=\s*env APP_ENV=test APP_DEBUG=0$/m',
+            $makefile
+        );
+    }
 }
