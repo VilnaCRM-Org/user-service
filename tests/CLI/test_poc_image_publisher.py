@@ -12,7 +12,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 PATH = Path(__file__).resolve().parents[2] / "scripts/poc_image_publisher.py"
 SPEC = importlib.util.spec_from_file_location("poc_image_publisher", PATH)
@@ -86,6 +86,35 @@ class PublisherAdmissionTests(unittest.TestCase):
             publisher.admit(api=responses.__getitem__, env=env, event=event),
             (request, 31, "c" * 40),
         )
+
+    def test_loads_dispatch_envelope_separately_from_request_evidence(self):
+        request, env, _, responses, event = fixture()
+        event["metadata"] = "x" * codec.MAX_MANIFEST_BYTES
+        with tempfile.TemporaryDirectory() as directory:
+            event_path = Path(directory) / "event.json"
+            event_path.write_bytes(json.dumps(event).encode())
+            env["GITHUB_EVENT_PATH"] = str(event_path)
+            self.assertEqual(
+                publisher.admit(api=responses.__getitem__, env=env),
+                (request, 31, "c" * 40),
+            )
+
+    def test_rejects_oversized_dispatch_envelope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            event_path = Path(directory) / "event.json"
+            event_path.write_bytes(b"x" * (publisher.MAX_EVENT + 1))
+            with self.assertRaisesRegex(codec.ReleaseManifestError, "^dispatch-event$"):
+                publisher.event_document(event_path)
+
+    def test_event_document_reads_no_more_than_its_bound(self):
+        stream = MagicMock()
+        stream.read.return_value = b"{}"
+        path = MagicMock()
+        path.open.return_value.__enter__.return_value = stream
+
+        self.assertEqual(publisher.event_document(path), {})
+        path.open.assert_called_once_with("rb")
+        stream.read.assert_called_once_with(publisher.MAX_EVENT + 1)
 
     def test_rejects_user_fork_rerun_foreign_workflow_before_bulk_reads(self):
         for key, value in (
@@ -352,12 +381,12 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
     def test_real_local_process_bounds_timeout_failure_and_cleanup(self):
         original = subprocess.Popen
         children = []
-        for program, category in (
-            ("print('ok')", None),
-            ("print('x'*100)", "native-output"),
-            ("import sys;sys.stderr.write('x'*1100000)", "native-output"),
-            ("raise SystemExit(1)", "native-command"),
-            ("import time;time.sleep(10)", "native-timeout"),
+        for program, category, timeout in (
+            ("print('ok')", None, 30),
+            ("print('x'*100)", "native-output", 30),
+            ("import sys;sys.stderr.write('x'*1100000)", "native-output", 30),
+            ("raise SystemExit(1)", "native-command", 30),
+            ("import time;time.sleep(10)", "native-timeout", 0.5),
         ):
 
             def start(*args, **kwargs):
@@ -378,7 +407,9 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
                     with self.assertRaisesRegex(
                         codec.ReleaseManifestError, "^" + category + "$"
                     ):
-                        publisher.run("gh", "api", "path", max_output=10, timeout=0.1)
+                        publisher.run(
+                            "gh", "api", "path", max_output=10, timeout=timeout
+                        )
             self.assertIsNotNone(children[-1].poll())
 
     def test_cli_does_not_print_exception_values(self):

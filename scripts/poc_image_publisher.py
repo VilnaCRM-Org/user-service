@@ -37,6 +37,7 @@ JOBS = (
 )
 MAX_IMAGE = 3 * 1024**3
 MAX_ARCHIVE = 7 * 1024**3
+MAX_EVENT = 1024 * 1024
 REQUEST_FIELDS = {
     "source_sha",
     "platform",
@@ -57,6 +58,20 @@ def canonical(value):
 
 def decode(raw):
     return codec._evidence_document(raw)
+
+
+def event_document(path):
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_EVENT + 1)
+    require(0 < len(raw) <= MAX_EVENT, "dispatch-event")
+    try:
+        document = json.loads(
+            raw, object_pairs_hook=codec._pairs, parse_constant=codec._nonfinite
+        )
+    except (ValueError, RecursionError):
+        raise codec.ReleaseManifestError("dispatch-event") from None
+    require(type(document) is dict, "dispatch-event")
+    return document
 
 
 def sha(path):
@@ -235,9 +250,7 @@ def admit(*, api=gh, env=None, event=None):
     app = api(f"apps/{APP_SLUG}")
     require(app.get("id") == APP_ID and app.get("slug") == APP_SLUG, "dispatch-app")
     actor(api(f"users/{APP_SLUG}[bot]"))
-    event = (
-        decode(Path(env["GITHUB_EVENT_PATH"]).read_bytes()) if event is None else event
-    )
+    event = event_document(Path(env["GITHUB_EVENT_PATH"])) if event is None else event
     require(
         type(event.get("inputs")) is dict and set(event["inputs"]) == {"request"},
         "dispatch-input",

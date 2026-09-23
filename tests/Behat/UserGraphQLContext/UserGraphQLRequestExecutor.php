@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
-use App\Shared\Kernel as AppKernel;
+use App\Tests\Behat\Support\EnvironmentKernel;
 use App\Tests\Behat\UserContext\UserOperationsState;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
@@ -89,8 +89,12 @@ final class UserGraphQLRequestExecutor
             return $this->kernel->handle($request);
         }
 
-        $this->clearEnvironmentCacheIfNeeded($environment);
-        $environmentKernel = new AppKernel($environment, $environment !== 'prod');
+        $environmentKernel = new EnvironmentKernel(
+            $environment,
+            $environment !== 'prod',
+            $this->kernel->getProjectDir()
+        );
+        $this->clearEnvironmentCacheIfNeeded($environmentKernel);
         $environmentKernel->boot();
 
         try {
@@ -126,22 +130,17 @@ final class UserGraphQLRequestExecutor
         return $environment;
     }
 
-    private function clearEnvironmentCacheIfNeeded(string $environment): void
+    private function clearEnvironmentCacheIfNeeded(KernelInterface $kernel): void
     {
-        if (isset($this->clearedCacheByEnvironment[$environment])) {
+        $cacheDir = $kernel->getCacheDir();
+        if (isset($this->clearedCacheByEnvironment[$cacheDir])) {
             return;
         }
-
-        $cacheDir = sprintf(
-            '%s/var/cache/%s',
-            $this->kernel->getProjectDir(),
-            $environment
-        );
 
         if (is_dir($cacheDir)) {
             (new Filesystem())->remove($cacheDir);
         }
 
-        $this->clearedCacheByEnvironment[$environment] = true;
+        $this->clearedCacheByEnvironment[$cacheDir] = true;
     }
 }

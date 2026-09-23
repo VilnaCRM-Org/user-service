@@ -26,13 +26,13 @@ final class DocumentDbTlsRuntimeConfigTest extends UnitTestCase
         self::assertTrue(
             $config['doctrine_mongodb']['document_managers']['default']['auto_mapping']
         );
-        self::assertTrue(
-            $productionOptions['tls']
-        );
+        self::assertTrue($productionOptions['tls']);
         self::assertSame(
             self::CA_BUNDLE_PATH,
             $productionOptions['tlsCAFile']
         );
+        self::assertFalse($productionOptions['retryWrites']);
         self::assertArrayNotHasKey('document_managers', $config['when@prod']['doctrine_mongodb']);
     }
+
 }

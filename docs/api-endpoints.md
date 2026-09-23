@@ -33,8 +33,10 @@ The REST API also exposes two public social sign-in endpoints:
 
 Social sign-in defaults to enabled in all environments and supports GitHub, Google,
 Facebook, and Twitter with configured provider credentials. A deployment can explicitly
-set `SOCIAL_OAUTH_ENABLED=false`; both endpoints then return the standard
-`unsupported_provider` 400 response without resolving provider credentials. Local
+set `SOCIAL_OAUTH_ENABLED=false`; the initiation endpoint returns the standard
+`unsupported_provider` 400 response. The callback returns it only after valid OAuth
+state validation; invalid or mismatched state returns its validation error. Neither
+endpoint resolves provider credentials. Local
 registration, password sign-in, and token flows remain available.
 
 ## GraphQL specification

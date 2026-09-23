@@ -46,6 +46,7 @@ SH;
         self::assertStringNotContainsString('failed-send-email', $config);
         self::assertStringNotContainsString('failed-domain-events', $config);
         self::assertStringContainsString('numprocs=10', $config);
+        self::assertStringContainsString('startsecs=10', $config);
         self::assertStringContainsString(self::PROCESS_NAME, $config);
         self::assertStringContainsString('stdout_logfile=/dev/fd/1', $config);
         self::assertStringContainsString('stderr_logfile=/dev/fd/2', $config);

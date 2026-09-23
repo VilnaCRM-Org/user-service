@@ -42,3 +42,4 @@ when@prod:
         options:
           tls: true
           tlsCAFile: '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem'
+          retryWrites: false
