@@ -89,7 +89,7 @@ final class ProductionCaddyConfigTest extends UnitTestCase
         );
     }
 
-    public function testProductionCaddyUsesTheSymfonyTrustedProxyContract(): void
+    public function testProductionCaddyAndSymfonyKeepClosedProxyDefaults(): void
     {
         $caddyfile = (string) file_get_contents(
             dirname(__DIR__, 3) . '/infrastructure/docker/caddy/Caddyfile.prod'
@@ -100,12 +100,11 @@ final class ProductionCaddyConfigTest extends UnitTestCase
         );
 
         self::assertStringContainsString(
-            'trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}',
+            'trusted_proxies static {$TRUSTED_PROXY_CIDRS:127.0.0.1/32}',
             $caddyfile
         );
-        self::assertStringNotContainsString('TRUSTED_PROXY_CIDRS', $caddyfile);
         self::assertStringContainsString('TRUSTED_PROXIES=127.0.0.1/32', $environment);
-        self::assertStringNotContainsString('TRUSTED_PROXY_CIDRS=', $environment);
+        self::assertStringContainsString('TRUSTED_PROXY_CIDRS=127.0.0.1/32', $environment);
         self::assertStringContainsString(
             "trusted_proxies: '%env(TRUSTED_PROXIES)%'",
             $framework
