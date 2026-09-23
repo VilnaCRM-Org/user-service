@@ -396,10 +396,6 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
             self.assertEqual(stderr.getvalue(), "Image publishing failed.\n")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class PublisherRoundtripTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -591,3 +587,7 @@ class PublisherEnvironmentTests(unittest.TestCase):
                 self.assertRaises(codec.ReleaseManifestError),
             ):
                 publisher.protected_environment(api=changed.__getitem__)
+
+
+if __name__ == "__main__":
+    unittest.main()

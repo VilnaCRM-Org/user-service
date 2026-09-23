@@ -456,6 +456,7 @@ def build(document, run_id, directory):
         run(
             "docker",
             "build",
+            "--quiet",
             "--pull",
             "--platform",
             document["platform"],
