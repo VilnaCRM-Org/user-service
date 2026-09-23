@@ -47,6 +47,35 @@ jobs:
           git clone https://github.com/bats-core/bats-support.git tests/CLI/bats/bats-support
           git clone https://github.com/bats-core/bats-assert.git tests/CLI/bats/bats-assert
 
+      - name: Monitor MongoDB lifecycle
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          docker events \
+            --filter type=container \
+            --filter label=com.docker.compose.service=database \
+            --format '{{.Time}} {{.Action}} exit={{.Actor.Attributes.exitCode}}' \
+            > "$RUNNER_TEMP/bats-database-events.log" 2>/dev/null &
+          echo $! > "$RUNNER_TEMP/bats-database-events.pid"
+
       - name: Run Bats tests
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make bats
+
+      - name: Report MongoDB lifecycle on failure
+        if: ${{ failure() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          if [ -f "$RUNNER_TEMP/bats-database-events.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/bats-database-events.pid")" || true
+          fi
+          if [ -s "$RUNNER_TEMP/bats-database-events.log" ]; then
+            cat "$RUNNER_TEMP/bats-database-events.log"
+          else
+            echo "No MongoDB lifecycle events captured during Bats."
+          fi
+
+      - name: Stop MongoDB lifecycle monitor
+        if: ${{ always() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: |
+          if [ -f "$RUNNER_TEMP/bats-database-events.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/bats-database-events.pid")" || true
+          fi
