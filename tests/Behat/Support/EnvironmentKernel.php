@@ -22,11 +22,13 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
         parent::__construct($environment, $debug);
     }
 
+    #[\Override]
     public function getProjectDir(): string
     {
         return $this->projectDir;
     }
 
+    #[\Override]
     public function getCacheDir(): string
     {
         return sprintf(
@@ -36,17 +38,20 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
         );
     }
 
+    #[\Override]
     public function getBuildDir(): string
     {
         return $this->getCacheDir();
     }
 
+    #[\Override]
     protected function build(ContainerBuilder $container): void
     {
         parent::build($container);
         $container->addCompilerPass($this);
     }
 
+    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $definition = $container->getDefinition('doctrine_mongodb.odm.default_connection');
