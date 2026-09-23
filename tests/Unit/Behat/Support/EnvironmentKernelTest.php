@@ -8,6 +8,7 @@ use App\Tests\Behat\Support\EnvironmentKernel;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
 
 final class EnvironmentKernelTest extends UnitTestCase
 {
@@ -45,18 +46,20 @@ final class EnvironmentKernelTest extends UnitTestCase
         self::assertSame(false, $arguments[1]['tls']);
         self::assertFalse(isset($arguments[1]['tlsCAFile']));
         self::assertFalse($arguments[1]['retryWrites']);
+        self::assertSame(1, $container->getEnvCounters()['MONGODB_URL']);
     }
 
     private function mongoContainer(): ContainerBuilder
     {
         $options = ['tls' => true, 'tlsCAFile' => '/ca.pem', 'retryWrites' => false];
         $driverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
-        $container = new ContainerBuilder();
+        $container = new ContainerBuilder(new EnvPlaceholderParameterBag());
+        $server = $container->getParameterBag()->resolveValue('%env(MONGODB_URL)%');
         $container->setDefinition(
             'doctrine_mongodb.odm.default_connection',
             new Definition(
                 'MongoDB\\Client',
-                ['mongodb://production-server', $options, $driverOptions]
+                [$server, $options, $driverOptions]
             )
         );
 

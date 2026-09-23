@@ -46,13 +46,6 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
     }
 
     #[\Override]
-    protected function build(ContainerBuilder $container): void
-    {
-        parent::build($container);
-        $container->addCompilerPass($this);
-    }
-
-    #[\Override]
     public function process(ContainerBuilder $container): void
     {
         $definition = $container->getDefinition('doctrine_mongodb.odm.default_connection');
@@ -62,9 +55,18 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
             throw new LogicException('The MongoDB connection options must be an array.');
         }
 
+        // Keep Symfony's configured env reference accounted for in the dumped container.
+        $container->resolveEnvPlaceholders($definition->getArgument(0));
         $definition->replaceArgument(0, $this->testMongoServer);
         $options['tls'] = false;
         unset($options['tlsCAFile']);
         $definition->replaceArgument(1, $options);
+    }
+
+    #[\Override]
+    protected function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        $container->addCompilerPass($this);
     }
 }
