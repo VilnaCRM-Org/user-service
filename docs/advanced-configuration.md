@@ -17,6 +17,7 @@ The User Service utilizes environment variables for configuration to ensure that
 #### Database
 
 - `DATABASE_URL`: The URL for connecting to the MariaDB/MySQL database, including credentials, host, port, and database name (e.g., `mysql://root:root@database:3306/db?serverVersion=11.4`).
+- `MONGODB_URL`: The MongoDB or DocumentDB connection URI. Production enables TLS and uses the verified CA bundle at `/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem` supplied by the application image.
 - `USER_INSERT_BATCH_SIZE`: The size of a batch for bulk user inserts to the database.
 
 #### Redis

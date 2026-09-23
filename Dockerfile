@@ -18,6 +18,22 @@ RUN apk add --no-cache \
     autoconf=~2.72 \
     cyrus-sasl-dev=~2.1
 
+# AWS documents this public global bundle for DocumentDB TLS connections.
+ARG DOCUMENTDB_CA_BUNDLE_URL=https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+ARG DOCUMENTDB_CA_BUNDLE_SHA256=e5bb2084ccf45087bda1c9bffdea0eb15ee67f0b91646106e466714f9de3c7e3
+ARG DOCUMENTDB_CA_BUNDLE_PATH=/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem
+RUN set -eux; \
+    mkdir -p "$(dirname "${DOCUMENTDB_CA_BUNDLE_PATH}")"; \
+    curl --fail --location --show-error --silent --retry 3 --retry-delay 2 \
+        "${DOCUMENTDB_CA_BUNDLE_URL}" --output "${DOCUMENTDB_CA_BUNDLE_PATH}"; \
+    echo "${DOCUMENTDB_CA_BUNDLE_SHA256}  ${DOCUMENTDB_CA_BUNDLE_PATH}" | sha256sum -c -; \
+    DOCUMENTDB_CA_BUNDLE_PATH="${DOCUMENTDB_CA_BUNDLE_PATH}" php -r '\
+        $bundle = file_get_contents(getenv("DOCUMENTDB_CA_BUNDLE_PATH")); \
+        if ($bundle === false || preg_match_all("/-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/s", $bundle, $certificates) < 1) { exit(1); } \
+        foreach ($certificates[0] as $certificate) { if (openssl_x509_read($certificate) === false) { exit(1); } } \
+    '; \
+    chmod 0644 "${DOCUMENTDB_CA_BUNDLE_PATH}"
+
 ARG STABILITY=stable
 ENV STABILITY=${STABILITY}
 
