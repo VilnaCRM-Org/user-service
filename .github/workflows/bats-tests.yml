@@ -22,10 +22,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Docker
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: docker/setup-docker-action@v4
-
       - uses: shivammathur/setup-php@v2
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         with:
