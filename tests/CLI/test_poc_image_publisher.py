@@ -34,7 +34,7 @@ def fixture():
         "owner": {"id": 114362548},
     }
     request = {
-        "source_sha": "a" * 40,
+        "source_sha": "c" * 40,
         "platform": "linux/amd64",
         "registry_phase_receipt_id": 17,
         "registry_contract_digest": "b" * 64,
@@ -70,9 +70,9 @@ def fixture():
             "slug": publisher.APP_SLUG,
         },
         f"users/{publisher.APP_SLUG}[bot]": copy.deepcopy(actor),
-        f"{publisher.API}/compare/{'a' * 40}...main": {
-            "merge_base_commit": {"sha": "a" * 40},
-            "status": "ahead",
+        f"{publisher.API}/compare/{'c' * 40}...main": {
+            "merge_base_commit": {"sha": "c" * 40},
+            "status": "identical",
         },
     }
     event = {"sender": copy.deepcopy(actor), "inputs": {"request": json.dumps(request)}}
@@ -86,6 +86,79 @@ class PublisherAdmissionTests(unittest.TestCase):
             publisher.admit(api=responses.__getitem__, env=env, event=event),
             (request, 31, "c" * 40),
         )
+
+    def test_exact_dispatch_remains_valid_when_main_advances_after_run_selection(self):
+        request, env, _, responses, event = fixture()
+        responses[f"{publisher.API}/compare/{request['source_sha']}...main"][
+            "status"
+        ] = "ahead"
+        self.assertEqual(
+            publisher.admit(api=responses.__getitem__, env=env, event=event),
+            (request, 31, request["source_sha"]),
+        )
+
+    def test_main_advancing_before_run_selection_rejects_reviewed_ancestor(self):
+        request, env, _, responses, event = fixture()
+        request["source_sha"] = "a" * 40
+        event["inputs"]["request"] = json.dumps(request)
+        responses[f"{publisher.API}/compare/{request['source_sha']}...main"] = {
+            "merge_base_commit": {"sha": request["source_sha"]},
+            "status": "ahead",
+        }
+        api = MagicMock(side_effect=responses.__getitem__)
+        with self.assertRaisesRegex(codec.ReleaseManifestError, "^dispatch-source-sha$"):
+            publisher.admit(api=api, env=env, event=event)
+        self.assertEqual(
+            [call.args[0] for call in api.call_args_list],
+            [
+                f"{publisher.API}/actions/runs/31",
+                f"apps/{publisher.APP_SLUG}",
+                f"users/{publisher.APP_SLUG}[bot]",
+            ],
+        )
+
+    def test_dispatch_race_stops_every_cli_mode_before_build_or_credentials(self):
+        request, env, _, responses, event = fixture()
+        request["source_sha"] = "a" * 40
+        event["inputs"]["request"] = json.dumps(request)
+        responses[f"{publisher.API}/compare/{request['source_sha']}...main"] = {
+            "merge_base_commit": {"sha": request["source_sha"]},
+            "status": "ahead",
+        }
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        env.update(
+            RUNNER_TEMP=temporary.name,
+            GITHUB_OUTPUT=str(Path(temporary.name) / "output"),
+        )
+        admit = publisher.admit
+        for mode in ("admit", "build", "prepare", "publish", "manifest", "readback"):
+            with (
+                self.subTest(mode=mode),
+                patch.dict(os.environ, env, clear=True),
+                patch.object(
+                    publisher,
+                    "admit",
+                    side_effect=lambda: admit(
+                        api=responses.__getitem__, env=env, event=event
+                    ),
+                ),
+                patch.object(publisher, "protected_environment") as protection,
+                patch.object(publisher, "build") as build,
+                patch.object(publisher, "prepare") as prepare,
+                patch.object(publisher, "publish") as publish,
+                patch.object(publisher, "manifest") as manifest,
+                patch.object(publisher, "reference") as reference,
+                patch.object(publisher, "run") as native,
+                patch("sys.stderr", new_callable=io.StringIO) as stderr,
+            ):
+                self.assertEqual(publisher.main([mode]), 1)
+                self.assertEqual(stderr.getvalue(), "Image publishing failed.\n")
+                for operation in (
+                    protection, build, prepare, publish, manifest, reference, native
+                ):
+                    operation.assert_not_called()
+                self.assertEqual(list(Path(temporary.name).iterdir()), [])
 
     def test_loads_dispatch_envelope_separately_from_request_evidence(self):
         request, env, _, responses, event = fixture()
@@ -174,7 +247,7 @@ class PublisherAdmissionTests(unittest.TestCase):
             elif change == "sender":
                 event["sender"]["id"] = 1
             else:
-                comparison = responses[f"{publisher.API}/compare/{'a' * 40}...main"]
+                comparison = responses[f"{publisher.API}/compare/{'c' * 40}...main"]
                 comparison[
                     "status" if change == "not-main" else "merge_base_commit"
                 ] = "diverged" if change == "not-main" else {}

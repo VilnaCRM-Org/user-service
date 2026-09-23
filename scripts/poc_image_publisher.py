@@ -259,6 +259,7 @@ def admit(*, api=gh, env=None, event=None):
     value = event["inputs"]["request"]
     require(type(value) is str, "dispatch-input")
     document = request(value.encode())
+    require(document["source_sha"] == env["GITHUB_SHA"], "dispatch-source-sha")
     comparison = api(f"{API}/compare/{document['source_sha']}...main")
     require(
         comparison.get("merge_base_commit", {}).get("sha") == document["source_sha"]
