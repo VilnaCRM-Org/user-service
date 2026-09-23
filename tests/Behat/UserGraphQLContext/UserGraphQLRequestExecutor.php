@@ -6,6 +6,7 @@ namespace App\Tests\Behat\UserGraphQLContext;
 
 use App\Tests\Behat\Support\EnvironmentKernel;
 use App\Tests\Behat\UserContext\UserOperationsState;
+use LogicException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -92,7 +93,8 @@ final class UserGraphQLRequestExecutor
         $environmentKernel = new EnvironmentKernel(
             $environment,
             $environment !== 'prod',
-            $this->kernel->getProjectDir()
+            $this->kernel->getProjectDir(),
+            $this->testMongoServer()
         );
         $this->clearEnvironmentCacheIfNeeded($environmentKernel);
         $environmentKernel->boot();
@@ -128,6 +130,16 @@ final class UserGraphQLRequestExecutor
         }
 
         return $environment;
+    }
+
+    private function testMongoServer(): string
+    {
+        $server = getenv('MONGODB_URL');
+        if (!is_string($server) || $server === '') {
+            throw new LogicException('The Behat MongoDB server is unavailable.');
+        }
+
+        return $server;
     }
 
     private function clearEnvironmentCacheIfNeeded(KernelInterface $kernel): void

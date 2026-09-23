@@ -18,6 +18,7 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
         string $environment,
         bool $debug,
         private readonly string $projectDir,
+        private readonly string $testMongoServer,
     ) {
         parent::__construct($environment, $debug);
     }
@@ -61,6 +62,7 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
             throw new LogicException('The MongoDB connection options must be an array.');
         }
 
+        $definition->replaceArgument(0, $this->testMongoServer);
         $options['tls'] = false;
         unset($options['tlsCAFile']);
         $definition->replaceArgument(1, $options);

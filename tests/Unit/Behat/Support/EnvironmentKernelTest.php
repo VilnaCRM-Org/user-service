@@ -13,7 +13,12 @@ final class EnvironmentKernelTest extends UnitTestCase
 {
     public function testBuildAndCacheDirectoriesAreTheSameIsolatedPath(): void
     {
-        $kernel = new EnvironmentKernel('prod', false, dirname(__DIR__, 4));
+        $kernel = new EnvironmentKernel(
+            'prod',
+            false,
+            dirname(__DIR__, 4),
+            'mongodb://test-server'
+        );
 
         self::assertSame($kernel->getCacheDir(), $kernel->getBuildDir());
         self::assertStringContainsString(
@@ -24,25 +29,37 @@ final class EnvironmentKernelTest extends UnitTestCase
 
     public function testOnlyMongoTransportOptionsAreOverriddenForBehat(): void
     {
-        $dsn = 'mongodb://database:27017';
-        $driverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
-        $options = ['tls' => true, 'tlsCAFile' => '/ca.pem', 'retryWrites' => false];
-        $container = new ContainerBuilder();
-        $container->setDefinition(
-            'doctrine_mongodb.odm.default_connection',
-            new Definition('MongoDB\\Client', [$dsn, $options, $driverOptions])
-        );
+        $testDsn = 'mongodb://test-server';
+        $expectedDriverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
+        $container = $this->mongoContainer();
 
-        (new EnvironmentKernel('prod', false, dirname(__DIR__, 4)))->process($container);
+        (new EnvironmentKernel('prod', false, dirname(__DIR__, 4), $testDsn))
+            ->process($container);
 
         $arguments = $container
             ->getDefinition('doctrine_mongodb.odm.default_connection')
             ->getArguments();
 
-        self::assertSame($dsn, $arguments[0]);
-        self::assertSame($driverOptions, $arguments[2]);
+        self::assertSame($testDsn, $arguments[0]);
+        self::assertSame($expectedDriverOptions, $arguments[2]);
         self::assertSame(false, $arguments[1]['tls']);
         self::assertFalse(isset($arguments[1]['tlsCAFile']));
         self::assertFalse($arguments[1]['retryWrites']);
+    }
+
+    private function mongoContainer(): ContainerBuilder
+    {
+        $options = ['tls' => true, 'tlsCAFile' => '/ca.pem', 'retryWrites' => false];
+        $driverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
+        $container = new ContainerBuilder();
+        $container->setDefinition(
+            'doctrine_mongodb.odm.default_connection',
+            new Definition(
+                'MongoDB\\Client',
+                ['mongodb://production-server', $options, $driverOptions]
+            )
+        );
+
+        return $container;
     }
 }
