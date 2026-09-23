@@ -18,7 +18,7 @@ final class EnvironmentKernelTest extends UnitTestCase
             'prod',
             false,
             dirname(__DIR__, 4),
-            'mongodb://test-server'
+            'mongodb://' . $this->faker->domainName()
         );
 
         self::assertSame($kernel->getCacheDir(), $kernel->getBuildDir());
@@ -30,7 +30,7 @@ final class EnvironmentKernelTest extends UnitTestCase
 
     public function testOnlyMongoTransportOptionsAreOverriddenForBehat(): void
     {
-        $testDsn = 'mongodb://test-server';
+        $testDsn = 'mongodb://' . $this->faker->domainName();
         $expectedDriverOptions = ['context' => ['ssl' => ['verify_peer' => true]]];
         $container = $this->mongoContainer();
 
