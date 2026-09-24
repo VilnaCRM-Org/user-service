@@ -96,6 +96,14 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
         self::assertSame('stderr', $config['logging']['logs']['log0']['writer']['output']);
         self::assertSame('filter', $config['logging']['logs']['log0']['encoder']['format']);
         self::assertSame('json', $config['logging']['logs']['log0']['encoder']['wrap']['format']);
+        $this->assertAccessLogRedactsOAuthParameters($config);
+    }
+
+    /**
+     * @param array<string, array<string, array<array-key, array>|string>> $config
+     */
+    private function assertAccessLogRedactsOAuthParameters(array $config): void
+    {
         self::assertSame([
             ['parameter' => 'code', 'type' => 'replace', 'value' => 'REDACTED'],
             ['parameter' => 'state', 'type' => 'replace', 'value' => 'REDACTED'],
