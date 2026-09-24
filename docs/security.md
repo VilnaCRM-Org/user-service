@@ -91,3 +91,12 @@ Multiple validators ensure token integrity:
 TBD
 
 Learn more about [Performance and Optimization](performance.md).
+
+### AWS SQS workload identity
+
+Production health checks use the ECS task role through the AWS SDK credential
+provider chain. They require only `sqs:GetQueueUrl` on the preprovisioned
+health-check queue and never create infrastructure. Static LocalStack credentials
+are restricted to development and test configurations. See
+[SQS deployment configuration](advanced-configuration.md#sqs-credentials-in-aws)
+for the coordinated migration and local setup requirements.

@@ -10,9 +10,7 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  */
 
 use App\Shared\Application\Normalizer\EmailNormalizer;
-
 use function mb_strtoupper;
-
 use MongoDB\Collection;
 use Symfony\Component\Console\Command\Command;
 

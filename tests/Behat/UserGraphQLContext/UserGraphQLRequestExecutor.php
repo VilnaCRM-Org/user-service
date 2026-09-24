@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserGraphQLContext;
 
-use App\Shared\Kernel as AppKernel;
+use App\Tests\Behat\Support\EnvironmentKernel;
 use App\Tests\Behat\UserContext\UserOperationsState;
+use LogicException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -89,8 +90,13 @@ final class UserGraphQLRequestExecutor
             return $this->kernel->handle($request);
         }
 
-        $this->clearEnvironmentCacheIfNeeded($environment);
-        $environmentKernel = new AppKernel($environment, $environment !== 'prod');
+        $environmentKernel = new EnvironmentKernel(
+            $environment,
+            $environment !== 'prod',
+            $this->kernel->getProjectDir(),
+            $this->testMongoServer()
+        );
+        $this->clearEnvironmentCacheIfNeeded($environmentKernel);
         $environmentKernel->boot();
 
         try {
@@ -126,22 +132,27 @@ final class UserGraphQLRequestExecutor
         return $environment;
     }
 
-    private function clearEnvironmentCacheIfNeeded(string $environment): void
+    private function testMongoServer(): string
     {
-        if (isset($this->clearedCacheByEnvironment[$environment])) {
-            return;
+        $server = getenv('MONGODB_URL');
+        if (!is_string($server) || $server === '') {
+            throw new LogicException('The Behat MongoDB server is unavailable.');
         }
 
-        $cacheDir = sprintf(
-            '%s/var/cache/%s',
-            $this->kernel->getProjectDir(),
-            $environment
-        );
+        return $server;
+    }
+
+    private function clearEnvironmentCacheIfNeeded(KernelInterface $kernel): void
+    {
+        $cacheDir = $kernel->getCacheDir();
+        if (isset($this->clearedCacheByEnvironment[$cacheDir])) {
+            return;
+        }
 
         if (is_dir($cacheDir)) {
             (new Filesystem())->remove($cacheDir);
         }
 
-        $this->clearedCacheByEnvironment[$environment] = true;
+        $this->clearedCacheByEnvironment[$cacheDir] = true;
     }
 }

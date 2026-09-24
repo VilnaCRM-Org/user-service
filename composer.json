@@ -37,6 +37,7 @@
     "smolblog/oauth2-twitter": "^1.2",
     "spomky-labs/otphp": "^11.4",
     "symfony/amazon-sqs-messenger": "7.4.*",
+    "symfony/amazon-mailer": "8.1.*",
     "symfony/asset": "8.1.*",
     "symfony/cache": "7.4.*",
     "symfony/console": "7.4.*",
@@ -81,7 +82,7 @@
     "sort-packages": true,
     "platform": {
       "php": "8.4.4",
-      "ext-mongodb": "2.3.0"
+      "ext-mongodb": "2.4.1"
     }
   },
   "autoload": {

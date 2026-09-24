@@ -36,4 +36,4 @@ jobs:
 
       - name: Run Behat Tests
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make e2e-tests
+        run: make behat

@@ -1,0 +1,151 @@
+name: Publish PoC Application Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: Authenticated service-controller request; not a manual release interface
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: poc-test-image-publication
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  quality:
+    name: Validate application release
+    if: >-
+      github.repository == 'VilnaCRM-Org/user-service' &&
+      github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          path: .publisher
+          persist-credentials: false
+      - name: Authenticate delegated request
+        id: admission
+        run: python3 -I .publisher/scripts/poc_image_publisher.py admit
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ steps.admission.outputs.source_sha }}
+          path: .source
+          persist-credentials: false
+      - name: Validate installed publisher contracts
+        run: make -C .publisher test-poc-publisher
+      - name: Run normal application quality gates
+        working-directory: .source
+        env:
+          GH_TOKEN: ''
+          GITHUB_TOKEN: ''
+        run: |
+          make start
+          make ci
+          git diff --exit-code
+
+  build:
+    name: Build application images
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          path: .publisher
+          persist-credentials: false
+      - name: Authenticate delegated request
+        id: admission
+        run: python3 -I .publisher/scripts/poc_image_publisher.py admit
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ steps.admission.outputs.source_sha }}
+          path: .source
+          persist-credentials: false
+      - name: Build explicit production web and worker targets
+        run: python3 -I .publisher/scripts/poc_image_publisher.py build
+      - name: Upload immutable image transfer
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-image-build-${{ github.run_id }}-1
+          path: |
+            ${{ runner.temp }}/poc-images/build.json
+            ${{ runner.temp }}/poc-images/web.tar
+            ${{ runner.temp }}/poc-images/worker.tar
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish TEST application images
+    needs: [quality, build]
+    if: >-
+      github.repository == 'VilnaCRM-Org/user-service' &&
+      github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    environment: poc-test-images
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.sha }}
+          path: .publisher
+          persist-credentials: false
+      - name: Authenticate completed jobs and image bytes before AWS credentials
+        run: python3 -I .publisher/scripts/poc_image_publisher.py prepare
+      - name: Assume central TEST image publisher
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
+        with:
+          role-to-assume: arn:aws:iam::891377212104:role/user-service-test-ImagePublisher
+          aws-region: eu-central-1
+          role-session-name: poc-images-${{ github.run_id }}-1
+          allowed-account-ids: '891377212104'
+          unset-current-credentials: true
+      - name: Push both images and verify native ECR digests
+        run: python3 -I .publisher/scripts/poc_image_publisher.py publish
+      - name: Upload native build provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-build-provenance-${{ github.run_id }}-1
+          path: ${{ runner.temp }}/poc-images/provenance.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Upload authenticated quality evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-quality-evidence-${{ github.run_id }}-1
+          path: ${{ runner.temp }}/poc-images/quality.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Bind observed artifact references into the release manifest
+        run: python3 -I .publisher/scripts/poc_image_publisher.py manifest
+      - name: Upload immutable release manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-release-manifest-${{ github.run_id }}-1
+          path: ${{ runner.temp }}/poc-images/release-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Verify manifest artifact readback
+        run: python3 -I .publisher/scripts/poc_image_publisher.py readback

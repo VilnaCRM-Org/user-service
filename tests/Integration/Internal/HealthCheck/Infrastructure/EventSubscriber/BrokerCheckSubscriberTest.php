@@ -12,15 +12,18 @@ use Aws\Sqs\SqsClient;
 final class BrokerCheckSubscriberTest extends InternalIntegrationTestCase
 {
     private SqsClient $sqsClient;
-    private string $testQueueName = 'test-queue';
+    private string $testQueueName;
     private BrokerCheckSubscriber $subscriber;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sqsClient = $this->container->get(SqsClient::class);
-        $this->subscriber = new BrokerCheckSubscriber($this->sqsClient);
+        $sqsClient = $this->container->get(SqsClient::class);
+        $this->assertInstanceOf(SqsClient::class, $sqsClient);
+        $this->sqsClient = $sqsClient;
+        $this->testQueueName = $this->faker->lexify('health-check-????????');
+        $this->subscriber = new BrokerCheckSubscriber($this->sqsClient, $this->testQueueName);
     }
 
     public function testOnHealthCheck(): void
@@ -34,6 +37,7 @@ final class BrokerCheckSubscriberTest extends InternalIntegrationTestCase
         $queueUrl = $result->get('QueueUrl');
         $this->assertIsString($queueUrl, 'Queue URL should be a string');
         $this->assertNotEmpty($queueUrl, 'Queue URL should not be empty');
+        $this->sqsClient->deleteQueue(['QueueUrl' => $queueUrl]);
     }
 
     public function testGetSubscribedEvents(): void
