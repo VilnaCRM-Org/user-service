@@ -45,12 +45,13 @@ jobs:
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
 
-      - name: Commit changes
+      - name: Verify OpenAPI spec is up-to-date
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '.github/openapi-spec/spec.yaml'
-          message: 'feat(#${{ toJSON(github.event.number) }}): generate openapi spec'
+        run: |
+          git diff --exit-code .github/openapi-spec/spec.yaml || {
+            echo "::error::OpenAPI specification is out of date. Run 'make generate-openapi-spec' and commit the resulting .github/openapi-spec/spec.yaml."
+            exit 1
+          }
 
       - name: Check out head branch
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
@@ -58,18 +59,18 @@ jobs:
         with:
           path: head
 
-      - name: Check out master branch
+      - name: Check out base branch (main)
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: actions/checkout@v4
         with:
           ref: main
           path: base
 
-      - name: Run OpenAPI Diff (from HEAD revision)
+      - name: Run OpenAPI Diff (base -> head)
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: docker://openapitools/openapi-diff:latest
         with:
-          args: '/github/workspace/head/.github/openapi-spec/spec.yaml /github/workspace/base/.github/openapi-spec/spec.yaml'
+          args: '--fail-on-incompatible /github/workspace/base/.github/openapi-spec/spec.yaml /github/workspace/head/.github/openapi-spec/spec.yaml'
 
       - uses: actions/upload-artifact@v4
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}

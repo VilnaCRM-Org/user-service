@@ -1,17 +1,15 @@
-name: GraphQL spec backward comparability
+name: GraphQL spec backward compatibility
 
 on:
   pull_request:
+    branches: ['main']
 
 permissions:
-  contents: write
-  pull-requests: write
-  checks: write
-  statuses: write
+  contents: read
 
 jobs:
   graphql-diff:
-    name: Openapi-diff
+    name: GraphQL-diff
     runs-on: ubuntu-latest
     steps:
       - name: Dependabot skip
@@ -55,17 +53,18 @@ jobs:
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: docker cp user-service-php-1:/srv/app/.github/graphql-spec/spec .github/graphql-spec/spec
 
-      - name: Commit changes
+      - name: Verify GraphQL spec is up-to-date
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: '.github/graphql-spec/spec'
-          message: 'feat(#${{ github.event.number }}): generate graphql spec'
+        run: |
+          git diff --exit-code .github/graphql-spec/spec || {
+            echo "::error::GraphQL specification is out of date. Run 'make generate-graphql-spec' and commit the resulting .github/graphql-spec/spec."
+            exit 1
+          }
 
       - name: GraphQL Inspector
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         uses: kamilkisiela/graphql-inspector@release-1701263349990
         with:
-          schema: 'master:.github/graphql-spec/spec'
+          schema: 'main:.github/graphql-spec/spec'
         env:
           GITHUB_TOKEN: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && steps.generate_token.outputs.token || github.token }}
