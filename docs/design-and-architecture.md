@@ -52,6 +52,8 @@ CQRS is a design pattern that separates the responsibilities of handling command
 
 In User Service, CQRS allows us to encapsulate behavior and reuse it in different scenarios. Commands and Queries have all the needed data for instructions, that were encapsulated, to be completed. After being dispatched, they are automatically processed by corresponding handlers.
 
+Commands are write-side requests and should not be used as mutable response containers. For example, user registration keeps `RegisterUserCommand` immutable, checks duplicates through an application query handler, and returns created-user data through an explicit command response DTO.
+
 All interfaces related to Commands can be found in `Shared/Domain/Bus/Command`.
 
 This is the list of currently available Commands, which can be found in `User/Application/Command` folder:
@@ -88,14 +90,14 @@ This is the list of currently available Domain Events, which can be found in `Us
 7. **UserConfirmedEvent**: Published after the user is confirmed.
 8. **UserRegisteredEvent**: Published after the user is registered.
 
-Also, you can find Subscribers for these events in `src/User/Application/EventSubscriber`, and a Message Bus for them in `Shared/Infrastructure/Bus/Event`.
+Also, you can find Subscribers for these events in `src/User/Application/EventSubscriber`, and a Message Bus for them in `Shared/Infrastructure/Bus/Event`. The in-memory event bus wraps domain event subscribers with a defensive decorator so one subscriber failure is logged and measured without preventing remaining subscribers from handling the same event.
 
 ## Observability
 
 - Business metrics are emitted in AWS Embedded Metric Format (EMF) via `App\Shared\Application\Observability` value objects and the `AwsEmfBusinessMetricsEmitter` logger. Set the namespace with `AWS_EMF_NAMESPACE` (default `UserService/BusinessMetrics`).
 - HTTP responses publish endpoint-level metrics through `ApiEndpointBusinessMetricsSubscriber`, which records `EndpointInvocations` with `Endpoint` and `Operation` dimensions.
 - User domain events emit User-specific metrics: `UsersRegistered` (registration), `UsersUpdated` (email/password changes), and `PasswordResetRequests` (reset flow entry). Metrics live in `User/Application/Metric/*` with dedicated subscribers under `User/Application/EventSubscriber/*MetricsSubscriber`.
-- Domain-event infrastructure now includes resilient async components (envelope, dispatcher, handler) and failure metrics for queue/subscriber issues; the default bus remains in-memory, keeping metrics best-effort and non-blocking.
+- Domain-event infrastructure includes resilient async components (envelope, dispatcher, handler) and a defensive in-memory subscriber decorator. Subscriber failures are logged and emitted as `EventSubscriberFailures` metrics while event processing continues for remaining subscribers.
 
 ## Architecture Diagram
 

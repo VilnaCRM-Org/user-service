@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\UserContext;
 
+use App\Tests\Behat\Support\PasswordResetTokenRecorder;
 use App\Tests\Behat\UserContext\Input\ConfirmPasswordResetInput;
 use App\Tests\Behat\UserContext\Input\RequestPasswordResetInput;
 use App\User\Domain\Entity\User;
@@ -14,6 +15,7 @@ final class UserPasswordResetRequestContext implements Context
     public function __construct(
         private UserOperationsState $state,
         private readonly UserContextUserManagementServices $userManagement,
+        private readonly PasswordResetTokenRecorder $tokenRecorder,
     ) {
     }
 
@@ -101,7 +103,35 @@ final class UserPasswordResetRequestContext implements Context
             );
         }
 
-        return $token->getTokenValue();
+        return $this->resolvePlainToken($user->getId(), $token->getPlainToken());
+    }
+
+    /**
+     * Only the hash is persisted, so the usable plaintext is replayed from the
+     * value captured when the token was issued (via the HTTP request that
+     * dispatched the reset event, the in-process factory step, or the entity's
+     * transient plaintext) rather than the stored hash.
+     */
+    private function resolvePlainToken(string $userId, ?string $transientPlainToken): string
+    {
+        $recordedPlainToken = $this->tokenRecorder->getPlainTokenForUser($userId)
+            ?? $this->tokenRecorder->getLastPlainToken();
+        if ($recordedPlainToken !== '') {
+            return $recordedPlainToken;
+        }
+
+        if ($transientPlainToken !== null && $transientPlainToken !== '') {
+            return $transientPlainToken;
+        }
+
+        $capturedPlainToken = UserContext::getLastPasswordResetToken();
+        if ($capturedPlainToken !== '') {
+            return $capturedPlainToken;
+        }
+
+        throw new \RuntimeException(
+            'No plaintext password reset token was captured for confirmation.'
+        );
     }
 
     private function requireCurrentUserEmail(): string

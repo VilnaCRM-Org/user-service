@@ -1,0 +1,27 @@
+# Expected PR checks for the code-review skill final readiness gate.
+# Format: type|name|source
+check_run|codecov/patch|codecov
+check_run|codecov/project|codecov
+check_run|GraphQL Inspector|github-actions
+check_run|Psalm|github-actions
+check_run|Psalm|github-advanced-security
+check_run|Schemathesis|github-actions
+check_run|PHPUnit|github-actions
+check_run|Spectral Lint|github-actions
+check_run|Memory leak tests|github-actions
+check_run|lint|github-actions
+check_run|eslint|github-actions
+check_run|K6|github-actions
+check_run|Deptrac|github-actions
+check_run|symfony-checks|github-actions
+check_run|PHP Insights checks|github-actions
+check_run|Infection|github-actions
+check_run|openapi-diff|github-actions
+check_run|Openapi-diff|github-actions
+check_run|Run Bats Core Tests|github-actions
+check_run|Behat|github-actions
+check_run|test-and-report|github-actions
+status_context|CodeRabbit|coderabbitai
+status_context|qlty check|qltysh
+status_context|qlty fmt|qltysh
+status_context|security/snyk (Kravalg)|YapieRT

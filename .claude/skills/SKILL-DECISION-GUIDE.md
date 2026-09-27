@@ -20,6 +20,7 @@ If you created or modified a **NEW feature**, you MUST execute **every** skill i
 - `api-platform-crud`
 - `cache-management`
 - `ci-workflow`
+- `clean-architecture-llm`
 - `code-organization`
 - `code-review`
 - `complexity-management`
@@ -35,6 +36,12 @@ If you created or modified a **NEW feature**, you MUST execute **every** skill i
 - `query-performance-analysis`
 - `structurizr-architecture-sync`
 - `testing-workflow`
+
+**Conditional BMAD skill:**
+
+- `bmad-fr-nfr-review-gate` when BMAD specs exist for the implemented work. Run
+  `BMAD_REVIEW_SPEC_PATH=specs/my-bundle make bmad-fr-nfr-review-gate`; if no
+  BMAD specs exist, record **"Not applicable"** with the concrete reason.
 
 ## Quick Decision Tree
 
@@ -52,6 +59,7 @@ What are you trying to do?
 
 ├─ Create something new
 │   ├─ Full BMALPH specs from short prompt → bmad-autonomous-planning
+│   ├─ New LLM-powered module / prompt workflow → clean-architecture-llm
 │   ├─ New entity/value object → implementing-ddd-architecture
 │   ├─ New API endpoint → api-platform-crud
 │   ├─ New load test → load-testing
@@ -62,6 +70,7 @@ What are you trying to do?
 │   └─ Fix file placement / boundaries → code-organization
 │
 ├─ Refactor existing code
+│   ├─ Extract LLM provider/prompt logic → clean-architecture-llm
 │   ├─ Move class / rename / restructure → code-organization
 │   ├─ Hardcoded config to .env → code-organization
 │   ├─ Reduce complexity → complexity-management
@@ -71,6 +80,8 @@ What are you trying to do?
 ├─ Review/validate work
 │   ├─ Before committing → ci-workflow
 │   ├─ PR feedback → code-review
+│   ├─ Implemented BMAD specs → bmad-fr-nfr-review-gate
+│   ├─ LLM architecture review → clean-architecture-llm
 │   ├─ Quality thresholds → quality-standards
 │   └─ Query performance → query-performance-analysis
 │
@@ -81,6 +92,41 @@ What are you trying to do?
 └─ Architecture diagrams
     └─ Update workspace.dsl → structurizr-architecture-sync
 ```
+
+## Installed Third-Party Plugin Auto-Triggers (Claude Code)
+
+The third-party plugins documented in `docs/claude-code-plugins.md` are
+installed at user scope in Claude Code. **Invoke them automatically whenever a
+trigger below matches — never wait for the user to name a plugin or command.**
+
+**Rules:**
+
+1. When a trigger matches, invoke the plugin capability proactively, exactly as
+   you would pick a project skill from the decision tree above.
+2. Project skills in `.claude/skills/` define repository policy and win on any
+   conflict; plugins complement them, they never replace them.
+3. If a plugin is unavailable in the current environment (for example a
+   non-Claude agent such as Codex, Copilot, or Cursor, or a host without the
+   plugins installed), record **"Not applicable — plugin not installed"** and
+   continue with the project skills alone.
+
+| Trigger (invoke without being asked)                               | Plugin                         | How to invoke                                                                                                                                                 |
+| ------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starting any non-trivial feature, refactor, or design decision     | `superpowers`                  | `superpowers:brainstorming` before coding; `superpowers:writing-plans` then `superpowers:executing-plans` for multi-step work                                 |
+| Implementing code for a planned feature                            | `superpowers`                  | `superpowers:test-driven-development` (red/green TDD)                                                                                                         |
+| Debugging a failure whose cause is not already known               | `superpowers`                  | `superpowers:systematic-debugging`                                                                                                                            |
+| Finishing a branch before handoff                                  | `superpowers`                  | `superpowers:verification-before-completion`, then `superpowers:finishing-a-development-branch`                                                               |
+| Large feature needing exploration, architecture, and review phases | `feature-dev`                  | `/feature-dev:feature-dev`                                                                                                                                    |
+| Editing or navigating PHP code                                     | `php-lsp`                      | Automatic (Intelephense diagnostics) — resolve new diagnostics before moving on                                                                               |
+| Finding symbols, references, or call sites across the codebase     | `serena`                       | Serena MCP tools (semantic search) instead of broad `grep`/file dumps — saves tokens                                                                          |
+| Unsure about a Symfony, API Platform, Doctrine ODM, or library API | `context7`                     | Context7 MCP (`resolve-library-id` → `query-docs`) instead of guessing from memory                                                                            |
+| Reviewing any PR or pre-push diff                                  | `pr-review-toolkit`            | `/pr-review-toolkit:review-pr <number>` plus its agents (`pr-test-analyzer`, `silent-failure-hunter`, `type-design-analyzer`)                                 |
+| Writing or editing any code                                        | `security-guidance`, `semgrep` | Automatic via hooks — treat their warnings as blocking and fix before continuing                                                                              |
+| Committing, pushing, or opening a PR                               | `commit-commands`              | `/commit-commands:commit` or `/commit-commands:commit-push-pr`, only after `make ci` and `make ai-review-loop` pass — the plugin does not replace those gates |
+| MongoDB schema design, query tuning, or index work                 | `mongodb`                      | `mongodb-schema-design`, `mongodb-query-optimizer`, `mongodb-connection` skills                                                                               |
+| Editing or auditing `CLAUDE.md`                                    | `claude-md-management`         | `/claude-md-management:revise-claude-md`                                                                                                                      |
+| Creating or updating skills under `.claude/skills/`                | `skill-creator`                | `skill-creator` skill (authoring, evals, benchmarking)                                                                                                        |
+| User asks for a recurring guardrail ("always/never do X")          | `hookify`                      | `/hookify:hookify`                                                                                                                                            |
 
 ## Scenario-Based Guide
 
@@ -103,6 +149,19 @@ This skill guides proper DDD structure and file placement.
 
 **NOT**: deptrac-fixer (that's for fixing violations)
 **NOT**: database-migrations (that's for the database side)
+
+---
+
+### "I need to add an LLM-powered module or prompt workflow"
+
+**Use**: [clean-architecture-llm](clean-architecture-llm/SKILL.md)
+
+This skill guides Clean Architecture boundaries for provider-agnostic ports,
+prompt factories/templates, provider adapters, deterministic tests, privacy, and
+review evidence.
+
+**ALSO**: Check [implementing-ddd-architecture](implementing-ddd-architecture/SKILL.md) when the LLM feature touches domain/application/infrastructure code.
+**ALSO**: Check [code-organization](code-organization/SKILL.md) when adding or moving classes.
 
 ---
 
@@ -196,6 +255,19 @@ This skill detects N+1 queries, analyzes slow queries with EXPLAIN, and identifi
 This skill systematically handles review feedback.
 
 **NOT**: ci-workflow (that's for running checks)
+
+---
+
+### "I implemented BMAD specs and need to verify FR/NFR coverage"
+
+**Use**: [bmad-fr-nfr-review-gate](bmad-fr-nfr-review-gate/SKILL.md)
+
+This skill checks implemented work against every BMAD FR/NFR, the pinned
+NonFunctionals.com categories, manual test evidence, GitHub review status, and
+CI status. It requires 5/5 for every applicable row before completion.
+
+**ALSO**: Use [code-review](code-review/SKILL.md) for PR comments and
+[ci-workflow](ci-workflow/SKILL.md) for local CI failures.
 
 ---
 
@@ -310,16 +382,17 @@ database-              ci-workflow
 
 ## Common Confusions
 
-| Confusion                                      | Clarification                                                                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                    |
-| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                    |
-| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                       |
-| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                         |
-| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                    |
-| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                         |
-| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer               |
-| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management |
+| Confusion                                      | Clarification                                                                                                                       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| deptrac-fixer vs implementing-ddd-architecture | **Fix violations** → deptrac-fixer<br>**Design new patterns** → implementing-ddd-architecture                                       |
+| testing-workflow vs load-testing               | **Functional tests** (unit, integration, E2E) → testing-workflow<br>**Performance tests** (K6) → load-testing                       |
+| quality-standards vs complexity-management     | **Overview of all metrics** → quality-standards<br>**Fix complexity specifically** → complexity-management                          |
+| ci-workflow vs testing-workflow                | **Run all CI checks** → ci-workflow<br>**Debug specific test issues** → testing-workflow                                            |
+| query-performance-analysis vs load-testing     | **Query optimization** (N+1, indexes) → query-performance-analysis<br>**Concurrent load** (K6) → load-testing                       |
+| implementing-ddd vs structurizr-architecture   | **Create code** → implementing-ddd-architecture<br>**Document diagrams** → structurizr-architecture-sync                            |
+| clean-architecture-llm vs implementing-ddd     | **LLM provider/prompt boundaries** → clean-architecture-llm<br>**General domain modeling and CQRS** → implementing-ddd-architecture |
+| code-organization vs deptrac-fixer             | **File placement, naming, config extraction** → code-organization<br>**Layer boundary violations** → deptrac-fixer                  |
+| code-organization vs complexity-management     | **Structural refactoring** (move/rename/extract) → code-organization<br>**Reduce cyclomatic complexity** → complexity-management    |
 
 ## Multiple Skills for One Task
 
@@ -328,13 +401,14 @@ Some tasks benefit from multiple skills:
 ### Creating a complete new feature:
 
 1. **implementing-ddd-architecture** - Design domain model
-2. **api-platform-crud** - Create API endpoints
-3. **database-migrations** - Configure persistence
-4. **observability-instrumentation** - Add business metrics
-5. **testing-workflow** - Write tests
-6. **structurizr-architecture-sync** - Update architecture diagrams
-7. **documentation-sync** - Update docs
-8. **ci-workflow** - Validate everything
+2. **clean-architecture-llm** - Design provider/prompt boundaries when the feature uses LLMs
+3. **api-platform-crud** - Create API endpoints
+4. **database-migrations** - Configure persistence
+5. **observability-instrumentation** - Add business metrics
+6. **testing-workflow** - Write tests
+7. **structurizr-architecture-sync** - Update architecture diagrams
+8. **documentation-sync** - Update docs
+9. **ci-workflow** - Validate everything
 
 ### Fixing architecture issues:
 

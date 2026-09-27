@@ -1,104 +1,63 @@
-# Set up GitHub Action - Deploy
+# TEST PoC image publication
 
-This GitHub Action builds the production Docker image from the `app_php`
-Dockerfile stage, pushes both an immutable commit tag and the `latest` tag to
-Amazon ECR, and requests an ECR image scan for the pushed commit tag.
+The protected `publish-poc-images.yml` workflow builds the current `Dockerfile`
+targets `frankenphp_prod` and `app_workers`, then publishes their immutable
+digests to the TEST ECR repositories. It does not create ECR, IAM, DNS, or an
+application service. Those resources belong to the reviewed bootstrap and
+user-service-infrastructure Pulumi stacks.
 
-## Workflow Triggers
+## Installation order
 
-The workflow runs when:
+1. Merge this workflow to protected `main` after its checks and independent
+   reviews pass. Pin the installed main commit in the service controller as
+   `POC_PUBLISHER_WORKFLOW_SHA`.
+2. Install the TEST registry and its completion receipt through the protected
+   service-infrastructure controller. The repository names are
+   `user-service-test-web` and `user-service-test-worker` in account
+   `891377212104`, region `eu-central-1`.
+3. Configure the application repository's `poc-test-images` environment to
+   allow only `main`, require Kravalg's approval, prevent self-review, and
+   disable admin bypass. Verify these settings before activating the publisher
+   role. An environment name alone is not a protection gate.
+4. Install the bootstrap-owned `user-service-test-ImagePublisher` IAM role and
+   the two-repository ECR push grant. Its OIDC trust must match this repository,
+   immutable repository and owner IDs, `main`, this workflow path,
+   `workflow_dispatch`, and the protected environment. No AWS access keys or
+   repository AWS secrets are needed.
+5. Grant the existing `vilnacrm-user-service-evidence` GitHub App Actions write
+   access to this repository. The service controller dispatches the installed
+   publisher after authenticating the registry receipt and current GitHub
+   protections. Ordinary manual dispatches and reruns fail closed.
 
-- A push is made to the `main` branch.
-- A maintainer starts it manually with `workflow_dispatch`.
+The publisher uses `aws-actions/configure-aws-credentials` with GitHub OIDC,
+checks the TEST account, and logs in to ECR only in the protected publish job.
+Quality and image builds run without AWS credentials. The exact main source
+commit must pass `make ci`; the build uses that same commit and AMD64 targets.
 
-## Required GitHub Configuration
+## Release evidence
 
-To set up this action, please add the following secrets to your repository under
-**Settings** > **Secrets and variables** > **Actions**:
+The workflow uploads four per-run artifacts:
 
-- `AWS_ROLE_TO_ASSUME`: The ARN of the AWS IAM role that GitHub Actions
-  assumes through OpenID Connect (OIDC). Prefer OIDC over long-lived AWS access
-  keys.
-- `AWS_REGION`: The AWS region where the ECR repository exists, for example `us-east-1`.
-- `ECR_REGISTRY`: The full Amazon ECR registry URL, for example
-  `123456789012.dkr.ecr.us-east-1.amazonaws.com`.
-- `ECR_REPOSITORY`: The ECR repository name where the user-service Docker image
-  is pushed, for example `user-service`.
+- `poc-image-build-{run}-1`: the web/worker Docker transfer archive and its
+  native artifact digest.
+- `poc-quality-evidence-{run}-1`: `quality.json`, bound to the successful
+  quality job and `make ci`.
+- `poc-build-provenance-{run}-1`: `provenance.json`, bound to the build artifact,
+  registry receipt, exact source, fixed targets, and ECR digests.
+- `poc-release-manifest-{run}-1`: `release-manifest.json` with both immutable
+  image digests and evidence references.
 
-Configure the repository `production` environment with any required reviewers
-before enabling automatic production pushes from `main`.
+The service-infrastructure admission verifier checks the original GitHub App
+actor, attempt one, job order, artifact IDs and SHA-256 values, current registry
+checkpoint, and native ECR manifests before using a release. A successful
+publisher run alone does not authorize an infrastructure apply.
 
-## AWS OIDC Setup
+The fixed image tag includes the full source SHA and workflow run ID to avoid
+rewriting an immutable ECR tag. Workload deployments and rollbacks consume the
+content digests in the admitted manifest, not a mutable tag. If publication
+fails after one image push, inspect the run and dispatch a fresh reviewed run;
+attempt-two reruns are deliberately rejected.
 
-Create an IAM role that trusts GitHub's OIDC provider and restricts access to
-this repository and branch. The role should follow least privilege and only allow
-the ECR operations needed to authenticate, upload layers, and push images for the
-configured repository.
-
-Recommended role permissions include:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "ecr:GetAuthorizationToken",
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:BatchGetImage",
-        "ecr:CompleteLayerUpload",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:InitiateLayerUpload",
-        "ecr:PutImage",
-        "ecr:StartImageScan",
-        "ecr:UploadLayerPart"
-      ],
-      "Resource": "arn:aws:ecr:us-east-1:123456789012:repository/user-service"
-    }
-  ]
-}
-```
-
-`ecr:GetAuthorizationToken` requires `"Resource": "*"`. Keep the remaining ECR
-permissions scoped to the target repository ARN.
-
-## ECR Repository Setup
-
-Create the repository before the first deployment if it does not already exist:
-
-```bash
-aws ecr create-repository \
-  --repository-name user-service \
-  --image-scanning-configuration scanOnPush=true \
-  --encryption-configuration encryptionType=AES256
-```
-
-Configure a lifecycle policy so old commit-tagged images are cleaned up:
-
-```bash
-aws ecr put-lifecycle-policy \
-  --repository-name user-service \
-  --lifecycle-policy-text file://lifecycle-policy.json
-```
-
-## Image Tags
-
-Each successful run pushes two tags:
-
-- `${GITHUB_SHA::12}` for an immutable image tied to the deployed commit.
-- `latest` for consumers that intentionally follow the newest production image.
-
-Use the immutable commit tag for production rollbacks and audits.
-
-## Troubleshooting
-
-Authentication failures usually mean the OIDC trust policy,
-`AWS_ROLE_TO_ASSUME`, or `AWS_REGION` is incorrect. Build failures usually mean
-the Dockerfile `app_php` stage changed or the build context is incomplete. Push
-failures usually mean the target ECR repository does not exist or the IAM role is
-missing ECR permissions.
+This workflow supplies the TEST PoC publication stage only. PROD artifact
+promotion, runtime pull verification, ECS startup, HTTPS/application checks,
+second release, and rollback still require their separate protected acceptance.

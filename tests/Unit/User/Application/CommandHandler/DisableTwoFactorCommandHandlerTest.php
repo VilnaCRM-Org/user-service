@@ -9,8 +9,11 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\DisableTwoFactorCommand;
 use App\User\Application\CommandHandler\DisableTwoFactorCommandHandler;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -22,6 +25,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private RecoveryCodeRepositoryInterface&MockObject $recoveryCodeRepository;
     private TwoFactorCodeValidatorInterface&MockObject $twoFactorCodeVerifier;
     private TwoFactorPublisherInterface&MockObject $events;
@@ -34,6 +38,8 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->recoveryCodeRepository = $this->createMock(RecoveryCodeRepositoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeValidatorInterface::class);
         $this->events = $this->createMock(TwoFactorPublisherInterface::class);
@@ -44,7 +50,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testSuccessfulDisableWithTotpCode(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndConsumeOrFail')
@@ -69,7 +75,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testSuccessfulDisableWithRecoveryCode(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndConsumeOrFail')
@@ -93,7 +99,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testInvalidCodeThrowsUnauthorized(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndConsumeOrFail')
@@ -113,7 +119,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testTwoFactorNotEnabledThrows403(): void
     {
         $user = $this->createUser($this->faker->email());
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
         $this->twoFactorCodeVerifier->expects($this->never())
             ->method('verifyAndConsumeOrFail');
         $this->expectException(AccessDeniedHttpException::class);
@@ -125,9 +131,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
 
     public function testUserNotFoundThrowsUnauthorized(): void
     {
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
 
         $this->expectException(UnauthorizedHttpException::class);
 
@@ -138,13 +142,32 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
         ));
     }
 
+    public function testDuplicateEmailThrowsUnauthorizedWithoutSideEffects(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler
+            ->method('find')
+            ->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->twoFactorCodeVerifier->expects($this->never())
+            ->method('verifyAndConsumeOrFail');
+        $this->userRepository->expects($this->never())->method('save');
+        $this->recoveryCodeRepository->expects($this->never())
+            ->method('deleteByUserId');
+        $this->events->expects($this->never())->method('publishDisabled');
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->createHandler()->__invoke(
+            new DisableTwoFactorCommand($email, '123456')
+        );
+    }
+
     public function testEmitsTwoFactorDisabledEvent(): void
     {
         $user = $this->createTwoFactorEnabledUser();
 
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
 
@@ -162,7 +185,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     public function testInvalidRecoveryCodeThrowsUnauthorized(): void
     {
         $user = $this->createTwoFactorEnabledUser();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
             ->method('verifyAndConsumeOrFail')
@@ -182,9 +205,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createTwoFactorEnabledUser();
 
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
 
@@ -202,6 +223,7 @@ final class DisableTwoFactorCommandHandlerTest extends UnitTestCase
     {
         return new DisableTwoFactorCommandHandler(
             $this->userRepository,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->recoveryCodeRepository,
             $this->twoFactorCodeVerifier,
             $this->events,

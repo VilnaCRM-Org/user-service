@@ -67,3 +67,10 @@ when@schemathesis:
       transports:
         send-email: 'in-memory://'
         failed-send-email: 'in-memory://'
+        # Route domain events synchronously (in-memory) during API validation,
+        # mirroring when@test. Otherwise UserDeletedEvent (published by the
+        # schemathesis cleanup listener on kernel.terminate) is dispatched to the
+        # async SQS transport; that blocking send inside the FrankenPHP worker
+        # loop resets in-flight connections ("Connection reset by peer").
+        domain-events: 'in-memory://'
+        failed-domain-events: 'in-memory://'

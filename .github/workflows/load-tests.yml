@@ -8,21 +8,30 @@ jobs:
   load-tests:
     name: K6
     runs-on: ubuntu-latest
-
-    env:
-      COMPOSE_PROJECT_NAME: user-service-load-tests
-      COMPOSE_FILE: docker-compose.yml:docker-compose.override.yml:docker-compose.load-tests.yml
-      LOAD_TEST_COMPOSE_PROJECT: user-service-load-tests
-
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping load tests for Dependabot PR"
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: actions/checkout@v4
+
+      - name: Setup Docker
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: docker/setup-docker-action@v4
 
       - name: Start application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Setup test db
-        run: make setup-load-test-db
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: make setup-test-db
 
       - name: Run load tests
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        env:
+          API_HOST: localhost
+          API_PORT: 8081
         run: make smoke-load-tests

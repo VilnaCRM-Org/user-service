@@ -25,7 +25,10 @@ final class PasswordResetTokenFactoryTest extends UnitTestCase
 
         $this->assertInstanceOf(PasswordResetToken::class, $token);
         $this->assertSame($userId, $token->getUserID());
-        $this->assertSame($tokenLength * 2, strlen($token->getTokenValue()));
+        $this->assertSame($tokenLength * 2, strlen((string) $token->getPlainToken()));
+        $this->assertSame(64, strlen($token->getTokenValue()));
+        $this->assertNotSame($token->getPlainToken(), $token->getTokenValue());
+        $this->assertTrue($token->matchesToken((string) $token->getPlainToken()));
         $this->assertFalse($token->isUsed());
         $this->assertSame($expirationHours, $this->calculateHoursBetween($token));
 

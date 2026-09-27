@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RefreshTokenCommand;
 use App\User\Application\DTO\AuthPayload;
@@ -19,7 +20,7 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
     {
         $refreshToken = $this->faker->sha256();
         $command = new RefreshTokenCommand($refreshToken);
-        $command->setResponse($this->response());
+        $commandResponse = $this->response();
         $validator = $this->createMock(MutationInputValidator::class);
         $commandBus = $this->createMock(CommandBusInterface::class);
         $commandFactory = $this->createMock(
@@ -28,14 +29,15 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
         $resolver = new RefreshTokenAuthMutationResolver(
             $validator,
             $commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $commandFactory
         );
 
-        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $refreshToken);
+        $this->expectResolver($validator, $commandBus, $commandFactory, $command, $commandResponse);
         $result = $resolver->__invoke(null, $this->context($refreshToken));
 
-        $this->assertPayload($result, $command->getResponse());
+        $this->assertPayload($result, $commandResponse);
     }
 
     private function expectResolver(
@@ -43,19 +45,20 @@ final class RefreshTokenAuthMutationResolverTest extends AuthMutationResolverTes
         CommandBusInterface $commandBus,
         RefreshTokenCommandFactoryInterface $commandFactory,
         RefreshTokenCommand $command,
-        string $refreshToken,
+        RefreshTokenCommandResponse $response,
     ): void {
         $validator->expects($this->once())
             ->method('validate')
             ->with($this->callback(static fn (object $dto): bool => $dto instanceof RefreshTokenDto
-                && $dto->refreshTokenValue() === $refreshToken));
+                && $dto->refreshTokenValue() === $command->refreshToken));
         $commandFactory->expects($this->once())
             ->method('create')
-            ->with($refreshToken)
+            ->with($command->refreshToken)
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn($response);
     }
 
     /**

@@ -132,7 +132,7 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->provider->exchangeCode($invalidCode, null);
     }
 
-    public function testFetchProfileReturnsVerifiedProfileWhenEmailIsPresent(): void
+    public function testFetchProfileReturnsUnverifiedProfileWhenEmailIsPresent(): void
     {
         $email = $this->faker->safeEmail();
         $name = $this->faker->name();
@@ -151,7 +151,24 @@ final class FacebookOAuthProviderTest extends UnitTestCase
         $this->assertSame($email, $profile->email);
         $this->assertSame($name, $profile->name);
         $this->assertSame($id, $profile->providerId);
-        $this->assertTrue($profile->emailVerified);
+    }
+
+    /**
+     * Regression for #318: Facebook cannot prove email ownership, so the
+     * profile must be flagged unverified to block account-takeover auto-link.
+     */
+    public function testFetchProfileMarksEmailUnverifiedToPreventAutoLinkTakeover(): void
+    {
+        $owner = $this->createMock(FacebookUser::class);
+        $owner->method('getEmail')->willReturn($this->faker->safeEmail());
+        $owner->method('getName')->willReturn($this->faker->name());
+        $owner->method('getId')->willReturn($this->faker->uuid());
+
+        $this->facebook->method('getResourceOwner')->willReturn($owner);
+
+        $profile = $this->provider->fetchProfile($this->faker->sha256());
+
+        $this->assertFalse($profile->emailVerified);
     }
 
     public function testFetchProfileThrowsEmailUnavailableWhenEmailIsNull(): void

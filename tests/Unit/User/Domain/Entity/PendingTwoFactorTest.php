@@ -96,4 +96,57 @@ final class PendingTwoFactorTest extends UnitTestCase
 
         $this->assertSame($customExpiry, $pendingTwoFactor->getExpiresAt());
     }
+
+    public function testNewSessionHasNoFailedAttempts(): void
+    {
+        $pendingTwoFactor = $this->createPendingTwoFactor();
+
+        $this->assertSame(0, $pendingTwoFactor->getFailedAttempts());
+        $this->assertFalse($pendingTwoFactor->hasExhaustedAttempts());
+    }
+
+    public function testRecordFailedAttemptIncrementsCounter(): void
+    {
+        $pendingTwoFactor = $this->createPendingTwoFactor();
+
+        $pendingTwoFactor->recordFailedAttempt();
+        $pendingTwoFactor->recordFailedAttempt();
+
+        $this->assertSame(2, $pendingTwoFactor->getFailedAttempts());
+        $this->assertFalse($pendingTwoFactor->hasExhaustedAttempts());
+    }
+
+    public function testHasExhaustedAttemptsAtMaxFailedAttempts(): void
+    {
+        $pendingTwoFactor = $this->createPendingTwoFactor();
+
+        for ($attempt = 0; $attempt < PendingTwoFactor::MAX_FAILED_ATTEMPTS; ++$attempt) {
+            $this->assertFalse($pendingTwoFactor->hasExhaustedAttempts());
+            $pendingTwoFactor->recordFailedAttempt();
+        }
+
+        $this->assertSame(
+            PendingTwoFactor::MAX_FAILED_ATTEMPTS,
+            $pendingTwoFactor->getFailedAttempts()
+        );
+        $this->assertTrue($pendingTwoFactor->hasExhaustedAttempts());
+    }
+
+    public function testSetFailedAttemptsClampsNegativeValuesToZero(): void
+    {
+        $pendingTwoFactor = $this->createPendingTwoFactor();
+
+        $pendingTwoFactor->setFailedAttempts(-3);
+
+        $this->assertSame(0, $pendingTwoFactor->getFailedAttempts());
+    }
+
+    private function createPendingTwoFactor(): PendingTwoFactor
+    {
+        return new PendingTwoFactor(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            new DateTimeImmutable()
+        );
+    }
 }

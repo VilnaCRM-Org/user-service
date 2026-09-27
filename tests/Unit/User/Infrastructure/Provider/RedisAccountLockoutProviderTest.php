@@ -5,199 +5,250 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Infrastructure\Provider;
 
 use App\Tests\Unit\UnitTestCase;
+use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Infrastructure\Provider\Exception\AccountLockoutStorageException;
 use App\User\Infrastructure\Provider\RedisAccountLockoutProvider;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
+use Redis;
 
 final class RedisAccountLockoutProviderTest extends UnitTestCase
 {
-    private CacheItemPoolInterface&MockObject $cachePool;
+    private const EMAIL = 'test@example.com';
+    private const ATTEMPT_WINDOW_SECONDS = 3600;
+
+    private Redis&MockObject $redis;
+    private RedisAccountLockoutProvider $service;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->cachePool = $this->createMock(CacheItemPoolInterface::class);
+        $this->redis = $this->createMock(Redis::class);
+        $this->service = new RedisAccountLockoutProvider($this->redis);
     }
 
-    public function testIsLockedReturnsTrueWhenLockItemExists(): void
+    public function testIsLockedReturnsTrueWhenLockKeyExists(): void
     {
-        $emailHash = hash('sha256', 'test@example.com');
-
-        $lockItem = $this->createMock(CacheItemInterface::class);
-        $lockItem
+        $this->redis
             ->expects($this->once())
-            ->method('isHit')
-            ->willReturn(true);
+            ->method('exists')
+            ->with($this->lockKey())
+            ->willReturn(1);
 
-        $this->cachePool
+        $this->assertTrue($this->service->isLocked(self::EMAIL));
+    }
+
+    public function testIsLockedReturnsFalseWhenLockKeyMissing(): void
+    {
+        $this->redis
             ->expects($this->once())
-            ->method('getItem')
-            ->with(sprintf('signin_lock_%s', $emailHash))
-            ->willReturn($lockItem);
+            ->method('exists')
+            ->with($this->lockKey())
+            ->willReturn(0);
 
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-
-        $this->assertTrue($service->isLocked('test@example.com'));
+        $this->assertFalse($this->service->isLocked(self::EMAIL));
     }
 
     public function testRecordFailureReturnsFalseBeforeThreshold(): void
     {
-        $emailHash = hash('sha256', 'test@example.com');
-        $attemptItem = $this->createAttemptItem(3, 4);
-        $this->expectCachePoolGetAndSave(
-            sprintf('signin_lockout_%s', $emailHash),
-            $attemptItem
-        );
-        $service = new RedisAccountLockoutProvider($this->cachePool);
+        $this->expectAtomicEval(0);
 
-        $this->assertFalse($service->recordFailure('test@example.com'));
+        $this->assertFalse($this->service->recordFailure(self::EMAIL));
     }
 
     public function testRecordFailureReturnsTrueWhenThresholdReached(): void
     {
-        $emailHash = hash('sha256', 'test@example.com');
-        $attemptItem = $this->createAttemptItem(19, 20);
-        $lockItem = $this->createLockItem();
-        $requestedKeys = [];
-        $savedItems = [];
-        $this->expectSequentialGetItems($attemptItem, $lockItem, $requestedKeys);
-        $this->expectSequentialSaves($savedItems);
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-        $this->assertTrue($service->recordFailure('test@example.com'));
-        $expectedKeys = [
-            sprintf('signin_lockout_%s', $emailHash),
-            sprintf('signin_lock_%s', $emailHash),
-        ];
-        $this->assertSame($expectedKeys, $requestedKeys);
-        $this->assertSame([$attemptItem, $lockItem], $savedItems);
+        $this->expectAtomicEval(1);
+
+        $this->assertTrue($this->service->recordFailure(self::EMAIL));
+    }
+
+    /**
+     * Regression for the lost-update race (CWE-362): the failure counter must be
+     * incremented and the lock applied inside a single atomic Redis eval. The
+     * provider must NOT perform a PHP-side read-modify-write (get + set + save),
+     * which let concurrent requests read the same value and undercount attempts.
+     */
+    public function testRecordFailureUsesSingleAtomicEvalWithoutReadModifyWrite(): void
+    {
+        $capturedArguments = $this->captureEvalArguments(0);
+
+        $this->redis->expects($this->never())->method('get');
+        $this->redis->expects($this->never())->method('set');
+        $this->redis->expects($this->never())->method('incr');
+
+        $this->service->recordFailure(self::EMAIL);
+
+        [$script, $keys, $numKeys] = $capturedArguments();
+
+        $this->assertStringContainsString('INCR', $script);
+        $this->assertStringContainsString('EXPIRE', $script);
+        $this->assertSame(2, $numKeys, 'Lua must bind both attempts and lock keys');
+        $this->assertSame($this->attemptsKey(), $keys[0]);
+        $this->assertSame($this->lockKey(), $keys[1]);
+    }
+
+    public function testRecordFailurePassesThresholdAndTtlConfigurationToScript(): void
+    {
+        $capturedArguments = $this->captureEvalArguments(1);
+
+        $this->service->recordFailure(self::EMAIL);
+
+        [, $keys] = $capturedArguments();
+
+        $this->assertSame(
+            (string) self::ATTEMPT_WINDOW_SECONDS,
+            $keys[2],
+            'Attempt window TTL must be forwarded to the atomic script'
+        );
+        $this->assertSame(
+            (string) AccountLockoutProviderInterface::MAX_ATTEMPTS,
+            $keys[3],
+            'Max-attempts threshold must be forwarded to the atomic script'
+        );
+        $this->assertSame(
+            (string) AccountLockoutProviderInterface::LOCKOUT_SECONDS,
+            $keys[4],
+            'Lockout TTL must be forwarded to the atomic script'
+        );
+    }
+
+    /**
+     * Regression: the lock must be (re)applied on every at-or-above-threshold
+     * failure, not only on the exact crossing attempt. With a lock TTL shorter
+     * than the attempt window, gating the SET on `attempts == maxAttempts`
+     * would let the lockout silently lapse after the lock expires while the
+     * counter is still over threshold. The script therefore SETs the lock
+     * whenever the below-threshold early return is not taken.
+     */
+    public function testRecordFailureReappliesLockOnEveryOverThresholdFailure(): void
+    {
+        $capturedArguments = $this->captureEvalArguments(1);
+
+        $this->service->recordFailure(self::EMAIL);
+
+        [$script] = $capturedArguments();
+
+        $this->assertStringContainsString('SET', $script);
+        $this->assertStringNotContainsString(
+            'attempts == maxAttempts',
+            $script,
+            'Lock SET must not be gated on the exact threshold-crossing attempt'
+        );
+    }
+
+    /**
+     * The lockout counter is a brute-force security control, so a failed Redis
+     * eval (the script returning false on a storage error) must fail closed by
+     * raising an exception rather than silently reporting "not locked", which
+     * would otherwise disable enforcement whenever the backing store errors.
+     */
+    public function testRecordFailureFailsClosedWhenEvalReturnsFalse(): void
+    {
+        $this->redis->method('eval')->willReturn(false);
+
+        $this->expectException(AccountLockoutStorageException::class);
+
+        $this->service->recordFailure(self::EMAIL);
+    }
+
+    /**
+     * phpredis can surface the Lua integer reply as a numeric string when a
+     * serializer is configured. The provider must normalize the reply with an
+     * integer cast before the strict locked comparison, otherwise a string
+     * "1" would never be recognized as a lock and the account would stay open.
+     */
+    public function testRecordFailureCastsNumericStringEvalResultToLocked(): void
+    {
+        $this->redis->method('eval')->willReturn('1');
+
+        $this->assertTrue($this->service->recordFailure(self::EMAIL));
+    }
+
+    /**
+     * A numeric-string "0" reply must likewise be cast before comparison so a
+     * below-threshold failure is reported as not locked rather than leaking the
+     * raw Redis reply through the strict comparison.
+     */
+    public function testRecordFailureCastsNumericStringZeroEvalResultToNotLocked(): void
+    {
+        $this->redis->method('eval')->willReturn('0');
+
+        $this->assertFalse($this->service->recordFailure(self::EMAIL));
     }
 
     public function testClearFailuresDeletesAttemptAndLockKeys(): void
     {
-        $emailHash = hash('sha256', 'test@example.com');
-
-        $this->cachePool
+        $this->redis
             ->expects($this->once())
-            ->method('deleteItems')
-            ->with([
-                sprintf('signin_lockout_%s', $emailHash),
-                sprintf('signin_lock_%s', $emailHash),
-            ])
-            ->willReturn(true);
+            ->method('del')
+            ->with($this->attemptsKey(), $this->lockKey())
+            ->willReturn(2);
 
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-
-        $service->clearFailures('test@example.com');
+        $this->service->clearFailures(self::EMAIL);
     }
 
     public function testMaxAttemptsReturnsConstant(): void
     {
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-        $this->assertSame(20, $service->maxAttempts());
+        $this->assertSame(20, $this->service->maxAttempts());
     }
 
     public function testLockoutSecondsReturnsConstant(): void
     {
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-        $this->assertSame(900, $service->lockoutSeconds());
+        $this->assertSame(900, $this->service->lockoutSeconds());
     }
 
-    public function testRecordFailureTreatsEmptyAttemptCounterAsZero(): void
+    private function expectAtomicEval(int $returnValue): void
     {
-        $emailHash = hash('sha256', 'test@example.com');
-        $attemptItem = $this->createAttemptItem('', 1);
-        $this->expectCachePoolGetAndSave(
-            sprintf('signin_lockout_%s', $emailHash),
-            $attemptItem
-        );
-        $service = new RedisAccountLockoutProvider($this->cachePool);
-
-        $this->assertFalse($service->recordFailure('test@example.com'));
-    }
-
-    private function createAttemptItem(
-        mixed $currentCount,
-        int $newCount
-    ): CacheItemInterface&MockObject {
-        $item = $this->createMock(CacheItemInterface::class);
-        $item->expects($this->once())->method('get')->willReturn($currentCount);
-        $item->expects($this->once())->method('set')->with($newCount)->willReturnSelf();
-        $item->expects($this->once())->method('expiresAfter')->with(3600)->willReturnSelf();
-
-        return $item;
-    }
-
-    private function createLockItem(): CacheItemInterface&MockObject
-    {
-        $item = $this->createMock(CacheItemInterface::class);
-        $item->expects($this->once())->method('set')->with(true)->willReturnSelf();
-        $item->expects($this->once())->method('expiresAfter')->with(900)->willReturnSelf();
-
-        return $item;
-    }
-
-    private function expectCachePoolGetAndSave(
-        string $key,
-        CacheItemInterface $item
-    ): void {
-        $this->cachePool
+        $this->redis
             ->expects($this->once())
-            ->method('getItem')
-            ->with($key)
-            ->willReturn($item);
-        $this->cachePool
-            ->expects($this->once())
-            ->method('save')
-            ->with($item)
-            ->willReturn(true);
+            ->method('eval')
+            ->with(
+                $this->isType('string'),
+                $this->callback(function (array $keys): bool {
+                    return $keys[0] === $this->attemptsKey()
+                        && $keys[1] === $this->lockKey();
+                }),
+                2,
+            )
+            ->willReturn($returnValue);
     }
 
     /**
-     * @param array<string> $requestedKeys
+     * @return callable(): array{0: string, 1: list<string>, 2: int}
      */
-    private function expectSequentialGetItems(
-        CacheItemInterface $firstItem,
-        CacheItemInterface $secondItem,
-        array &$requestedKeys
-    ): void {
-        $this->cachePool
-            ->expects($this->exactly(2))
-            ->method('getItem')
+    private function captureEvalArguments(int $returnValue): callable
+    {
+        $captured = [];
+
+        $this->redis
+            ->expects($this->once())
+            ->method('eval')
             ->willReturnCallback(
                 static function (
-                    string $key
-                ) use (
-                    $firstItem,
-                    $secondItem,
-                    &$requestedKeys
-                ): MockObject&CacheItemInterface {
-                    $requestedKeys[] = $key;
+                    string $script,
+                    array $keys,
+                    int $numKeys
+                ) use (&$captured, $returnValue): int {
+                    $captured = [$script, $keys, $numKeys];
 
-                    return count($requestedKeys) === 1
-                        ? $firstItem : $secondItem;
+                    return $returnValue;
                 }
             );
+
+        return static function () use (&$captured): array {
+            return $captured;
+        };
     }
 
-    /**
-     * @param array<CacheItemInterface> $savedItems
-     */
-    private function expectSequentialSaves(array &$savedItems): void
+    private function attemptsKey(): string
     {
-        $this->cachePool
-            ->expects($this->exactly(2))
-            ->method('save')
-            ->willReturnCallback(/**
-             * @return true
-             */
-                static function (CacheItemInterface $item) use (&$savedItems): bool {
-                    $savedItems[] = $item;
+        return sprintf('signin_lockout_%s', hash('sha256', self::EMAIL));
+    }
 
-                    return true;
-                }
-            );
+    private function lockKey(): string
+    {
+        return sprintf('signin_lock_%s', hash('sha256', self::EMAIL));
     }
 }

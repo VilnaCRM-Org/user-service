@@ -9,7 +9,9 @@ use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
 use App\User\Application\Command\SignOutAllCommand;
 use App\User\Application\CommandHandler\ConfirmPasswordResetCommandHandler;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\Provider\AccountLockoutProviderInterface;
+use App\User\Application\Service\PasswordResetConfirmationService;
 use App\User\Application\Validator\PasswordResetTokenValidatorInterface;
 use App\User\Domain\Contract\PasswordHasherInterface;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
@@ -47,11 +49,14 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
         $this->commandBus = $this->createMock(CommandBusInterface::class);
         $this->publisher = $this->createMock(PasswordResetConfirmationPublisherInterface::class);
 
-        $this->handler = new ConfirmPasswordResetCommandHandler(
+        $confirmationService = new PasswordResetConfirmationService(
             $this->tokenRepository,
             $this->userRepository,
             $this->passwordHasher,
             $this->tokenValidator,
+        );
+        $this->handler = new ConfirmPasswordResetCommandHandler(
+            $confirmationService,
             $this->accountLockoutGuard,
             $this->commandBus,
             $this->publisher,
@@ -66,11 +71,11 @@ final class ConfirmPasswordResetCommandHandlerTest extends UnitTestCase
 
         $this->setupConfirmPasswordResetExpectations($testData, $mocks);
 
-        $this->handler->__invoke($command);
+        $response = $this->handler->__invoke($command);
 
         $this->assertInstanceOf(
-            \App\User\Application\DTO\ConfirmPasswordResetCommandResponse::class,
-            $command->getResponse()
+            ConfirmPasswordResetCommandResponse::class,
+            $response
         );
     }
 

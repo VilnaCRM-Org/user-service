@@ -49,7 +49,7 @@ final class RequestPasswordResetRequestFactory implements AbstractRequestFactory
         $emailSchema = new Schema();
         $emailSchema['type'] = 'string';
         $emailSchema['format'] = 'email';
-        $emailSchema['maxLength'] = 255;
+        $emailSchema['maxLength'] = 254;
 
         return $emailSchema;
     }

@@ -8,6 +8,7 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
@@ -24,6 +25,7 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
+        private AuthenticatedUserResolver $authenticatedUserResolver,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private TwoFactorCodeValidatorInterface $twoFactorCodeVerifier,
         private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
@@ -32,8 +34,9 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
     ) {
     }
 
-    public function __invoke(ConfirmTwoFactorCommand $command): void
-    {
+    public function __invoke(
+        ConfirmTwoFactorCommand $command
+    ): ConfirmTwoFactorCommandResponse {
         $user = $this->resolveUser($command->userEmail);
         $this->verifyTotpOrFail($user, $command->twoFactorCode);
 
@@ -43,16 +46,14 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
         $codes = $this->recoveryCodeBatchFactory->create($user);
         $revokedCount = $this->revokeOtherSessions($user, $command->currentSessionId);
 
-        $command->setResponse(new ConfirmTwoFactorCommandResponse($codes));
         $this->publishEvents($user, $revokedCount);
+
+        return new ConfirmTwoFactorCommandResponse($codes);
     }
 
     private function resolveUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
-        if (!$user instanceof User) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
-        }
+        $user = $this->authenticatedUserResolver->resolve($email);
 
         if ($user->getTwoFactorSecret() === null) {
             throw new UnauthorizedHttpException('Bearer', 'Two-factor setup not initiated.');
@@ -63,7 +64,11 @@ final readonly class ConfirmTwoFactorCommandHandler implements CommandHandlerInt
 
     private function verifyTotpOrFail(User $user, string $code): void
     {
-        $this->twoFactorCodeVerifier->verifyAndConsumeOrFail($user, $code);
+        // Setup confirmation is a one-time enable step and must not consume the
+        // TOTP replay time-step; otherwise a sign-in completion using a code from
+        // the same 30s window is wrongly rejected as a replay. Replay protection
+        // remains enforced on the sign-in completion and disable flows.
+        $this->twoFactorCodeVerifier->verifyTotpForSetupOrFail($user, $code);
     }
 
     /**

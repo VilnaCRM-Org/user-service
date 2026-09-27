@@ -8,6 +8,7 @@ use App\Shared\Application\Converter\JwtTokenConverterInterface;
 use App\Shared\Application\EventListener\ApiRateLimitListener;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitAuthTargetResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver;
+use App\Shared\Application\Resolver\RateLimit\ApiRateLimitGraphQlResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitPayloadValueResolver;
 use App\Shared\Application\Resolver\RateLimit\ApiRateLimitRequestResolver;
 use App\Tests\Unit\UnitTestCase;
@@ -307,6 +308,17 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         return new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
             new ApiRateLimitAuthTargetResolver(null, $clientIdentityResolver),
+            $this->createGraphQlResolver($clientIdentityResolver),
+        );
+    }
+
+    private function createGraphQlResolver(
+        ApiRateLimitClientIdentityResolver $clientIdentityResolver
+    ): ApiRateLimitGraphQlResolver {
+        return new ApiRateLimitGraphQlResolver(
+            $this->createJsonSerializer(),
+            $clientIdentityResolver,
+            null,
         );
     }
 
@@ -335,7 +347,8 @@ final class ApiRateLimitListenerTest extends UnitTestCase
         );
         $requestMatcher = new ApiRateLimitRequestResolver(
             $clientIdentityResolver,
-            $authTargetResolver
+            $authTargetResolver,
+            $this->createGraphQlResolver($clientIdentityResolver),
         );
 
         return $this->createListener($limiterFactories, $requestMatcher);

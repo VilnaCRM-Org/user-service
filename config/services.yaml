@@ -19,6 +19,7 @@ services:
     exclude:
       - '../src/Shared/Kernel.php'
       - '../src/OAuth/Infrastructure/Provider/DeterministicOAuthProvider.php'
+      - '../src/Shared/Infrastructure/Bus/Event/DefensiveEventSubscriberDecorator.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
@@ -173,6 +174,7 @@ services:
         user_delete: '@limiter.user_delete'
         resend_confirmation: '@limiter.resend_confirmation'
         resend_confirmation_target: '@limiter.resend_confirmation_target'
+        password_reset_ip: '@limiter.password_reset_ip'
         password_reset_confirm: '@limiter.password_reset_confirm'
         recovery_codes: '@limiter.recovery_codes'
         signout: '@limiter.signout'
@@ -215,6 +217,9 @@ services:
 
   App\Shared\Application\Observability\Emitter\BusinessMetricsEmitterInterface:
     alias: App\Shared\Infrastructure\Observability\Emitter\AwsEmfBusinessMetricsEmitter
+
+  App\Shared\Application\Observability\Factory\EventSubscriberFailureMetricFactoryInterface:
+    alias: App\Shared\Infrastructure\Observability\Factory\EventSubscriberFailureMetricFactory
 
   App\Shared\Application\Observability\Factory\MetricDimensionsFactoryInterface:
     alias: App\Shared\Infrastructure\Observability\Factory\MetricDimensionsFactory
@@ -296,18 +301,9 @@ services:
         - '@App\User\Application\Validator\TokenExpirationValidator'
         - '@App\User\Application\Validator\TokenUsageValidator'
 
-  cache.account_lockout:
-    class: Symfony\Component\Cache\Adapter\RedisAdapter
-    arguments:
-      - '@app.account_lockout_redis_connection'
-      - 'account_lockout'
-      - 0
-    tags:
-      - { name: kernel.reset, method: reset }
-
   App\User\Infrastructure\Provider\RedisAccountLockoutProvider:
     arguments:
-      $cachePool: '@cache.account_lockout'
+      $lockoutRedis: '@app.account_lockout_redis_connection'
 
   App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor:
     arguments:
@@ -315,6 +311,7 @@ services:
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Factory\AuthCookieFactoryInterface: '@App\User\Application\Factory\AuthCookieFactory'
+  App\User\Application\Query\FindUserByEmailQueryHandlerInterface: '@App\User\Application\Query\FindUserByEmailQueryHandler'
   App\OAuth\Application\Factory\OAuthProviderCollectionFactoryInterface: '@App\OAuth\Application\Factory\OAuthProviderCollectionFactory'
   App\User\Application\Validator\TwoFactorCodeValidatorInterface: '@App\User\Application\Validator\TwoFactorCodeValidator'
   App\User\Application\Factory\RecoveryCodeBatchFactoryInterface: '@App\User\Infrastructure\Factory\RecoveryCodeBatchFactory'

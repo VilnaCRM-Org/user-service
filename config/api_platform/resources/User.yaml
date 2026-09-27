@@ -16,6 +16,7 @@ resources:
 
     operations:
       ApiPlatform\Metadata\GetCollection:
+        provider: 'App\User\Application\Provider\UserCollectionProvider'
         paginationClientItemsPerPage: true
         paginationClientPartial: true
         paginationMaximumItemsPerPage: 100
@@ -25,6 +26,7 @@ resources:
           vary: ['Accept', 'Accept-Language', 'Authorization']
         etag: true
       ApiPlatform\Metadata\Get:
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
         cacheHeaders:
           max_age: 600
           public: false
@@ -41,6 +43,10 @@ resources:
         input: 'App\User\Application\DTO\UserRegisterBatchDto'
         processor: 'App\User\Application\Processor\RegisterUserBatchProcessor'
         uriTemplate: 'users/batch'
+        # Defense-in-depth: the bulk user-import endpoint is service-only.
+        # The firewall already gates it on ROLE_SERVICE; this operation-level
+        # check ensures the restriction survives any firewall misconfiguration.
+        security: "is_granted('ROLE_SERVICE')"
         denormalizationContext:
           allow_extra_attributes: false
       confirm_http:
@@ -67,9 +73,10 @@ resources:
 
     graphQlOperations:
       - class: 'ApiPlatform\Metadata\GraphQl\Query'
-        security: "is_granted('ROLE_USER')"
+        security: "is_granted('ROLE_USER') and object.getId() == user.getId().__toString()"
       - class: 'ApiPlatform\Metadata\GraphQl\QueryCollection'
         security: "is_granted('ROLE_USER')"
+        provider: 'App\User\Application\Provider\UserCollectionProvider'
       - class: 'ApiPlatform\Metadata\GraphQl\DeleteMutation'
         normalizationContext:
           groups: ['deleteMutationOutput']

@@ -100,22 +100,17 @@ final readonly class AccessTokenValidator
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
 
-        $this->validateFirstPartyClaims($payload);
+        $this->validateIssuerAndAudience($payload);
+        $this->validateSessionBinding($payload);
     }
 
     /**
      * @param array<string, array<int, string>|bool|float|int|string|null> $payload
      */
-    private function validateFirstPartyClaims(array $payload): void
+    private function validateSessionBinding(array $payload): void
     {
-        if (isset($payload['roles'])) {
-            $this->validateIssuerAndAudience($payload);
-
-            if (!isset($payload['sid'])) {
-                throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
-            }
-        } elseif (($payload['iss'] ?? null) !== null) {
-            $this->validateIssuerAndAudience($payload);
+        if (array_key_exists('roles', $payload) && !isset($payload['sid'])) {
+            throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }
     }
 
@@ -211,11 +206,11 @@ final readonly class AccessTokenValidator
      */
     private function extractRoles(array $payload): array
     {
-        $rawRoles = $payload['roles'] ?? null;
-        if ($rawRoles === null) {
-            return isset($payload['iss']) ? ['ROLE_USER'] : ['ROLE_SERVICE'];
+        if (!array_key_exists('roles', $payload)) {
+            return ['ROLE_USER'];
         }
 
+        $rawRoles = $payload['roles'];
         if (!is_array($rawRoles) || $rawRoles === []) {
             throw new CustomUserMessageAuthenticationException('Invalid access token claims.');
         }

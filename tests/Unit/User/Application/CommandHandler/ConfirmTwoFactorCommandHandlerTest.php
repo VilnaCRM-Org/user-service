@@ -9,10 +9,14 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\CommandHandler\ConfirmTwoFactorCommandHandler;
+use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Query\FindUserByEmailQueryHandlerInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
 use App\User\Domain\Entity\RecoveryCode;
 use App\User\Domain\Entity\User;
+use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
@@ -26,6 +30,7 @@ use Symfony\Component\Uid\Ulid;
 final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
 {
     private UserRepositoryInterface&MockObject $userRepository;
+    private FindUserByEmailQueryHandlerInterface&MockObject $findUserByEmailQueryHandler;
     private AuthSessionRepositoryInterface&MockObject $authSessionRepository;
     private TwoFactorCodeValidatorInterface&MockObject $twoFactorCodeVerifier;
     private RecoveryCodeBatchFactoryInterface&MockObject $recoveryCodeBatchFactory;
@@ -39,6 +44,8 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         parent::setUp();
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
+        $this->findUserByEmailQueryHandler =
+            $this->createMock(FindUserByEmailQueryHandlerInterface::class);
         $this->authSessionRepository = $this->createMock(AuthSessionRepositoryInterface::class);
         $this->twoFactorCodeVerifier = $this->createMock(TwoFactorCodeValidatorInterface::class);
         $this->recoveryCodeBatchFactory = $this->createMock(
@@ -64,18 +71,18 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->expectBulkSessionRevocation($user, $sessionId, 0);
         $this->expectSuccessEvents();
 
-        $command = $this->invokeHandler($user->getEmail(), $code, $sessionId);
-        $codes = $command->getResponse()->getRecoveryCodes();
+        $response = $this->invokeHandler($user->getEmail(), $code, $sessionId);
+        $codes = $response->getRecoveryCodes();
         $this->assertCount(RecoveryCode::COUNT, $codes);
     }
 
     public function testInvalidCodeThrowsUnauthorized(): void
     {
         $user = $this->createUserWithSecret();
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
 
         $this->twoFactorCodeVerifier->expects($this->once())
-            ->method('verifyAndConsumeOrFail')
+            ->method('verifyTotpForSetupOrFail')
             ->with($user, '000000')
             ->willThrowException(
                 new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.')
@@ -94,30 +101,31 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     public function testUserWithoutSecretThrowsUnauthorized(): void
     {
         $user = $this->createUser($this->faker->email());
-        $this->userRepository->method('findByEmail')->willReturn($user);
-        $this->twoFactorCodeVerifier->expects($this->never())->method('verifyAndConsumeOrFail');
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
+        $this->twoFactorCodeVerifier->expects($this->never())->method('verifyTotpForSetupOrFail');
         $this->expectException(UnauthorizedHttpException::class);
-        $this->createHandler()->__invoke(new ConfirmTwoFactorCommand(
-            $user->getEmail(),
-            '123456',
-            $this->faker->uuid()
-        ));
+        $this->invokeExpectingUnauthorized($user->getEmail());
     }
 
     public function testUserNotFoundThrowsUnauthorized(): void
     {
-        $this->userRepository
-            ->method('findByEmail')
-            ->willReturn(null);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn(null);
 
         $this->expectException(UnauthorizedHttpException::class);
 
-        $handler = $this->createHandler();
-        $handler->__invoke(new ConfirmTwoFactorCommand(
-            $this->faker->email(),
-            '123456',
-            $this->faker->uuid()
-        ));
+        $this->invokeExpectingUnauthorized($this->faker->email());
+    }
+
+    public function testDuplicateEmailThrowsUnauthorizedWithoutSideEffects(): void
+    {
+        $email = $this->faker->email();
+        $this->findUserByEmailQueryHandler->method('find')->with($email)
+            ->willThrowException(new DuplicateEmailException($email));
+        $this->expectNoConfirmSideEffects();
+
+        $this->expectException(UnauthorizedHttpException::class);
+        $this->expectExceptionMessage('Authentication required.');
+        $this->invokeExpectingUnauthorized($email);
     }
 
     public function testRevokesOtherSessionsOnSuccess(): void
@@ -125,7 +133,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $user = $this->createUserWithSecret();
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, 'current-session-id', 1);
 
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
@@ -141,7 +149,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $currentSessionId = 'current-session-id';
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, $currentSessionId, 0);
 
         $this->authSessionRepository->expects($this->never())->method('save');
@@ -156,7 +164,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
     {
         $user = $this->createUserWithSecret();
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->configureRecoveryAndSessions();
 
         $this->events->expects($this->once())
@@ -173,7 +181,7 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $user = $this->createUserWithSecret();
 
         $this->configureUserLookupStub($user);
-        $this->twoFactorCodeVerifier->method('verifyAndConsumeOrFail');
+        $this->twoFactorCodeVerifier->method('verifyTotpForSetupOrFail');
         $this->expectBulkSessionRevocation($user, 'current-session-id', 1);
         $this->recoveryCodeBatchFactory->method('create')->willReturn([]);
 
@@ -185,24 +193,36 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         $this->invokeHandler($user->getEmail(), '123456', 'current-session-id');
     }
 
+    private function expectNoConfirmSideEffects(): void
+    {
+        $this->twoFactorCodeVerifier->expects($this->never())
+            ->method('verifyTotpForSetupOrFail');
+        $this->userRepository->expects($this->never())->method('save');
+        $this->recoveryCodeBatchFactory->expects($this->never())->method('create');
+        $this->authSessionRepository->expects($this->never())
+            ->method('revokeOtherActiveByUserId');
+        $this->events->expects($this->never())->method('publishEnabled');
+        $this->sessionEvents->expects($this->never())->method('publishAllSessionsRevoked');
+    }
+
     private function configureUserLookup(User $user): void
     {
-        $this->userRepository
+        $this->findUserByEmailQueryHandler
             ->expects($this->once())
-            ->method('findByEmail')
+            ->method('find')
             ->with($user->getEmail())
             ->willReturn($user);
     }
 
     private function configureUserLookupStub(User $user): void
     {
-        $this->userRepository->method('findByEmail')->willReturn($user);
+        $this->findUserByEmailQueryHandler->method('find')->willReturn($user);
     }
 
     private function expectTotpVerification(User $user, string $code): void
     {
         $this->twoFactorCodeVerifier->expects($this->once())
-            ->method('verifyAndConsumeOrFail')
+            ->method('verifyTotpForSetupOrFail')
             ->with($user, $code);
     }
 
@@ -269,17 +289,25 @@ final class ConfirmTwoFactorCommandHandlerTest extends UnitTestCase
         string $email,
         string $code,
         string $sessionId
-    ): ConfirmTwoFactorCommand {
+    ): ConfirmTwoFactorCommandResponse {
         $handler = $this->createHandler();
         $command = new ConfirmTwoFactorCommand($email, $code, $sessionId);
-        $handler->__invoke($command);
-        return $command;
+
+        return $handler->__invoke($command);
+    }
+
+    private function invokeExpectingUnauthorized(string $email): void
+    {
+        $this->createHandler()->__invoke(
+            new ConfirmTwoFactorCommand($email, '123456', $this->faker->uuid())
+        );
     }
 
     private function createHandler(): ConfirmTwoFactorCommandHandler
     {
         return new ConfirmTwoFactorCommandHandler(
             $this->userRepository,
+            new AuthenticatedUserResolver($this->findUserByEmailQueryHandler),
             $this->authSessionRepository,
             $this->twoFactorCodeVerifier,
             $this->recoveryCodeBatchFactory,

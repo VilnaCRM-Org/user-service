@@ -69,6 +69,6 @@ final class RequestPasswordResetRequestFactoryTest extends UnitTestCase
         $this->assertInstanceOf(Schema::class, $emailSchema);
         $this->assertSame('string', $emailSchema['type']);
         $this->assertSame('email', $emailSchema['format']);
-        $this->assertSame(255, $emailSchema['maxLength']);
+        $this->assertSame(254, $emailSchema['maxLength']);
     }
 }

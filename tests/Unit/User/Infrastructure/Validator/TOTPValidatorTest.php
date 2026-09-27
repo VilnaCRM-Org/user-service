@@ -10,11 +10,12 @@ use OTPHP\TOTP;
 
 final class TOTPValidatorTest extends UnitTestCase
 {
-    public function testVerifyAcceptsCurrentAndAdjacentTimeWindows(): void
+    private const SECRET = 'JBSWY3DPEHPK3PXP';
+
+    public function testVerifyAcceptsCurrentAndPreviousTimeWindowsOnly(): void
     {
-        $secret = 'JBSWY3DPEHPK3PXP';
         $timestamp = time();
-        $totp = TOTP::create($secret);
+        $totp = TOTP::create(self::SECRET);
         $period = $totp->getPeriod();
 
         $currentCode = $totp->at($timestamp);
@@ -24,10 +25,11 @@ final class TOTPValidatorTest extends UnitTestCase
 
         $verifier = new TOTPValidator();
 
-        $this->assertTrue($verifier->verify($secret, $currentCode, $timestamp));
-        $this->assertTrue($verifier->verify($secret, $previousWindowCode, $timestamp));
-        $this->assertTrue($verifier->verify($secret, $nextWindowCode, $timestamp));
-        $this->assertFalse($verifier->verify($secret, $twoWindowsOldCode, $timestamp));
+        $this->assertTrue($verifier->verify(self::SECRET, $currentCode, $timestamp));
+        $this->assertTrue($verifier->verify(self::SECRET, $previousWindowCode, $timestamp));
+        // RFC 6238 §5.2: the future window must not be accepted.
+        $this->assertFalse($verifier->verify(self::SECRET, $nextWindowCode, $timestamp));
+        $this->assertFalse($verifier->verify(self::SECRET, $twoWindowsOldCode, $timestamp));
     }
 
     public function testVerifyReturnsFalseForInvalidSecret(): void
@@ -41,27 +43,25 @@ final class TOTPValidatorTest extends UnitTestCase
 
     public function testVerifyUsesProvidedTimestampInsteadOfCurrentTime(): void
     {
-        $secret = 'JBSWY3DPEHPK3PXP';
         $timestamp = 1_700_000_000;
-        $totp = TOTP::create($secret);
+        $totp = TOTP::create(self::SECRET);
         $codeAtProvidedTimestamp = $totp->at($timestamp);
 
         $verifier = new TOTPValidator();
 
         $this->assertTrue(
-            $verifier->verify($secret, $codeAtProvidedTimestamp, $timestamp)
+            $verifier->verify(self::SECRET, $codeAtProvidedTimestamp, $timestamp)
         );
         $shiftedTimestamp = $timestamp + (5 * $totp->getPeriod());
 
         $this->assertFalse(
-            $verifier->verify($secret, $codeAtProvidedTimestamp, $shiftedTimestamp)
+            $verifier->verify(self::SECRET, $codeAtProvidedTimestamp, $shiftedTimestamp)
         );
     }
 
     public function testVerifyAcceptsPreviousWindowAtUnixEpochBoundary(): void
     {
-        $secret = 'JBSWY3DPEHPK3PXP';
-        $totp = TOTP::create($secret);
+        $totp = TOTP::create(self::SECRET);
         $period = $totp->getPeriod();
         $timestamp = $period;
         $previousWindowCode = $totp->at(0);
@@ -69,7 +69,86 @@ final class TOTPValidatorTest extends UnitTestCase
         $verifier = new TOTPValidator();
 
         $this->assertTrue(
-            $verifier->verify($secret, $previousWindowCode, $timestamp)
+            $verifier->verify(self::SECRET, $previousWindowCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsCurrentWindowTimestep(): void
+    {
+        $timestamp = 1_700_000_000;
+        $totp = TOTP::create(self::SECRET);
+        $period = $totp->getPeriod();
+        $currentCode = $totp->at($timestamp);
+
+        $verifier = new TOTPValidator();
+
+        $this->assertSame(
+            intdiv($timestamp, $period),
+            $verifier->resolveAcceptedTimestep(self::SECRET, $currentCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsPreviousWindowTimestep(): void
+    {
+        $timestamp = 1_700_000_000;
+        $totp = TOTP::create(self::SECRET);
+        $period = $totp->getPeriod();
+        $previousWindowCode = $totp->at($timestamp - $period);
+
+        $verifier = new TOTPValidator();
+
+        $this->assertSame(
+            intdiv($timestamp - $period, $period),
+            $verifier->resolveAcceptedTimestep(self::SECRET, $previousWindowCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsNullForFutureWindow(): void
+    {
+        $timestamp = 1_700_000_000;
+        $totp = TOTP::create(self::SECRET);
+        $period = $totp->getPeriod();
+        $futureWindowCode = $totp->at($timestamp + $period);
+
+        $verifier = new TOTPValidator();
+
+        $this->assertNull(
+            $verifier->resolveAcceptedTimestep(self::SECRET, $futureWindowCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsNullForInvalidCode(): void
+    {
+        $verifier = new TOTPValidator();
+
+        $this->assertNull(
+            $verifier->resolveAcceptedTimestep(self::SECRET, '000000', 1_700_000_000)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsZeroForFirstWindowAtEpoch(): void
+    {
+        $totp = TOTP::create(self::SECRET);
+        $totp->setEpoch(0);
+        $period = $totp->getPeriod();
+        // Any timestamp inside the first period [0, period) maps to time-step 0.
+        $timestamp = intdiv($period, 2);
+        $firstWindowCode = $totp->at($timestamp);
+
+        $verifier = new TOTPValidator();
+
+        $this->assertSame(
+            0,
+            $verifier->resolveAcceptedTimestep(self::SECRET, $firstWindowCode, $timestamp)
+        );
+    }
+
+    public function testResolveAcceptedTimestepReturnsNullForNegativeTimestamp(): void
+    {
+        $verifier = new TOTPValidator();
+
+        $this->assertNull(
+            $verifier->resolveAcceptedTimestep(self::SECRET, '123456', -1)
         );
     }
 }

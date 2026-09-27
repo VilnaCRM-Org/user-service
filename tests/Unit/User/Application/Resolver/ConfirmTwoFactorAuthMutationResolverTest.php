@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmTwoFactorCommand;
 use App\User\Application\DTO\ConfirmTwoFactorCommandResponse;
 use App\User\Application\DTO\ConfirmTwoFactorDto;
 use App\User\Application\Factory\ConfirmTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\ConfirmTwoFactorAuthMutationResolver;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 
 final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolverTestCase
@@ -19,6 +21,7 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
     private ConfirmTwoFactorCommandFactoryInterface $commandFactory;
     private ConfirmTwoFactorAuthMutationResolver $resolver;
     private ConfirmTwoFactorCommand $command;
+    private ConfirmTwoFactorCommandResponse $commandResponse;
     private string $email;
     private string $sessionId;
     private string $twoFactorCode;
@@ -31,14 +34,17 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
         $this->setUpScenario();
         $this->resolver = new ConfirmTwoFactorAuthMutationResolver(
             $this->validator,
-            $this->commandBus,
             $this->authPayloadFactory(),
-            $this->currentUserIdentityResolver(
-                $this->email,
-                $this->sessionId,
-                $this->faker->uuid()
+            new ConfirmTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                $this->currentUserIdentityResolver(
+                    $this->email,
+                    $this->sessionId,
+                    $this->faker->uuid()
+                ),
+                $this->commandFactory
             ),
-            $this->commandFactory
         );
     }
 
@@ -50,7 +56,7 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
 
         $this->assertSame('auth-confirm-two-factor', $result->getId());
         $this->assertSame(
-            $this->command->getResponse()->getRecoveryCodes(),
+            $this->commandResponse->getRecoveryCodes(),
             $result->getRecoveryCodes()
         );
     }
@@ -74,10 +80,8 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
             $this->twoFactorCode,
             $this->sessionId
         );
-        $this->command->setResponse(
-            new ConfirmTwoFactorCommandResponse(
-                [$this->faker->sha1(), $this->faker->sha1()]
-            )
+        $this->commandResponse = new ConfirmTwoFactorCommandResponse(
+            [$this->faker->sha1(), $this->faker->sha1()]
         );
     }
 
@@ -98,7 +102,8 @@ final class ConfirmTwoFactorAuthMutationResolverTest extends AuthMutationResolve
             ->willReturn($this->command);
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->command);
+            ->with($this->command)
+            ->willReturn($this->commandResponse);
     }
 
     /**

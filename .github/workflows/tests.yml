@@ -9,23 +9,33 @@ jobs:
     name: PHPUnit
     runs-on: ubuntu-latest
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping PHPUnit for Dependabot PR"
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: actions/checkout@v4
 
       - name: Start application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Setup test db
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make setup-test-db
 
       - name: Execute Unit and Integration tests
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make tests-with-coverage
 
       - name: Copy coverage report to host
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: docker cp user-service-php-1:/coverage/coverage.xml /tmp
 
       - name: Upload code coverage to Codecov
-        uses: codecov/codecov-action@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: /tmp/coverage.xml

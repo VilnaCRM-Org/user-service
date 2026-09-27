@@ -77,12 +77,12 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
     {
         $this->logger->expects($this->once())->method('warning')->with(
             'Failed to reload detached cached user - falling back to database',
-            $this->callback(
-                static fn (array $context): bool => $context['cache_key'] === $cacheKey
-                    && $context['user_id'] === $id
-                    && $context['error'] === 'Reload failed'
-                    && $context['operation'] === 'cache.reload.error'
-            )
+            $this->matchesContext([
+                'cache_key' => $cacheKey,
+                'user_id' => $id,
+                'error' => 'Reload failed',
+                'operation' => 'cache.reload.error',
+            ])
         );
     }
 
@@ -118,11 +118,11 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
     {
         $this->logger->expects($this->once())->method('warning')->with(
             'Detached cached user was not found - falling back to database',
-            $this->callback(
-                static fn (array $context): bool => $context['cache_key'] === $cacheKey
-                    && $context['user_id'] === $id
-                    && $context['operation'] === 'cache.reload.miss'
-            )
+            $this->matchesContext([
+                'cache_key' => $cacheKey,
+                'user_id' => $id,
+                'operation' => 'cache.reload.miss',
+            ])
         );
     }
 
@@ -130,11 +130,28 @@ final class CachedUserRepositoryFindByIdMergeFallbackTest extends
     {
         $this->logger->expects($this->once())->method('warning')->with(
             'Cache reload returned an unexpected value - falling back to database',
-            $this->callback(
-                static fn (array $context): bool => $context['cache_key'] === $cacheKey
-                    && $context['user_id'] === $id
-                    && $context['operation'] === 'cache.reload.invalid'
-            )
+            $this->matchesContext([
+                'cache_key' => $cacheKey,
+                'user_id' => $id,
+                'operation' => 'cache.reload.invalid',
+            ])
+        );
+    }
+
+    /**
+     * @param array<string, string> $expected
+     */
+    private function matchesContext(array $expected): object
+    {
+        ksort($expected);
+
+        return $this->callback(
+            static function (array $context) use ($expected): bool {
+                $actual = array_intersect_key($context, $expected);
+                ksort($actual);
+
+                return $actual === $expected;
+            }
         );
     }
 

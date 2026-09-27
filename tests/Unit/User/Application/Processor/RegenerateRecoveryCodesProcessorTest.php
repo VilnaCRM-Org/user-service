@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
@@ -75,6 +76,7 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
 
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory(),
         );
@@ -126,15 +128,15 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(
                 function (RegenerateRecoveryCodesCommand $cmd) use (
                     $email,
-                    $sessionId,
-                    $codes
+                    $sessionId
                 ): bool {
                     $this->assertSame($email, $cmd->userEmail);
                     $this->assertSame($sessionId, $cmd->currentSessionId);
-                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
+
                     return true;
                 }
-            ));
+            ))
+            ->willReturn(new RegenerateRecoveryCodesCommandResponse($codes));
     }
 
     private function expectDispatchWithEmptySessionResponse(): void
@@ -143,16 +145,18 @@ final class RegenerateRecoveryCodesProcessorTest extends UnitTestCase
             ->with($this->callback(
                 function (RegenerateRecoveryCodesCommand $cmd): bool {
                     $this->assertSame('', $cmd->currentSessionId);
-                    $cmd->setResponse(new RegenerateRecoveryCodesCommandResponse([]));
+
                     return true;
                 }
-            ));
+            ))
+            ->willReturn(new RegenerateRecoveryCodesCommandResponse([]));
     }
 
     private function processRecoveryCodes(): mixed
     {
         $processor = new RegenerateRecoveryCodesProcessor(
             $this->commandBus,
+            new CommandResponseTypeGuard(),
             new CurrentUserIdentityResolver($this->security),
             new RegenerateRecoveryCodesCommandFactory()
         );

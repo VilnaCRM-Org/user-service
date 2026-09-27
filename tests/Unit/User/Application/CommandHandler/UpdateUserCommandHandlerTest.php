@@ -525,13 +525,12 @@ final class UpdateUserCommandHandlerTest extends UnitTestCase
      */
     private function findEventOfType(array $events, string $type): ?DomainEvent
     {
-        foreach ($events as $event) {
-            if ($event instanceof $type) {
-                return $event;
-            }
-        }
+        $matches = array_values(array_filter(
+            $events,
+            static fn (DomainEvent $event): bool => $event instanceof $type
+        ));
 
-        return null;
+        return $matches[0] ?? null;
     }
 
     private function createUnchangedPasswordUpdate(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\Command\Fixture;
 
 use App\User\Domain\Collection\PasswordResetTokenCollection;
+use App\User\Domain\Entity\PasswordResetToken;
 use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Repository\PasswordResetTokenRepositoryInterface;
 
@@ -33,7 +34,7 @@ final class InMemoryPasswordResetTokenRepository implements PasswordResetTokenRe
     #[\Override]
     public function findByToken(string $token): ?PasswordResetTokenInterface
     {
-        return $this->tokens[$token] ?? null;
+        return $this->tokens[PasswordResetToken::hashToken($token)] ?? null;
     }
 
     public function deleteCount(): int

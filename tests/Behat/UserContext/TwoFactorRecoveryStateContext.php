@@ -321,6 +321,11 @@ final class TwoFactorRecoveryStateContext implements Context
             return $requestBody->email;
         }
 
+        return $this->resolveScenarioEmailFromStoredCodes();
+    }
+
+    private function resolveScenarioEmailFromStoredCodes(): string
+    {
         $storedCodes = $this->state->storedRecoveryCodesByEmail;
         if (is_array($storedCodes) && count($storedCodes) === 1) {
             return (string) array_key_first($storedCodes);

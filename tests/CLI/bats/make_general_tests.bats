@@ -82,8 +82,19 @@ load 'bats-assert/load'
 }
 
 @test "make update command executes" {
-  run make update
+  local bin_dir="${BATS_TEST_TMPDIR}/bin"
+
+  mkdir -p "$bin_dir"
+  cat > "$bin_dir/composer-stub" <<'SCRIPT'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'composer-stub %s\n' "$*"
+SCRIPT
+  chmod +x "$bin_dir/composer-stub"
+
+  run make update COMPOSER="$bin_dir/composer-stub"
   assert_success
+  assert_output --partial "composer-stub update --no-progress --prefer-dist --optimize-autoloader"
 }
 
 @test "make load-fixtures command executes" {

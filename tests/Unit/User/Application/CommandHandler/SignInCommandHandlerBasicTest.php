@@ -16,8 +16,7 @@ final class SignInCommandHandlerBasicTest extends SignInCommandHandlerTestCase
         $this->expectSignedInEvent($user, $ip, $ua, false);
 
         $command = new SignInCommand($email, $pw, false, $ip, $ua);
-        $this->createHandler()->__invoke($command);
-        $response = $command->getResponse();
+        $response = $this->createHandler()->__invoke($command);
 
         $this->assertFalse($response->isTwoFactorEnabled());
         $this->assertNotEmpty($response->getAccessToken());
@@ -33,8 +32,8 @@ final class SignInCommandHandlerBasicTest extends SignInCommandHandlerTestCase
             ->willReturn($user);
 
         $command = new SignInCommand($email, $pw, true, $ip, $ua);
-        $this->createHandler()->__invoke($command);
+        $response = $this->createHandler()->__invoke($command);
 
-        $this->assertNotEmpty($command->getResponse()->getAccessToken());
+        $this->assertNotEmpty($response->getAccessToken());
     }
 }

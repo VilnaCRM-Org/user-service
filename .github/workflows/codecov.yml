@@ -11,24 +11,33 @@ on:
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Dependabot skip
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: echo "Skipping Codecov report for Dependabot PR"
+
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: actions/checkout@v4
 
       - name: Start application
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Setup test database
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make setup-test-db
 
       - name: Run unit tests and collect coverage
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make coverage-xml
 
       - name: Copy coverage.xml to workspace
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: cp coverage/coverage.xml /tmp/coverage.xml
 
       - name: Check if coverage.xml exists
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: |
           if [ ! -f /tmp/coverage.xml ]; then
             echo "coverage.xml does not exist and cannot be uploaded."
@@ -36,7 +45,8 @@ jobs:
           fi
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: /tmp/coverage.xml

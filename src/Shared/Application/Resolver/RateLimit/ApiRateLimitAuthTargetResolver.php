@@ -11,6 +11,8 @@ final readonly class ApiRateLimitAuthTargetResolver
 {
     private const SIGNIN_PATH = '/api/signin';
     private const SIGNIN_TWO_FACTOR_PATH = '/api/signin/2fa';
+    private const GRAPHQL_PATH = '/api/graphql';
+    private const GRAPHQL_TWO_FACTOR_OPERATION = 'completeTwoFactor';
     private const TWO_FACTOR_ROUTE_LIMITERS = [
         '/api/2fa/setup' => 'twofa_setup',
         '/api/2fa/confirm' => 'twofa_confirm',
@@ -36,6 +38,7 @@ final readonly class ApiRateLimitAuthTargetResolver
         return array_merge(
             $this->resolveSignInLimiters($request, $path, $method),
             $this->resolveSignInTwoFactorLimiters($request, $path, $method),
+            $this->resolveGraphQlTwoFactorLimiters($request, $path, $method),
             $this->resolveAuthenticatedTwoFactorLimiters($request, $path, $method),
         );
     }
@@ -80,23 +83,73 @@ final readonly class ApiRateLimitAuthTargetResolver
             return [];
         }
 
+        return $this->buildTwoFactorVerificationTargets($request);
+    }
+
+    /**
+     * Applies the same per-IP/per-user 2FA verification limiters to the GraphQL
+     * `completeTwoFactor` mutation so it cannot bypass throttling via /api/graphql.
+     *
+     * @return array<array<string>>
+     *
+     * @psalm-return list{0?: array{name: 'twofa_verification_ip', key: string}, 1?: array{name: 'twofa_verification_user', key: string}}
+     */
+    private function resolveGraphQlTwoFactorLimiters(
+        Request $request,
+        string $path,
+        string $method
+    ): array {
+        if ($method !== 'POST' || $path !== self::GRAPHQL_PATH) {
+            return [];
+        }
+
+        if (!$this->isCompleteTwoFactorMutation($request)) {
+            return [];
+        }
+
+        return $this->buildTwoFactorVerificationTargets($request);
+    }
+
+    /**
+     * @return array<array<string>>
+     *
+     * @psalm-return list{0: array{name: 'twofa_verification_ip', key: string}, 1?: array{name: 'twofa_verification_user', key: string}}
+     */
+    private function buildTwoFactorVerificationTargets(Request $request): array
+    {
         $targets = [
             ['name' => 'twofa_verification_ip', 'key' => $this->buildIpKey($request)],
         ];
 
-        $pendingSessionId = $this->clientIdentityResolver->resolvePendingSessionId($request);
-        if ($pendingSessionId !== null && $this->pendingTwoFactorRepository !== null) {
-            $pendingSession = $this->pendingTwoFactorRepository->findById($pendingSessionId);
-            $userId = $pendingSession?->getUserId();
-            if (is_string($userId) && $userId !== '') {
-                $targets[] = [
-                    'name' => 'twofa_verification_user',
-                    'key' => $this->buildUserKey($userId),
-                ];
-            }
+        $userId = $this->resolveTwoFactorUserId($request);
+        if ($userId !== null) {
+            $targets[] = [
+                'name' => 'twofa_verification_user',
+                'key' => $this->buildUserKey($userId),
+            ];
         }
 
         return $targets;
+    }
+
+    private function resolveTwoFactorUserId(Request $request): ?string
+    {
+        $pendingSessionId = $this->clientIdentityResolver->resolvePendingSessionId($request);
+        if ($pendingSessionId === null || $this->pendingTwoFactorRepository === null) {
+            return null;
+        }
+
+        $userId = $this->pendingTwoFactorRepository->findById($pendingSessionId)?->getUserId();
+
+        return is_string($userId) && $userId !== '' ? $userId : null;
+    }
+
+    private function isCompleteTwoFactorMutation(Request $request): bool
+    {
+        $query = $this->clientIdentityResolver->resolvePayloadValue($request, ['query']);
+
+        return is_string($query)
+            && str_contains($query, self::GRAPHQL_TWO_FACTOR_OPERATION);
     }
 
     /**

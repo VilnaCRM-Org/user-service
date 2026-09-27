@@ -118,11 +118,15 @@ final class FacebookOAuthProvider implements OAuthProviderInterface
             throw new OAuthEmailUnavailableException(self::PROVIDER_NAME);
         }
 
+        // Facebook's Graph API exposes no email-verification field and never
+        // proves the user owns the mailbox, so the email cannot be trusted for
+        // auto-linking. Mark it unverified (matching emailAlwaysVerified()
+        // === false) so the resolver rejects it via UnverifiedProviderEmailException.
         return new OAuthUserProfile(
             email: $owner->getEmail(),
             name: $owner->getName() ?? '',
             providerId: (string) $owner->getId(),
-            emailVerified: true,
+            emailVerified: false,
         );
     }
 }

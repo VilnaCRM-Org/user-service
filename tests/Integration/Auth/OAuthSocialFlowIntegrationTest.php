@@ -442,7 +442,7 @@ final class OAuthSocialFlowIntegrationTest extends AuthIntegrationTestCase
         $this->assertNotNull(
             $this->pendingTwoFactorRepository->findById($pendingSessionId),
         );
-        $this->assertResponseDoesNotHaveCookie($response, '__Host-auth_token');
+        $this->assertNull($this->findCookie($response, '__Host-auth_token'));
     }
 
     private function extractCookieValue(
@@ -460,13 +460,6 @@ final class OAuthSocialFlowIntegrationTest extends AuthIntegrationTestCase
         string $cookieName,
     ): void {
         $this->assertNotNull($this->findCookie($response, $cookieName));
-    }
-
-    private function assertResponseDoesNotHaveCookie(
-        Response $response,
-        string $cookieName,
-    ): void {
-        $this->assertNull($this->findCookie($response, $cookieName));
     }
 
     private function findCookie(

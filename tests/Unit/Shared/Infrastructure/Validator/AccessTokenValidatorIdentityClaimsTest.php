@@ -101,6 +101,33 @@ final class AccessTokenValidatorIdentityClaimsTest extends AccessTokenValidatorT
         $this->assertSame($sid, $result['sid']);
     }
 
+    public function testValidateThrowsForExplicitNullRolesWithSid(): void
+    {
+        $token = $this->createValidToken();
+        $payload = $this->buildPayload($this->faker->email(), $this->faker->uuid(), ['ROLE_USER']);
+        $payload['roles'] = null;
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->validator->validate($token);
+    }
+
+    public function testValidateThrowsForExplicitNullRolesWithoutSid(): void
+    {
+        $token = $this->createValidToken();
+        $payload = $this->buildPayload($this->faker->email(), $this->faker->uuid(), ['ROLE_USER']);
+        $payload['roles'] = null;
+        unset($payload['sid']);
+
+        $this->jwtEncoder->method('decode')->willReturn($payload);
+
+        $this->expectInvalidClaimsException();
+
+        $this->validator->validate($token);
+    }
+
     public function testValidateThrowsForEmptyRolesArray(): void
     {
         $token = $this->createValidToken();

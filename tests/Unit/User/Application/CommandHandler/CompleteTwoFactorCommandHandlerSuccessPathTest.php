@@ -9,6 +9,7 @@ use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\CommandHandler\CompleteTwoFactorCommandHandler;
+use App\User\Application\DTO\CompleteTwoFactorCommandResponse;
 use App\User\Application\DTO\IssuedSession;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\TwoFactorCodeValidatorInterface;
@@ -60,14 +61,14 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->expectIssuedSession('issued-access-token', 'issued-refresh-token');
         $this->expectPendingConsumeAndCompletion($pending);
 
-        $command = $this->invokeHandlerWith($pending->getId(), '123456', $ipAddress, $userAgent);
-        $this->assertSame('issued-access-token', $command->getResponse()->getAccessToken());
-        $this->assertNotEmpty($command->getResponse()->getRefreshToken());
+        $response = $this->invokeHandlerWith($pending->getId(), '123456', $ipAddress, $userAgent);
+        $this->assertSame('issued-access-token', $response->getAccessToken());
+        $this->assertNotEmpty($response->getRefreshToken());
         $this->assertNotSame(
-            $command->getResponse()->getAccessToken(),
-            $command->getResponse()->getRefreshToken()
+            $response->getAccessToken(),
+            $response->getRefreshToken()
         );
-        $this->assertFalse($command->getResponse()->isRememberMe());
+        $this->assertFalse($response->isRememberMe());
     }
 
     public function testInvokeCompletesTwoFactorWithRememberMeFromPendingSession(): void
@@ -86,13 +87,13 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
         $this->events->method('publishCompleted');
 
-        $command = $this->invokeHandlerWith(
+        $response = $this->invokeHandlerWith(
             $pending->getId(),
             '123456',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-        $this->assertTrue($command->getResponse()->isRememberMe());
+        $this->assertTrue($response->isRememberMe());
     }
 
     public function testInvokeCompletesTwoFactorWithRecoveryCodeAndIssuesTokens(): void
@@ -108,8 +109,8 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->expectPendingConsumeAndCompletion($pending);
         $this->events->expects($this->once())->method('publishRecoveryCodeUsed');
 
-        $command = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
-        $this->assertZeroRemainingCodesResponse($command, 'issued-access-token');
+        $response = $this->invokeHandlerWith($pending->getId(), 'AB12-CD34', $ip, $ua);
+        $this->assertZeroRemainingCodesResponse($response, 'issued-access-token');
     }
 
     public function testInvokeUsesLaterUnusedRecoveryCodeWhenEarlierCodeIsUsed(): void
@@ -120,13 +121,13 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->expectRecoveryCodeVerification($user, 'CC33-DD44', 4);
         $this->expectIssuedSession('test-access-token', 'test-refresh-token');
         $this->expectPendingConsumeAndCompletion($pending);
-        $command = $this->invokeHandlerWith(
+        $response = $this->invokeHandlerWith(
             $pending->getId(),
             'CC33-DD44',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-        $this->assertSame('test-access-token', $command->getResponse()->getAccessToken());
+        $this->assertSame('test-access-token', $response->getAccessToken());
     }
 
     public function testRecoveryCodeSignInIncludesWarningWhenFewCodesRemain(): void
@@ -138,16 +139,16 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->expectIssuedSession('access-token', 'refresh-token');
         $this->expectPendingConsumeAndCompletion($pending);
         $this->events->expects($this->once())->method('publishRecoveryCodeUsed');
-        $command = $this->invokeHandlerWith(
+        $response = $this->invokeHandlerWith(
             $pending->getId(),
             'AB12-CD34',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-        $this->assertSame(2, $command->getResponse()->getRecoveryCodesRemaining());
+        $this->assertSame(2, $response->getRecoveryCodesRemaining());
         $this->assertStringContainsString(
             '2',
-            (string) $command->getResponse()->getWarningMessage()
+            (string) $response->getWarningMessage()
         );
     }
 
@@ -161,14 +162,14 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->expectIssuedSession('access-token', 'refresh-token');
         $this->expectPendingConsumeAndCompletion($pending);
 
-        $command = $this->invokeHandlerWith(
+        $response = $this->invokeHandlerWith(
             $pending->getId(),
             'AB12-CD34',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-        $this->assertNull($command->getResponse()->getRecoveryCodesRemaining());
-        $this->assertNull($command->getResponse()->getWarningMessage());
+        $this->assertNull($response->getRecoveryCodesRemaining());
+        $this->assertNull($response->getWarningMessage());
     }
 
     public function testTotpSignInDoesNotIncludeRecoveryCodeInfo(): void
@@ -191,14 +192,14 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         $this->events->expects($this->once())->method('publishCompleted');
         $this->pendingTwoFactorRepository->method('consumeIfActive')->willReturn(true);
 
-        $command = $this->invokeHandlerWith(
+        $response = $this->invokeHandlerWith(
             $pending->getId(),
             '123456',
             $this->faker->ipv4(),
             $this->faker->userAgent()
         );
-        $this->assertNull($command->getResponse()->getRecoveryCodesRemaining());
-        $this->assertNull($command->getResponse()->getWarningMessage());
+        $this->assertNull($response->getRecoveryCodesRemaining());
+        $this->assertNull($response->getWarningMessage());
     }
 
     private function configureLookupsOnce(PendingTwoFactor $pending, User $user): void
@@ -263,23 +264,23 @@ final class CompleteTwoFactorCommandHandlerSuccessPathTest extends UnitTestCase
         string $code,
         string $ipAddress,
         string $userAgent
-    ): CompleteTwoFactorCommand {
+    ): CompleteTwoFactorCommandResponse {
         $handler = $this->createHandler();
         $command = new CompleteTwoFactorCommand($pendingId, $code, $ipAddress, $userAgent);
-        $handler->__invoke($command);
-        return $command;
+
+        return $handler->__invoke($command);
     }
 
     private function assertZeroRemainingCodesResponse(
-        CompleteTwoFactorCommand $command,
+        CompleteTwoFactorCommandResponse $response,
         string $expectedAccess
     ): void {
-        $this->assertSame($expectedAccess, $command->getResponse()->getAccessToken());
-        $this->assertNotEmpty($command->getResponse()->getRefreshToken());
-        $this->assertSame(0, $command->getResponse()->getRecoveryCodesRemaining());
+        $this->assertSame($expectedAccess, $response->getAccessToken());
+        $this->assertNotEmpty($response->getRefreshToken());
+        $this->assertSame(0, $response->getRecoveryCodesRemaining());
         $this->assertSame(
             'All recovery codes have been used. Regenerate immediately.',
-            $command->getResponse()->getWarningMessage()
+            $response->getWarningMessage()
         );
     }
 

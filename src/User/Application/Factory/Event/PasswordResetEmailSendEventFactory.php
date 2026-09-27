@@ -8,6 +8,7 @@ use App\User\Domain\Entity\PasswordResetTokenInterface;
 use App\User\Domain\Entity\UserInterface;
 use App\User\Domain\Event\PasswordResetEmailSentEvent;
 use App\User\Domain\Factory\Event\PasswordResetEmailSendEventFactoryInterface;
+use LogicException;
 
 final class PasswordResetEmailSendEventFactory implements
     PasswordResetEmailSendEventFactoryInterface
@@ -19,7 +20,9 @@ final class PasswordResetEmailSendEventFactory implements
         string $eventID,
     ): PasswordResetEmailSentEvent {
         return new PasswordResetEmailSentEvent(
-            $token->getTokenValue(),
+            $token->getPlainToken() ?? throw new LogicException(
+                'Plain password reset token must be attached before sending email.'
+            ),
             $token->getUserID(),
             $user->getEmail(),
             $eventID,

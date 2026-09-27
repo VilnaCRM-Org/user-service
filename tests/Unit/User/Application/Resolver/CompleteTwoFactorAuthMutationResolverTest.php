@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\CompleteTwoFactorCommand;
 use App\User\Application\DTO\AuthPayload;
@@ -12,6 +13,7 @@ use App\User\Application\DTO\CompleteTwoFactorDto;
 use App\User\Application\Factory\CompleteTwoFactorCommandFactoryInterface;
 use App\User\Application\Resolver\CompleteTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -23,6 +25,7 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
     private HttpRequestContextResolverInterface $requestContextResolver;
     private CompleteTwoFactorAuthMutationResolver $resolver;
     private CompleteTwoFactorCommand $command;
+    private CompleteTwoFactorCommandResponse $commandResponse;
     private Request $request;
     private string $pendingSessionId;
     private string $twoFactorCode;
@@ -37,10 +40,13 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
         $this->setUpScenario();
         $this->resolver = new CompleteTwoFactorAuthMutationResolver(
             $this->validator,
-            $this->commandBus,
             $this->authPayloadFactory(),
-            $this->commandFactory,
-            $this->requestContextResolver
+            new CompleteTwoFactorCommandDispatcher(
+                $this->commandBus,
+                new CommandResponseTypeGuard(),
+                $this->commandFactory,
+                $this->requestContextResolver
+            )
         );
     }
 
@@ -80,7 +86,7 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
             $this->ipAddress,
             $this->userAgent
         );
-        $this->command->setResponse($this->response());
+        $this->commandResponse = $this->response();
     }
 
     private function expectValidation(): void
@@ -121,7 +127,8 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
             ->willReturn($this->command);
         $this->commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($this->command);
+            ->with($this->command)
+            ->willReturn($this->commandResponse);
     }
 
     /**
@@ -152,11 +159,10 @@ final class CompleteTwoFactorAuthMutationResolverTest extends AuthMutationResolv
 
     private function assertPayload(AuthPayload $payload): void
     {
-        $response = $this->command->getResponse();
         $this->assertSame('auth-complete-two-factor', $payload->getId());
         $this->assertTrue($payload->isTwoFactorEnabled());
-        $this->assertSame($response->getAccessToken(), $payload->getAccessToken());
-        $this->assertSame($response->getRefreshToken(), $payload->getRefreshToken());
+        $this->assertSame($this->commandResponse->getAccessToken(), $payload->getAccessToken());
+        $this->assertSame($this->commandResponse->getRefreshToken(), $payload->getRefreshToken());
         $this->assertSame(2, $payload->getRecoveryCodesRemaining());
         $this->assertSame('Use recovery codes soon.', $payload->getWarning());
     }

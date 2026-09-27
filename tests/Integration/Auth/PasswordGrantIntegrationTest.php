@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Auth;
 
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
+use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use League\Bundle\OAuth2ServerBundle\Manager\ClientManagerInterface;
 use League\Bundle\OAuth2ServerBundle\Model\Client;
 use League\Bundle\OAuth2ServerBundle\ValueObject\RedirectUri;
@@ -18,6 +20,23 @@ use Symfony\Component\Uid\Factory\UuidFactory;
 
 final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
 {
+    /** @var list<string> */
+    private array $emailsForCleanup = [];
+
+    #[\Override]
+    protected function tearDown(): void
+    {
+        if ($this->emailsForCleanup !== []) {
+            $documentManager = $this->container->get(DocumentManager::class);
+            $documentManager->getDocumentCollection(User::class)->deleteMany([
+                'email' => ['$in' => $this->emailsForCleanup],
+            ]);
+            $documentManager->clear();
+        }
+
+        parent::tearDown();
+    }
+
     public function testPasswordGrantReturnsAccessTokenWhenEnabled(): void
     {
         $kernel = $this->resolveKernel();
@@ -34,6 +53,25 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $this->assertAccessTokenResponse($response);
     }
 
+    public function testPasswordGrantReturnsInvalidGrantForAmbiguousDuplicateEmail(): void
+    {
+        $kernel = $this->resolveKernel();
+        [$clientId, $clientSecret] = $this->createOAuthClient();
+        $email = $this->faker->unique()->safeEmail();
+        $password = $this->faker->password();
+        $this->createUser($email, $password);
+        $this->insertLegacyUserDocument(mb_strtoupper($email, 'UTF-8'));
+
+        $response = $this->sendTokenRequest(
+            $kernel,
+            ['grant_type' => 'password', 'username' => $email, 'password' => $password],
+            $clientId,
+            $clientSecret
+        );
+
+        $this->assertInvalidUserCredentialsResponse($response);
+    }
+
     public function testClientCredentialsGrantStillWorksWhenPasswordGrantIsEnabled(): void
     {
         $kernel = $this->resolveKernel();
@@ -47,14 +85,19 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $this->assertAccessTokenResponse($response);
     }
 
-    public function testOauthClientCredentialsAccessTokenCanReachProtectedServiceRoute(): void
+    public function testOauthClientCredentialsAccessTokenIsRejectedAtProtectedServiceRoute(): void
     {
+        // Regression for the ROLE_SERVICE privilege-escalation (#312): a League
+        // OAuth2 client_credentials access token (aud=client_id, no iss/roles)
+        // must NOT be auto-elevated to a first-party ROLE_SERVICE principal.
+        // It is now rejected with 401 at the protected bulk-import route because
+        // issuer/audience validation is mandatory and ROLE_SERVICE is never
+        // inferred from missing claims.
         $kernel = $this->resolveKernel();
         [$clientId, $clientSecret] = $this->createOAuthClient();
         $accessToken = $this->obtainAccessToken($kernel, $clientId, $clientSecret);
         $batchResponse = $this->sendAuthenticatedBatchRequest($kernel, $accessToken);
-        $this->assertNotSame(Response::HTTP_UNAUTHORIZED, $batchResponse->getStatusCode());
-        $this->assertNotSame(Response::HTTP_FORBIDDEN, $batchResponse->getStatusCode());
+        $this->assertSame(Response::HTTP_UNAUTHORIZED, $batchResponse->getStatusCode());
     }
 
     private function resolveKernel(): HttpKernelInterface
@@ -128,6 +171,7 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
 
     private function createUser(string $email, string $plainPassword): void
     {
+        $this->emailsForCleanup[] = $email;
         $userFactory = $this->container->get(UserFactoryInterface::class);
         $userRepository = $this->container->get(UserRepositoryInterface::class);
         $hasherFactory = $this->container->get(PasswordHasherFactoryInterface::class);
@@ -145,6 +189,22 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $user->setPassword($passwordHasher->hash($plainPassword, null));
 
         $userRepository->save($user);
+    }
+
+    private function insertLegacyUserDocument(string $email): void
+    {
+        $this->emailsForCleanup[] = $email;
+        $documentManager = $this->container->get(DocumentManager::class);
+        $documentManager->getDocumentCollection(User::class)->insertOne([
+            '_id' => $this->faker->uuid(),
+            'email' => $email,
+            'initials' => $this->faker->name(),
+            'password' => $this->faker->sha256(),
+            'confirmed' => false,
+            'twoFactorEnabled' => false,
+            'twoFactorSecret' => null,
+        ]);
+        $documentManager->clear();
     }
 
     /**
@@ -182,5 +242,18 @@ final class PasswordGrantIntegrationTest extends AuthIntegrationTestCase
         $this->assertSame('Bearer', $responseData['token_type'] ?? null);
         $this->assertIsString($responseData['access_token'] ?? null);
         $this->assertNotSame('', $responseData['access_token'] ?? null);
+    }
+
+    private function assertInvalidUserCredentialsResponse(Response $response): void
+    {
+        $responseData = json_decode((string) $response->getContent(), true);
+        $this->assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+        $this->assertIsArray($responseData);
+        $this->assertSame('invalid_grant', $responseData['error'] ?? null);
+        $this->assertSame(
+            'The user credentials were incorrect.',
+            $responseData['error_description'] ?? null
+        );
+        $this->assertArrayNotHasKey('error_code', $responseData);
     }
 }

@@ -47,7 +47,7 @@ final class RecoveryCodeTest extends UnitTestCase
         $this->assertTrue($recoveryCode->matchesCode(strtolower($upperCode)));
     }
 
-    public function testMatchesCodeSupportsLegacySha256Hashes(): void
+    public function testMatchesCodeRejectsLegacySha256Hashes(): void
     {
         $plainCode = strtoupper($this->faker->bothify('????-####'));
         $recoveryCode = new RecoveryCode(
@@ -59,8 +59,26 @@ final class RecoveryCodeTest extends UnitTestCase
         $reflection = new \ReflectionProperty($recoveryCode, 'codeHash');
         $reflection->setValue($recoveryCode, hash('sha256', strtolower($plainCode)));
 
-        $this->assertTrue($recoveryCode->matchesCode($plainCode));
+        $this->assertFalse($recoveryCode->matchesCode($plainCode));
+        $this->assertFalse($recoveryCode->matchesCode(strtolower($plainCode)));
         $this->assertFalse($recoveryCode->matchesCode('ZZZZ-9999'));
+    }
+
+    public function testConstructorUsesOwaspCompliantArgon2idMemoryCost(): void
+    {
+        $recoveryCode = new RecoveryCode(
+            $this->faker->uuid(),
+            $this->faker->uuid(),
+            strtolower($this->faker->bothify('????-????'))
+        );
+
+        $hashInfo = password_get_info($recoveryCode->getCodeHash());
+
+        $this->assertSame('argon2id', (string) $hashInfo['algoName']);
+        $this->assertGreaterThanOrEqual(
+            19456,
+            $hashInfo['options']['memory_cost'] ?? 0
+        );
     }
 
     public function testMarkAsUsedStoresTimestamp(): void

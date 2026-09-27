@@ -261,7 +261,6 @@ final class CredentialsRevokerTest extends OAuthInfrastructureTestCase
                 return [];
             }
 
-            #[\Override]
             public function eraseCredentials(): void
             {
             }

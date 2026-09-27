@@ -26,8 +26,10 @@ final class PasswordResetTokenSeederTest extends UnitTestCase
 
         $tokens = $repository->all();
         $this->assertCount(2, $tokens);
-        $this->assertArrayHasKey('token1', $tokens);
-        $this->assertArrayHasKey('token2', $tokens);
+        $this->assertArrayHasKey(PasswordResetToken::hashToken('token1'), $tokens);
+        $this->assertArrayHasKey(PasswordResetToken::hashToken('token2'), $tokens);
+        $this->assertNotNull($repository->findByToken('token1'));
+        $this->assertNotNull($repository->findByToken('token2'));
     }
 
     public function testSeedTokensUpdatesExistingTokenInsteadOfDeleting(): void

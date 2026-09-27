@@ -11,7 +11,7 @@ use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
 use Behat\Behat\Context\Context;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Assert;
-use Psr\Cache\CacheItemPoolInterface;
+use Redis;
 
 final class SignInSecurityContext implements Context
 {
@@ -20,7 +20,7 @@ final class SignInSecurityContext implements Context
 
     public function __construct(
         private UserOperationsState $state,
-        private CacheItemPoolInterface $cachePool,
+        private Redis $lockoutRedis,
         private readonly UserContextUserManagementServices $userManagement,
         private readonly UserContextAuthServices $auth,
         private readonly PendingTwoFactorRepositoryInterface $pendingTwoFactorRepository,
@@ -229,7 +229,7 @@ final class SignInSecurityContext implements Context
             return;
         }
 
-        $this->cachePool->deleteItem(
+        $this->lockoutRedis->del(
             $this->lockKey($this->requireLastLockoutEmail())
         );
     }
@@ -254,10 +254,10 @@ final class SignInSecurityContext implements Context
 
         $email = $this->requireLastLockoutEmail();
 
-        $this->cachePool->deleteItems([
+        $this->lockoutRedis->del(
             $this->attemptsKey($email),
             $this->lockKey($email),
-        ]);
+        );
     }
 
     private function requireLastLockoutEmail(): string

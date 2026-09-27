@@ -115,16 +115,9 @@ final class UserRequestContext implements Context
     {
         $this->requestSendTo('POST', '/api/2fa/setup');
 
-        $response = $this->state->response;
-        if (!$response instanceof Response || $response->getStatusCode() !== Response::HTTP_OK) {
-            throw new \RuntimeException(sprintf(
-                '2FA setup failed with status %s.',
-                (string) ($response?->getStatusCode() ?? 'no response')
-            ));
-        }
+        $response = $this->requireSuccessfulTwoFactorSetupResponse();
+        $secret = $this->extractTwoFactorSecret($response);
 
-        $responseData = json_decode((string) $response->getContent(), true);
-        $secret = is_array($responseData) ? ($responseData['secret'] ?? '') : '';
         if (!is_string($secret) || $secret === '') {
             throw new \RuntimeException('2FA setup response did not include a secret.');
         }
@@ -226,6 +219,31 @@ final class UserRequestContext implements Context
             'GET',
             sprintf('/api/users/%s', UserContext::getUserIdByEmail($currentUserEmail))
         );
+    }
+
+    private function requireSuccessfulTwoFactorSetupResponse(): Response
+    {
+        $response = $this->state->response;
+        if ($response instanceof Response && $response->getStatusCode() === Response::HTTP_OK) {
+            return $response;
+        }
+
+        throw new \RuntimeException(sprintf(
+            '2FA setup failed with status %s.',
+            (string) ($response?->getStatusCode() ?? 'no response')
+        ));
+    }
+
+    private function extractTwoFactorSecret(Response $response): string
+    {
+        $responseData = json_decode((string) $response->getContent(), true);
+        if (!is_array($responseData)) {
+            return '';
+        }
+
+        $secret = $responseData['secret'] ?? '';
+
+        return is_string($secret) ? $secret : '';
     }
 
     private function processRequestPath(string $path): string

@@ -14,6 +14,8 @@ use App\OAuth\Domain\Exception\StateExpiredException;
 use App\OAuth\Domain\Exception\UnsupportedProviderException;
 use App\OAuth\Domain\Exception\UnverifiedProviderEmailException;
 use App\Tests\Unit\UnitTestCase;
+use App\User\Domain\Exception\DuplicateEmailException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,13 +26,15 @@ final class OAuthExceptionListenerTest extends UnitTestCase
 {
     private OAuthExceptionListener $listener;
     private HttpKernelInterface $kernel;
+    private LoggerInterface $logger;
 
     #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->listener = new OAuthExceptionListener();
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->listener = new OAuthExceptionListener($this->logger);
         $this->kernel = $this->createMock(HttpKernelInterface::class);
     }
 
@@ -161,6 +165,43 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         );
     }
 
+    public function testDuplicateEmailReturns409(): void
+    {
+        $email = $this->faker->safeEmail();
+        $event = $this->createExceptionEvent(
+            new DuplicateEmailException($email),
+            sprintf(
+                '/api/auth/social/%s/callback',
+                $this->faker->randomElement(['facebook', 'github', 'google', 'twitter'])
+            )
+        );
+
+        ($this->listener)($event);
+
+        $this->assertProblemResponse(
+            $event,
+            Response::HTTP_CONFLICT,
+            'duplicate_email'
+        );
+        $this->assertResponseDetail(
+            $event,
+            'Email address matches multiple local users; automatic linking is blocked.'
+        );
+        $this->assertResponseDetailDoesNotContain($event, $email);
+    }
+
+    public function testDuplicateEmailOutsideOAuthSocialCallbackIsIgnored(): void
+    {
+        $event = $this->createExceptionEvent(
+            new DuplicateEmailException($this->faker->safeEmail()),
+            $this->faker->randomElement(['/api/users', '/api/graphql', '/api/auth/social/github'])
+        );
+
+        ($this->listener)($event);
+
+        $this->assertNull($event->getResponse());
+    }
+
     public function testNonOAuthExceptionIsIgnored(): void
     {
         $event = $this->createExceptionEvent(
@@ -214,11 +255,13 @@ final class OAuthExceptionListenerTest extends UnitTestCase
         $this->assertArrayHasKey('error_code', $body);
     }
 
-    private function createExceptionEvent(\Throwable $exception): ExceptionEvent
-    {
+    private function createExceptionEvent(
+        \Throwable $exception,
+        string $path = '/api/auth/social/github'
+    ): ExceptionEvent {
         return new ExceptionEvent(
             $this->kernel,
-            Request::create('/api/auth/social/github'),
+            Request::create($path),
             HttpKernelInterface::MAIN_REQUEST,
             $exception,
         );
@@ -242,5 +285,35 @@ final class OAuthExceptionListenerTest extends UnitTestCase
 
         $this->assertSame($expectedErrorCode, $body['error_code']);
         $this->assertSame($expectedStatus, $body['status']);
+    }
+
+    private function assertResponseDetail(
+        ExceptionEvent $event,
+        string $expectedDetail,
+    ): void {
+        $this->assertSame($expectedDetail, $this->responseDetail($event));
+    }
+
+    private function assertResponseDetailDoesNotContain(
+        ExceptionEvent $event,
+        string $unexpectedValue,
+    ): void {
+        $this->assertStringNotContainsString($unexpectedValue, $this->responseDetail($event));
+    }
+
+    private function responseDetail(ExceptionEvent $event): string
+    {
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+
+        $body = json_decode(
+            (string) $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $this->assertIsString($body['detail']);
+
+        return $body['detail'];
     }
 }

@@ -34,8 +34,9 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
     ) {
     }
 
-    public function __invoke(CompleteTwoFactorCommand $command): void
-    {
+    public function __invoke(
+        CompleteTwoFactorCommand $command
+    ): CompleteTwoFactorCommandResponse {
         $pendingSession = $this->resolvePendingSession($command->pendingSessionId);
         $user = $this->resolveUser($pendingSession->getUserId());
         $method = $this->twoFactorCodeVerifier->verifyAndResolveMethod(
@@ -44,14 +45,15 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         );
 
         if ($method === null) {
-            $this->handleTwoFactorFailure($command);
+            $this->handleTwoFactorFailure($command, $pendingSession);
         }
 
         assert(is_string($method));
         $rememberMe = $pendingSession->isRememberMe();
         $this->consumePendingSessionOrFail($pendingSession->getId());
         $this->consumeRecoveryCodeIfNeeded($user, $command, $method);
-        $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
+
+        return $this->issueTokensAndComplete($user, $command, $rememberMe, $method);
     }
 
     private function issueTokensAndComplete(
@@ -59,7 +61,7 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         CompleteTwoFactorCommand $command,
         bool $rememberMe,
         string $method
-    ): void {
+    ): CompleteTwoFactorCommandResponse {
         $issued = $this->issueSession(
             $user,
             $command->ipAddress,
@@ -68,9 +70,9 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         );
         $remaining = $this->resolveRemainingCodes($user, $method);
 
-        $command->setResponse($this->buildResponse($issued, $rememberMe, $remaining));
-
         $this->publishEvents($user, $issued, $command, $method, $remaining);
+
+        return $this->buildResponse($issued, $rememberMe, $remaining);
     }
 
     private function issueSession(
@@ -170,14 +172,20 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
                 $command->twoFactorCode
             );
         } catch (UnauthorizedHttpException) {
-            $this->handleTwoFactorFailure($command);
+            // The pending session was already consumed before this point, so the
+            // brute-force counter is no longer applicable here.
+            $this->failWithoutCountingAttempt($command);
         }
     }
 
     private function resolvePendingSession(string $pendingSessionId): PendingTwoFactor
     {
         $pendingSession = $this->pendingTwoFactorRepository->findById($pendingSessionId);
-        if (!$pendingSession instanceof PendingTwoFactor || $pendingSession->isExpired()) {
+        if (
+            !$pendingSession instanceof PendingTwoFactor
+            || $pendingSession->isExpired()
+            || $pendingSession->hasExhaustedAttempts()
+        ) {
             throw new UnauthorizedHttpException('Bearer', 'Invalid or expired two-factor session.');
         }
 
@@ -208,7 +216,20 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         throw new UnauthorizedHttpException('Bearer', 'Invalid or expired two-factor session.');
     }
 
-    private function handleTwoFactorFailure(CompleteTwoFactorCommand $command): never
+    private function handleTwoFactorFailure(
+        CompleteTwoFactorCommand $command,
+        PendingTwoFactor $pendingSession
+    ): never {
+        $this->registerFailedAttempt($pendingSession);
+        $this->publishFailureAndThrow($command);
+    }
+
+    private function failWithoutCountingAttempt(CompleteTwoFactorCommand $command): never
+    {
+        $this->publishFailureAndThrow($command);
+    }
+
+    private function publishFailureAndThrow(CompleteTwoFactorCommand $command): never
     {
         $this->events->publishFailed(
             $command->pendingSessionId,
@@ -217,5 +238,18 @@ final readonly class CompleteTwoFactorCommandHandler implements CommandHandlerIn
         );
 
         throw new UnauthorizedHttpException('Bearer', 'Invalid two-factor code.');
+    }
+
+    private function registerFailedAttempt(PendingTwoFactor $pendingSession): void
+    {
+        $pendingSession->recordFailedAttempt();
+
+        if ($pendingSession->hasExhaustedAttempts()) {
+            $this->pendingTwoFactorRepository->delete($pendingSession);
+
+            return;
+        }
+
+        $this->pendingTwoFactorRepository->save($pendingSession);
     }
 }

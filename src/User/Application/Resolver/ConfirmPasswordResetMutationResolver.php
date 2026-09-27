@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\ConfirmPasswordResetCommand;
+use App\User\Application\DTO\ConfirmPasswordResetCommandResponse;
 use App\User\Application\MutationInput\ConfirmPasswordResetMutationInput;
 use App\User\Application\Validator\MutationInputValidator;
 
@@ -15,6 +17,7 @@ final readonly class ConfirmPasswordResetMutationResolver implements
 {
     public function __construct(
         private CommandBusInterface $commandBus,
+        private CommandResponseTypeGuard $commandResponseTypeGuard,
         private MutationInputValidator $validator,
     ) {
     }
@@ -38,7 +41,10 @@ final readonly class ConfirmPasswordResetMutationResolver implements
             $args['token'],
             $args['newPassword']
         );
-        $this->commandBus->dispatch($command);
+        $this->commandResponseTypeGuard->expect(
+            $this->commandBus->dispatch($command),
+            ConfirmPasswordResetCommandResponse::class
+        );
 
         return null;
     }

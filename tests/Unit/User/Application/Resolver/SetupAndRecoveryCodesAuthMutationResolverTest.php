@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Application\Resolver;
 
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\Command\SetupTwoFactorCommand;
@@ -21,22 +22,23 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
     {
         $email = $this->faker->email();
         $command = new SetupTwoFactorCommand($email);
-        $command->setResponse($this->setupResponse());
+        $commandResponse = $this->setupResponse();
         $commandBus = $this->createMock(CommandBusInterface::class);
         $commandFactory = $this->createMock(
             SetupTwoFactorCommandFactoryInterface::class
         );
-        $resolver = new SetupTwoFactorAuthMutationResolver(
-            $commandBus,
-            $this->authPayloadFactory(),
-            $this->currentUserIdentityResolver($email, '', $this->faker->uuid()),
-            $commandFactory
-        );
+        $resolver = $this->setupResolver($commandBus, $commandFactory, $email);
 
-        $this->expectSetupResolver($commandBus, $commandFactory, $command, $email);
+        $this->expectSetupResolver(
+            $commandBus,
+            $commandFactory,
+            $command,
+            $email,
+            $commandResponse
+        );
         $result = $resolver->__invoke(null, []);
 
-        $this->assertSetupPayload($result, $command->getResponse());
+        $this->assertSetupPayload($result, $commandResponse);
     }
 
     public function testRecoveryCodesResolverDispatchesCommandAndBuildsPayload(): void
@@ -44,22 +46,23 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
         $email = $this->faker->email();
         $sessionId = $this->faker->uuid();
         $command = new RegenerateRecoveryCodesCommand($email, $sessionId);
-        $command->setResponse($this->recoveryCodesResponse());
+        $commandResponse = $this->recoveryCodesResponse();
         $commandBus = $this->createMock(CommandBusInterface::class);
         $commandFactory = $this->createMock(
             RegenerateRecoveryCodesCommandFactoryInterface::class
         );
         $resolver = new RegenerateRecoveryCodesAuthMutationResolver(
             $commandBus,
+            new CommandResponseTypeGuard(),
             $this->authPayloadFactory(),
             $this->currentUserIdentityResolver($email, $sessionId, $this->faker->uuid()),
             $commandFactory
         );
 
-        $this->expectRecoveryResolver($commandBus, $commandFactory, $command, $email, $sessionId);
+        $this->expectRecoveryResolver($commandBus, $commandFactory, $command, $commandResponse);
         $result = $resolver->__invoke(null, []);
 
-        $this->assertRecoveryCodesPayload($result, $command->getResponse());
+        $this->assertRecoveryCodesPayload($result, $commandResponse);
     }
 
     private function expectSetupResolver(
@@ -67,6 +70,7 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
         SetupTwoFactorCommandFactoryInterface $commandFactory,
         SetupTwoFactorCommand $command,
         string $email,
+        SetupTwoFactorCommandResponse $response,
     ): void {
         $commandFactory->expects($this->once())
             ->method('create')
@@ -74,23 +78,38 @@ final class SetupAndRecoveryCodesAuthMutationResolverTest extends AuthMutationRe
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn($response);
+    }
+
+    private function setupResolver(
+        CommandBusInterface $commandBus,
+        SetupTwoFactorCommandFactoryInterface $commandFactory,
+        string $email,
+    ): SetupTwoFactorAuthMutationResolver {
+        return new SetupTwoFactorAuthMutationResolver(
+            $commandBus,
+            new CommandResponseTypeGuard(),
+            $this->authPayloadFactory(),
+            $this->currentUserIdentityResolver($email, '', $this->faker->uuid()),
+            $commandFactory
+        );
     }
 
     private function expectRecoveryResolver(
         CommandBusInterface $commandBus,
         RegenerateRecoveryCodesCommandFactoryInterface $commandFactory,
         RegenerateRecoveryCodesCommand $command,
-        string $email,
-        string $sessionId,
+        RegenerateRecoveryCodesCommandResponse $response,
     ): void {
         $commandFactory->expects($this->once())
             ->method('create')
-            ->with($email, $sessionId)
+            ->with($command->userEmail, $command->currentSessionId)
             ->willReturn($command);
         $commandBus->expects($this->once())
             ->method('dispatch')
-            ->with($command);
+            ->with($command)
+            ->willReturn($response);
     }
 
     private function setupResponse(): SetupTwoFactorCommandResponse

@@ -24,7 +24,6 @@ final class UserContext implements Context
     public function __construct(
         private CacheItemPoolInterface $cachePool,
         private CacheItemPoolInterface $rateLimiterCachePool,
-        private CacheItemPoolInterface $accountLockoutCachePool,
         private readonly UserContextUserManagementServices $userManagement,
         private readonly RedisDatabaseMirror $redisDatabaseMirror,
     ) {
@@ -36,9 +35,10 @@ final class UserContext implements Context
      */
     public function clearCacheBeforeScenario(BeforeScenarioScope $scope): void
     {
+        // flushDefaultAndHttpDatabases() wipes Redis DB 0, which also holds the
+        // raw account-lockout keys (REDIS_LOCKOUT_URL points at DB 0 in tests).
         $this->redisDatabaseMirror->flushDefaultAndHttpDatabases();
         $this->cachePool->clear();
-        $this->accountLockoutCachePool->clear();
         self::$lastPasswordResetToken = '';
         self::$userIdsByEmail = [];
         self::$currentTokenUserEmail = '';
@@ -167,7 +167,8 @@ final class UserContext implements Context
         $token = $this->userManagement->passwordResetTokenFactory->create($user->getId());
         $this->userManagement->passwordResetTokenRepository->save($token);
 
-        self::$lastPasswordResetToken = $token->getTokenValue();
+        self::$lastPasswordResetToken =
+            $token->getPlainToken() ?? $token->getTokenValue();
         self::$currentTokenUserEmail = $email;
     }
 

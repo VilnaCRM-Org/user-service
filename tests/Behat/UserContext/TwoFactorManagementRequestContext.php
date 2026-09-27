@@ -28,17 +28,7 @@ final class TwoFactorManagementRequestContext implements Context
      */
     public function confirmingTwoFactorWithAValidTotpCode(): void
     {
-        $secret = $this->state->twoFactorSecret;
-
-        if (!is_string($secret) || $secret === '') {
-            $responseData = json_decode(
-                (string) $this->state->response?->getContent(),
-                true
-            );
-            $secret = is_array($responseData)
-                ? ($responseData['secret'] ?? '')
-                : '';
-        }
+        $secret = $this->resolveTwoFactorSecret();
 
         if (!is_string($secret) || $secret === '') {
             throw new \RuntimeException('2FA secret is missing from scenario state.');
@@ -56,5 +46,32 @@ final class TwoFactorManagementRequestContext implements Context
     public function disablingTwoFactorWithCode(string $code): void
     {
         $this->state->requestBody = new TwoFactorCodeInput($code);
+    }
+
+    private function resolveTwoFactorSecret(): string
+    {
+        $secret = $this->state->twoFactorSecret;
+
+        if (is_string($secret) && $secret !== '') {
+            return $secret;
+        }
+
+        return $this->extractSecretFromResponse();
+    }
+
+    private function extractSecretFromResponse(): string
+    {
+        $responseData = json_decode(
+            (string) $this->state->response?->getContent(),
+            true
+        );
+
+        if (!is_array($responseData)) {
+            return '';
+        }
+
+        $secret = $responseData['secret'] ?? '';
+
+        return is_string($secret) ? $secret : '';
     }
 }

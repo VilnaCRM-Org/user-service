@@ -25,19 +25,13 @@ final class CachedUserRepositoryFindByEmailCacheStoreTest extends
         self::assertSame($user, $this->repository->findByEmail($email));
     }
 
-    public function testFindByEmailCacheMissStoresNegativeLookupWithoutSecondQuery(): void
+    public function testFindByEmailCacheMissSkipsNegativeCacheWrite(): void
     {
         $email = $this->faker->email();
-        $hash = $this->faker->sha256();
-        $cacheKey = 'user.email.' . $hash;
+        $cacheKey = 'user.email.' . $this->faker->sha256();
         $item = $this->createMock(ItemInterface::class);
 
         $this->expectBuildUserEmailKey($email, $cacheKey);
-        $this->cacheKeyBuilder
-            ->expects($this->once())
-            ->method('hashEmail')
-            ->with($email)
-            ->willReturn($hash);
         $this->innerRepository
             ->expects($this->once())
             ->method('findByEmail')
@@ -45,9 +39,28 @@ final class CachedUserRepositoryFindByEmailCacheStoreTest extends
             ->willReturn(null);
         $this->documentManager->expects($this->never())->method('contains');
         $this->expectCacheMissLog($cacheKey);
-        $this->expectCacheStore($item, $cacheKey, $hash);
+        $this->expectSkippedNegativeCacheStore($item, $cacheKey);
 
         self::assertNull($this->repository->findByEmail($email));
+    }
+
+    public function testFindByEmailFallsBackToDatabaseWhenCacheContainsStaleNegativeLookup(): void
+    {
+        $email = $this->faker->email();
+        $cacheKey = 'user.email.' . $this->faker->sha256();
+        $user = $this->createUserMock($this->faker->uuid(), $email);
+
+        $this->expectBuildUserEmailKey($email, $cacheKey);
+        $this->expectCacheGet($cacheKey, null);
+        $this->expectCacheDelete($cacheKey);
+        $this->innerRepository
+            ->expects($this->once())
+            ->method('findByEmail')
+            ->with($email)
+            ->willReturn($user);
+        $this->documentManager->expects($this->never())->method('contains');
+
+        self::assertSame($user, $this->repository->findByEmail($email));
     }
 
     private function expectCacheMissDependencies(string $email, string $hash, object $user): void
@@ -95,7 +108,35 @@ final class CachedUserRepositoryFindByEmailCacheStoreTest extends
                 self::assertSame($cacheKey, $actualCacheKey);
                 self::assertNull($beta);
 
-                return $callback($item);
+                $save = true;
+                $result = $callback($item, $save);
+
+                self::assertTrue($save);
+
+                return $result;
+            }
+        );
+    }
+
+    private function expectSkippedNegativeCacheStore(ItemInterface $item, string $cacheKey): void
+    {
+        $item->expects($this->never())->method('expiresAfter');
+        $item->expects($this->never())->method('tag');
+        $this->cache->expectGet(
+            static function (
+                string $actualCacheKey,
+                callable $callback,
+                ?float $beta
+            ) use ($cacheKey, $item) {
+                self::assertSame($cacheKey, $actualCacheKey);
+                self::assertNull($beta);
+
+                $save = true;
+                $result = $callback($item, $save);
+
+                self::assertFalse($save);
+
+                return $result;
             }
         );
     }

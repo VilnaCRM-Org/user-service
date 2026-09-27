@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
-use App\User\Application\Factory\SignUpCommandFactoryInterface;
+use App\User\Application\Processor\RegisterUserCommandDispatcher;
 use App\User\Application\Transformer\CreateUserMutationInputTransformer;
 use App\User\Application\Validator\MutationInputValidator;
 
@@ -14,10 +13,9 @@ final readonly class RegisterUserMutationResolver implements
     MutationResolverInterface
 {
     public function __construct(
-        private CommandBusInterface $commandBus,
         private MutationInputValidator $validator,
         private CreateUserMutationInputTransformer $transformer,
-        private SignUpCommandFactoryInterface $signUpCommandFactory
+        private RegisterUserCommandDispatcher $commandDispatcher
     ) {
     }
 
@@ -30,16 +28,17 @@ final readonly class RegisterUserMutationResolver implements
     public function __invoke(?object $item, array $context): ?object
     {
         $args = $context['args']['input'];
+        $input = $this->transformer->transform($args);
 
-        $this->validator->validate($this->transformer->transform($args));
+        $this->validator->validate($input);
 
-        $command = $this->signUpCommandFactory->create(
-            $args['email'],
-            $args['initials'],
-            $args['password']
-        );
-        $this->commandBus->dispatch($command);
+        /** @var string $email */
+        $email = $input->email;
+        /** @var string $initials */
+        $initials = $input->initials;
+        /** @var string $password */
+        $password = $input->password;
 
-        return $command->getResponse()->createdUser;
+        return $this->commandDispatcher->dispatch($email, $initials, $password);
     }
 }

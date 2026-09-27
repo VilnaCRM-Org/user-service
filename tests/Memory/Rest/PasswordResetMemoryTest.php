@@ -34,7 +34,7 @@ final class PasswordResetMemoryTest extends RestMemoryWebTestCase
                 'POST',
                 '/api/reset-password/confirm',
                 [
-                    'token' => $token->getTokenValue(),
+                    'token' => $token->getPlainToken() ?? $token->getTokenValue(),
                     'newPassword' => $password,
                 ]
             );

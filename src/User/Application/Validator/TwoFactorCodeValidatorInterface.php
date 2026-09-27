@@ -13,6 +13,14 @@ interface TwoFactorCodeValidatorInterface
 
     public function verifyAndConsumeOrFail(User $user, string $code): void;
 
+    /**
+     * Verifies a TOTP code for the one-time 2FA setup-confirmation flow without
+     * advancing the sign-in replay counter. Setup confirmation does not issue
+     * sessions, so it must not consume the time-step that the immediately
+     * following sign-in completion (within the same 30s window) relies on.
+     */
+    public function verifyTotpForSetupOrFail(User $user, string $code): void;
+
     public function consumeRecoveryCodeOrFail(User $user, string $code): void;
 
     /**

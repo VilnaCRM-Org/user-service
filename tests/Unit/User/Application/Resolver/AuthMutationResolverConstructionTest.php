@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
+use App\Shared\Application\Bus\Guard\CommandResponseTypeGuard;
 use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Application\Factory\AuthPayloadFactory;
@@ -28,6 +29,9 @@ use App\User\Application\Resolver\SetupTwoFactorAuthMutationResolver;
 use App\User\Application\Resolver\SignInAuthMutationResolver;
 use App\User\Application\Resolver\SignOutAllAuthMutationResolver;
 use App\User\Application\Resolver\SignOutAuthMutationResolver;
+use App\User\Application\Service\CompleteTwoFactorCommandDispatcher;
+use App\User\Application\Service\ConfirmTwoFactorCommandDispatcher;
+use App\User\Application\Service\SignInCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -69,10 +73,8 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new SignInAuthMutationResolver(
             $this->createValidator(),
-            $this->createCommandBus(),
             $this->createAuthPayloadFactory(),
-            $this->createMock(SignInCommandFactoryInterface::class),
-            $this->createMock(HttpRequestContextResolverInterface::class)
+            $this->createSignInCommandDispatcher()
         );
     }
 
@@ -80,10 +82,8 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new CompleteTwoFactorAuthMutationResolver(
             $this->createValidator(),
-            $this->createCommandBus(),
             $this->createAuthPayloadFactory(),
-            $this->createMock(CompleteTwoFactorCommandFactoryInterface::class),
-            $this->createMock(HttpRequestContextResolverInterface::class)
+            $this->createCompleteTwoFactorCommandDispatcher()
         );
     }
 
@@ -91,10 +91,8 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new ConfirmTwoFactorAuthMutationResolver(
             $this->createValidator(),
-            $this->createCommandBus(),
             $this->createAuthPayloadFactory(),
-            $this->createCurrentUserIdentityResolver(),
-            $this->createMock(ConfirmTwoFactorCommandFactoryInterface::class)
+            $this->createConfirmTwoFactorCommandDispatcher()
         );
     }
 
@@ -114,6 +112,7 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
         return new RefreshTokenAuthMutationResolver(
             $this->createValidator(),
             $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
             $this->createAuthPayloadFactory(),
             $this->createMock(RefreshTokenCommandFactoryInterface::class)
         );
@@ -123,6 +122,7 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new RegenerateRecoveryCodesAuthMutationResolver(
             $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
             $this->createAuthPayloadFactory(),
             $this->createCurrentUserIdentityResolver(),
             $this->createMock(RegenerateRecoveryCodesCommandFactoryInterface::class)
@@ -133,6 +133,7 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     {
         return new SetupTwoFactorAuthMutationResolver(
             $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
             $this->createAuthPayloadFactory(),
             $this->createCurrentUserIdentityResolver(),
             $this->createMock(SetupTwoFactorCommandFactoryInterface::class)
@@ -162,6 +163,41 @@ final class AuthMutationResolverConstructionTest extends UnitTestCase
     private function createCommandBus(): CommandBusInterface
     {
         return $this->createMock(CommandBusInterface::class);
+    }
+
+    private function createCommandResponseTypeGuard(): CommandResponseTypeGuard
+    {
+        return new CommandResponseTypeGuard();
+    }
+
+    private function createSignInCommandDispatcher(): SignInCommandDispatcher
+    {
+        return new SignInCommandDispatcher(
+            $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
+            $this->createMock(SignInCommandFactoryInterface::class),
+            $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createCompleteTwoFactorCommandDispatcher(): CompleteTwoFactorCommandDispatcher
+    {
+        return new CompleteTwoFactorCommandDispatcher(
+            $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
+            $this->createMock(CompleteTwoFactorCommandFactoryInterface::class),
+            $this->createMock(HttpRequestContextResolverInterface::class)
+        );
+    }
+
+    private function createConfirmTwoFactorCommandDispatcher(): ConfirmTwoFactorCommandDispatcher
+    {
+        return new ConfirmTwoFactorCommandDispatcher(
+            $this->createCommandBus(),
+            $this->createCommandResponseTypeGuard(),
+            $this->createCurrentUserIdentityResolver(),
+            $this->createMock(ConfirmTwoFactorCommandFactoryInterface::class)
+        );
     }
 
     private function createAuthPayloadFactory(): AuthPayloadFactory

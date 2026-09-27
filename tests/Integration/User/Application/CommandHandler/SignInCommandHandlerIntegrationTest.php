@@ -9,6 +9,7 @@ use App\Tests\Integration\JwtPayloadDecoder;
 use App\Tests\Integration\User\UserIntegrationTestCase;
 use App\User\Application\Command\SignInCommand;
 use App\User\Application\CommandHandler\SignInCommandHandler;
+use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\Factory\IdFactoryInterface;
 use App\User\Application\Factory\IssuedSessionFactoryInterface;
 use App\User\Application\Validator\UserCredentialValidatorInterface;
@@ -74,12 +75,11 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
             $ipAddress,
             $userAgent
         );
-        $this->createSignInHandler()->__invoke($command);
-        $response = $command->getResponse();
+        $response = $this->createSignInHandler()->__invoke($command);
         $this->assertFalse($response->isTwoFactorEnabled());
         $this->assertNotEmpty($response->getAccessToken());
         $this->assertNotEmpty($response->getRefreshToken());
-        $this->assertSessionAndTokenPersistence($command, $user, $ipAddress, $userAgent);
+        $this->assertSessionAndTokenPersistence($response, $user, $ipAddress, $userAgent);
     }
 
     private function createAndSaveUser(string $plainPassword): User
@@ -108,12 +108,11 @@ final class SignInCommandHandlerIntegrationTest extends UserIntegrationTestCase
     }
 
     private function assertSessionAndTokenPersistence(
-        SignInCommand $command,
+        SignInCommandResponse $response,
         User $user,
         string $ipAddress,
         string $userAgent
     ): void {
-        $response = $command->getResponse();
         $payload = JwtPayloadDecoder::decode($response->getAccessToken());
         $this->assertSame($user->getId(), $payload['sub'] ?? null);
         $sessionId = (string) ($payload['sid'] ?? '');

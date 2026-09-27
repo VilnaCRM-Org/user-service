@@ -8,6 +8,12 @@ interface PasswordResetTokenInterface
 {
     public function getTokenValue(): string;
 
+    public function getPlainToken(): ?string;
+
+    public function attachPlainToken(string $plainToken): void;
+
+    public function matchesToken(string $plainToken): bool;
+
     public function getUserID(): string;
 
     public function getExpiresAt(): \DateTimeImmutable;

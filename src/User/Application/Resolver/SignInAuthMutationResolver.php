@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace App\User\Application\Resolver;
 
 use ApiPlatform\GraphQl\Resolver\MutationResolverInterface;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInDto;
 use App\User\Application\Factory\AuthPayloadFactory;
-use App\User\Application\Factory\SignInCommandFactoryInterface;
+use App\User\Application\Service\SignInCommandDispatcher;
 use App\User\Application\Validator\MutationInputValidator;
 
 final readonly class SignInAuthMutationResolver implements MutationResolverInterface
 {
     public function __construct(
         private MutationInputValidator $validator,
-        private CommandBusInterface $commandBus,
         private AuthPayloadFactory $authPayloadFactory,
-        private SignInCommandFactoryInterface $signInCommandFactory,
-        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private SignInCommandDispatcher $signInCommandDispatcher,
     ) {
     }
 
@@ -37,19 +34,10 @@ final readonly class SignInAuthMutationResolver implements MutationResolverInter
         $dto->setRememberMe((bool) ($args['rememberMe'] ?? false));
         $this->validator->validate($dto);
 
-        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
-        $command = $this->signInCommandFactory->create(
-            $dto->emailValue(),
-            $dto->passwordValue(),
-            $dto->isRememberMe(),
-            $this->httpRequestContextResolver->resolveIpAddress($request),
-            $this->httpRequestContextResolver->resolveUserAgent($request)
-        );
-
-        $this->commandBus->dispatch($command);
+        $response = $this->signInCommandDispatcher->dispatch($dto, $context);
 
         return $this->authPayloadFactory->createFromSignInResponse(
-            $command->getResponse()
+            $response
         );
     }
 }

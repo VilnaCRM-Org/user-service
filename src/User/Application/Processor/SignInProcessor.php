@@ -6,12 +6,10 @@ namespace App\User\Application\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Shared\Domain\Bus\Command\CommandBusInterface;
 use App\User\Application\DTO\SignInCommandResponse;
 use App\User\Application\DTO\SignInDto;
 use App\User\Application\Factory\AuthCookieFactoryInterface;
-use App\User\Application\Factory\SignInCommandFactoryInterface;
-use App\User\Application\Resolver\HttpRequestContextResolverInterface;
+use App\User\Application\Service\SignInCommandDispatcher;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,9 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class SignInProcessor implements ProcessorInterface
 {
     public function __construct(
-        private CommandBusInterface $commandBus,
-        private SignInCommandFactoryInterface $signInCommandFactory,
-        private HttpRequestContextResolverInterface $httpRequestContextResolver,
+        private SignInCommandDispatcher $signInCommandDispatcher,
         private AuthCookieFactoryInterface $authCookieFactory,
     ) {
     }
@@ -42,18 +38,10 @@ final readonly class SignInProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = []
     ): Response {
-        $request = $this->httpRequestContextResolver->resolveRequest($context['request'] ?? null);
-
-        $command = $this->signInCommandFactory->create(
-            $data->emailValue(),
-            $data->passwordValue(),
-            $data->isRememberMe(),
-            $this->httpRequestContextResolver->resolveIpAddress($request),
-            $this->httpRequestContextResolver->resolveUserAgent($request)
+        $commandResponse = $this->signInCommandDispatcher->dispatch(
+            $data,
+            $context
         );
-
-        $this->commandBus->dispatch($command);
-        $commandResponse = $command->getResponse();
 
         $response = new JsonResponse($this->buildResponseBody($commandResponse));
 

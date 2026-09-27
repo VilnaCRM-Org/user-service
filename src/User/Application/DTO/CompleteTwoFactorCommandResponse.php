@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\User\Application\DTO;
 
-final class CompleteTwoFactorCommandResponse
+use App\Shared\Domain\Bus\Command\CommandResponseInterface;
+
+final class CompleteTwoFactorCommandResponse implements CommandResponseInterface
 {
     private bool $rememberMe = false;
 

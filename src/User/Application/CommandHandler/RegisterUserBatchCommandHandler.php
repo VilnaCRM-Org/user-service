@@ -23,31 +23,28 @@ final readonly class RegisterUserBatchCommandHandler implements
     ) {
     }
 
-    public function __invoke(RegisterUserBatchCommand $command): void
-    {
-        if ($command->users->count() === 0) {
-            $command->setResponse(new RegisterUserBatchCommandResponse(
-                new UserCollection()
-            ));
-
-            return;
+    public function __invoke(
+        RegisterUserBatchCommand $command
+    ): RegisterUserBatchCommandResponse {
+        if ($command->users->isEmpty()) {
+            return new RegisterUserBatchCommandResponse(new UserCollection());
         }
 
         $knownUsers = $this->userRepository->findByEmails(
-            $this->emailsFromCommand($command)
+            $command->users->emails()
         );
         $registrationResult = $this->batchUserRegistrationFactory->create(
-            $command,
+            $command->users,
             $knownUsers
         );
 
         $this->persistUsersIfNeeded($registrationResult->usersToPersist);
 
-        $command->setResponse(new RegisterUserBatchCommandResponse(
-            $registrationResult->returnedUsers
-        ));
-
         $this->publishEventsIfNeeded($registrationResult->events);
+
+        return new RegisterUserBatchCommandResponse(
+            $registrationResult->returnedUsers
+        );
     }
 
     private function persistUsersIfNeeded(UserCollection $users): void
@@ -66,19 +63,5 @@ final readonly class RegisterUserBatchCommandHandler implements
         }
 
         $this->eventBus->publish(...$events);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function emailsFromCommand(RegisterUserBatchCommand $command): array
-    {
-        $emails = [];
-
-        foreach ($command->users as $user) {
-            $emails[] = $user['email'];
-        }
-
-        return $emails;
     }
 }

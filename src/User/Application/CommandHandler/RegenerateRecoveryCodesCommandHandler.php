@@ -9,13 +9,12 @@ use App\Shared\Domain\Bus\Command\CommandHandlerInterface;
 use App\User\Application\Command\RegenerateRecoveryCodesCommand;
 use App\User\Application\DTO\RegenerateRecoveryCodesCommandResponse;
 use App\User\Application\Factory\RecoveryCodeBatchFactoryInterface;
+use App\User\Application\Resolver\AuthenticatedUserResolver;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Repository\AuthSessionRepositoryInterface;
 use App\User\Domain\Repository\RecoveryCodeRepositoryInterface;
-use App\User\Domain\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
  * @psalm-api
@@ -25,7 +24,7 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
     private const SUDO_MODE_TTL_SECONDS = 300;
 
     public function __construct(
-        private UserRepositoryInterface $userRepository,
+        private AuthenticatedUserResolver $authenticatedUserResolver,
         private RecoveryCodeRepositoryInterface $recoveryCodeRepository,
         private AuthSessionRepositoryInterface $authSessionRepository,
         private RecoveryCodeBatchFactoryInterface $recoveryCodeBatchFactory,
@@ -33,23 +32,21 @@ final readonly class RegenerateRecoveryCodesCommandHandler implements CommandHan
     ) {
     }
 
-    public function __invoke(RegenerateRecoveryCodesCommand $command): void
-    {
+    public function __invoke(
+        RegenerateRecoveryCodesCommand $command
+    ): RegenerateRecoveryCodesCommandResponse {
         $user = $this->resolveUser($command->userEmail);
         $this->verifySudoMode($command->currentSessionId);
 
         $this->recoveryCodeRepository->deleteByUserId($user->getId());
         $codes = $this->recoveryCodeBatchFactory->create($user);
 
-        $command->setResponse(new RegenerateRecoveryCodesCommandResponse($codes));
+        return new RegenerateRecoveryCodesCommandResponse($codes);
     }
 
     private function resolveUser(string $email): User
     {
-        $user = $this->userRepository->findByEmail($email);
-        if (!$user instanceof User) {
-            throw new UnauthorizedHttpException('Bearer', 'Authentication required.');
-        }
+        $user = $this->authenticatedUserResolver->resolve($email);
 
         if (!$user->isTwoFactorEnabled()) {
             throw new AccessDeniedHttpException('Two-factor authentication is not enabled.');

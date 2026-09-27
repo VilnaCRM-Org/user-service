@@ -9,9 +9,11 @@ use DateTimeImmutable;
 final class PendingTwoFactor
 {
     public const DEFAULT_TTL_MINUTES = 5;
+    public const MAX_FAILED_ATTEMPTS = 5;
 
     private DateTimeImmutable $expiresAt;
     private bool $rememberMe = false;
+    private int $failedAttempts = 0;
 
     public function __construct(
         private string $id,
@@ -54,6 +56,29 @@ final class PendingTwoFactor
     public function isRememberMe(): bool
     {
         return $this->rememberMe;
+    }
+
+    public function getFailedAttempts(): int
+    {
+        return $this->failedAttempts;
+    }
+
+    /**
+     * @internal For Doctrine ODM hydration and test fixtures only.
+     */
+    public function setFailedAttempts(int $failedAttempts): void
+    {
+        $this->failedAttempts = max(0, $failedAttempts);
+    }
+
+    public function recordFailedAttempt(): void
+    {
+        ++$this->failedAttempts;
+    }
+
+    public function hasExhaustedAttempts(): bool
+    {
+        return $this->failedAttempts >= self::MAX_FAILED_ATTEMPTS;
     }
 
     public function isExpired(?DateTimeImmutable $currentTime = null): bool

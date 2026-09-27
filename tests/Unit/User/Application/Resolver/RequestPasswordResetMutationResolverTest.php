@@ -62,11 +62,9 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
         $this->commandBus->expects($this->once())
             ->method('dispatch')
             ->with($this->callback(static function (RequestPasswordResetCommand $command) {
-                $response = new RequestPasswordResetCommandResponse();
-                $command->setResponse($response);
-
-                return true;
-            }));
+                return $command->email === '';
+            }))
+            ->willReturn(new RequestPasswordResetCommandResponse());
 
         $result = $this->resolver->__invoke(null, $context);
 
@@ -96,10 +94,8 @@ final class RequestPasswordResetMutationResolverTest extends UnitTestCase
             ->with($this->callback(function (RequestPasswordResetCommand $command) use ($email) {
                 $this->assertSame($email, $command->email);
 
-                $response = new RequestPasswordResetCommandResponse();
-                $command->setResponse($response);
-
                 return true;
-            }));
+            }))
+            ->willReturn(new RequestPasswordResetCommandResponse());
     }
 }
