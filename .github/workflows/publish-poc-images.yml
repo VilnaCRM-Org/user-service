@@ -1,0 +1,259 @@
+name: Publish TEST PoC images
+
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: Authenticated registry receipt binding from the service controller
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: user-service-test-publisher
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate application release
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.triggering_actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      job_id: ${{ steps.identity.outputs.job_id }}
+    steps:
+      - name: Check out reviewed application source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate closed dispatch request
+        env:
+          POC_REQUEST: ${{ inputs.request }}
+        run: python3 scripts/poc_image_publisher.py validate --output "$RUNNER_TEMP/poc-request.json"
+      - name: Start application test dependencies
+        run: make start
+      - name: Run complete application quality gate
+        run: make ci
+      - name: Test publisher evidence generator
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/CLI/poc_publisher -p 'test_*.py'
+      - name: Reject quality checks that rewrote reviewed source
+        run: git diff --exit-code
+      - name: Record quality job identity
+        id: identity
+        env:
+          CHECK_RUN_ID: ${{ job.check_run_id }}
+        run: |
+          [[ "$CHECK_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          printf 'job_id=%s\n' "$CHECK_RUN_ID" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build application images
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.triggering_actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      job_id: ${{ steps.identity.outputs.job_id }}
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      archive_sha256: ${{ steps.upload.outputs.artifact-digest }}
+      file_sha256: ${{ steps.bundle.outputs.file_sha256 }}
+    steps:
+      - name: Check out reviewed application source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate closed dispatch request
+        env:
+          POC_REQUEST: ${{ inputs.request }}
+        run: python3 scripts/poc_image_publisher.py validate --output "$RUNNER_TEMP/poc-request.json"
+      - name: Build fixed AMD64 web and worker targets
+        run: |
+          docker build --platform linux/amd64 --provenance=false --sbom=false \
+            --target frankenphp_prod \
+            --tag "user-service-poc-web:${GITHUB_SHA}" --file Dockerfile .
+          docker build --platform linux/amd64 --provenance=false --sbom=false \
+            --target app_workers \
+            --tag "user-service-poc-worker:${GITHUB_SHA}" --file Dockerfile .
+      - name: Package the reviewed images
+        id: bundle
+        run: |
+          docker save --output images.tar \
+            "user-service-poc-web:${GITHUB_SHA}" \
+            "user-service-poc-worker:${GITHUB_SHA}"
+          printf 'file_sha256=%s\n' "$(sha256sum images.tar | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - name: Upload the immutable build transfer
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-image-build-${{ github.run_id }}-1
+          path: images.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+      - name: Record build job identity
+        id: identity
+        env:
+          CHECK_RUN_ID: ${{ job.check_run_id }}
+        run: |
+          [[ "$CHECK_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          printf 'job_id=%s\n' "$CHECK_RUN_ID" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish TEST application images
+    needs: [validate, build]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.triggering_actor == 'vilnacrm-user-service-evidence[bot]' &&
+      github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: poc-test-images
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out reviewed application source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate closed dispatch request before AWS credentials
+        env:
+          POC_REQUEST: ${{ inputs.request }}
+        run: python3 scripts/poc_image_publisher.py validate --output "$RUNNER_TEMP/poc-request.json"
+      - name: Download the exact build artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact_id }}
+          path: .
+      - name: Verify and load the transferred images
+        env:
+          EXPECTED_SHA256: ${{ needs.build.outputs.file_sha256 }}
+        run: |
+          [[ "$EXPECTED_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          test "$(sha256sum images.tar | cut -d ' ' -f 1)" = "$EXPECTED_SHA256"
+          docker load --input images.tar
+          docker image inspect "user-service-poc-web:${GITHUB_SHA}" >/dev/null
+          docker image inspect "user-service-poc-worker:${GITHUB_SHA}" >/dev/null
+      - name: Assume the dedicated TEST publisher role with GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+        with:
+          aws-region: eu-central-1
+          role-to-assume: arn:aws:iam::891377212104:role/user-service-test-ImagePublisher
+          role-session-name: user-service-poc-${{ github.run_id }}
+          allowed-account-ids: '891377212104'
+          unset-current-credentials: true
+      - name: Log in to TEST ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd
+        with:
+          mask-password: true
+      - name: Push fixed TEST repositories and read immutable digests
+        id: images
+        env:
+          OBSERVED_REGISTRY: ${{ steps.ecr.outputs.registry }}
+        run: |
+          registry='891377212104.dkr.ecr.eu-central-1.amazonaws.com'
+          test "$OBSERVED_REGISTRY" = "$registry"
+          tag="poc-${GITHUB_SHA}-${GITHUB_RUN_ID}"
+          docker tag "user-service-poc-web:${GITHUB_SHA}" \
+            "$registry/user-service-test-web:$tag"
+          docker tag "user-service-poc-worker:${GITHUB_SHA}" \
+            "$registry/user-service-test-worker:$tag"
+          docker push "$registry/user-service-test-web:$tag"
+          docker push "$registry/user-service-test-worker:$tag"
+          web_digest="$(aws ecr describe-images --region eu-central-1 \
+            --registry-id 891377212104 --repository-name user-service-test-web \
+            --image-ids "imageTag=$tag" --query 'imageDetails[0].imageDigest' \
+            --output text)"
+          worker_digest="$(aws ecr describe-images --region eu-central-1 \
+            --registry-id 891377212104 --repository-name user-service-test-worker \
+            --image-ids "imageTag=$tag" --query 'imageDetails[0].imageDigest' \
+            --output text)"
+          [[ "$web_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$worker_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          {
+            printf 'web_digest=%s\n' "$web_digest"
+            printf 'worker_digest=%s\n' "$worker_digest"
+          } >> "$GITHUB_OUTPUT"
+      - name: Create quality evidence
+        id: quality_file
+        env:
+          QUALITY_JOB_ID: ${{ needs.validate.outputs.job_id }}
+        run: |
+          python3 scripts/poc_image_publisher.py quality \
+            --request-file "$RUNNER_TEMP/poc-request.json" \
+            --job-id "$QUALITY_JOB_ID" --output evidence/quality.json
+          printf 'sha256=%s\n' "$(sha256sum evidence/quality.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - name: Upload quality evidence
+        id: quality_artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-quality-evidence-${{ github.run_id }}-1
+          path: evidence/quality.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Create build provenance
+        id: provenance_file
+        env:
+          BUILD_JOB_ID: ${{ needs.build.outputs.job_id }}
+          BUILD_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+          BUILD_ARCHIVE_SHA256: ${{ needs.build.outputs.archive_sha256 }}
+          BUILD_FILE_SHA256: ${{ needs.build.outputs.file_sha256 }}
+          WEB_DIGEST: ${{ steps.images.outputs.web_digest }}
+          WORKER_DIGEST: ${{ steps.images.outputs.worker_digest }}
+        run: |
+          python3 scripts/poc_image_publisher.py provenance \
+            --request-file "$RUNNER_TEMP/poc-request.json" \
+            --job-id "$BUILD_JOB_ID" \
+            --build-artifact-id "$BUILD_ARTIFACT_ID" \
+            --build-archive-sha256 "$BUILD_ARCHIVE_SHA256" \
+            --build-file-sha256 "$BUILD_FILE_SHA256" \
+            --web-digest "$WEB_DIGEST" --worker-digest "$WORKER_DIGEST" \
+            --output evidence/provenance.json
+          printf 'sha256=%s\n' "$(sha256sum evidence/provenance.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - name: Upload build provenance
+        id: provenance_artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-build-provenance-${{ github.run_id }}-1
+          path: evidence/provenance.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Create immutable release manifest
+        env:
+          QUALITY_ARTIFACT_ID: ${{ steps.quality_artifact.outputs.artifact-id }}
+          QUALITY_ARCHIVE_SHA256: ${{ steps.quality_artifact.outputs.artifact-digest }}
+          QUALITY_FILE_SHA256: ${{ steps.quality_file.outputs.sha256 }}
+          PROVENANCE_ARTIFACT_ID: ${{ steps.provenance_artifact.outputs.artifact-id }}
+          PROVENANCE_ARCHIVE_SHA256: ${{ steps.provenance_artifact.outputs.artifact-digest }}
+          PROVENANCE_FILE_SHA256: ${{ steps.provenance_file.outputs.sha256 }}
+          WEB_DIGEST: ${{ steps.images.outputs.web_digest }}
+          WORKER_DIGEST: ${{ steps.images.outputs.worker_digest }}
+        run: |
+          python3 scripts/poc_image_publisher.py release \
+            --request-file "$RUNNER_TEMP/poc-request.json" \
+            --quality-artifact-id "$QUALITY_ARTIFACT_ID" \
+            --quality-archive-sha256 "$QUALITY_ARCHIVE_SHA256" \
+            --quality-file-sha256 "$QUALITY_FILE_SHA256" \
+            --provenance-artifact-id "$PROVENANCE_ARTIFACT_ID" \
+            --provenance-archive-sha256 "$PROVENANCE_ARCHIVE_SHA256" \
+            --provenance-file-sha256 "$PROVENANCE_FILE_SHA256" \
+            --web-digest "$WEB_DIGEST" --worker-digest "$WORKER_DIGEST" \
+            --output evidence/release-manifest.json
+      - name: Upload immutable release manifest
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: poc-release-manifest-${{ github.run_id }}-1
+          path: evidence/release-manifest.json
+          if-no-files-found: error
+          retention-days: 30
