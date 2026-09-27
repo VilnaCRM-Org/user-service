@@ -1,1 +1,3 @@
-* @Dmytrocraft @Kravalg
+/.github/CODEOWNERS @Kravalg @dmytrocraft
+/.github/workflows/publish-poc-images.yml @Kravalg @dmytrocraft
+/scripts/poc_image_publisher.py @Kravalg @dmytrocraft
