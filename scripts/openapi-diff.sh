@@ -20,8 +20,10 @@ if ! git show "$BASE_REF:.github/openapi-spec/spec.yaml" > "$BASE_SPEC" 2>/dev/n
 fi
 
 docker run --rm \
-  -v "$HEAD_SPEC:/workspace/head.yaml" \
   -v "$BASE_SPEC:/workspace/base.yaml" \
+  -v "$HEAD_SPEC:/workspace/head.yaml" \
   openapitools/openapi-diff:latest \
+  --fail-on-incompatible \
   /workspace/base.yaml \
   /workspace/head.yaml
+
