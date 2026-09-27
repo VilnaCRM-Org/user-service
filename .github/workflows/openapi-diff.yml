@@ -43,13 +43,15 @@ jobs:
 
       - name: Generate openapi spec
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+        run: |
+          php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml
+          npx --yes prettier@3.5.3 --write --ignore-path /dev/null .github/openapi-spec/spec.yaml
 
       - name: Verify OpenAPI spec is up-to-date
         if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: |
           git diff --exit-code .github/openapi-spec/spec.yaml || {
-            echo "::error::OpenAPI specification is out of date. Run 'make generate-openapi-spec' and commit the resulting .github/openapi-spec/spec.yaml."
+            echo "::error::OpenAPI specification is out of date. Run 'make generate-openapi-spec' (or 'php bin/console --env=test api:openapi:export --yaml --output=.github/openapi-spec/spec.yaml && npx prettier@3.5.3 --write --ignore-path /dev/null .github/openapi-spec/spec.yaml') and commit the resulting .github/openapi-spec/spec.yaml."
             exit 1
           }
 
