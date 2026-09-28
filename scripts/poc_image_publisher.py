@@ -1,294 +1,724 @@
 #!/usr/bin/env python3
-"""Build the closed, non-secret TEST image publication evidence documents."""
+"""Trusted TEST publisher; consumes a verified service App dispatch attestation.
+
+The service authenticates registry completion before dispatch and again before
+workload admission. This application does not independently read service artifacts.
+No dispatcher grant or OIDC activation is installed by this source module.
+"""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
+import selectors
+import time
+import stat
+import subprocess
 import sys
+import zipfile
+from dataclasses import asdict
 from pathlib import Path
 
-REPOSITORY = "VilnaCRM-Org/user-service"
-REPOSITORY_ID = "646535009"
-OWNER_ID = "114362548"
-ACTOR = "vilnacrm-user-service-evidence[bot]"
-ACTOR_ID = "325789989"
-WORKFLOW_REF = REPOSITORY + "/.github/workflows/publish-poc-images.yml@refs/heads/main"
-REGISTRY = "891377212104.dkr.ecr.eu-central-1.amazonaws.com"
-REQUEST_KEYS = {
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import poc_release_manifest as codec
+
+API = f"repos/{codec.REPOSITORY}"
+WORKFLOW = ".github/workflows/publish-poc-images.yml"
+APP_ID = 4853984
+APP_SLUG = "vilnacrm-user-service-evidence"
+BOT_ID = 325789989
+JOBS = (
+    "Validate application release",
+    "Build application images",
+    "Publish TEST application images",
+)
+MAX_IMAGE = 3 * 1024**3
+MAX_ARCHIVE = 7 * 1024**3
+MAX_EVENT = 1024 * 1024
+REQUEST_FIELDS = {
     "source_sha",
     "platform",
-    "registry_phase_receipt_id",
-    "registry_contract_digest",
-    "registry_checkpoint_version",
+    *codec.RegistryReleaseBinding.__dataclass_fields__,
 }
 
 
-def require(condition: bool, category: str) -> None:
-    if not condition:
-        raise ValueError(category)
+def require(value, category="publisher-binding"):
+    if not value:
+        raise codec.ReleaseManifestError(category)
 
 
-def _pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
-    value: dict[str, object] = {}
-    for key, item in pairs:
-        require(key not in value, "duplicate-json-key")
-        value[key] = item
-    return value
+def canonical(value):
+    return (
+        json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False) + "\n"
+    ).encode()
 
 
-def _invalid_constant(_value: str) -> None:
-    raise ValueError("non-finite-json")
+def decode(raw):
+    return codec._evidence_document(raw)
 
 
-def _json(raw: str) -> dict[str, object]:
-    require(len(raw.encode("utf-8")) <= 4096, "json-size")
-    value = json.loads(raw, object_pairs_hook=_pairs, parse_constant=_invalid_constant)
-    require(type(value) is dict, "json-object")
-    return value
-
-
-def _hex(raw: str) -> str:
-    require(type(raw) is str, "sha256-type")
-    value = raw.removeprefix("sha256:")
-    require(re.fullmatch(r"[0-9a-f]{64}", value) is not None, "sha256")
-    return value
-
-
-def _positive(raw: str | int) -> int:
-    require(type(raw) in (str, int), "integer-type")
-    value = str(raw)
-    require(re.fullmatch(r"[1-9][0-9]*", value) is not None, "integer")
-    return int(value)
-
-
-def context(environment: dict[str, str]) -> dict[str, object]:
-    required = {
-        "GITHUB_REPOSITORY": REPOSITORY,
-        "GITHUB_REPOSITORY_ID": REPOSITORY_ID,
-        "GITHUB_REPOSITORY_OWNER_ID": OWNER_ID,
-        "GITHUB_EVENT_NAME": "workflow_dispatch",
-        "GITHUB_REF": "refs/heads/main",
-        "GITHUB_REF_PROTECTED": "true",
-        "GITHUB_WORKFLOW_REF": WORKFLOW_REF,
-        "GITHUB_ACTOR": ACTOR,
-        "GITHUB_ACTOR_ID": ACTOR_ID,
-        "GITHUB_TRIGGERING_ACTOR": ACTOR,
-        "GITHUB_RUN_ATTEMPT": "1",
-    }
-    for key, expected in required.items():
-        require(environment.get(key) == expected, "publisher-run-identity")
-    sha = environment.get("GITHUB_SHA", "")
-    require(re.fullmatch(r"[0-9a-f]{40}", sha) is not None, "source-sha")
-    require(environment.get("GITHUB_WORKFLOW_SHA") == sha, "workflow-sha")
-    return {
-        "source_sha": sha,
-        "run_id": _positive(environment.get("GITHUB_RUN_ID", "")),
-    }
-
-
-def request(raw: str, source_sha: str) -> dict[str, object]:
-    value = _json(raw)
-    require(set(value) == REQUEST_KEYS, "request-fields")
-    require(value["source_sha"] == source_sha, "request-source")
-    require(value["platform"] == "linux/amd64", "request-platform")
-    require(
-        type(value["registry_phase_receipt_id"]) is int,
-        "request-receipt-type",
-    )
-    _positive(value["registry_phase_receipt_id"])
-    _hex(value["registry_contract_digest"])
-    version = value["registry_checkpoint_version"]
-    require(
-        type(version) is str
-        and 1 <= len(version) <= 1024
-        and all(32 <= ord(char) != 127 for char in version),
-        "request-checkpoint",
-    )
-    return value
-
-
-def _read_request(path: Path, sha: str) -> dict[str, object]:
-    require(path.is_file() and path.stat().st_size <= 4096, "request-file")
-    return request(path.read_text(encoding="utf-8"), sha)
-
-
-def _write(path: Path, value: dict[str, object]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-    descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-        output.write(raw + "\n")
-
-
-def _common(run: dict[str, object]) -> dict[str, object]:
-    return {
-        "repository": REPOSITORY,
-        "source_sha": run["source_sha"],
-        "publisher_run_id": run["run_id"],
-        "publisher_run_attempt": 1,
-        "workflow_sha": run["source_sha"],
-    }
-
-
-def _artifact(identifier: str, archive: str, file_digest: str) -> dict[str, object]:
-    return {
-        "artifact_id": _positive(identifier),
-        "archive_sha256": _hex(archive),
-        "file_sha256": _hex(file_digest),
-    }
-
-
-def _images(web_digest: str, worker_digest: str) -> dict[str, dict[str, str]]:
-    return {
-        "web": {
-            "repository_uri": REGISTRY + "/user-service-test-web",
-            "target": "frankenphp_prod",
-            "digest": "sha256:" + _hex(web_digest),
-        },
-        "worker": {
-            "repository_uri": REGISTRY + "/user-service-test-worker",
-            "target": "app_workers",
-            "digest": "sha256:" + _hex(worker_digest),
-        },
-    }
-
-
-def quality(run: dict[str, object], job_id: str) -> dict[str, object]:
-    return {
-        **_common(run),
-        "schema_version": "poc-quality-v1",
-        "quality_job_id": _positive(job_id),
-        "command": "make ci",
-        "conclusion": "success",
-    }
-
-
-def provenance(
-    run: dict[str, object],
-    source: dict[str, object],
-    *,
-    job_id: str,
-    build_artifact: dict[str, object],
-    web_digest: str,
-    worker_digest: str,
-) -> dict[str, object]:
-    return {
-        **_common(run),
-        "schema_version": "poc-build-provenance-v1",
-        "platform": "linux/amd64",
-        "build_job_id": _positive(job_id),
-        "build_artifact": build_artifact,
-        "registry": {
-            "registry_phase_receipt_id": source["registry_phase_receipt_id"],
-            "registry_contract_digest": source["registry_contract_digest"],
-            "registry_checkpoint_version": source["registry_checkpoint_version"],
-        },
-        **_images(web_digest, worker_digest),
-    }
-
-
-def release(
-    run: dict[str, object],
-    source: dict[str, object],
-    *,
-    quality_artifact: dict[str, object],
-    provenance_artifact: dict[str, object],
-    web_digest: str,
-    worker_digest: str,
-) -> dict[str, object]:
-    return {
-        "schema_version": "poc-release-v1",
-        "repository": REPOSITORY,
-        "repository_id": int(REPOSITORY_ID),
-        "owner_id": int(OWNER_ID),
-        "source_sha": run["source_sha"],
-        "publisher_run_id": run["run_id"],
-        "publisher_run_attempt": 1,
-        "workflow_ref": WORKFLOW_REF,
-        "platform": "linux/amd64",
-        "runtime_contract_version": "poc-test-v1",
-        "provenance": provenance_artifact,
-        "quality_evidence": quality_artifact,
-        **_images(web_digest, worker_digest),
-        "registry_phase_receipt_id": source["registry_phase_receipt_id"],
-        "registry_contract_digest": source["registry_contract_digest"],
-        "registry_checkpoint_version": source["registry_checkpoint_version"],
-    }
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "mode", choices=("validate", "quality", "provenance", "release")
-    )
-    parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--request-file", type=Path)
-    parser.add_argument("--job-id")
-    parser.add_argument("--build-artifact-id")
-    parser.add_argument("--build-archive-sha256")
-    parser.add_argument("--build-file-sha256")
-    parser.add_argument("--quality-artifact-id")
-    parser.add_argument("--quality-archive-sha256")
-    parser.add_argument("--quality-file-sha256")
-    parser.add_argument("--provenance-artifact-id")
-    parser.add_argument("--provenance-archive-sha256")
-    parser.add_argument("--provenance-file-sha256")
-    parser.add_argument("--web-digest")
-    parser.add_argument("--worker-digest")
-    args = parser.parse_args()
+def event_document(path):
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_EVENT + 1)
+    require(0 < len(raw) <= MAX_EVENT, "dispatch-event")
     try:
-        run = context(dict(os.environ))
-        if args.mode == "validate":
-            value = request(os.environ.get("POC_REQUEST", ""), str(run["source_sha"]))
+        document = json.loads(
+            raw, object_pairs_hook=codec._pairs, parse_constant=codec._nonfinite
+        )
+    except (ValueError, RecursionError):
+        raise codec.ReleaseManifestError("dispatch-event") from None
+    require(type(document) is dict, "dispatch-event")
+    return document
+
+
+def sha(path):
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def environment(kind):
+    result = {
+        "PATH": "/usr/local/bin:/usr/bin:/bin",
+        "HOME": os.environ["HOME"],
+        "LANG": "C.UTF-8",
+    }
+    fields = {
+        "gh": ("GH_TOKEN",),
+        "aws": ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"),
+        "docker": (),
+    }
+    for key in fields[kind]:
+        require(bool(os.environ.get(key)), "credential-missing")
+        result[key] = os.environ[key]
+    if kind == "aws":
+        result.update(
+            AWS_REGION="eu-central-1",
+            AWS_DEFAULT_REGION="eu-central-1",
+            AWS_MAX_ATTEMPTS="1",
+            AWS_PAGER="",
+        )
+    if kind == "gh":
+        result.update(GH_PROMPT_DISABLED="1", GH_PAGER="cat")
+    return result
+
+
+def _drain(process, timeout, output, maximum):
+    result = bytearray()
+    counts = [0, 0]
+    deadline = time.monotonic() + timeout
+    with selectors.DefaultSelector() as selector:
+        selector.register(process.stdout, selectors.EVENT_READ, 0)
+        selector.register(process.stderr, selectors.EVENT_READ, 1)
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            require(remaining > 0, "native-timeout")
+            for key, _ in selector.select(remaining):
+                block = os.read(key.fd, 65536)
+                if not block:
+                    selector.unregister(key.fileobj)
+                    continue
+                counts[key.data] += len(block)
+                require(
+                    counts[key.data] <= (maximum if key.data == 0 else 1024 * 1024),
+                    "native-output",
+                )
+                if key.data == 0:
+                    if output is None:
+                        result.extend(block)
+                    else:
+                        output.write(block)
+        require(
+            process.wait(timeout=max(0.01, deadline - time.monotonic())) == 0,
+            "native-command",
+        )
+    return bytes(result)
+
+
+def run(
+    kind,
+    *arguments,
+    payload=None,
+    output=None,
+    timeout=180,
+    max_output=16 * 1024 * 1024,
+):
+    executable = {
+        "gh": "/usr/bin/gh",
+        "aws": "/usr/local/bin/aws",
+        "docker": "/usr/bin/docker",
+    }[kind]
+    require(0 < max_output <= MAX_ARCHIVE and 0 < timeout <= 2400, "native-bound")
+    process = subprocess.Popen(
+        [executable, *arguments],
+        env=environment(kind),
+        stdin=subprocess.PIPE if payload is not None else subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    try:
+        if payload is not None:
+            require(len(payload) <= 16384, "native-input")
+            process.stdin.write(payload)
+            process.stdin.close()
+        return _drain(process, timeout, output, max_output)
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait()
+        process.stdout.close()
+        process.stderr.close()
+
+
+def gh(path):
+    return json.loads(run("gh", "api", path))
+
+
+def request(raw):
+    document = decode(raw)
+    require(set(document) == REQUEST_FIELDS, "dispatch-fields")
+    require(codec._hex(document["source_sha"], 40), "source-sha")
+    require(document["platform"] == "linux/amd64", "publisher-platform")
+    registry = codec.RegistryReleaseBinding(
+        **{
+            key: document[key]
+            for key in codec.RegistryReleaseBinding.__dataclass_fields__
+        }
+    )
+    registry.validate()
+    return document
+
+
+def actor(value):
+    require(type(value) is dict, "dispatch-actor")
+    require(
+        value.get("id") == BOT_ID
+        and type(value.get("id")) is int
+        and value.get("login") == f"{APP_SLUG}[bot]"
+        and value.get("type") == "Bot",
+        "dispatch-actor",
+    )
+
+
+def admit(*, api=gh, env=None, event=None):
+    env = os.environ if env is None else env
+    require(
+        env.get("GITHUB_REPOSITORY") == codec.REPOSITORY
+        and env.get("GITHUB_REPOSITORY_ID") == "646535009"
+        and env.get("GITHUB_REPOSITORY_OWNER_ID") == "114362548",
+        "repository",
+    )
+    require(
+        env.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+        and env.get("GITHUB_REF") == "refs/heads/main"
+        and env.get("GITHUB_RUN_ATTEMPT") == "1",
+        "workflow",
+    )
+    require(
+        env.get("GITHUB_WORKFLOW_REF") == codec.WORKFLOW_REF
+        and codec._hex(env.get("GITHUB_SHA"), 40),
+        "workflow",
+    )
+    run_id = env.get("GITHUB_RUN_ID", "")
+    require(re.fullmatch(r"[1-9][0-9]*", run_id) is not None, "run-id")
+    native = api(f"{API}/actions/runs/{run_id}")
+    require(
+        native.get("id") == int(run_id)
+        and native.get("run_attempt") == 1
+        and type(native.get("run_attempt")) is int,
+        "run",
+    )
+    require(
+        native.get("head_sha") == env["GITHUB_SHA"]
+        and native.get("head_branch") == "main"
+        and native.get("event") == "workflow_dispatch"
+        and native.get("path") == WORKFLOW,
+        "run",
+    )
+    for key in ("repository", "head_repository"):
+        repository = native.get(key, {})
+        require(
+            repository.get("id") == 646535009
+            and repository.get("full_name") == codec.REPOSITORY
+            and repository.get("owner", {}).get("id") == 114362548,
+            "repository",
+        )
+    actor(native.get("actor"))
+    actor(native.get("triggering_actor"))
+    app = api(f"apps/{APP_SLUG}")
+    require(app.get("id") == APP_ID and app.get("slug") == APP_SLUG, "dispatch-app")
+    actor(api(f"users/{APP_SLUG}[bot]"))
+    event = event_document(Path(env["GITHUB_EVENT_PATH"])) if event is None else event
+    require(
+        type(event.get("inputs")) is dict and set(event["inputs"]) == {"request"},
+        "dispatch-input",
+    )
+    actor(event.get("sender"))
+    value = event["inputs"]["request"]
+    require(type(value) is str, "dispatch-input")
+    document = request(value.encode())
+    require(document["source_sha"] == env["GITHUB_SHA"], "dispatch-source-sha")
+    comparison = api(f"{API}/compare/{document['source_sha']}...main")
+    require(
+        comparison.get("merge_base_commit", {}).get("sha") == document["source_sha"]
+        and comparison.get("status") in ("ahead", "identical"),
+        "reviewed-main-source",
+    )
+    return document, int(run_id), env["GITHUB_SHA"]
+
+
+def jobs(run_id, *, api=gh):
+    result = api(f"{API}/actions/runs/{run_id}/attempts/1/jobs?per_page=100")
+    values = result.get("jobs", [])
+    require(result.get("total_count") == len(values) and len(values) == 3, "jobs")
+    require({value.get("name") for value in values} == set(JOBS), "jobs")
+    indexed = {value["name"]: value for value in values}
+    for name in JOBS[:2]:
+        job = indexed[name]
+        require(
+            job.get("run_id") == run_id
+            and job.get("run_attempt") == 1
+            and job.get("status") == "completed"
+            and job.get("conclusion") == "success"
+            and codec._positive(job.get("id")),
+            "completed-job",
+        )
+    return indexed
+
+
+def protected_environment(*, api=gh):
+    endpoint = f"{API}/environments/{codec.PUBLISHER_ENVIRONMENT}"
+    value = api(endpoint)
+    require(value.get("can_admins_bypass") is False, "environment-bypass")
+    require(
+        value.get("deployment_branch_policy")
+        == {"protected_branches": False, "custom_branch_policies": True},
+        "environment-branches",
+    )
+    policies = api(f"{endpoint}/deployment-branch-policies?per_page=100")
+    branches = policies.get("branch_policies", [])
+    require(
+        policies.get("total_count") == 1
+        and len(branches) == 1
+        and branches[0].get("name") == "main"
+        and branches[0].get("type") == "branch",
+        "environment-branches",
+    )
+    user = api("users/Kravalg")
+    require(
+        user.get("login") == "Kravalg"
+        and user.get("type") == "User"
+        and codec._positive(user.get("id"))
+        and user["id"] != BOT_ID,
+        "environment-reviewer",
+    )
+    reviews = [
+        rule
+        for rule in value.get("protection_rules", [])
+        if rule.get("type") == "required_reviewers"
+    ]
+    require(
+        len(reviews) == 1 and reviews[0].get("prevent_self_review") is True,
+        "environment-reviewer",
+    )
+    reviewers = reviews[0].get("reviewers", [])
+    require(
+        len(reviewers) == 1
+        and reviewers[0].get("type") == "User"
+        and reviewers[0].get("reviewer", {}).get("id") == user["id"],
+        "environment-reviewer",
+    )
+
+
+def artifact(run_id, name, *, api=gh, maximum=codec.MAX_MANIFEST_BYTES + 4096):
+    response = api(f"{API}/actions/runs/{run_id}/artifacts?per_page=100")
+    values = response.get("artifacts", [])
+    require(
+        response.get("total_count") == len(values) and len(values) <= 20, "artifacts"
+    )
+    matches = [value for value in values if value.get("name") == name]
+    require(len(matches) == 1, "artifact-name")
+    value = matches[0]
+    require(
+        codec._positive(value.get("id"))
+        and value.get("expired") is False
+        and type(value.get("size_in_bytes")) is int
+        and 0 < value["size_in_bytes"] <= maximum,
+        "artifact",
+    )
+    require(
+        re.fullmatch(r"sha256:[0-9a-f]{64}", value.get("digest", "")) is not None,
+        "artifact-digest",
+    )
+    origin = value.get("workflow_run", {})
+    require(
+        origin.get("id") == run_id
+        and origin.get("repository_id") == 646535009
+        and origin.get("head_repository_id") == 646535009
+        and origin.get("head_sha") == os.environ["GITHUB_SHA"],
+        "artifact-run",
+    )
+    return value
+
+
+def download(value, path):
+    with path.open("xb") as stream:
+        run(
+            "gh",
+            "api",
+            f"{API}/actions/artifacts/{value['id']}/zip",
+            output=stream,
+            timeout=900,
+            max_output=value["size_in_bytes"],
+        )
+    require(
+        path.stat().st_size == value["size_in_bytes"]
+        and sha(path) == value["digest"].removeprefix("sha256:"),
+        "artifact-bytes",
+    )
+
+
+def metadata(document, run_id, image_paths):
+    images = {}
+    for kind, target in codec.TARGETS.items():
+        path = image_paths[kind]
+        require(0 < path.stat().st_size <= MAX_IMAGE, "image-size")
+        images[kind] = {
+            "target": target,
+            "archive_sha256": sha(path),
+            "archive_bytes": path.stat().st_size,
+        }
+    return {
+        "schema_version": "poc-image-build-v1",
+        "source_sha": document["source_sha"],
+        "publisher_run_id": run_id,
+        "publisher_run_attempt": 1,
+        "platform": document["platform"],
+        "images": images,
+    }
+
+
+def extract_build(archive_path, directory, document, run_id):
+    with zipfile.ZipFile(archive_path) as archive:
+        entries = archive.infolist()
+        require(
+            len(entries) == 3
+            and {member.filename for member in entries}
+            == {"build.json", "web.tar", "worker.tar"},
+            "build-members",
+        )
+        for member in entries:
+            maximum = (
+                codec.MAX_MANIFEST_BYTES
+                if member.filename == "build.json"
+                else MAX_IMAGE
+            )
+            require(
+                member.filename == member.orig_filename
+                and not member.is_dir()
+                and not member.flag_bits & 1
+                and stat.S_IFMT(member.external_attr >> 16) in (0, stat.S_IFREG)
+                and 0 < member.file_size <= maximum,
+                "build-member",
+            )
+            with (
+                archive.open(member) as source,
+                (directory / member.filename).open("xb") as target,
+            ):
+                count = 0
+                while block := source.read(1024 * 1024):
+                    count += len(block)
+                    require(count <= maximum, "build-size")
+                    target.write(block)
+            require(count == member.file_size, "build-size")
+    actual = decode((directory / "build.json").read_bytes())
+    expected = metadata(
+        document, run_id, {kind: directory / f"{kind}.tar" for kind in codec.TARGETS}
+    )
+    require(canonical(actual) == canonical(expected), "build-binding")
+    return actual
+
+
+def build(document, run_id, directory):
+    source = Path(os.environ["GITHUB_WORKSPACE"]) / ".source"
+    result = subprocess.run(
+        ["/usr/bin/git", "-C", str(source), "rev-parse", "HEAD"],
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    require(result.stdout.decode().strip() == document["source_sha"], "build-checkout")
+    clean = subprocess.run(
+        [
+            "/usr/bin/git",
+            "-C",
+            str(source),
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+        ],
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    require(clean.stdout == b"", "dirty-build-source")
+    images = {}
+    for kind, target in codec.TARGETS.items():
+        tag = f"poc-{kind}:{document['source_sha']}"
+        run(
+            "docker",
+            "build",
+            "--quiet",
+            "--pull",
+            "--platform",
+            document["platform"],
+            "--target",
+            target,
+            "--tag",
+            tag,
+            "--file",
+            str(source / "Dockerfile"),
+            str(source),
+            timeout=2400,
+        )
+        path = directory / f"{kind}.tar"
+        run("docker", "save", "--output", str(path), tag, timeout=300)
+        images[kind] = path
+    (directory / "build.json").write_bytes(
+        canonical(metadata(document, run_id, images))
+    )
+
+
+def prepare(document, run_id, directory):
+    completed = jobs(run_id)
+    value = artifact(run_id, f"poc-image-build-{run_id}-1", maximum=MAX_ARCHIVE)
+    archive = directory / "build.zip"
+    download(value, archive)
+    extract_build(archive, directory, document, run_id)
+    binding = {
+        "artifact_id": value["id"],
+        "archive_sha256": sha(archive),
+        "file_sha256": sha(directory / "build.json"),
+    }
+    evidence = {
+        "request": document,
+        "quality_job_id": completed[JOBS[0]]["id"],
+        "build_job_id": completed[JOBS[1]]["id"],
+        "build_artifact": binding,
+    }
+    (directory / "prepared.json").write_bytes(canonical(evidence))
+
+
+def publish(document, run_id, workflow_sha, directory):
+    prepared = decode((directory / "prepared.json").read_bytes())
+    require(prepared["request"] == document, "prepared-request")
+    completed = jobs(run_id)
+    require(
+        prepared["quality_job_id"] == completed[JOBS[0]]["id"]
+        and prepared["build_job_id"] == completed[JOBS[1]]["id"],
+        "prepared-jobs",
+    )
+    require(
+        sha(directory / "build.json") == prepared["build_artifact"]["file_sha256"],
+        "prepared-build",
+    )
+    require(
+        canonical(decode((directory / "build.json").read_bytes()))
+        == canonical(
+            metadata(
+                document,
+                run_id,
+                {kind: directory / f"{kind}.tar" for kind in codec.TARGETS},
+            )
+        ),
+        "prepared-images",
+    )
+    identity = json.loads(run("aws", "sts", "get-caller-identity", "--output", "json"))
+    require(
+        identity.get("Account") == "891377212104"
+        and identity.get("Arn")
+        == f"arn:aws:sts::891377212104:assumed-role/user-service-test-ImagePublisher/poc-images-{run_id}-1",
+        "publisher-identity",
+    )
+    password = run("aws", "ecr", "get-login-password", "--region", "eu-central-1")
+    run(
+        "docker",
+        "login",
+        "--username",
+        "AWS",
+        "--password-stdin",
+        codec.REGISTRY,
+        payload=password,
+    )
+    results = {}
+    for kind, target in codec.TARGETS.items():
+        source = f"poc-{kind}:{document['source_sha']}"
+        repository = f"{codec.REGISTRY}/user-service-test-{kind}"
+        tag = f"sha-{document['source_sha']}-{run_id}-1"
+        run("docker", "load", "--input", str(directory / f"{kind}.tar"), timeout=300)
+        run("docker", "tag", source, f"{repository}:{tag}")
+        run("docker", "push", f"{repository}:{tag}", timeout=1200)
+        observed = json.loads(
+            run(
+                "aws",
+                "ecr",
+                "describe-images",
+                "--repository-name",
+                f"user-service-test-{kind}",
+                "--image-ids",
+                f"imageTag={tag}",
+                "--output",
+                "json",
+            )
+        )
+        details = observed.get("imageDetails", [])
+        require(
+            len(details) == 1
+            and tag in details[0].get("imageTags", [])
+            and details[0].get("registryId") == "891377212104"
+            and details[0].get("repositoryName") == f"user-service-test-{kind}",
+            "image-readback",
+        )
+        results[kind] = codec.BuildResult(
+            document["source_sha"],
+            run_id,
+            document["platform"],
+            repository,
+            target,
+            details[0]["imageDigest"],
+        )
+    registry = codec.RegistryReleaseBinding(
+        **{
+            key: document[key]
+            for key in codec.RegistryReleaseBinding.__dataclass_fields__
+        }
+    )
+    common = dict(
+        source_sha=document["source_sha"],
+        publisher_run_id=run_id,
+        platform=document["platform"],
+        registry=registry,
+        **results,
+    )
+    provenance, quality = codec.build_release_evidence(
+        **common,
+        workflow_sha=workflow_sha,
+        quality_job_id=prepared["quality_job_id"],
+        build_job_id=prepared["build_job_id"],
+        build_artifact=prepared["build_artifact"],
+    )
+    (directory / "provenance.json").write_bytes(provenance)
+    (directory / "quality.json").write_bytes(quality)
+    (directory / "published.json").write_bytes(
+        canonical({kind: asdict(value) for kind, value in results.items()})
+    )
+
+
+def reference(run_id, name, member, path):
+    value = artifact(run_id, name)
+    downloaded = path.parent / f"{member}.zip"
+    download(value, downloaded)
+    with zipfile.ZipFile(downloaded) as archive:
+        entries = archive.infolist()
+        require(
+            len(entries) == 1
+            and entries[0].filename == member
+            and 0 < entries[0].file_size <= codec.MAX_MANIFEST_BYTES,
+            "evidence-member",
+        )
+        require(archive.read(member) == path.read_bytes(), "evidence-readback")
+    return {
+        "artifact_id": value["id"],
+        "archive_sha256": sha(downloaded),
+        "file_sha256": sha(path),
+    }
+
+
+def manifest(document, run_id, workflow_sha, directory):
+    registry = codec.RegistryReleaseBinding(
+        **{
+            key: document[key]
+            for key in codec.RegistryReleaseBinding.__dataclass_fields__
+        }
+    )
+    results = decode((directory / "published.json").read_bytes())
+    raw = codec.build_release_manifest(
+        source_sha=document["source_sha"],
+        publisher_run_id=run_id,
+        platform=document["platform"],
+        registry=registry,
+        provenance=reference(
+            run_id,
+            f"poc-build-provenance-{run_id}-1",
+            "provenance.json",
+            directory / "provenance.json",
+        ),
+        quality_evidence=reference(
+            run_id,
+            f"poc-quality-evidence-{run_id}-1",
+            "quality.json",
+            directory / "quality.json",
+        ),
+        **{key: codec.BuildResult(**value) for key, value in results.items()},
+    )
+    prepared = decode((directory / "prepared.json").read_bytes())
+    codec.validate_release_evidence(
+        (directory / "provenance.json").read_bytes(),
+        (directory / "quality.json").read_bytes(),
+        manifest=json.loads(raw),
+        workflow_sha=workflow_sha,
+        quality_job_id=prepared["quality_job_id"],
+        build_job_id=prepared["build_job_id"],
+        build_artifact=prepared["build_artifact"],
+    )
+    (directory / "release-manifest.json").write_bytes(raw)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "mode", choices=("admit", "build", "prepare", "publish", "manifest", "readback")
+    )
+    args = parser.parse_args(argv)
+    try:
+        os.umask(0o077)
+        document, run_id, workflow_sha = admit()
+        if args.mode in ("prepare", "publish", "manifest", "readback"):
+            protected_environment()
+        directory = Path(os.environ["RUNNER_TEMP"]) / "poc-images"
+        if args.mode == "admit":
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as stream:
+                stream.write(
+                    f"source_sha={document['source_sha']}\nplatform={document['platform']}\n"
+                )
+        elif args.mode in ("build", "prepare"):
+            directory.mkdir(mode=0o700)
+            {"build": build, "prepare": prepare}[args.mode](document, run_id, directory)
+        elif args.mode in ("publish", "manifest"):
+            {"publish": publish, "manifest": manifest}[args.mode](
+                document, run_id, workflow_sha, directory
+            )
         else:
-            require(args.request_file is not None, "request-file-required")
-            source = _read_request(args.request_file, str(run["source_sha"]))
-            if args.mode == "quality":
-                value = quality(run, args.job_id)
-            elif args.mode == "provenance":
-                value = provenance(
-                    run,
-                    source,
-                    job_id=args.job_id,
-                    build_artifact=_artifact(
-                        args.build_artifact_id,
-                        args.build_archive_sha256,
-                        args.build_file_sha256,
-                    ),
-                    web_digest=args.web_digest,
-                    worker_digest=args.worker_digest,
-                )
-            else:
-                value = release(
-                    run,
-                    source,
-                    quality_artifact=_artifact(
-                        args.quality_artifact_id,
-                        args.quality_archive_sha256,
-                        args.quality_file_sha256,
-                    ),
-                    provenance_artifact=_artifact(
-                        args.provenance_artifact_id,
-                        args.provenance_archive_sha256,
-                        args.provenance_file_sha256,
-                    ),
-                    web_digest=args.web_digest,
-                    worker_digest=args.worker_digest,
-                )
-        _write(args.output, value)
+            reference(
+                run_id,
+                f"poc-release-manifest-{run_id}-1",
+                "release-manifest.json",
+                directory / "release-manifest.json",
+            )
+        print(f"PASS: image publisher {args.mode}")
         return 0
     except (
-        ValueError,
-        TypeError,
-        KeyError,
         OSError,
-        UnicodeError,
-        json.JSONDecodeError,
+        ValueError,
+        KeyError,
+        TypeError,
+        subprocess.SubprocessError,
+        zipfile.BadZipFile,
+        EOFError,
     ):
-        print("INVALID: TEST publisher evidence inputs", file=sys.stderr)
+        print("Image publishing failed.", file=sys.stderr)
         return 1
 
 

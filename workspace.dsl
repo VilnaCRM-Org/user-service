@@ -96,6 +96,10 @@ workspace {
                     tags "MessageBroker"
                 }
 
+                ses = component "Amazon SES" "Optional configured email delivery via task credentials" "SES API" {
+                    tags "Item"
+                }
+
                 registerUserProcessor -> registerUserCommandHandler "dispatches RegisterUserCommand"
                 registerUserResolver -> registerUserCommandHandler "dispatches RegisterUserCommand"
                 confirmUserProcessor -> confirmUserCommandHandler "dispatches ConfirmUserCommand"
@@ -110,7 +114,7 @@ workspace {
                 sendConfirmationEmailCommandHandler -> confirmationEmailSentEventSubscriber "publishes ConfirmationEmailSentEvent"
                 passwordChangedEventSubscriber -> messenger "adds email to queue"
                 confirmationEmailSentEventSubscriber -> messenger "adds email to queue"
-                mailer -> messenger "consumes emails"
+                messenger -> mailer "delivers queued emails via transport"
                 userPatchProcessor -> updateUserCommandHandler "dispatches UpdateUserCommand"
                 userPutProcessor -> updateUserCommandHandler "dispatches UpdateUserCommand"
                 updateUserResolver -> updateUserCommandHandler "dispatches UpdateUserCommand"
@@ -120,7 +124,8 @@ workspace {
                 tokenRepository -> token "save and load"
                 userRepository -> database "accesses data"
                 tokenRepository -> cache "accesses data"
-                mailer -> sqs "publish message"
+                messenger -> sqs "publishes and consumes queued messages"
+                mailer -> ses "sends email when SES API transport is configured" "HTTPS API"
             }
         }
     }

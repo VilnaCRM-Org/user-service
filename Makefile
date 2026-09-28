@@ -35,9 +35,9 @@ EXEC_PHP      = $(DOCKER_COMPOSE) exec php
 EXEC_PHP_SCHEMATHESIS = $(DOCKER_COMPOSE_SCHEMATHESIS) exec php
 COMPOSER      = $(EXEC_PHP) composer
 GIT           = git
-EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -e APP_ENV=test php
+EXEC_PHP_TEST_ENV = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
 EXEC_PHP_TEST_ENV_NOTTY = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test php
-EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -e APP_ENV=test -e APP_DEBUG=0 php
+EXEC_PHP_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE) exec -T -e APP_ENV=test -e APP_DEBUG=0 php
 EXEC_PHP_LOAD_TEST_ENV = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test php
 EXEC_PHP_LOAD_TEST_ENV_NODEBUG = $(DOCKER_COMPOSE_LOAD_TEST) exec -e APP_ENV=load_test -e APP_DEBUG=0 php
 
@@ -50,7 +50,7 @@ SYMFONY_LOAD_TEST_ENV_NODEBUG = $(EXEC_PHP_LOAD_TEST_ENV_NODEBUG) bin/console
 
 # Executables: vendors
 BEHAT         = php -d memory_limit=-1 ./vendor/bin/behat --stop-on-failure -n features
-BEHAT_ENV     = env APP_DEBUG=0
+BEHAT_ENV     = env APP_ENV=test APP_DEBUG=0
 PHPUNIT       = ./vendor/bin/phpunit
 PSALM         = ./vendor/bin/psalm
 PHP_CS_FIXER  = ./vendor/bin/php-cs-fixer
@@ -678,3 +678,6 @@ pr-comments-to-file: ## Fetch ALL unresolved PR comments and save to pr-comments
 		echo "ℹ️  No unresolved comments found"; \
 		echo "📄 Report saved to: $$output_file"; \
 	fi
+
+test-poc-publisher: ## Verify the offline TEST image publisher contracts.
+	python3 -B -m unittest discover -s tests/CLI -p 'test_poc_*.py'

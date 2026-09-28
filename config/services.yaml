@@ -5,6 +5,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
   api_url_prefix: '%env(API_PREFIX)%'
+  social_oauth_enabled_default: true
+  social_oauth_enabled: '%env(bool:default:social_oauth_enabled_default:SOCIAL_OAUTH_ENABLED)%'
 
 services:
   # default configuration for services in *this* file
@@ -86,7 +88,16 @@ services:
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider'
 
+  App\OAuth\Application\Factory\OAuthProviderCollectionFactory:
+    arguments:
+      $enabled: '%social_oauth_enabled%'
+
+  App\Shared\Application\Factory\OAuthProviderNameCollectionFactory:
+    arguments:
+      $enabled: '%social_oauth_enabled%'
+
   App\Shared\Domain\Collection\OAuthProviderNameCollection:
+    factory: ['@App\Shared\Application\Factory\OAuthProviderNameCollectionFactory', 'create']
     arguments:
       $providers: !tagged_iterator 'app.oauth_provider_name'
 
@@ -396,10 +407,6 @@ services:
     arguments:
       - version: '%env(AWS_SQS_VERSION)%'
         region: '%env(AWS_SQS_REGION)%'
-        endpoint: '%env(AWS_SQS_ENDPOINT_BASE)%:%env(LOCALSTACK_PORT)%'
-        credentials:
-          key: '%env(AWS_SQS_KEY)%'
-          secret: '%env(AWS_SQS_SECRET)%'
 
   # OAuth Social Sign-In
   oauth.redis_connection:
@@ -544,3 +551,26 @@ services:
 
   League\Bundle\OAuth2ServerBundle\Service\CredentialsRevokerInterface:
     alias: App\OAuth\Infrastructure\Adapter\CredentialsRevoker
+
+when@dev:
+  services:
+    Aws\Sqs\SqsClient: &local_sqs_client
+      arguments:
+        - version: '%env(AWS_SQS_VERSION)%'
+          region: '%env(AWS_SQS_REGION)%'
+          endpoint: '%env(AWS_SQS_ENDPOINT_BASE)%:%env(LOCALSTACK_PORT)%'
+          credentials:
+            key: '%env(AWS_SQS_KEY)%'
+            secret: '%env(AWS_SQS_SECRET)%'
+
+when@test:
+  services:
+    Aws\Sqs\SqsClient: *local_sqs_client
+
+when@load_test:
+  services:
+    Aws\Sqs\SqsClient: *local_sqs_client
+
+when@schemathesis:
+  services:
+    Aws\Sqs\SqsClient: *local_sqs_client

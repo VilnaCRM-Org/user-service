@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "87fc8486fef8c71b206c878ff2c852a0",
+    "content-hash": "964193f3bfc3bed22152bdd6ad0dc3a4",
     "packages": [
         {
             "name": "api-platform/core",
-            "version": "v4.3.10",
+            "version": "v4.3.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/api-platform/core.git",
-                "reference": "77c87883e02dceeb34eb49eb8b0a888ce57e2916"
+                "reference": "1510da462dfdabdef87b53827b7dd629483518c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/api-platform/core/zipball/77c87883e02dceeb34eb49eb8b0a888ce57e2916",
-                "reference": "77c87883e02dceeb34eb49eb8b0a888ce57e2916",
+                "url": "https://api.github.com/repos/api-platform/core/zipball/1510da462dfdabdef87b53827b7dd629483518c4",
+                "reference": "1510da462dfdabdef87b53827b7dd629483518c4",
                 "shasum": ""
             },
             "require": {
@@ -220,9 +220,9 @@
             ],
             "support": {
                 "issues": "https://github.com/api-platform/core/issues",
-                "source": "https://github.com/api-platform/core/tree/v4.3.10"
+                "source": "https://github.com/api-platform/core/tree/v4.3.12"
             },
-            "time": "2026-06-05T15:24:51+00:00"
+            "time": "2026-06-13T05:15:21+00:00"
         },
         {
             "name": "async-aws/core",
@@ -295,6 +295,68 @@
                 }
             ],
             "time": "2026-02-16T10:24:54+00:00"
+        },
+        {
+            "name": "async-aws/ses",
+            "version": "1.16.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/async-aws/ses.git",
+                "reference": "1f7e88f6afaee5e3e665341cbb59ed32b5b6c740"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/async-aws/ses/zipball/1f7e88f6afaee5e3e665341cbb59ed32b5b6c740",
+                "reference": "1f7e88f6afaee5e3e665341cbb59ed32b5b6c740",
+                "shasum": ""
+            },
+            "require": {
+                "async-aws/core": "^1.9",
+                "ext-filter": "*",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.5.42",
+                "symfony/error-handler": "^7.3.2 || ^8.0",
+                "symfony/phpunit-bridge": "^7.3.2 || ^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.16-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AsyncAws\\Ses\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "SES client, part of the AWS SDK provided by AsyncAws.",
+            "keywords": [
+                "amazon",
+                "async-aws",
+                "aws",
+                "sdk",
+                "ses"
+            ],
+            "support": {
+                "source": "https://github.com/async-aws/ses/tree/1.16.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/jderusse",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nyholm",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-07-29T12:54:05+00:00"
         },
         {
             "name": "async-aws/sqs",
@@ -3516,21 +3578,21 @@
         },
         {
             "name": "mongodb/mongodb",
-            "version": "2.3.0",
+            "version": "2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mongodb/mongo-php-library",
-                "reference": "12e56461166d915e3dd8e4969ad0940ed5207d88"
+                "reference": "b72cc2ecf4a11d3871f78a119a8f3cc7ab6d6c29"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/12e56461166d915e3dd8e4969ad0940ed5207d88",
-                "reference": "12e56461166d915e3dd8e4969ad0940ed5207d88",
+                "url": "https://api.github.com/repos/mongodb/mongo-php-library/zipball/b72cc2ecf4a11d3871f78a119a8f3cc7ab6d6c29",
+                "reference": "b72cc2ecf4a11d3871f78a119a8f3cc7ab6d6c29",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.0",
-                "ext-mongodb": "^2.3",
+                "ext-mongodb": "^2.4",
                 "php": "^8.1",
                 "psr/log": "^1.1.4|^2|^3",
                 "symfony/polyfill-php85": "^1.33"
@@ -3585,7 +3647,7 @@
                 "mongodb",
                 "persistence"
             ],
-            "time": "2026-04-28T12:50:06+00:00"
+            "time": "2026-08-27T14:43:15+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -5217,6 +5279,76 @@
                 }
             ],
             "time": "2026-05-31T12:42:43+00:00"
+        },
+        {
+            "name": "symfony/amazon-mailer",
+            "version": "v8.1.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/amazon-mailer.git",
+                "reference": "053c95a45b71ae830cb6b482d0cc137daa32bb4f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/amazon-mailer/zipball/053c95a45b71ae830cb6b482d0cc137daa32bb4f",
+                "reference": "053c95a45b71ae830cb6b482d0cc137daa32bb4f",
+                "shasum": ""
+            },
+            "require": {
+                "async-aws/ses": "^1.8",
+                "php": ">=8.4.1",
+                "symfony/mailer": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "symfony/http-client": "^7.4|^8.0"
+            },
+            "type": "symfony-mailer-bridge",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Mailer\\Bridge\\Amazon\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Amazon Mailer Bridge",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/amazon-mailer/tree/v8.1.5"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-08-21T17:47:34+00:00"
         },
         {
             "name": "symfony/amazon-sqs-messenger",
@@ -19246,7 +19378,7 @@
     "platform-dev": {},
     "platform-overrides": {
         "php": "8.4.4",
-        "ext-mongodb": "2.3.0"
+        "ext-mongodb": "2.4.1"
     },
     "plugin-api-version": "2.9.0"
 }

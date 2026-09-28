@@ -70,6 +70,15 @@ final class OAuthProviderRegistryTest extends UnitTestCase
         $this->registry->get('unsupported_provider');
     }
 
+    public function testDisabledProvidersAreUnsupported(): void
+    {
+        $registry = new OAuthProviderRegistry(new OAuthProviderCollection());
+
+        $this->expectException(UnsupportedProviderException::class);
+
+        $registry->get('github');
+    }
+
     public function testSupportedProvidersReturnsAllProviderNames(): void
     {
         $supported = $this->registry->supportedProviders();

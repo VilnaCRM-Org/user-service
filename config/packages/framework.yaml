@@ -11,8 +11,8 @@ framework:
   # limiters instead of the shared load-balancer address. The default REMOTE_ADDR
   # token trusts a single hop, so X-Forwarded-For from untrusted clients is
   # ignored and cannot be spoofed. Override TRUSTED_PROXIES with the exact proxy
-  # CIDR in production. Only X-Forwarded-For is trusted; other X-Forwarded-*
-  # headers are ignored.
+  # CIDR in production. Trust X-Forwarded-For and X-Forwarded-Proto only from
+  # that proxy, so TLS-terminated callback URLs keep their HTTPS scheme.
   trusted_proxies: '%env(TRUSTED_PROXIES)%'
   trusted_headers: '%env(TRUSTED_HEADERS)%'
   #csrf_protection: true

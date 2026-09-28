@@ -21,15 +21,11 @@ namespace App\Tests\Unit\User\Infrastructure\Command;
  */
 
 use App\Shared\Application\Normalizer\EmailNormalizer;
-
 use function mb_strtoupper;
-
 use MongoDB\BulkWriteResult;
 use MongoDB\Collection;
-
 use function sprintf;
 use function substr_count;
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 

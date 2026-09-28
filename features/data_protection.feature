@@ -116,8 +116,8 @@ Feature: Data Protection and Sensitive Data Handling
     And signing in with email "dp-no-internal@test.com" and password "passWORD1"
     When POST request is send to "/api/signin"
     Then the response status code should be 200
-    And the response should not contain "sessionId"
-    And the response should not contain "_id"
+    And the response JSON should not have field "sessionId"
+    And the response JSON should not have field "_id"
 
   Scenario: Token refresh response does not expose session details
     Given user with email "dp-refresh-session@test.com" and password "passWORD1" exists

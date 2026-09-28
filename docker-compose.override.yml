@@ -29,6 +29,12 @@ services:
       - target: 8081
         published: ${PHP_DEV_PORT:-8081}
         protocol: tcp
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      - target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
 
   app-prod:
     networks:

@@ -13,20 +13,15 @@ use App\User\Domain\Exception\DuplicateEmailException;
 use App\User\Domain\Factory\UserFactory;
 use App\User\Domain\Factory\UserFactoryInterface;
 use App\User\Infrastructure\Repository\MongoDBUserRepository;
-
 use function count;
-
 use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\ODM\MongoDB\DocumentManager;
-
 use function implode;
 use function intdiv;
 use function mb_strtolower;
 use function min;
-
 use PHPUnit\Framework\MockObject\MockObject;
 use RuntimeException;
-
 use function sprintf;
 
 final class MongoDBUserRepositoryBatchTest extends UnitTestCase

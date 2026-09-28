@@ -94,7 +94,10 @@ final class UserResponseContext implements Context
      */
     public function theResponseBodyShouldContain(string $text): void
     {
-        Assert::assertStringContainsString($text, $this->getResponseContent());
+        Assert::assertTrue(
+            str_contains($this->getResponseContent(), $text),
+            'The response does not contain the expected text.'
+        );
     }
 
     /**
@@ -154,10 +157,9 @@ final class UserResponseContext implements Context
      */
     public function theResponseShouldContain(string $text): void
     {
-        Assert::assertStringContainsString(
-            $text,
-            $this->getResponseContent(),
-            "The response does not contain the expected text: '{$text}'."
+        Assert::assertTrue(
+            str_contains($this->getResponseContent(), $text),
+            'The response does not contain the expected text.'
         );
     }
 
@@ -193,10 +195,9 @@ final class UserResponseContext implements Context
             return;
         }
 
-        Assert::assertStringNotContainsString(
-            $normalizedText,
-            $responseContent,
-            "The response unexpectedly contains text: '{$normalizedText}'."
+        Assert::assertFalse(
+            str_contains($responseContent, $normalizedText),
+            'The response contains forbidden text.'
         );
     }
 

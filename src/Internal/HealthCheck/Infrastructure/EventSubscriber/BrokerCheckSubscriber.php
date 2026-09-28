@@ -18,11 +18,6 @@ final class BrokerCheckSubscriber extends BaseHealthCheckSubscriber
     #[\Override]
     public function onHealthCheck(HealthCheckEvent $event): void
     {
-        $this->createQueue($this->queueName);
-    }
-
-    private function createQueue(string $queueName): void
-    {
-        $this->sqsClient->createQueue(['QueueName' => $queueName]);
+        $this->sqsClient->getQueueUrl(['QueueName' => $this->queueName]);
     }
 }
