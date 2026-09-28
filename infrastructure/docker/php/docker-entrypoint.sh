@@ -1,55 +1,62 @@
 #!/bin/sh
 set -e
 
-mkdir -p var/cache var/log
+if [ "${1#-}" != "$1" ]; then
+    set -- frankenphp run --config /etc/caddy/Caddyfile "$@"
+fi
 
-install_dependencies() {
-	if [ "$APP_ENV" != 'prod' ] && [ "$APP_ENV" != 'load_test' ]; then
-		composer install --prefer-dist --no-progress --no-interaction --ignore-platform-reqs --no-scripts
-		return
-	fi
-
-	if [ "$APP_ENV" = 'load_test' ]; then
-		composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
-		return
-	fi
-
-	if [ -f vendor/autoload.php ]; then
-		return
-	fi
-
-	composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
-}
+if [ "$1" = 'frankenphp' ] && [ "${2:-}" = 'run' ] && [ "$APP_ENV" != 'prod' ] && [ -z "${CI:-}" ]; then
+    case " $* " in
+        *" --watch "*) ;;
+        *) set -- "$@" --watch ;;
+    esac
+fi
 
 if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
-	install_dependencies
+    install_dependencies=true
 
-	if [ -n "${MONGODB_URL:-}" ] || grep -q '^MONGODB_URL=' .env 2>/dev/null; then
-		echo "Waiting for MongoDB to be ready..."
-		ATTEMPTS_LEFT_TO_REACH_MONGO=60
-		until [ $ATTEMPTS_LEFT_TO_REACH_MONGO -eq 0 ]; do
-			if php bin/console doctrine:mongodb:mapping:info > /dev/null 2>&1; then
-				break
-			fi
-			sleep 1
-			ATTEMPTS_LEFT_TO_REACH_MONGO=$((ATTEMPTS_LEFT_TO_REACH_MONGO - 1))
-			echo "Still waiting for MongoDB to be ready... Or maybe MongoDB is not reachable. $ATTEMPTS_LEFT_TO_REACH_MONGO attempts left."
-		done
+    if [ -f vendor/autoload.php ] \
+        && [ ! composer.lock -nt vendor/autoload.php ] \
+        && [ ! composer.json -nt vendor/autoload.php ]; then
+        install_dependencies=false
+    fi
 
-		if [ $ATTEMPTS_LEFT_TO_REACH_MONGO -eq 0 ]; then
-			echo "MongoDB is not up or not reachable"
-			exit 1
-		else
-			echo "MongoDB is now ready and reachable"
-		fi
-	fi
+    if [ "$install_dependencies" = 'true' ] && [ "$APP_ENV" != 'prod' ]; then
+        composer install --prefer-dist --no-progress --no-interaction
+    elif [ "$install_dependencies" = 'true' ]; then
+        composer install --prefer-dist --no-dev --optimize-autoloader --no-interaction
+    fi
 
-	composer run-script auto-scripts --no-interaction
-	php bin/console lexik:jwt:generate-keypair --skip-if-exists
-	if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then
-		chmod 600 config/jwt/private.pem
-		chmod 644 config/jwt/public.pem
-	fi
+    if grep -q '^DB_URL=.*' .env; then
+        echo "Waiting for database to be ready..."
+        ATTEMPTS_LEFT_TO_REACH_DATABASE=60
+        until [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ] || DATABASE_ERROR=$(php bin/console dbal:run-sql -q "SELECT 1" 2>&1); do
+            if [ $? -eq 255 ]; then
+                ATTEMPTS_LEFT_TO_REACH_DATABASE=0
+                break
+            fi
+            sleep 1
+            ATTEMPTS_LEFT_TO_REACH_DATABASE=$((ATTEMPTS_LEFT_TO_REACH_DATABASE - 1))
+            echo "Still waiting for database to be ready... Or maybe the database is not reachable. $ATTEMPTS_LEFT_TO_REACH_DATABASE attempts left."
+        done
 
+        if [ $ATTEMPTS_LEFT_TO_REACH_DATABASE -eq 0 ]; then
+            echo "The database is not up or not reachable:"
+            echo "$DATABASE_ERROR"
+            exit 1
+        else
+            echo "The database is now ready and reachable"
+        fi
+
+        if [ "$(find ./migrations -iname '*.php' -print -quit)" ]; then
+            bin/console doctrine:migrations:migrate --no-interaction
+        fi
+    fi
+
+    if [ -d var ] && [ "$(id -u)" -eq 0 ]; then
+        setfacl -R -m u:www-data:rwX -m u:"$(whoami)":rwX var
+        setfacl -dR -m u:www-data:rwX -m u:"$(whoami)":rwX var
+    fi
 fi
+
 exec docker-php-entrypoint "$@"

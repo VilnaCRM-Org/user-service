@@ -16,7 +16,7 @@ load 'bats-assert/load'
   assert_output --partial "[OK]"
 }
 
-@test "make validate-configuration fails when locked config file is modified" {
+@test "make validate-configuration fails when a locked config file is modified" {
   backup_file="$(mktemp)"
   cp -a psalm.xml "$backup_file"
 

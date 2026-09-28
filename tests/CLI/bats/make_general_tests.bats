@@ -19,7 +19,7 @@ load 'bats-assert/load'
 @test "make composer-validate command executes and reports validity with warnings" {
   run make composer-validate
   assert_success
-  [[ "$output" == *"./composer.json is valid, but with a few warnings"* || "$output" == *"./composer.json is valid"* ]]
+  assert_output --partial "./composer.json is valid, but with a few warnings"
 }
 
 @test "make check-requirements command executes and passes" {
@@ -32,7 +32,8 @@ load 'bats-assert/load'
 @test "make phpinsights command executes and completes analysis" {
   run make phpinsights
   assert_success
-  assert_output --partial './vendor/bin/phpinsights --no-interaction --flush-cache --fix --ansi --disable-security-check'
+  assert_output --partial '✨ Analysis Completed !'
+  assert_output --partial './vendor/bin/phpinsights --no-interaction --ansi --format=github-action'
 }
 
 @test "make check-security command executes and reports no vulnerabilities" {
@@ -54,16 +55,10 @@ load 'bats-assert/load'
   assert_output --partial "true true true true"
 }
 
-@test "worker memory soak scenario list stays deterministic and valid" {
-  run ./tests/Load/get-worker-memory-soak-scenarios.sh
-  assert_success
-  assert_output $'oauth\napiEntrypoint\ngetUser\nrefreshToken\nsetupTwoFactor\ncreateUser\nresetPassword\noauthSocialInitiate\noauthSocialCallback\ngraphQLSignin\ngraphQLSetupTwoFactor\ngraphQLCreateUser\ngraphQLGetUsers'
-}
-
-@test "make doctrine-migrations-migrate displays MongoDB ODM migration note" {
+@test "make doctrine-migrations-migrate executes migrations" {
   run bash -c "echo 'yes' | make doctrine-migrations-migrate"
   assert_success
-  assert_output --partial 'MongoDB ODM'
+  assert_output --partial 'DoctrineMigrations'
 }
 
 @test "make doctrine-migrations-generate command executes" {
@@ -81,26 +76,10 @@ load 'bats-assert/load'
   assert_success
 }
 
-@test "make update command executes" {
-  local bin_dir="${BATS_TEST_TMPDIR}/bin"
-
-  mkdir -p "$bin_dir"
-  cat > "$bin_dir/composer-stub" <<'SCRIPT'
-#!/usr/bin/env bash
-set -euo pipefail
-printf 'composer-stub %s\n' "$*"
-SCRIPT
-  chmod +x "$bin_dir/composer-stub"
-
-  run make update COMPOSER="$bin_dir/composer-stub"
-  assert_success
-  assert_output --partial "composer-stub update --no-progress --prefer-dist --optimize-autoloader"
-}
-
 @test "make load-fixtures command executes" {
    run bash -c "make load-fixtures & sleep 2; kill $!"
    assert_failure
-   assert_output --partial "The cache entries were successfully deleted."
+   assert_output --partial "Successfully deleted cache entries."
 }
 
 @test "make cache-warmup command executes" {
@@ -108,14 +87,22 @@ SCRIPT
   assert_success
 }
 
-@test "make logs shows docker logs" {
-  run make logs
+@test "make purge command executes" {
+  run make purge
   assert_success
 }
 
-@test "make new-logs command executes" {
-  run bash -c "timeout 5 make new-logs"
+@test "make logs shows docker logs" {
+  run bash -c "timeout 5 make logs"
   assert_failure 124
+  assert_output --partial "FrankenPHP started"
+}
+
+@test "make new-logs command executes" {
+  run bash -c "(sleep 1; curl -fsS http://localhost:${APP_HTTP_TEST_PORT:-8081}/ping >/dev/null) & timeout 5 make new-logs"
+  assert_failure 124
+  assert_output --partial '"msg":"handled request"'
+  assert_output --partial '"uri":"/ping"'
 }
 
 @test "make commands lists all available Symfony commands" {

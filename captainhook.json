@@ -1,0 +1,112 @@
+{
+    "config": {
+        "run": {
+            "mode": "docker",
+            "exec": "docker compose exec -i php"
+        }
+    },
+    "commit-msg": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "\\CaptainHook\\App\\Hook\\Message\\Action\\Regex",
+                "options": {
+                    "regex": "/^(feat|fix|refactor|build|chore|ci|docs|style|perf|test)\\(\\#\\d+\\): .*/i",
+                    "error": "The commit message should be in the format: feat|fix|refactor|build|chore|ci|docs|style|perf|test(#1):"
+                }
+            }
+        ]
+    },
+    "pre-push": {
+        "enabled": false,
+        "actions": []
+    },
+    "pre-commit": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "\\CaptainHook\\App\\Hook\\PHP\\Action\\Linting",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make phpcsfixer",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make psalm",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make check-requirements",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make check-security",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make psalm-security",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make phpinsights",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make unit-tests",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make integration-tests",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make behat",
+                "options": [],
+                "conditions": []
+            },
+            {
+                "action": "CI=1 make rector-ci",
+                "options": [],
+                "conditions": []
+            }
+        ]
+    },
+    "prepare-commit-msg": {
+        "enabled": true,
+        "actions": [
+            {
+                "action": "\\Ramsey\\CaptainHook\\PrepareConventionalCommit"
+            }
+        ]
+    },
+    "post-commit": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-merge": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-checkout": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-rewrite": {
+        "enabled": false,
+        "actions": []
+    },
+    "post-change": {
+        "enabled": false,
+        "actions": []
+    }
+}

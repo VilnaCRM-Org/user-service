@@ -8,29 +8,14 @@ jobs:
   load-tests:
     name: K6
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
-      - name: Dependabot skip
-        if: github.event.pull_request.user.login == 'dependabot[bot]'
-        run: echo "Skipping load tests for Dependabot PR"
-
       - name: Checkout Repository
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-
-      - name: Setup Docker
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: docker/setup-docker-action@v4
-
-      - name: Start application
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make start
-
-      - name: Setup test db
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: make setup-test-db
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Run load tests
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         env:
           API_HOST: localhost
           API_PORT: 8081
