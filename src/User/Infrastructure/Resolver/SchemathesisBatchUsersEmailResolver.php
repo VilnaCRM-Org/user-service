@@ -8,7 +8,7 @@ final class SchemathesisBatchUsersEmailResolver
 {
     /**
      * @param array{
-     *     users?: array<int, array{email?: string|null}|scalar|null>
+     *     users?: array<int, array{email?: string|null}|scalar|null>|scalar|null
      * } $payload
      *
      * @return list<string>

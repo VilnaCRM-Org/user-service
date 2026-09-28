@@ -14,17 +14,9 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
     {
         $resolver = $this->createRequestResolver();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/reset-password/confirm',
-            'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
-        );
+        $request = $this->createRequestWithIp('/api/reset-password/confirm', 'POST', $clientIp);
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('password_reset_confirm', $byName);
         self::assertSame('ip:' . $clientIp, $byName['password_reset_confirm']);
@@ -37,8 +29,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         $request = Request::create('/api/2fa/recovery-codes', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('recovery_codes', $byName);
         self::assertSame('user:' . $subject, $byName['recovery_codes']);
@@ -51,8 +42,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         $request = Request::create('/api/signout', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('signout', $byName);
         self::assertSame('user:' . $subject, $byName['signout']);
@@ -65,8 +55,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         $request = Request::create('/api/signout/all', 'POST');
         $request->headers->set('Authorization', 'Bearer ' . $this->faker->sha256());
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('signout_all', $byName);
         self::assertSame('user:' . $subject, $byName['signout_all']);
@@ -77,8 +66,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         $resolver = $this->createRequestResolver();
         $request = Request::create('/api/signout', 'POST');
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($resolver, $request);
 
         self::assertNotContains('signout', $names);
     }
@@ -87,17 +75,9 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
     {
         $resolver = $this->createRequestResolver();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/auth/social/github',
-            'GET',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
-        );
+        $request = $this->createRequestWithIp('/api/auth/social/github', 'GET', $clientIp);
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('oauth_social_initiate', $byName);
         self::assertSame('ip:' . $clientIp, $byName['oauth_social_initiate']);
@@ -107,17 +87,9 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
     {
         $resolver = $this->createRequestResolver();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
-            '/api/auth/social/github/callback',
-            'GET',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
-        );
+        $request = $this->createRequestWithIp('/api/auth/social/github/callback', 'GET', $clientIp);
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($resolver, $request);
 
         self::assertArrayHasKey('oauth_social_callback', $byName);
         self::assertSame('ip:' . $clientIp, $byName['oauth_social_callback']);
@@ -128,8 +100,7 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
         $resolver = $this->createRequestResolver();
         $request = Request::create('/api/auth/social/github', 'POST');
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($resolver, $request);
 
         self::assertNotContains('oauth_social_initiate', $names);
     }
@@ -137,13 +108,9 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
     public function testOAuthSocialCallbackNotMatchedForPostMethod(): void
     {
         $resolver = $this->createRequestResolver();
-        $request = Request::create(
-            '/api/auth/social/github/callback',
-            'POST'
-        );
+        $request = Request::create('/api/auth/social/github/callback', 'POST');
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($resolver, $request);
 
         self::assertNotContains('oauth_social_callback', $names);
     }
@@ -151,13 +118,9 @@ final class ApiRateLimitRequestResolverExtendedLimitersTest extends RateLimitCli
     public function testCallbackPathDoesNotMatchInitiateLimiter(): void
     {
         $resolver = $this->createRequestResolver();
-        $request = Request::create(
-            '/api/auth/social/github/callback',
-            'GET'
-        );
+        $request = Request::create('/api/auth/social/github/callback', 'GET');
 
-        $limiters = $resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($resolver, $request);
 
         self::assertNotContains('oauth_social_initiate', $names);
         self::assertContains('oauth_social_callback', $names);

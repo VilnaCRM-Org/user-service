@@ -40,6 +40,11 @@ cleanup() {
     fi
 
     echo "Schemathesis reports preserved at: $SCHEMATHESIS_REPORT_DIR" >&2
+
+    echo "===== FrankenPHP (php) container logs (tail) =====" >&2
+    compose_schemathesis logs --tail=250 --no-color php >&2 2>&1 || true
+    echo "===== php container state =====" >&2
+    compose_schemathesis ps php >&2 2>&1 || true
 }
 
 trap cleanup EXIT

@@ -24,8 +24,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
         $userId = $this->faker->uuid();
         $request = Request::create('/api/users/' . $userId, 'PATCH');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('user_update', $byName);
         self::assertSame('user:' . $userId, $byName['user_update']);
@@ -36,8 +35,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
         $userId = $this->faker->uuid();
         $request = Request::create('/api/users/' . $userId, 'PUT');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('user_update', $byName);
         self::assertSame('user:' . $userId, $byName['user_update']);
@@ -48,8 +46,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
         $userId = $this->faker->uuid();
         $request = Request::create('/api/users/' . $userId, 'DELETE');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('user_delete', $byName);
         self::assertSame('user:' . $userId, $byName['user_delete']);
@@ -59,8 +56,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
     {
         $request = Request::create('/api/users/batch', 'PATCH');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('user_update', $names);
     }
@@ -69,8 +65,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
     {
         $request = Request::create('/api/users/confirm', 'PATCH');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('user_update', $names);
     }
@@ -80,8 +75,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
         $userId = $this->faker->uuid();
         $request = Request::create('/api/users/' . $userId, 'GET');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('user_update', $names);
         self::assertNotContains('user_delete', $names);
@@ -91,17 +85,13 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
     {
         $userId = $this->faker->uuid();
         $clientIp = $this->faker->ipv4();
-        $request = Request::create(
+        $request = $this->createRequestWithIp(
             '/api/users/' . $userId . '/resend-confirmation-email',
             'POST',
-            [],
-            [],
-            [],
-            ['REMOTE_ADDR' => $clientIp]
+            $clientIp
         );
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $byName = array_column($limiters, 'key', 'name');
+        $byName = $this->resolveEndpointLimiterKeysByName($this->resolver, $request);
 
         self::assertArrayHasKey('resend_confirmation', $byName);
         self::assertArrayHasKey('resend_confirmation_target', $byName);
@@ -114,8 +104,7 @@ final class ApiRateLimitRequestResolverUserMutationLimitersTest extends RateLimi
         $userId = $this->faker->uuid();
         $request = Request::create('/api/users/' . $userId . '/resend-confirmation-email', 'GET');
 
-        $limiters = $this->resolver->resolveEndpointLimiters($request);
-        $names = array_column($limiters, 'name');
+        $names = $this->resolveEndpointLimiterNames($this->resolver, $request);
 
         self::assertNotContains('resend_confirmation', $names);
     }

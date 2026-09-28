@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\User\Infrastructure\EventListener;
 
-use App\Shared\Domain\Bus\Event\EventBusInterface;
-use App\Shared\Infrastructure\Cache\CacheKeyBuilder;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Entity\UserInterface;
-use App\User\Domain\Factory\Event\UserDeletedEventFactoryInterface;
 use App\User\Domain\Repository\UserRepositoryInterface;
 use App\User\Infrastructure\Converter\SchemathesisPayloadConverter;
 use App\User\Infrastructure\EventListener\SchemathesisCleanupListener;
@@ -17,14 +14,13 @@ use App\User\Infrastructure\Resolver\SchemathesisCleanupResolver;
 use App\User\Infrastructure\Resolver\SchemathesisEmailResolver;
 use App\User\Infrastructure\Resolver\SchemathesisSingleUserEmailResolver;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Uid\Factory\UuidFactory;
-use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
 abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
 {
@@ -32,9 +28,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
     protected SchemathesisEmailResolver $emailExtractor;
     protected SchemathesisCleanupListener $listener;
     protected UserRepositoryInterface $repository;
-    protected EventBusInterface $eventBus;
-    protected UuidFactory $uuidFactory;
-    protected UserDeletedEventFactoryInterface $eventFactory;
+    protected LoggerInterface&MockObject $logger;
     protected SchemathesisCleanupListenerTestExpectations $expectations;
 
     #[\Override]
@@ -44,9 +38,7 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         $this->schemathesisCleanupMatcher = new SchemathesisCleanupResolver();
         $this->emailExtractor = $this->createEmailExtractor();
         $this->repository = $this->createMock(UserRepositoryInterface::class);
-        $this->eventBus = $this->createMock(EventBusInterface::class);
-        $this->uuidFactory = $this->createMock(UuidFactory::class);
-        $this->eventFactory = $this->createMock(UserDeletedEventFactoryInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->listener = $this->createListener();
         $this->expectations = $this->createExpectations();
     }
@@ -68,15 +60,9 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
 
     protected function createExpectations(): SchemathesisCleanupListenerTestExpectations
     {
-        $eventId = $this->faker->uuid();
-
         return new SchemathesisCleanupListenerTestExpectations(
             $this,
             $this->repository,
-            $this->eventBus,
-            $this->uuidFactory,
-            $this->eventFactory,
-            $eventId,
             /**
              * @psalm-return \Closure(...mixed):(array|null|object|scalar)
              */
@@ -86,27 +72,15 @@ abstract class SchemathesisCleanupListenerTestCase extends UnitTestCase
         );
     }
 
-    protected function createListener(): SchemathesisCleanupListener
-    {
-        $cache = $this->createMock(TagAwareCacheInterface::class);
-        $cache->method('invalidateTags')->willReturn(true);
-
-        $cacheKeyBuilder = $this->createMock(CacheKeyBuilder::class);
-        $cacheKeyBuilder
-            ->method('hashEmail')
-            ->willReturnCallback(
-                static fn (string $email): string => md5($email)
-            );
-
+    protected function createListener(
+        string $appEnv = SchemathesisCleanupListener::ENVIRONMENT
+    ): SchemathesisCleanupListener {
         return new SchemathesisCleanupListener(
+            $appEnv,
             $this->repository,
-            $this->eventBus,
-            $this->uuidFactory,
-            $this->eventFactory,
             $this->schemathesisCleanupMatcher,
             $this->emailExtractor,
-            $cache,
-            $cacheKeyBuilder
+            $this->logger
         );
     }
 
