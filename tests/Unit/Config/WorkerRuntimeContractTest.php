@@ -26,6 +26,8 @@ COMMAND;
 
     private const WORKER_HEALTHCHECK_PATH = 'infrastructure/supervisor/worker-healthcheck';
 
+    private string $lastHealthcheckError = '';
+
     private const SUPERVISORCTL_SCRIPT = <<<'SH'
 #!/bin/sh
 if [ "$#" -ne 4 ] || [ "$1" != "-c" ] || [ "$2" != "$SUPERVISORCTL_EXPECTED_CONFIG" ] \
@@ -43,6 +45,7 @@ SH;
 
         self::assertStringContainsString('[rpcinterface:supervisor]', $config);
         self::assertStringContainsString(self::SUPERVISOR_RPC_FACTORY, $config);
+        self::assertStringContainsString('file = /run/supervisor.sock', $config);
         self::assertStringContainsString('serverurl = unix:///run/supervisor.sock', $config);
         self::assertStringContainsString(
             self::WORKER_COMMAND,
@@ -107,6 +110,10 @@ SH;
                 0,
                 self::DEFAULT_SUPERVISOR_CONFIG . '.other'
             )
+        );
+        self::assertStringContainsString(
+            'unexpected supervisorctl arguments: -c ' . self::DEFAULT_SUPERVISOR_CONFIG . ' status',
+            $this->lastHealthcheckError
         );
     }
 
@@ -220,6 +227,7 @@ SH;
 
         self::assertIsResource($process);
         fclose($pipes[1]);
+        $this->lastHealthcheckError = (string) stream_get_contents($pipes[2]);
         fclose($pipes[2]);
 
         return proc_close($process);
