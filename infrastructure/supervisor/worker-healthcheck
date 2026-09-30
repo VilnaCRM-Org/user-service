@@ -2,8 +2,9 @@
 set -eu
 
 expected_processes=10
+supervisor_config="${SUPERVISOR_CONFIG:-/etc/supervisor/supervisord.conf}"
 
-status="$(supervisorctl status 'messenger-consume:*')" || exit 1
+status="$(supervisorctl -c "$supervisor_config" status 'messenger-consume:*')" || exit 1
 
 printf '%s\n' "$status" | awk -v expected_processes="$expected_processes" '
     BEGIN {
