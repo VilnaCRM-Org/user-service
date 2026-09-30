@@ -11,7 +11,7 @@ final class DocumentDbCaBundleImageTest extends UnitTestCase
     private const BUNDLE_PATH = '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem';
 
     private const BUNDLE_SHA256 =
-        'e5bb2084ccf45087bda1c9bffdea0eb15ee67f0b91646106e466714f9de3c7e3';
+        'fe45bbebf92ad3e27a583bbb2ddd1553c521ed4d49af5514dc0a40372ea5395c';
 
     private const BUNDLE_URL = 'https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem';
 
