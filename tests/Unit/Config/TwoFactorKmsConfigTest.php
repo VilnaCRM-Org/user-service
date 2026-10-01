@@ -132,6 +132,8 @@ final class TwoFactorKmsConfigTest extends UnitTestCase
     public function testLocalEnvironmentsUseTheLocalStackKeyAndProductionHasNoDefault(): void
     {
         $this->assertSame('', $this->dotenv('.env')['TWO_FACTOR_KMS_KEY_ID']);
+        $this->assertArrayNotHasKey('AWS_REGION', $this->dotenv('.env'));
+        $this->assertSame('us-east-1', $this->dotenv('.env.test')['AWS_REGION']);
 
         foreach (self::LOCAL_ENV_FILES as $file) {
             $this->assertSame(
