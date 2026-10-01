@@ -1,16 +1,16 @@
 framework:
   cache:
     app: cache.adapter.redis
-    default_redis_provider: '%env(resolve:REDIS_URL)%'
+    default_redis_provider: app.redis_connection
 
     pools:
       app:
         adapter: cache.adapter.redis
         default_lifetime: 86400
-        provider: '%env(resolve:REDIS_URL)%'
+        provider: app.redis_connection
 
       cache.user:
         adapter: cache.adapter.redis
         default_lifetime: 600
-        provider: '%env(resolve:REDIS_URL)%'
+        provider: app.redis_connection
         tags: true

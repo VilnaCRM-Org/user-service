@@ -84,6 +84,9 @@ workspace {
                     messenger = component "Symfony Messenger" "Manages background tasks" {
                         tags "Item"
                     }
+                    redisConnectionFactory = component "RedisConnectionFactory" "Opens Redis connections; with REDIS_IAM_USER_ID it authenticates with an ElastiCache IAM token and renews it" "Factory" {
+                        tags "Item"
+                    }
                 }
 
                 database = component "Database" "Stores user, information, hashed authentication credentials, access rights, oauth credentials, etc." "MariaDB" {
@@ -124,6 +127,8 @@ workspace {
                 tokenRepository -> token "save and load"
                 userRepository -> database "accesses data"
                 tokenRepository -> cache "accesses data"
+                tokenRepository -> redisConnectionFactory "uses connections from"
+                redisConnectionFactory -> cache "authenticates with AUTH <user-id> <IAM token> over TLS"
                 messenger -> sqs "publishes and consumes queued messages"
                 mailer -> ses "sends email when SES API transport is configured" "HTTPS API"
             }

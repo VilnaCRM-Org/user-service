@@ -221,7 +221,7 @@ deptrac-debug: ## Find files unassigned for Deptrac
 	$(EXEC_ENV) $(DEPTRAC) debug:unassigned --config-file=deptrac.yaml
 
 behat: setup-test-db clear-test-expression-language-caches ## A php framework for autotesting business expectations
-	APP_ENV=test APP_DEBUG=0 $(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
+	APP_ENV=test APP_DEBUG=0 $(DOCKER_COMPOSE) up --detach --wait php database redis valkey-iam mailer localstack
 	$(EXEC_ENV) $(BEHAT_ENV) $(BEHAT)
 
 integration-tests: setup-test-db ## Run integration tests
@@ -390,12 +390,12 @@ new-logs: ## Show live logs
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
 start: ## Start docker
-	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
+	$(DOCKER_COMPOSE) up --detach --wait php database redis valkey-iam mailer localstack
 	$(MAKE) build-k6-docker
 	$(MAKE) build-spectral-docker
 
 start-memory-tests: ## Start only services required for memory leak tests
-	$(DOCKER_COMPOSE) up --detach --wait php database redis mailer localstack
+	$(DOCKER_COMPOSE) up --detach --wait php database redis valkey-iam mailer localstack
 
 ps: ## Check docker containers
 	$(DOCKER_COMPOSE) ps
