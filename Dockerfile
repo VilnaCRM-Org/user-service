@@ -223,8 +223,10 @@ RUN set -eux; \
 RUN rm -Rf infrastructure/docker/
 
 # Only the declared volumes and the entrypoint's bundle and key directories are
-# writable by the application user; the application code stays root-owned.
+# writable by the application user; the application code stays root-owned, and
+# archive-extracted dependencies lose their world-writable bits.
 RUN set -eux; \
+    find /srv/app /var/www/html -xdev -perm -o+w ! -type l -exec chmod o-w {} +; \
     install -d -o 10001 -g 10001 -m 0755 \
         /srv/app/var /srv/app/var/cache /srv/app/var/log /srv/app/var/run /srv/app/var/tmp \
         /data /data/caddy /config /config/caddy \
@@ -251,8 +253,10 @@ COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
 COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY --link --chmod=755 infrastructure/supervisor/worker-healthcheck /usr/local/bin/worker-healthcheck
 
-# Supervisor keeps its socket, pid file and log in the application var volume.
+# Supervisor keeps its socket, pid file and log in the application var volume;
+# the application code stays root-owned and not world-writable.
 RUN set -eux; \
+    find /srv/app /var/www/html -xdev -perm -o+w ! -type l -exec chmod o-w {} +; \
     install -d -o 10001 -g 10001 -m 0755 \
         /srv/app/var /srv/app/var/cache /srv/app/var/log /srv/app/var/run /srv/app/var/tmp; \
     chown -R 10001:10001 /srv/app/var

@@ -302,7 +302,8 @@ configuration should match these values:
 Notes on the contract:
 
 - The application code, configuration and dependencies stay root-owned and
-  read-only for the application user. Only the declared volumes, plus
+  read-only for the application user; the build removes the world-writable bits
+  that some dependency archives carry. Only the declared volumes, plus
   `/srv/app/public/bundles` and `/srv/app/config/jwt` that the image's own
   entrypoint writes when it runs the default `frankenphp` command, belong to
   `10001:10001`. The images pre-create `/srv/app/var/{cache,log,run,tmp}` with that
@@ -324,7 +325,8 @@ Notes on the contract:
 `make image-runtime-tests` builds both images and verifies this contract with
 Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
 default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
-application ownership of every writable path, and passing health checks with the
+application ownership of every writable path, no world-writable application
+files, and passing health checks with the
 image defaults and with the ECS task shape (read-only root filesystem, every
 capability dropped, the bootstrap command override). The checks run on an
 internal Docker network with MongoDB, Redis and LocalStack, generate throwaway

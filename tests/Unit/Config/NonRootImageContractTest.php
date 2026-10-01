@@ -41,6 +41,9 @@ final class NonRootImageContractTest extends UnitTestCase
     private const APPLICATION_USER_COMMAND =
         'adduser -S -D -H -u %d -G app -h /nonexistent -s /sbin/nologin app';
 
+    private const STRIP_WORLD_WRITE_COMMAND =
+        'find /srv/app /var/www/html -xdev -perm -o+w ! -type l -exec chmod o-w {} +';
+
     private const RUN_INSTRUCTION_PATTERN = '/^RUN (?:[^\n]*\\\\\n)*[^\n]*$/m';
 
     /**
@@ -137,6 +140,7 @@ final class NonRootImageContractTest extends UnitTestCase
             );
         }
 
+        self::assertStringContainsString(self::STRIP_WORLD_WRITE_COMMAND, $ownership);
         self::assertSame($volumes, $this->declaredVolumes($dockerStage));
         $this->assertSwitchesUserAfterOwnershipAndBeforeVolumes($dockerStage);
     }

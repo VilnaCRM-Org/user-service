@@ -148,7 +148,10 @@ writable_paths_belong_to_the_application_user() {
         done
         for path in $2; do
             [ ! -w "$path" ] || { echo "application user can modify $path"; exit 1; }
-        done' ownership "$paths" "$READ_ONLY_CODE_PATHS"
+        done
+        writable=$(find /srv/app -xdev -path /srv/app/var -prune -o -perm -o+w ! -type l -print)
+        [ -z "$writable" ] || { echo "world-writable application files: $writable"; exit 1; }' \
+        ownership "$paths" "$READ_ONLY_CODE_PATHS"
 }
 
 random_base64_key() {
