@@ -73,6 +73,14 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
         $this->signJwtsWithLocalStackKms($container);
     }
 
+    #[\Override]
+    protected function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        $container->addCompilerPass(new KmsJwtSigningCompilerPass());
+        $container->addCompilerPass($this);
+    }
+
     /**
      * JWT signing and verification in a Behat-booted non-test kernel use the
      * LocalStack KMS key, like the test kernel that issued the tokens. The
@@ -89,19 +97,12 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
                 'key' => '%env(AWS_KMS_LOCAL_KEY)%',
                 'secret' => '%env(AWS_KMS_LOCAL_SECRET)%',
             ],
-        ]]));
+        ],
+        ]));
 
         foreach ([KmsJwtKeyProvider::class, KmsJwtFactory::class] as $serviceId) {
             $container->getDefinition($serviceId)
                 ->setArgument('$kmsClient', new Reference(self::LOCAL_KMS_CLIENT));
         }
-    }
-
-    #[\Override]
-    protected function build(ContainerBuilder $container): void
-    {
-        parent::build($container);
-        $container->addCompilerPass(new KmsJwtSigningCompilerPass());
-        $container->addCompilerPass($this);
     }
 }

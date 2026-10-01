@@ -141,7 +141,7 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
 
         self::assertStringContainsString('JWT_KMS_ALIAS=' . self::LOCAL_KEY_ALIAS, $script);
         self::assertStringContainsString('--key-usage SIGN_VERIFY', $script);
-        self::assertStringContainsString('--key-spec RSA_4096', $script);
+        self::assertStringContainsString('--key-spec RSA_2048', $script);
     }
 
     public function testComposerScriptsGenerateNoLocalKeyPair(): void

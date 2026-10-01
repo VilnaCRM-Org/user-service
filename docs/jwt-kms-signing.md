@@ -67,7 +67,9 @@ no longer exist. `OAUTH_ENCRYPTION_KEY` is unrelated to JWT signing and stays.
 The repository's own tests and CI have no AWS account. The dev, test, load_test and
 schemathesis environments point the same `Aws\Kms\KmsClient` service at LocalStack
 KMS through `AWS_KMS_LOCAL_*`. `infrastructure/docker/php/init-aws.sh` creates the
-`alias/user-service-jwt` `RSA_4096` `SIGN_VERIFY` key when LocalStack starts; the local
+`alias/user-service-jwt` `SIGN_VERIFY` key when LocalStack starts (`RSA_2048`, because
+LocalStack signs about five times slower with `RSA_4096`, which distorts the Behat
+timing checks; the code accepts any RSA signing key); the local
 environments reference it by its alias ARN
 (`arn:aws:kms:us-east-1:000000000000:alias/user-service-jwt`). The
 code path is the same as in production; only the endpoint and the fake credentials
