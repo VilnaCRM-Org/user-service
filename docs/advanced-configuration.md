@@ -267,10 +267,10 @@ See the [AWS SDK credential provider documentation](https://docs.aws.amazon.com/
 ### Production web and worker containers
 
 Build the web image from the `frankenphp_prod` target. Its production Caddy
-configuration serves HTTP on port 80 behind the ALB HTTPS listener and forces
-`APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener. The development
-Caddy configuration and its arbitrary listener/configuration overrides do not
-apply to this production target.
+configuration serves HTTP on the unprivileged port 8080 behind the ALB HTTPS
+listener and forces `APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener.
+The development Caddy configuration and its arbitrary listener/configuration
+overrides do not apply to this production target.
 
 Build the worker image from the `app_workers` target. Supervisor runs ten
 production consumers for `send-email`, `insert-user-batch`, and `domain-events`.
@@ -279,6 +279,57 @@ to standard output and standard error for collection by the container platform.
 The container health check requires all ten expected consumers to be running;
 a missing, stopped, or unexpected process makes the check fail. This process
 check does not prove message delivery or downstream service availability.
+
+#### Non-root runtime contract
+
+Both production images run as a fixed non-root account. The container platform
+configuration should match these values:
+
+- `USER`: `10001:10001` (`app`) in both images.
+- Web container port: `8080/tcp` (HTTP). The Caddy admin endpoint stays on
+  `localhost:2019`. The worker exposes no port.
+- Web health check: the image `HEALTHCHECK` runs
+  `curl -fsS -o /dev/null http://127.0.0.1:8080/api/health`, which returns `204`.
+  Point the platform's target health check at the same port and path.
+- Worker health check: `/usr/local/bin/worker-healthcheck`.
+- Writable volumes (`VOLUME`): `/srv/app/var`, `/data` and `/config` for the web
+  image; `/srv/app/var` for the worker image.
+- Supervisor files: socket `/srv/app/var/run/supervisor.sock` (mode `0700`), pid
+  file `/srv/app/var/run/supervisord.pid` and log
+  `/srv/app/var/log/supervisord.log`.
+- Linux capabilities: neither container needs any, so both can drop `ALL`.
+
+Notes on the contract:
+
+- The application code, configuration and dependencies stay root-owned and
+  read-only for the application user. Only the declared volumes, plus
+  `/srv/app/public/bundles` and `/srv/app/config/jwt` that the image's own
+  entrypoint writes when it runs the default `frankenphp` command, belong to
+  `10001:10001`. The images pre-create `/srv/app/var/{cache,log,run,tmp}` with that
+  owner.
+- The `VOLUME` declarations matter on ECS: an ECS task volume copies the image's
+  data and ownership only when the image declares a `VOLUME` at the same path;
+  otherwise the volume is owned by `root` with mode `0755` and the application
+  user cannot write it. Mount the task's ephemeral volumes at exactly these paths
+  when the root filesystem is read-only. The worker no longer writes `/run`.
+- The FrankenPHP binary carries no `cap_net_bind_service` file capability, and the
+  PHP preload switch (`opcache.preload_user = app`) applies only when PHP starts
+  as `root`. Neither container needs `NET_BIND_SERVICE`, `SETUID` or `SETGID`, and
+  binding a port below 1024 fails.
+- The local development image (`frankenphp_dev`) keeps `root` and its port 80,
+  443 and 8081 listeners. The load-test and Schemathesis harnesses bind-mount the
+  host checkout and install dependencies, assets and keys into it, so they set
+  `user: '0:0'` and keep their development listeners.
+
+`make image-runtime-tests` builds both images and verifies this contract with
+Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
+default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
+application ownership of every writable path, and passing health checks with the
+image defaults and with the ECS task shape (read-only root filesystem, every
+capability dropped, the bootstrap command override). The checks run on an
+internal Docker network with MongoDB, Redis and LocalStack, generate throwaway
+production secrets per run, and restore the kernel default for privileged ports
+(`net.ipv4.ip_unprivileged_port_start=1024`), which Docker otherwise lowers to 0.
 
 ### SES delivery with task credentials
 

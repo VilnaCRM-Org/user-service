@@ -77,6 +77,10 @@ The suite uses `phpunit.memory.xml.dist` and runs as a separate GitHub Actions w
 - `disableReboot()` changes how Symfony resets services tagged with `kernel.reset`; this can affect token storage and Doctrine ODM behavior, so future endpoint suites may require test-environment adjustments instead of assuming standard functional-test semantics.
 - Deep forensic profiling remains a manual escalation path. Use `arnaud-lb/memprof` locally or in staging when retained-object failures are inconclusive.
 
+## Production Image Runtime Testing
+
+`make image-runtime-tests` builds the `frankenphp_prod` web and `app_workers` worker images and runs `tests/Image/check-non-root-images.sh`. It checks that both images declare a numeric non-root `USER` (UID and GID at least 1000), that binding port 80 fails while port 8080 binds, that every writable runtime path belongs to the application user while the code stays read-only, and that the web `/api/health` endpoint and both image health checks pass with the image defaults and with the ECS task shape (read-only root filesystem and every capability dropped). The `Non-root image runtime checks` workflow runs it on pull requests. The contract is described in [Advanced Configuration](advanced-configuration.md#non-root-runtime-contract).
+
 ## Mutation Testing
 
 Mutation testing is a rigorous approach to testing that involves making small, deliberate modifications to our code (mutants) to verify that our tests can detect these changes. This method helps in evaluating the quality and effectiveness of our test suites.
