@@ -174,6 +174,17 @@ final class RedisIamConnectionTest extends UnitTestCase
         self::assertSame([2, 2], [$this->connects, $this->authentications]);
     }
 
+    public function testReconnectAuthenticatesOnceEvenWhenTheNewTokenIsAboutToExpire(): void
+    {
+        $this->tokenValidity = 60;
+        $connection = $this->openedConnection();
+
+        $this->now += 60;
+        $connection->renewIfDue();
+
+        self::assertSame([2, 2], [$this->connects, $this->authentications]);
+    }
+
     public function testRenewalScheduleFollowsTheLatestTokenValidity(): void
     {
         $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
