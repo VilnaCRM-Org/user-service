@@ -38,7 +38,7 @@ final class TwoFactorRecoveryStateContext implements Context
         $user->setTwoFactorEnabled(true);
         $user->setTwoFactorSecret(
             $this->auth->twoFactorSecretEncryptor
-                ->encrypt(self::DEFAULT_TOTP_SECRET)
+                ->encrypt(self::DEFAULT_TOTP_SECRET, $user->getId())
         );
         $this->userManagement->userRepository->save($user);
         $this->recoveryCodeRepository->deleteByUserId($user->getId());

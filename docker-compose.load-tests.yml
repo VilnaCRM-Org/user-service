@@ -80,16 +80,13 @@ services:
   localstack:
     image: localstack/localstack:3.4.0
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,kms
       - DEBUG=1
     volumes:
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+      - ./infrastructure/docker/php/localstack-healthcheck.sh:/usr/local/bin/localstack-healthcheck.sh:ro
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -fsS http://localhost:4566/_localstack/health | grep -q "\"sqs\": \"running\""',
-        ]
+      test: ['CMD', 'sh', '/usr/local/bin/localstack-healthcheck.sh']
       interval: 5s
       timeout: 3s
       retries: 20

@@ -53,7 +53,7 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
         $otpauthUri = $this->buildOtpauthUri($user->getEmail(), $secret);
         $this->expectUserLookup($user);
         $this->expectTotpGeneration($user->getEmail(), $secret, $otpauthUri);
-        $this->expectSecretEncryption($secret);
+        $this->expectSecretEncryption($secret, $user->getId());
         $this->expectUserSaveWithEncryptedSecret($user);
         $command = new SetupTwoFactorCommand($user->getEmail());
         $response = $this->createHandler()->__invoke($command);
@@ -163,12 +163,12 @@ final class SetupTwoFactorCommandHandlerTest extends UnitTestCase
             ]);
     }
 
-    private function expectSecretEncryption(string $secret): void
+    private function expectSecretEncryption(string $secret, string $userId): void
     {
         $this->twoFactorSecretEncryptor
             ->expects($this->once())
             ->method('encrypt')
-            ->with($secret)
+            ->with($secret, $userId)
             ->willReturn('encrypted-secret');
     }
 
