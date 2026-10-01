@@ -10,7 +10,11 @@ namespace App\User\Domain\Contract;
  */
 interface TwoFactorSecretEncryptorInterface
 {
-    public function encrypt(string $secret, string $userId): string;
+    public function encrypt(
+        #[\SensitiveParameter]
+        string $secret,
+        string $userId
+    ): string;
 
     public function decrypt(string $payload, string $userId): string;
 }

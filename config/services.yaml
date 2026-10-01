@@ -133,6 +133,7 @@ services:
     arguments:
       $appEnv: '%kernel.environment%'
       $twoFactorKmsKeyId: '%env(default::TWO_FACTOR_KMS_KEY_ID)%'
+      $awsRegion: '%env(default::AWS_REGION)%'
     tags:
       - {
           name: kernel.event_listener,

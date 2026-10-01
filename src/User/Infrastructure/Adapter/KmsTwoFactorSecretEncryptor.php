@@ -37,8 +37,11 @@ final readonly class KmsTwoFactorSecretEncryptor implements
     }
 
     #[\Override]
-    public function encrypt(string $secret, string $userId): string
-    {
+    public function encrypt(
+        #[\SensitiveParameter]
+        string $secret,
+        string $userId
+    ): string {
         $this->assertSecretSize($secret);
         $request = $this->request($userId, ['Plaintext' => $secret]);
 

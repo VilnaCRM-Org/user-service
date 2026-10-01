@@ -66,17 +66,17 @@ Password grant is intentionally disabled (`enable_password_grant: false`); use a
 
 #### Two-factor secret encryption (AWS KMS)
 
-TOTP secrets are encrypted with the symmetric 2FA KMS key (`kms:Encrypt` and `kms:Decrypt`, algorithm `SYMMETRIC_DEFAULT`). Every call carries the encryption context `{"user_id": "<user id>"}`, so a stored secret decrypts only for the user it was created for. A decryption failure (another user's ciphertext, a missing or different context, a different key, or any KMS error) fails closed: the verification is refused and the stored value is never used as a TOTP secret. There is no static encryption key and no fallback.
+TOTP secrets are encrypted with the symmetric 2FA KMS key (`kms:Encrypt` and `kms:Decrypt`, algorithm `SYMMETRIC_DEFAULT`). Every call carries the encryption context `{"user_id": "<user id>"}`, so a stored secret decrypts only for the user it was created for. A decryption failure (another user's ciphertext, a missing or different context, a different key, or any KMS error) fails closed: the request fails with HTTP 500, the submitted code is not evaluated and the stored value is never used as a TOTP secret. There is no static encryption key and no fallback.
 
 - `TWO_FACTOR_KMS_KEY_ID`: The 2FA KMS key ARN (a key id or alias also works). Empty in root `.env`; production must set it, and the application fails fast when it is empty. The infrastructure passes it as a plain environment value.
-- `AWS_REGION`: The region of the 2FA key. Production uses the AWS SDK default credential provider chain (the ECS task role) and the regional KMS endpoint; never inject static AWS keys.
+- `AWS_REGION`: The region of the 2FA key. Production must set it (Amazon ECS on Fargate sets it for the task), and the application fails fast when it is empty. Production uses the AWS SDK default credential provider chain (the ECS task role) and the regional KMS endpoint; never inject static AWS keys.
 - Size bound: a secret must be 1 to 4096 bytes (the KMS `Encrypt` plaintext limit) and a stored payload at most 8192 base64 characters (a 6144-byte KMS ciphertext). Larger input is refused before any KMS call.
 
 The ECS task role needs `kms:Encrypt` and `kms:Decrypt` on the 2FA key only, with the conditions `ForAllValues:StringEquals kms:EncryptionContextKeys = ["user_id"]` and `Null kms:EncryptionContextKeys = false`.
 
-Development, test, load-test and Schemathesis environments use the LocalStack KMS: `infrastructure/docker/php/init-aws.sh` creates a symmetric key with the alias `alias/user-service-two-factor`, which `TWO_FACTOR_KMS_KEY_ID` names in `.env.dev`, `.env.test`, `.env.load_test` and `.env.schemathesis`. The LocalStack client is configured by `AWS_KMS_LOCAL_ENDPOINT`, `AWS_KMS_LOCAL_REGION`, `AWS_KMS_LOCAL_KEY` and `AWS_KMS_LOCAL_SECRET` (dummy values).
+Development, test, load-test and Schemathesis environments use the LocalStack KMS: `infrastructure/docker/php/init-aws.sh` creates a symmetric key with the alias `alias/user-service-two-factor`, which `TWO_FACTOR_KMS_KEY_ID` names in `.env.dev`, `.env.test`, `.env.load_test` and `.env.schemathesis`. The LocalStack containers report healthy only after `init-aws.sh` completed successfully and both SQS and KMS are running (`infrastructure/docker/php/localstack-healthcheck.sh`). The LocalStack client is configured by `AWS_KMS_LOCAL_ENDPOINT`, `AWS_KMS_LOCAL_REGION`, `AWS_KMS_LOCAL_KEY` and `AWS_KMS_LOCAL_SECRET` (dummy values).
 
-Secrets encrypted with the former `TWO_FACTOR_ENCRYPTION_KEY` (AES-256-GCM) cannot be decrypted with KMS. Such a user cannot complete 2FA with a TOTP code (recovery codes still work) until 2FA is disabled and set up again. Local databases created before this change should be reset.
+Secrets encrypted with the former `TWO_FACTOR_ENCRYPTION_KEY` (AES-256-GCM) cannot be decrypted with KMS. For such a user a TOTP code fails with HTTP 500 (recovery codes still work) until 2FA is disabled and set up again. Local databases created before this change should be reset.
 
 #### Social sign-in
 

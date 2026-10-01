@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Config;
 
+use App\Shared\Application\EventListener\TwoFactorEncryptionKeyConfigurationListener;
 use App\Tests\Unit\UnitTestCase;
 use App\User\Domain\Contract\TwoFactorSecretEncryptorInterface;
 use App\User\Infrastructure\Adapter\KmsTwoFactorSecretEncryptor;
@@ -18,6 +19,15 @@ final class TwoFactorKmsConfigTest extends UnitTestCase
 {
     private const LOCAL_ENVIRONMENTS = ['dev', 'test', 'load_test', 'schemathesis'];
     private const LOCAL_KEY_ALIAS = 'alias/user-service-two-factor';
+    private const HEALTHCHECK_PATH = '/usr/local/bin/localstack-healthcheck.sh';
+    private const HEALTHCHECK_MOUNT = './infrastructure/docker/php/localstack-healthcheck.sh:'
+        . self::HEALTHCHECK_PATH . ':ro';
+    private const LOCALSTACK_COMPOSE_FILES = [
+        'docker-compose.override.yml',
+        'docker-compose.memory-tests.yml',
+        'docker-compose.schemathesis.yml',
+        'docker-compose.load-tests.yml',
+    ];
     private const LOCAL_ENV_FILES = [
         '.env.dev',
         '.env.test',
@@ -37,6 +47,54 @@ final class TwoFactorKmsConfigTest extends UnitTestCase
             ['$keyId' => '%env(TWO_FACTOR_KMS_KEY_ID)%'],
             $services[KmsTwoFactorSecretEncryptor::class]['arguments']
         );
+    }
+
+    public function testProductionFailFastChecksTheKeyIdAndTheRegion(): void
+    {
+        $listener = $this->services()['services'][
+            TwoFactorEncryptionKeyConfigurationListener::class
+        ];
+
+        $this->assertSame(
+            [
+                '$appEnv' => '%kernel.environment%',
+                '$twoFactorKmsKeyId' => '%env(default::TWO_FACTOR_KMS_KEY_ID)%',
+                '$awsRegion' => '%env(default::AWS_REGION)%',
+            ],
+            $listener['arguments']
+        );
+    }
+
+    public function testLocalStackHealthcheckWaitsForInitAndForSqsAndKms(): void
+    {
+        $script = (string) file_get_contents(
+            $this->path('infrastructure/docker/php/localstack-healthcheck.sh')
+        );
+
+        foreach ([
+            '/_localstack/init/ready',
+            '"completed": true',
+            '"state": "SUCCESSFUL"',
+            '"sqs": "running"',
+            '"kms": "running"',
+        ] as $expected) {
+            $this->assertStringContainsString($expected, $script);
+        }
+    }
+
+    public function testEveryLocalStackServiceRunsKmsAndUsesTheHealthcheck(): void
+    {
+        foreach (self::LOCALSTACK_COMPOSE_FILES as $file) {
+            $localstack = Yaml::parseFile($this->path($file))['services']['localstack'];
+
+            $this->assertContains('SERVICES=sqs,kms', $localstack['environment'], $file);
+            $this->assertContains(self::HEALTHCHECK_MOUNT, $localstack['volumes'], $file);
+            $this->assertSame(
+                ['CMD', 'sh', self::HEALTHCHECK_PATH],
+                $localstack['healthcheck']['test'],
+                $file
+            );
+        }
     }
 
     public function testProductionKmsClientUsesTheTaskRoleAndTheRegionalEndpoint(): void

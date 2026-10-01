@@ -13,6 +13,7 @@ use App\Tests\Behat\UserGraphQLContext\Input\GraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\RequestPasswordResetGraphQLMutationInput;
 use App\Tests\Behat\UserGraphQLContext\Input\ResendEmailGraphQLMutationInput;
 use App\Tests\Memory\Support\BrowserReuseMemoryWebTestCase;
+use App\Tests\Memory\Support\EncryptedTwoFactorSecretFixture;
 use App\Tests\Shared\Auth\Factory\TestAccessTokenFactory;
 use App\User\Domain\Entity\AuthSession;
 use App\User\Domain\Entity\ConfirmationToken;
@@ -938,7 +939,7 @@ GRAPHQL;
         $user->setConfirmed($confirmed);
         $user->setTwoFactorEnabled($twoFactorEnabled);
         $user->setTwoFactorSecret(
-            $twoFactorEnabled ? $this->faker->regexify('[A-Z2-7]{16}') : null,
+            (new EncryptedTwoFactorSecretFixture($this->container))->secretFor($user),
         );
         $this->userRepository->save($user);
     }

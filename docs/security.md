@@ -46,8 +46,8 @@ We regularly update project dependencies to mitigate vulnerabilities in third-pa
 ### Two-Factor Secret Encryption
 
 - TOTP secrets are encrypted with the AWS KMS 2FA key under the encryption context `user_id`; there is no static encryption key.
-- A ciphertext decrypts only for its own user. Any decryption failure fails closed, with no plain-text fallback.
-- Production must set `TWO_FACTOR_KMS_KEY_ID` (the key ARN) and uses the ECS task role; runtime validation fails fast when it is empty. See [two-factor secret encryption](advanced-configuration.md#two-factor-secret-encryption-aws-kms).
+- A ciphertext decrypts only for its own user. Any decryption or KMS failure fails closed with HTTP 500: the code is not evaluated and there is no plain-text fallback.
+- Production must set `TWO_FACTOR_KMS_KEY_ID` (the key ARN) and `AWS_REGION`, and uses the ECS task role; runtime validation fails fast when either is empty. See [two-factor secret encryption](advanced-configuration.md#two-factor-secret-encryption-aws-kms).
 
 ### GitHub CI Security Checks
 
