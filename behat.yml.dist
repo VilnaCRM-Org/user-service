@@ -56,6 +56,7 @@ default:
         - App\Tests\Behat\UserContext\TokenResponseContext
         - App\Tests\Behat\UserContext\SignInCookieAssertionContext
         - App\Tests\Behat\UserContext\SignInJwtAssertionContext
+        - App\Tests\Behat\UserContext\JwksContext
         - App\Tests\Behat\HealthCheckContext\HealthCheckContext
         - TwentytwoLabs\BehatOpenApiExtension\Context\RestContext: ~
     health_check:

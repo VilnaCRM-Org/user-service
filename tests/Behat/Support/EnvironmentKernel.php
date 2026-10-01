@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Behat\Support;
 
+use App\Shared\Infrastructure\DependencyInjection\KmsJwtSigningCompilerPass;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -67,6 +68,7 @@ final class EnvironmentKernel extends BaseKernel implements CompilerPassInterfac
     protected function build(ContainerBuilder $container): void
     {
         parent::build($container);
+        $container->addCompilerPass(new KmsJwtSigningCompilerPass());
         $container->addCompilerPass($this);
     }
 }

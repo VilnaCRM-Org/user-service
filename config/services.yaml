@@ -147,6 +147,30 @@ services:
           priority: 200,
         }
 
+  # S5.11 (FR-06): production guard for KMS JWT signing. Refuses a local or dev
+  # KMS endpoint, static AWS credentials and non-ARN JWT key ids in prod.
+  App\Shared\Application\EventListener\JwtKmsConfigurationListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $currentKeyId: '%env(JWT_KMS_KEY_ID)%'
+      $previousKeyId: '%env(JWT_KMS_PREVIOUS_KEY_ID)%'
+      $accessKeyId: '%env(string:default::AWS_ACCESS_KEY_ID)%'
+      $secretAccessKey: '%env(string:default::AWS_SECRET_ACCESS_KEY)%'
+      $sessionToken: '%env(string:default::AWS_SESSION_TOKEN)%'
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: kernel.request,
+          method: onKernelRequest,
+          priority: 200,
+        }
+      - {
+          name: kernel.event_listener,
+          event: console.command,
+          method: onConsoleCommand,
+          priority: 200,
+        }
+
   App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
     arguments:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
@@ -408,6 +432,40 @@ services:
       - version: '%env(AWS_SQS_VERSION)%'
         region: '%env(AWS_SQS_REGION)%'
 
+  # AWS uses the default credential chain (the ECS task role) and the regional
+  # KMS endpoint; no static keys.
+  Aws\Kms\KmsClient:
+    arguments:
+      - version: 'latest'
+        region: '%env(AWS_REGION)%'
+
+  # JWT and OAuth signing (S5.11, FR-06): kms:Sign with the JWT key
+  # (JWT_KMS_KEY_ID); local verification with GetPublicKey keys, cached for
+  # JWT_KMS_PUBLIC_KEY_CACHE_TTL seconds. JWT_KMS_PREVIOUS_KEY_ID is set only
+  # during a key-change window (D-17, USI plan) and only verifies.
+  App\Shared\Infrastructure\Provider\KmsJwtKeyProvider:
+    arguments:
+      $currentKeyId: '%env(JWT_KMS_KEY_ID)%'
+      $previousKeyId: '%env(JWT_KMS_PREVIOUS_KEY_ID)%'
+      $cacheTtlSeconds: '%env(int:JWT_KMS_PUBLIC_KEY_CACHE_TTL)%'
+
+  App\Shared\Application\Provider\JwtVerificationKeyProviderInterface: '@App\Shared\Infrastructure\Provider\KmsJwtKeyProvider'
+
+  App\Shared\Infrastructure\Adapter\KmsJwsProvider:
+    arguments:
+      $ttl: '%env(int:JWT_TOKEN_TTL)%'
+
+  # lexik_jwt_authentication.encoder.service
+  app.jwt.kms_encoder:
+    class: Lexik\Bundle\JWTAuthenticationBundle\Encoder\LcobucciJWTEncoder
+    arguments: ['@App\Shared\Infrastructure\Adapter\KmsJwsProvider']
+
+  # Every league access token is a KMS-signed JWT; persistence stays in the bundle.
+  App\OAuth\Infrastructure\Repository\KmsAccessTokenRepository:
+    decorates: league.oauth2_server.repository.access_token
+    arguments:
+      $inner: '@.inner'
+
   # OAuth Social Sign-In
   oauth.redis_connection:
     class: \Redis
@@ -562,15 +620,26 @@ when@dev:
           credentials:
             key: '%env(AWS_SQS_KEY)%'
             secret: '%env(AWS_SQS_SECRET)%'
+    Aws\Kms\KmsClient: &local_kms_client
+      arguments:
+        - version: 'latest'
+          region: '%env(AWS_KMS_LOCAL_REGION)%'
+          endpoint: '%env(AWS_KMS_LOCAL_ENDPOINT)%'
+          credentials:
+            key: '%env(AWS_KMS_LOCAL_KEY)%'
+            secret: '%env(AWS_KMS_LOCAL_SECRET)%'
 
 when@test:
   services:
     Aws\Sqs\SqsClient: *local_sqs_client
+    Aws\Kms\KmsClient: *local_kms_client
 
 when@load_test:
   services:
     Aws\Sqs\SqsClient: *local_sqs_client
+    Aws\Kms\KmsClient: *local_kms_client
 
 when@schemathesis:
   services:
     Aws\Sqs\SqsClient: *local_sqs_client
+    Aws\Kms\KmsClient: *local_kms_client
