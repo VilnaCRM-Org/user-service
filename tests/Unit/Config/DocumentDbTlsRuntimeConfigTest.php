@@ -24,5 +24,4 @@ final class DocumentDbTlsRuntimeConfigTest extends UnitTestCase
         );
         self::assertArrayNotHasKey('when@prod', $config);
     }
-
 }
