@@ -91,15 +91,7 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
         $client->method('auth')->willThrowException($exception);
         $client->expects(self::once())->method('close');
         $this->logger->expects(self::never())->method('error');
-        $this->logger->expects(self::once())->method('warning')->with(
-            'Redis IAM connection error during authentication.',
-            [
-                'backend' => 'redis',
-                'user_id' => $this->userId,
-                'exception_class' => \RedisException::class,
-                'error' => $message,
-            ]
-        );
+        $this->expectConnectionErrorLog(\RedisException::class, $message);
 
         try {
             $this->authenticator()->authenticate($client);
@@ -213,6 +205,19 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
         $this->expectFailureLog($exception);
 
         $this->assertAuthenticationFails($client, $exception);
+    }
+
+    private function expectConnectionErrorLog(string $class, string $error): void
+    {
+        $this->logger->expects(self::once())->method('warning')->with(
+            'Redis IAM connection error during authentication.',
+            [
+                'backend' => 'redis',
+                'user_id' => $this->userId,
+                'exception_class' => $class,
+                'error' => $error,
+            ]
+        );
     }
 
     private function assertAuthenticationFails(\Redis $client, \Throwable $expected): void

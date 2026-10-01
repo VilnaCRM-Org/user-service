@@ -160,7 +160,9 @@ final class RedisIamConnectionRenewalTest extends RedisIamIntegrationTestCase
             $this->renew($factory);
         } finally {
             self::assertSame(0, $this->metricsEmitter->count());
-            self::assertFalse($this->logs->hasErrorThatContains('Redis IAM authentication failed.'));
+            self::assertFalse(
+                $this->logs->hasErrorThatContains('Redis IAM authentication failed.')
+            );
             self::assertTrue($this->logs->hasWarningThatContains(
                 'Redis IAM connection error during authentication.'
             ));

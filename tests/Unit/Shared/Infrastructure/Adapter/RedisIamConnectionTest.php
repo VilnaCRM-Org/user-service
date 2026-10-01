@@ -78,7 +78,11 @@ final class RedisIamConnectionTest extends UnitTestCase
                 'host' => $this->host,
                 'port' => $this->port,
                 'exception_class' => \RedisException::class,
-                'error' => sprintf('Redis IAM connection to %s:%d failed.', $this->host, $this->port),
+                'error' => sprintf(
+                    'Redis IAM connection to %s:%d failed.',
+                    $this->host,
+                    $this->port
+                ),
             ]
         );
 
