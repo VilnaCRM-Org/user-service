@@ -17,7 +17,7 @@ final class DocumentDbTlsRuntimeConfigTest extends UnitTestCase
 
         $connection = $config['doctrine_mongodb']['connections']['default'];
 
-        self::assertSame('%env(MONGODB_URL)%', $connection['server']);
+        self::assertSame('%env(documentdb_iam:MONGODB_URL)%', $connection['server']);
         self::assertSame([], $connection['options']);
         self::assertTrue(
             $config['doctrine_mongodb']['document_managers']['default']['auto_mapping']

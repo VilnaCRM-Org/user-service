@@ -9,7 +9,7 @@ doctrine_mongodb:
     oauth_provider: 'App\OAuth\Infrastructure\DoctrineType\OAuthProviderType'
   connections:
     default:
-      server: '%env(MONGODB_URL)%'
+      server: '%env(documentdb_iam:MONGODB_URL)%'
       options: {}
 
   document_managers:

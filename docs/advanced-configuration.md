@@ -327,12 +327,22 @@ If libmongoc cannot obtain ECS credentials on a live task (V-1), the plan
 requires a new decision for a password-based application user, not a silent
 fallback.
 
-Evidence in this repository: `DocumentDbIamDsnTest` pins what the bundled URI
-parser accepts. `tests/CLI/bats/php/documentdb-iam-harness/run.sh` runs the real client
-against local mock ECS and mongod endpoints and checks the credential source,
-precedence, cache refresh, wrong-role and ECS-failure behaviour (command in the
-script header). It cannot show that DocumentDB accepts the role: that needs a
-real STS and is the live TEST check.
+The connection is guarded in `DocumentDbIamDsnEnvProcessor`
+(`%env(documentdb_iam:MONGODB_URL)%` in `doctrine_mongodb.yaml`). When the URI
+uses `MONGODB-AWS`, building the connection throws if the URI carries a
+username or password, or if `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` is
+set and non-empty. URIs with any other mechanism, such as the local password
+URI, are not affected, so LocalStack keys in development are unaffected.
+
+Evidence: `DocumentDbIamDsnTest` pins what the bundled URI parser accepts, and
+`DocumentDbIamDsnEnvProcessorTest` covers the guard. A throwaway harness that
+ran the real `ext-mongodb` client against local mock ECS and mongod endpoints
+(its mock server answers the SASL conversation without checking signatures)
+showed the credential source, the precedence order, cache reuse and refresh
+after expiry, a rejected role, and an ECS failure all behaving as described
+above. It needs a container with `NET_ADMIN` to claim `169.254.170.2`, so it is
+not part of the repository or CI. None of this shows that DocumentDB accepts the
+role: that needs a real STS and is the live TEST check.
 
 ### SES delivery with task credentials
 
