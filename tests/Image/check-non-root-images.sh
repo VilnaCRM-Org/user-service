@@ -21,6 +21,14 @@ readonly MONGODB_IMAGE=${MONGODB_IMAGE:-mongo:8.0}
 readonly REDIS_IMAGE=${IMAGE_CHECK_REDIS_IMAGE:-redis:8.0.0-alpine}
 readonly LOCALSTACK_IMAGE=${IMAGE_CHECK_LOCALSTACK_IMAGE:-localstack/localstack:3.4.0}
 readonly HEALTH_TIMEOUT_SECONDS=${IMAGE_CHECK_HEALTH_TIMEOUT_SECONDS:-300}
+# The ECS task-role credential endpoint: the stub answers at this address on the
+# internal network, and the containers find it through the relative URI only.
+readonly TASK_ROLE_SUBNET=169.254.170.0/24
+readonly TASK_ROLE_ENDPOINT_IP=169.254.170.2
+readonly TASK_ROLE_RELATIVE_URI=/v2/credentials/image-runtime-check
+# The stub reuses the pinned LocalStack image for its Python HTTP server.
+readonly CREDENTIALS_STUB_IMAGE='localstack/localstack:3.4.0@sha256:54fcf172f6ff70909e1e26652c3bb4587282890aff0d02c20aa7695469476ac0'
+readonly FAKE_KMS_KEY_ARN_PREFIX='arn:aws:kms:eu-central-1:123456789012:key'
 readonly MONGODB_USER=${MONGODB_USER:-root}
 readonly MONGODB_PASSWORD=${MONGODB_PASSWORD:-secret}
 
@@ -49,6 +57,7 @@ readonly BIND_PROBE
 
 failures=0
 runtime_env_file=''
+fixture_images=()
 
 cleanup() {
     local containers=()
@@ -58,6 +67,9 @@ cleanup() {
         docker rm -f -v "${containers[@]}" >/dev/null
     fi
     docker network rm "$NETWORK" >/dev/null 2>&1 || true
+    if [ "${#fixture_images[@]}" -gt 0 ]; then
+        docker image rm -f "${fixture_images[@]}" >/dev/null 2>&1 || true
+    fi
     [ -z "$runtime_env_file" ] || rm -f "$runtime_env_file"
 }
 
@@ -160,8 +172,10 @@ random_base64_key() {
     head -c 32 /dev/urandom | base64 | tr -d '\n'
 }
 
-# Throwaway production secrets for this run, and the LocalStack endpoint and
-# placeholder credentials that replace the ECS task role for the SQS check.
+# Throwaway production secrets for this run, synthetic KMS key ARNs in an
+# obviously fake account, and the ECS task-role credential URI. No static AWS
+# credential variable is set: the production guards refuse them. The SQS
+# endpoint override points the queue client at LocalStack only.
 write_runtime_secrets() {
     runtime_env_file=$(mktemp)
     chmod 600 "$runtime_env_file"
@@ -169,15 +183,58 @@ write_runtime_secrets() {
         echo "APP_SECRET=$(random_base64_key)"
         echo "OAUTH_ENCRYPTION_KEY=$(random_base64_key)"
         echo "TWO_FACTOR_ENCRYPTION_KEY=$(random_base64_key)"
+        echo 'AWS_REGION=eu-central-1'
+        echo "JWT_KMS_KEY_ID=${FAKE_KMS_KEY_ARN_PREFIX}/00000000-0000-4000-8000-00000000f001"
+        echo "TWO_FACTOR_KMS_KEY_ID=${FAKE_KMS_KEY_ARN_PREFIX}/00000000-0000-4000-8000-00000000f002"
+        echo "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=${TASK_ROLE_RELATIVE_URI}"
         echo 'AWS_ENDPOINT_URL_SQS=http://localstack:4566'
-        echo 'AWS_ACCESS_KEY_ID=test'
-        echo 'AWS_SECRET_ACCESS_KEY=test'
     } >"$runtime_env_file"
+}
+
+CREDENTIALS_STUB=$(
+    cat <<'PYTHON'
+import datetime
+import http.server
+import json
+import sys
+
+relative_uri = sys.argv[1]
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path != relative_uri:
+            self.send_error(404)
+            return
+        expiration = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        body = json.dumps({
+            "AccessKeyId": "test",
+            "SecretAccessKey": "test",
+            "Token": "fake-task-role-session",
+            "Expiration": expiration.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+http.server.ThreadingHTTPServer(("0.0.0.0", 80), Handler).serve_forever()
+PYTHON
+)
+readonly CREDENTIALS_STUB
+
+start_credentials_stub() {
+    docker run -d --name "${PREFIX}-credentials" --network "$NETWORK" --ip "$TASK_ROLE_ENDPOINT_IP" \
+        --entrypoint python3 "$CREDENTIALS_STUB_IMAGE" -u -c "$CREDENTIALS_STUB" "$TASK_ROLE_RELATIVE_URI" \
+        >/dev/null
 }
 
 # The internal network has no egress, so no request can leave for a real AWS endpoint.
 start_dependencies() {
-    docker network create --internal "$NETWORK" >/dev/null
+    docker network create --internal --subnet "$TASK_ROLE_SUBNET" "$NETWORK" >/dev/null
+    start_credentials_stub
     docker run -d --name "${PREFIX}-database" --network "$NETWORK" --network-alias database \
         -e MONGO_INITDB_ROOT_USERNAME="$MONGODB_USER" -e MONGO_INITDB_ROOT_PASSWORD="$MONGODB_PASSWORD" \
         "$MONGODB_IMAGE" >/dev/null
@@ -305,18 +362,23 @@ image_has_no_setuid_or_setgid_files() {
     [ -z "$privileged" ]
 }
 
-# getcap ships in the FrankenPHP base image; without it, the FrankenPHP binary
-# itself must still be unable to bind a privileged port.
+# A dedicated exit status (3) reports a missing getcap, which fails the check.
+# getcap exits 0 even when it cannot read a file, so any scan error also fails.
 image_has_no_file_capabilities() {
-    local capabilities
+    local capabilities errors status=0
 
-    if ! docker exec "${PREFIX}-$1" sh -c 'command -v getcap >/dev/null'; then
-        echo "${PREFIX}-$1 has no getcap; probing the FrankenPHP binary instead"
-        privileged_bind_is_refused bind_probe "$(docker inspect --format '{{.Config.Image}}' "${PREFIX}-$1")" \
-            'frankenphp php-cli' 80
-        return
+    errors=$(mktemp)
+    capabilities=$(docker exec -u 0:0 "${PREFIX}-$1" sh -c \
+        'command -v getcap >/dev/null || exit 3; find / -xdev -type f -exec getcap {} +' 2>"$errors") \
+        || status=$?
+    if [ "$status" -eq 3 ]; then
+        echo "${PREFIX}-$1 has no getcap, so file capabilities cannot be ruled out" >&2
+    elif [ "$status" -ne 0 ] || [ -s "$errors" ]; then
+        echo "${PREFIX}-$1 file capability scan failed (status ${status}): $(cat "$errors")" >&2
+        status=1
     fi
-    capabilities=$(docker exec -u 0:0 "${PREFIX}-$1" sh -c 'getcap -r / 2>/dev/null; exit 0') || return 1
+    rm -f "$errors"
+    [ "$status" -eq 0 ] || return 1
     [ -z "$capabilities" ] || echo "${PREFIX}-$1 file capabilities: ${capabilities}" >&2
     [ -z "$capabilities" ]
 }
@@ -333,6 +395,31 @@ check_privileges() {
 supervisor_socket_belongs_to_the_application_user() {
     docker exec "${PREFIX}-$1" sh -c \
         "[ -S ${SUPERVISOR_SOCKET} ] && [ \"\$(stat -c %u ${SUPERVISOR_SOCKET})\" = \"\$(id -u)\" ]"
+}
+
+image_ships_no_local_keys_or_config_reference() {
+    docker run --rm --entrypoint sh "$1" -c '
+        if [ -d /srv/app/config/jwt ]; then
+            keys=$(find /srv/app/config/jwt -type f) || exit 1
+            [ -z "$keys" ] || { echo "key files in the image: $keys"; exit 1; }
+        fi
+        [ ! -e /srv/app/config/reference.php ] || { echo "config/reference.php is in the image"; exit 1; }'
+}
+
+network_has_no_egress() {
+    local internal routes
+
+    internal=$(docker network inspect --format '{{.Internal}}' "$NETWORK") || return 1
+    routes=$(docker exec "${PREFIX}-$1" ip route) || return 1
+    echo "${NETWORK} internal=${internal}; ${PREFIX}-$1 routes: ${routes//$'\n'/; }"
+    [ "$internal" = 'true' ] && ! grep -q '^default' <<<"$routes"
+}
+
+task_role_credentials_were_served() {
+    local requests
+
+    requests=$(docker logs "${PREFIX}-credentials" 2>&1) || return 1
+    grep -q "\"GET ${TASK_ROLE_RELATIVE_URI} HTTP/1.1\" 200" <<<"$requests"
 }
 
 worker_healthcheck_passes() {
@@ -360,6 +447,10 @@ check_image_contract() {
         writable_paths_belong_to_the_application_user "$WEB_IMAGE" "$WEB_WRITABLE_PATHS"
     check "worker writable paths belong to the application user; code is read-only" \
         writable_paths_belong_to_the_application_user "$WORKER_IMAGE" "$WORKER_WRITABLE_PATHS"
+    for image in "$WEB_IMAGE" "$WORKER_IMAGE"; do
+        check "${image} ships no JWT key files and no config/reference.php" \
+            image_ships_no_local_keys_or_config_reference "$image"
+    done
 }
 
 check_web_runtime() {
@@ -404,10 +495,59 @@ seeded_world_writable_file_is_reported() {
     [[ "$output" == *'world-writable application files: /srv/app/src/world-writable-fixture'* ]]
 }
 
+reports_exactly() {
+    local expected=$1
+    local output
+    shift
+
+    if output=$("$@" 2>&1); then
+        echo "unexpectedly passed: ${output}" >&2
+        return 1
+    fi
+    echo "$output"
+    [[ "$output" == *"$expected"* ]]
+}
+
+build_fixture_image() {
+    local tag=$1
+
+    fixture_images+=("$tag")
+    docker build -q -t "$tag" - >/dev/null
+}
+
+check_privilege_fixture() {
+    local fixture="${WEB_IMAGE%%:*}:privilege-fixture-${RUN_ID}"
+    local name=privilege-fixture
+
+    if ! build_fixture_image "$fixture" <<DOCKERFILE; then
+FROM ${WEB_IMAGE}
+USER 0:0
+RUN touch /usr/local/bin/setuid-fixture /usr/local/bin/setgid-fixture \
+    && chmod 4755 /usr/local/bin/setuid-fixture && chmod 2755 /usr/local/bin/setgid-fixture \
+    && cp /usr/bin/curl /usr/local/bin/file-capability-fixture \
+    && setcap cap_net_raw+ep /usr/local/bin/file-capability-fixture
+USER 10001:10001
+DOCKERFILE
+        fail "negative fixture: the privilege fixture image cannot be built from ${WEB_IMAGE}"
+        return
+    fi
+    docker run -d --name "${PREFIX}-${name}" --network none --entrypoint sleep "$fixture" 600 >/dev/null
+    check "negative fixture: a setuid file fails the setuid/setgid scan and is named" \
+        reports_exactly '/usr/local/bin/setuid-fixture' image_has_no_setuid_or_setgid_files "$name"
+    check "negative fixture: a setgid file fails the setuid/setgid scan and is named" \
+        reports_exactly '/usr/local/bin/setgid-fixture' image_has_no_setuid_or_setgid_files "$name"
+    check "negative fixture: a non-FrankenPHP file capability fails the scan and is named" \
+        reports_exactly '/usr/local/bin/file-capability-fixture cap_net_raw=ep' \
+        image_has_no_file_capabilities "$name"
+    docker stop -t 0 "${PREFIX}-${name}" >/dev/null
+    check "negative fixture: a stopped container fails the file capability check" \
+        fails image_has_no_file_capabilities "$name"
+}
+
 check_negative_fixtures() {
     local fixture="${WEB_IMAGE%%:*}:world-writable-fixture-${RUN_ID}"
 
-    if ! docker build -q -t "$fixture" - >/dev/null <<DOCKERFILE; then
+    if ! build_fixture_image "$fixture" <<DOCKERFILE; then
 FROM ${WEB_IMAGE}
 USER 0:0
 RUN touch /srv/app/src/world-writable-fixture && chmod o+w /srv/app/src/world-writable-fixture
@@ -418,11 +558,11 @@ DOCKERFILE
     fi
     check "negative fixture: a seeded world-writable application file fails the ownership check" \
         seeded_world_writable_file_is_reported "$fixture"
-    docker image rm "$fixture" >/dev/null
     check "negative fixture: an unreachable container fails the runtime ownership check" \
         fails runtime_writes_belong_to_the_application_user missing-container '/srv/app/var'
     check "negative fixture: an unreachable container fails the capability check" \
         fails pid_one_holds_no_capabilities missing-container
+    check_privilege_fixture
 }
 
 check_runtime() {
@@ -440,6 +580,9 @@ check_runtime() {
     check_web_runtime web-ecs
     check_worker_runtime worker-default
     check_worker_runtime worker-ecs
+    check "the check network is internal and web-ecs has no default route" network_has_no_egress web-ecs
+    check "the containers fetched task-role credentials from the stub endpoint" \
+        task_role_credentials_were_served
 }
 
 build_images
