@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Shared\Application\EventListener;
 
 use App\Shared\Application\EventListener\JwtKmsConfigurationListener;
+use App\Shared\Application\Provider\KmsEndpointProviderInterface;
 use App\Tests\Unit\UnitTestCase;
-use Aws\Kms\KmsClient;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -20,13 +20,25 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
 {
     private const KEY_ARN = 'arn:aws:kms:eu-central-1:123456789012:key/0b1c2d3e-aaaa-4bbb';
     private const ALIAS_ARN = 'arn:aws:kms:eu-central-1:123456789012:alias/user-service-jwt';
+    private const REGIONAL_ENDPOINT = 'https://kms.eu-central-1.amazonaws.com';
     private const KEY_MESSAGE = 'Set JWT_KMS_KEY_ID to the KMS key ARN or alias ARN in production.';
     private const PREVIOUS_MESSAGE
         = 'JWT_KMS_PREVIOUS_KEY_ID must be empty or a KMS key ARN or alias ARN in production.';
     private const CREDENTIALS_MESSAGE
-        = 'Static AWS credentials are refused in production; the ECS task role signs JWTs.';
+        = 'Only the ECS task role may sign JWTs in production; unset the static,'
+        . ' profile, web-identity and full-URI AWS credential variables.';
     private const ENDPOINT_MESSAGE
         = 'JWT signing must use the regional AWS KMS endpoint in production.';
+    private const CREDENTIAL_VARIABLES = [
+        'AWS_ACCESS_KEY_ID',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_SESSION_TOKEN',
+        'AWS_PROFILE',
+        'AWS_SHARED_CREDENTIALS_FILE',
+        'AWS_CONTAINER_CREDENTIALS_FULL_URI',
+        'AWS_WEB_IDENTITY_TOKEN_FILE',
+        'AWS_ROLE_ARN',
+    ];
 
     /**
      * @dataProvider validProductionConfigurations
@@ -34,26 +46,26 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
     public function testAcceptsTaskRoleKmsConfigurationInProduction(
         string $keyId,
         string $previousKeyId,
-        KmsClient $client
+        string $endpoint
     ): void {
-        $this->listener('prod', $client, $keyId, $previousKeyId)
+        $this->listener(keyId: $keyId, previousKeyId: $previousKeyId, endpoint: $endpoint)
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
 
         $this->addToAssertionCount(1);
     }
 
     /**
-     * @return iterable<string, array{string, string, KmsClient}>
+     * @return iterable<string, array{string, string, string}>
      */
     public static function validProductionConfigurations(): iterable
     {
-        yield 'key ARN, no window' => [self::KEY_ARN, '', self::regionalClient()];
-        yield 'alias ARN with previous key ARN' => [
+        yield 'key ARN, no window' => [self::KEY_ARN, '', self::REGIONAL_ENDPOINT];
+        yield 'alias ARN with an additional verify-only key' => [
             self::ALIAS_ARN,
             self::KEY_ARN,
-            self::regionalClient(),
+            self::REGIONAL_ENDPOINT,
         ];
-        yield 'FIPS endpoint' => [self::KEY_ARN, '', self::fipsClient()];
+        yield 'FIPS endpoint' => [self::KEY_ARN, '', 'https://kms-fips.eu-central-1.amazonaws.com'];
     }
 
     /**
@@ -64,7 +76,7 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(self::KEY_MESSAGE);
 
-        $this->listener('prod', self::regionalClient(), $keyId)
+        $this->listener(keyId: $keyId)
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
     }
 
@@ -87,42 +99,63 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(self::PREVIOUS_MESSAGE);
 
-        $this->listener('prod', self::regionalClient(), self::KEY_ARN, 'alias/old')
+        $this->listener(previousKeyId: 'alias/old')
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
     }
 
     /**
-     * @dataProvider staticCredentials
+     * @dataProvider refusedCredentials
+     *
+     * @param array<string, string> $credentials
      */
-    public function testRejectsStaticAwsCredentialsInProduction(
-        string $accessKeyId,
-        string $secretAccessKey,
-        string $sessionToken
-    ): void {
-        $listener = new JwtKmsConfigurationListener(
-            'prod',
-            self::regionalClient(),
-            self::KEY_ARN,
-            '',
-            $accessKeyId,
-            $secretAccessKey,
-            $sessionToken
-        );
-
+    public function testRejectsNonTaskRoleAwsCredentialsInProduction(array $credentials): void
+    {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(self::CREDENTIALS_MESSAGE);
 
-        $listener->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
+        $this->listener(credentials: $credentials)
+            ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
     }
 
     /**
-     * @return iterable<string, array{string, string, string}>
+     * @return iterable<string, array{array<string, string>}>
      */
-    public static function staticCredentials(): iterable
+    public static function refusedCredentials(): iterable
     {
-        yield 'access key id' => ['AKIAEXAMPLE', '', ''];
-        yield 'secret access key' => ['', 'secret', ''];
-        yield 'session token' => ['', '', 'token'];
+        yield 'access key id' => [['AWS_ACCESS_KEY_ID' => 'AKIAEXAMPLE']];
+        yield 'secret access key' => [['AWS_SECRET_ACCESS_KEY' => 'secret']];
+        yield 'session token' => [['AWS_SESSION_TOKEN' => 'token']];
+        yield 'profile' => [['AWS_PROFILE' => 'default']];
+        yield 'shared credentials file' => [['AWS_SHARED_CREDENTIALS_FILE' => '/creds']];
+        yield 'full container credentials URI' => [
+            ['AWS_CONTAINER_CREDENTIALS_FULL_URI' => 'http://192.0.2.10/creds'],
+        ];
+        yield 'web identity pair' => [[
+            'AWS_WEB_IDENTITY_TOKEN_FILE' => '/token',
+            'AWS_ROLE_ARN' => 'arn:aws:iam::123456789012:role/other',
+        ]];
+    }
+
+    /**
+     * @dataProvider incompleteWebIdentity
+     *
+     * @param array<string, string> $credentials
+     */
+    public function testAcceptsAnIncompleteWebIdentityPair(array $credentials): void
+    {
+        $this->listener(credentials: $credentials)
+            ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, string>}>
+     */
+    public static function incompleteWebIdentity(): iterable
+    {
+        yield 'token file only' => [['AWS_WEB_IDENTITY_TOKEN_FILE' => '/token']];
+        yield 'role ARN only' => [['AWS_ROLE_ARN' => 'arn:aws:iam::123456789012:role/other']];
     }
 
     /**
@@ -130,16 +163,10 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
      */
     public function testRejectsLocalOrDevSignerInProduction(string $endpoint): void
     {
-        $client = new KmsClient([
-            'region' => 'eu-central-1',
-            'version' => 'latest',
-            'endpoint' => $endpoint,
-        ]);
-
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(self::ENDPOINT_MESSAGE);
 
-        $this->listener('prod', $client, self::KEY_ARN)
+        $this->listener(endpoint: $endpoint)
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
     }
 
@@ -155,25 +182,24 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         yield 'regional host inside a proxy URL' => [
             'http://proxy.local/?https://kms.eu-central-1.amazonaws.com',
         ];
+        yield 'trailing newline' => [self::REGIONAL_ENDPOINT . "\n"];
     }
 
     public function testDoesNotValidateOutsideProduction(): void
     {
-        $client = new KmsClient([
-            'region' => 'us-east-1',
-            'version' => 'latest',
-            'endpoint' => 'http://localstack:4566',
-        ]);
-
-        $this->listener('test', $client, 'alias/user-service-jwt')
-            ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
+        $this->listener(
+            environment: 'test',
+            keyId: 'alias/user-service-jwt',
+            endpoint: 'http://localstack:4566',
+            credentials: ['AWS_ACCESS_KEY_ID' => 'fake']
+        )->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
 
         $this->addToAssertionCount(1);
     }
 
     public function testIgnoresSubRequests(): void
     {
-        $this->listener('prod', self::regionalClient(), '')
+        $this->listener(keyId: '')
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::SUB_REQUEST));
 
         $this->addToAssertionCount(1);
@@ -190,46 +216,37 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(self::KEY_MESSAGE);
 
-        $this->listener('prod', self::regionalClient(), '')->onConsoleCommand($event);
+        $this->listener(keyId: '')->onConsoleCommand($event);
     }
 
     public function testIgnoresConsoleEventWithoutCommand(): void
     {
         $event = new ConsoleCommandEvent(null, new ArrayInput([]), new BufferedOutput());
 
-        $this->listener('prod', self::regionalClient(), '')->onConsoleCommand($event);
+        $this->listener(keyId: '')->onConsoleCommand($event);
 
         $this->addToAssertionCount(1);
     }
 
-    private static function regionalClient(): KmsClient
-    {
-        return new KmsClient(['region' => 'eu-central-1', 'version' => 'latest']);
-    }
-
-    private static function fipsClient(): KmsClient
-    {
-        return new KmsClient([
-            'region' => 'eu-central-1',
-            'version' => 'latest',
-            'use_fips_endpoint' => true,
-        ]);
-    }
-
+    /**
+     * @param array<string, string> $credentials
+     */
     private function listener(
-        string $environment,
-        KmsClient $client,
-        string $keyId,
-        string $previousKeyId = ''
+        string $environment = 'prod',
+        string $keyId = self::KEY_ARN,
+        string $previousKeyId = '',
+        string $endpoint = self::REGIONAL_ENDPOINT,
+        array $credentials = []
     ): JwtKmsConfigurationListener {
+        $endpointProvider = $this->createMock(KmsEndpointProviderInterface::class);
+        $endpointProvider->method('endpoint')->willReturn($endpoint);
+
         return new JwtKmsConfigurationListener(
             $environment,
-            $client,
+            $endpointProvider,
             $keyId,
             $previousKeyId,
-            '',
-            '',
-            ''
+            [...array_fill_keys(self::CREDENTIAL_VARIABLES, ''), ...$credentials]
         );
     }
 

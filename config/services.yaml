@@ -149,15 +149,24 @@ services:
         }
 
   # S5.11 (FR-06): production guard for KMS JWT signing. Refuses a local or dev
-  # KMS endpoint, static AWS credentials and non-ARN JWT key ids in prod.
+  # KMS endpoint, any AWS credential source but the task role and non-ARN JWT
+  # key ids in prod.
+  App\Shared\Application\Provider\KmsEndpointProviderInterface: '@App\Shared\Infrastructure\Provider\AwsKmsEndpointProvider'
+
   App\Shared\Application\EventListener\JwtKmsConfigurationListener:
     arguments:
       $appEnv: '%kernel.environment%'
       $currentKeyId: '%env(JWT_KMS_KEY_ID)%'
       $previousKeyId: '%env(JWT_KMS_PREVIOUS_KEY_ID)%'
-      $accessKeyId: '%env(string:default::AWS_ACCESS_KEY_ID)%'
-      $secretAccessKey: '%env(string:default::AWS_SECRET_ACCESS_KEY)%'
-      $sessionToken: '%env(string:default::AWS_SESSION_TOKEN)%'
+      $credentialEnvironment:
+        AWS_ACCESS_KEY_ID: '%env(string:default::AWS_ACCESS_KEY_ID)%'
+        AWS_SECRET_ACCESS_KEY: '%env(string:default::AWS_SECRET_ACCESS_KEY)%'
+        AWS_SESSION_TOKEN: '%env(string:default::AWS_SESSION_TOKEN)%'
+        AWS_PROFILE: '%env(string:default::AWS_PROFILE)%'
+        AWS_SHARED_CREDENTIALS_FILE: '%env(string:default::AWS_SHARED_CREDENTIALS_FILE)%'
+        AWS_CONTAINER_CREDENTIALS_FULL_URI: '%env(string:default::AWS_CONTAINER_CREDENTIALS_FULL_URI)%'
+        AWS_WEB_IDENTITY_TOKEN_FILE: '%env(string:default::AWS_WEB_IDENTITY_TOKEN_FILE)%'
+        AWS_ROLE_ARN: '%env(string:default::AWS_ROLE_ARN)%'
     tags:
       - {
           name: kernel.event_listener,

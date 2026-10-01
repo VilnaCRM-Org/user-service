@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Shared\Application\EventListener;
 
-use Aws\Kms\KmsClient;
+use App\Shared\Application\Provider\KmsEndpointProviderInterface;
 use RuntimeException;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 /**
  * Production guard for KMS JWT signing (S5.11, FR-06): refuses a local or dev
- * signer (any KMS endpoint other than the regional AWS one), static AWS
- * credentials, and JWT key ids that are not KMS key or alias ARNs.
+ * signer (any KMS endpoint other than the regional AWS one), every AWS
+ * credential source other than the ECS task role, and JWT key ids that are
+ * not KMS key or alias ARNs.
  */
 final readonly class JwtKmsConfigurationListener
 {
@@ -21,14 +22,33 @@ final readonly class JwtKmsConfigurationListener
     private const KMS_ENDPOINT_PATTERN
         = '#^https://kms(-fips)?\.[a-z0-9-]+\.amazonaws\.com$#D';
 
+    /**
+     * Each of these, when set, makes the AWS SDK default chain use credentials
+     * other than the ECS task role.
+     */
+    private const REFUSED_CREDENTIAL_VARIABLES = [
+        'AWS_ACCESS_KEY_ID',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_SESSION_TOKEN',
+        'AWS_PROFILE',
+        'AWS_SHARED_CREDENTIALS_FILE',
+        'AWS_CONTAINER_CREDENTIALS_FULL_URI',
+    ];
+
+    /**
+     * Together, these select web-identity credentials.
+     */
+    private const WEB_IDENTITY_VARIABLES = ['AWS_WEB_IDENTITY_TOKEN_FILE', 'AWS_ROLE_ARN'];
+
+    /**
+     * @param array<string, string> $credentialEnvironment
+     */
     public function __construct(
         private string $appEnv,
-        private KmsClient $kmsClient,
+        private KmsEndpointProviderInterface $kmsEndpointProvider,
         private string $currentKeyId,
         private string $previousKeyId,
-        private string $accessKeyId,
-        private string $secretAccessKey,
-        private string $sessionToken,
+        private array $credentialEnvironment,
     ) {
     }
 
@@ -57,7 +77,7 @@ final readonly class JwtKmsConfigurationListener
         }
 
         $this->assertKeyIds();
-        $this->assertNoStaticCredentials();
+        $this->assertTaskRoleCredentialsOnly();
         $this->assertRegionalKmsEndpoint();
     }
 
@@ -76,22 +96,26 @@ final readonly class JwtKmsConfigurationListener
         }
     }
 
-    private function assertNoStaticCredentials(): void
+    private function assertTaskRoleCredentialsOnly(): void
     {
-        if (
-            $this->accessKeyId !== ''
-            || $this->secretAccessKey !== ''
-            || $this->sessionToken !== ''
-        ) {
+        $set = array_filter(
+            $this->credentialEnvironment,
+            static fn (string $value): bool => $value !== ''
+        );
+        $refused = array_intersect_key($set, array_flip(self::REFUSED_CREDENTIAL_VARIABLES));
+        $webIdentity = array_intersect_key($set, array_flip(self::WEB_IDENTITY_VARIABLES));
+
+        if ($refused !== [] || count($webIdentity) === count(self::WEB_IDENTITY_VARIABLES)) {
             throw new RuntimeException(
-                'Static AWS credentials are refused in production; the ECS task role signs JWTs.'
+                'Only the ECS task role may sign JWTs in production; unset the static,'
+                . ' profile, web-identity and full-URI AWS credential variables.'
             );
         }
     }
 
     private function assertRegionalKmsEndpoint(): void
     {
-        $endpoint = (string) $this->kmsClient->getEndpoint();
+        $endpoint = $this->kmsEndpointProvider->endpoint();
         if (preg_match(self::KMS_ENDPOINT_PATTERN, $endpoint) !== 1) {
             throw new RuntimeException(
                 'JWT signing must use the regional AWS KMS endpoint in production.'

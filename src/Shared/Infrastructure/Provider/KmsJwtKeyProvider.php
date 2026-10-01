@@ -9,6 +9,7 @@ use App\Shared\Application\Provider\JwtVerificationKeyProviderInterface;
 use App\Shared\Domain\ValueObject\JwtVerificationKey;
 use App\Shared\Infrastructure\Converter\KmsPublicKeyConverter;
 use Aws\Kms\KmsClient;
+use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -21,6 +22,8 @@ final class KmsJwtKeyProvider implements JwtVerificationKeyProviderInterface
 {
     private const KEY_USAGE = 'SIGN_VERIFY';
     private const SIGNING_ALGORITHM = 'RSASSA_PKCS1_V1_5_SHA_256';
+    private const MIN_CACHE_TTL_SECONDS = 1;
+    private const MAX_CACHE_TTL_SECONDS = 3600;
 
     /** @var array<string, array{expiresAt: int, key: JwtVerificationKey}> */
     private array $keys = [];
@@ -33,6 +36,16 @@ final class KmsJwtKeyProvider implements JwtVerificationKeyProviderInterface
         private readonly string $previousKeyId,
         private readonly int $cacheTtlSeconds,
     ) {
+        if (
+            $cacheTtlSeconds < self::MIN_CACHE_TTL_SECONDS
+            || $cacheTtlSeconds > self::MAX_CACHE_TTL_SECONDS
+        ) {
+            throw new InvalidArgumentException(sprintf(
+                'JWT_KMS_PUBLIC_KEY_CACHE_TTL must be between %d and %d seconds.',
+                self::MIN_CACHE_TTL_SECONDS,
+                self::MAX_CACHE_TTL_SECONDS
+            ));
+        }
     }
 
     #[\Override]

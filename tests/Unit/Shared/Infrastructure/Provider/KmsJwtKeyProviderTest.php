@@ -11,6 +11,7 @@ use App\Shared\Infrastructure\Provider\KmsJwtKeyProvider;
 use App\Tests\Shared\Kms\FakeKms;
 use App\Tests\Unit\UnitTestCase;
 use Aws\Kms\Exception\KmsException;
+use InvalidArgumentException;
 use RuntimeException;
 
 final class KmsJwtKeyProviderTest extends UnitTestCase
@@ -139,7 +140,52 @@ final class KmsJwtKeyProviderTest extends UnitTestCase
         $this->provider()->current();
     }
 
-    private function provider(string $previous = ''): KmsJwtKeyProvider
+    /**
+     * @dataProvider outOfRangeCacheTtls
+     */
+    public function testRejectsACacheTtlOutsideOneSecondToOneHour(int $ttl): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'JWT_KMS_PUBLIC_KEY_CACHE_TTL must be between 1 and 3600 seconds.'
+        );
+
+        $this->provider(cacheTtl: $ttl);
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function outOfRangeCacheTtls(): iterable
+    {
+        yield 'zero' => [0];
+        yield 'negative' => [-1];
+        yield 'over an hour' => [3601];
+    }
+
+    /**
+     * @dataProvider boundaryCacheTtls
+     */
+    public function testAcceptsTheCacheTtlBoundaries(int $ttl): void
+    {
+        $provider = $this->provider(cacheTtl: $ttl);
+        $provider->current();
+        $this->now = self::NOW + $ttl;
+        $provider->current();
+
+        self::assertSame(2, $this->kms->countCalls('GetPublicKey'));
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function boundaryCacheTtls(): iterable
+    {
+        yield 'one second' => [1];
+        yield 'one hour' => [3600];
+    }
+
+    private function provider(string $previous = '', int $cacheTtl = self::TTL): KmsJwtKeyProvider
     {
         $clock = $this->createMock(CurrentTimestampProviderInterface::class);
         $clock->method('currentTimestamp')->willReturnCallback(fn (): int => $this->now);
@@ -150,7 +196,7 @@ final class KmsJwtKeyProviderTest extends UnitTestCase
             $clock,
             self::CURRENT,
             $previous,
-            self::TTL
+            $cacheTtl
         );
     }
 }

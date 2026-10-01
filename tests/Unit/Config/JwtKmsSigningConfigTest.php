@@ -7,7 +7,9 @@ namespace App\Tests\Unit\Config;
 use App\OAuth\Application\Controller\JsonWebKeySetController;
 use App\OAuth\Infrastructure\Repository\KmsAccessTokenRepository;
 use App\Shared\Application\EventListener\JwtKmsConfigurationListener;
+use App\Shared\Application\Provider\KmsEndpointProviderInterface;
 use App\Shared\Infrastructure\Adapter\KmsJwsProvider;
+use App\Shared\Infrastructure\Provider\AwsKmsEndpointProvider;
 use App\Shared\Infrastructure\Provider\KmsJwtKeyProvider;
 use App\Tests\Unit\UnitTestCase;
 use Aws\Kms\KmsClient;
@@ -27,6 +29,16 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
         '.env.test',
         '.env.load_test',
         '.env.schemathesis',
+    ];
+    private const CREDENTIAL_VARIABLES = [
+        'AWS_ACCESS_KEY_ID',
+        'AWS_SECRET_ACCESS_KEY',
+        'AWS_SESSION_TOKEN',
+        'AWS_PROFILE',
+        'AWS_SHARED_CREDENTIALS_FILE',
+        'AWS_CONTAINER_CREDENTIALS_FULL_URI',
+        'AWS_WEB_IDENTITY_TOKEN_FILE',
+        'AWS_ROLE_ARN',
     ];
     private const LOCAL_KEY_ALIAS = 'alias/user-service-jwt';
     private const LOCAL_KEY_ARN = 'arn:aws:kms:us-east-1:000000000000:' . self::LOCAL_KEY_ALIAS;
@@ -73,19 +85,26 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
         );
     }
 
-    public function testProductionGuardReceivesKeyIdsAndStaticCredentials(): void
+    public function testProductionGuardReceivesKeyIdsAndCredentialVariables(): void
     {
         $arguments = $this->services()['services'][JwtKmsConfigurationListener::class]['arguments'];
 
         self::assertSame('%kernel.environment%', $arguments['$appEnv']);
         self::assertSame('%env(JWT_KMS_KEY_ID)%', $arguments['$currentKeyId']);
         self::assertSame('%env(JWT_KMS_PREVIOUS_KEY_ID)%', $arguments['$previousKeyId']);
-        self::assertSame('%env(string:default::AWS_ACCESS_KEY_ID)%', $arguments['$accessKeyId']);
+        $expected = [];
+        foreach (self::CREDENTIAL_VARIABLES as $name) {
+            $expected[$name] = sprintf('%%env(string:default::%s)%%', $name);
+        }
+        self::assertSame($expected, $arguments['$credentialEnvironment']);
+    }
+
+    public function testGuardReadsTheKmsEndpointThroughInfrastructure(): void
+    {
         self::assertSame(
-            '%env(string:default::AWS_SECRET_ACCESS_KEY)%',
-            $arguments['$secretAccessKey']
+            '@' . AwsKmsEndpointProvider::class,
+            $this->services()['services'][KmsEndpointProviderInterface::class]
         );
-        self::assertSame('%env(string:default::AWS_SESSION_TOKEN)%', $arguments['$sessionToken']);
     }
 
     public function testProductionKmsClientUsesTheTaskRoleAndRegionalEndpoint(): void
@@ -158,7 +177,8 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
         );
 
         self::assertStringContainsString('alias/user-service-jwt', $script);
-        self::assertStringContainsString('awslocal kms describe-key --key-id "$alias"', $script);
+        self::assertStringContainsString('TrentService.ListAliases', $script);
+        self::assertStringContainsString('"AliasName\\": \\"$alias\\""', $script);
     }
 
     public function testJwksRouteIsPublishedUnderTheWellKnownPath(): void
