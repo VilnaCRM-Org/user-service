@@ -171,6 +171,14 @@ final class NonRootImageContractTest extends UnitTestCase
         );
     }
 
+    public function testBuildContextExcludesLocalKeysAndGeneratedConfigReference(): void
+    {
+        $ignored = array_map('trim', explode("\n", $this->projectFile('.dockerignore')));
+
+        self::assertContains('config/jwt/', $ignored);
+        self::assertContains('config/reference.php', $ignored);
+    }
+
     public function testProductionPhpPreloadsAsTheApplicationUser(): void
     {
         self::assertStringContainsString(
