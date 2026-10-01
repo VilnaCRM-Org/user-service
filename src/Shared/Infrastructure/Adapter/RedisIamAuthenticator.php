@@ -100,8 +100,12 @@ final readonly class RedisIamAuthenticator implements RedisIamAuthenticatorInter
     {
         try {
             $client->close();
-        } catch (\Throwable) {
+        } catch (\Throwable $closeFailure) {
             // The original failure is what matters; a failing close must not mask it.
+            $this->logger->debug('Redis IAM connection close failed.', [
+                'backend' => self::BACKEND,
+                'exception_class' => $closeFailure::class,
+            ]);
         }
     }
 

@@ -133,6 +133,10 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
             ->willThrowException(new \RedisException('close failed'));
         $this->logger->expects(self::once())->method('warning')
             ->with('Redis IAM connection error during authentication.');
+        $this->logger->expects(self::once())->method('debug')->with(
+            'Redis IAM connection close failed.',
+            ['backend' => 'redis', 'exception_class' => \RedisException::class]
+        );
 
         $this->expectExceptionObject($exception);
 
