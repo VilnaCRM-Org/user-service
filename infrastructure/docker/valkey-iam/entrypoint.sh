@@ -30,10 +30,12 @@ install -m 0644 "${work_dir}/server.crt" "${tls_dir}/server.crt"
 install -m 0600 -o valkey -g valkey "${work_dir}/server.key" "${tls_dir}/server.key"
 
 # The admin password is shared with the php container through the TLS volume
-# (read by the integration tests); the ACL file stores only its SHA-256.
+# (read by the integration tests as root, hence mode 0600 owned by root); the
+# healthcheck passes it to valkey-cli through REDISCLI_AUTH, never on the
+# command line. The ACL file stores only its SHA-256.
 admin_password="$(openssl rand -hex 32)"
 printf '%s\n' "${admin_password}" > "${work_dir}/admin.password"
-install -m 0644 "${work_dir}/admin.password" "${tls_dir}/admin.password"
+install -m 0600 "${work_dir}/admin.password" "${tls_dir}/admin.password"
 acl_file=/tmp/valkey-iam-users.acl
 {
 	printf 'user default off resetpass resetkeys resetchannels -@all\n'
@@ -42,6 +44,12 @@ acl_file=/tmp/valkey-iam-users.acl
 } > "${acl_file}"
 chown valkey:valkey "${acl_file}"
 chmod 0600 "${acl_file}"
+
+# exec replaces this shell, so the EXIT trap would never fire: remove the
+# working files (private keys, password copy) explicitly. The trap stays for
+# the error paths above.
+trap - EXIT
+rm -rf "${work_dir}"
 
 exec docker-entrypoint.sh valkey-server \
 	--port 0 \
