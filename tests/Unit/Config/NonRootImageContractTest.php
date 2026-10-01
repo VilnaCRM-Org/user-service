@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Config;
 
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\AssertionFailedError;
 
 final class NonRootImageContractTest extends UnitTestCase
 {
@@ -40,6 +41,12 @@ final class NonRootImageContractTest extends UnitTestCase
 
     private const APPLICATION_USER_COMMAND =
         'adduser -S -D -H -u %d -G app -h /nonexistent -s /sbin/nologin app';
+
+    private const LOCAL_ONLY_PATHS = [
+        'config/jwt',
+        'config/jwt/private.pem',
+        'config/reference.php',
+    ];
 
     private const STRIP_WORLD_WRITE_COMMAND =
         'find /srv/app /var/www/html -xdev -perm -o+w ! -type l -exec chmod o-w {} +';
@@ -173,10 +180,31 @@ final class NonRootImageContractTest extends UnitTestCase
 
     public function testBuildContextExcludesLocalKeysAndGeneratedConfigReference(): void
     {
-        $ignored = array_map('trim', explode("\n", $this->projectFile('.dockerignore')));
+        $this->assertBuildContextExcludesLocalFiles($this->projectFile('.dockerignore'));
+    }
 
-        self::assertContains('config/jwt/', $ignored);
-        self::assertContains('config/reference.php', $ignored);
+    /**
+     * @dataProvider reincludingNegationProvider
+     */
+    public function testBuildContextExclusionFailsOnALaterNegation(string $negation): void
+    {
+        $this->expectException(AssertionFailedError::class);
+
+        $this->assertBuildContextExcludesLocalFiles(
+            $this->projectFile('.dockerignore') . $negation . "\n"
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function reincludingNegationProvider(): iterable
+    {
+        yield 'key directory' => ['!config/jwt'];
+        yield 'key file' => ['!config/jwt/private.pem'];
+        yield 'rooted key directory' => ['!/config/jwt/'];
+        yield 'configuration reference' => ['!config/reference.php'];
+        yield 'whole configuration tree' => ['!config/**'];
     }
 
     public function testProductionPhpPreloadsAsTheApplicationUser(): void
@@ -215,6 +243,30 @@ final class NonRootImageContractTest extends UnitTestCase
             self::WORKER_WRITABLE_PATHS,
             [...self::WORKER_WRITABLE_PATHS, ...self::APPLICATION_VAR_DIRECTORIES],
         ];
+    }
+
+    private function assertBuildContextExcludesLocalFiles(string $dockerignore): void
+    {
+        $lines = array_map('trim', explode("\n", $dockerignore));
+
+        self::assertContains('config/jwt/', $lines);
+        self::assertContains('config/reference.php', $lines);
+
+        foreach ($lines as $line) {
+            if (str_starts_with($line, '!')) {
+                $this->assertNegationKeepsLocalFilesOut(trim(substr($line, 1), '/'));
+            }
+        }
+    }
+
+    private function assertNegationKeepsLocalFilesOut(string $pattern): void
+    {
+        foreach (self::LOCAL_ONLY_PATHS as $path) {
+            self::assertFalse(
+                fnmatch($pattern, $path) || str_starts_with($path, $pattern . '/'),
+                sprintf('The .dockerignore negation "!%s" re-includes %s.', $pattern, $path)
+            );
+        }
     }
 
     private function assertSwitchesUserAfterOwnershipAndBeforeVolumes(string $dockerStage): void
