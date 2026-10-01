@@ -96,7 +96,10 @@ final class DocumentDbIamDsnEnvProcessor implements EnvVarProcessorInterface
             }
         }
 
-        if ($this->isSet($getEnv, 'AWS_WEB_IDENTITY_TOKEN_FILE') && $this->isSet($getEnv, 'AWS_ROLE_ARN')) {
+        if (
+            $this->isSet($getEnv, 'AWS_WEB_IDENTITY_TOKEN_FILE')
+            && $this->isSet($getEnv, 'AWS_ROLE_ARN')
+        ) {
             throw new RuntimeException(
                 'MONGODB_URL uses MONGODB-AWS, but web identity credentials are configured.'
             );
