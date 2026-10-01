@@ -24,9 +24,9 @@ COMMAND;
 
     private const DEFAULT_SUPERVISOR_CONFIG = '/etc/supervisor/supervisord.conf';
 
-    private const WORKER_HEALTHCHECK_PATH = 'infrastructure/supervisor/worker-healthcheck';
+    private const SUPERVISOR_SOCKET = '/srv/app/var/run/supervisor.sock';
 
-    private string $lastHealthcheckError = '';
+    private const WORKER_HEALTHCHECK_PATH = 'infrastructure/supervisor/worker-healthcheck';
 
     private const SUPERVISORCTL_SCRIPT = <<<'SH'
 #!/bin/sh
@@ -39,14 +39,16 @@ printf '%s\n' "$SUPERVISOR_STATUS"
 exit "${SUPERVISORCTL_EXIT_CODE:-0}"
 SH;
 
+    private string $lastHealthcheckError = '';
+
     public function testWorkerSupervisorStartsOnlyConfiguredProductionConsumers(): void
     {
         $config = $this->supervisorConfig();
 
         self::assertStringContainsString('[rpcinterface:supervisor]', $config);
         self::assertStringContainsString(self::SUPERVISOR_RPC_FACTORY, $config);
-        self::assertStringContainsString('file = /run/supervisor.sock', $config);
-        self::assertStringContainsString('serverurl = unix:///run/supervisor.sock', $config);
+        self::assertStringContainsString('file = ' . self::SUPERVISOR_SOCKET, $config);
+        self::assertStringContainsString('serverurl = unix://' . self::SUPERVISOR_SOCKET, $config);
         self::assertStringContainsString(
             self::WORKER_COMMAND,
             $config
@@ -66,7 +68,7 @@ SH;
     {
         $workerStage = $this->workerDockerStage();
 
-        self::assertStringContainsString('RUN mkdir -p /run', $workerStage);
+        self::assertStringNotContainsString('RUN mkdir -p /run', $workerStage);
         self::assertStringContainsString(
             $this->workerHealthcheckCopy(),
             $workerStage
@@ -206,6 +208,38 @@ SH;
         string $expectedConfig,
         ?string $configOverride
     ): int {
+        $process = proc_open(
+            ['/bin/sh', $this->projectPath(self::WORKER_HEALTHCHECK_PATH)],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes,
+            null,
+            $this->healthcheckEnvironment(
+                $directory,
+                $status,
+                $supervisorctlExitCode,
+                $expectedConfig,
+                $configOverride
+            )
+        );
+
+        self::assertIsResource($process);
+        fclose($pipes[1]);
+        $this->lastHealthcheckError = (string) stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+
+        return proc_close($process);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function healthcheckEnvironment(
+        string $directory,
+        string $status,
+        int $supervisorctlExitCode,
+        string $expectedConfig,
+        ?string $configOverride
+    ): array {
         $environment = [
             'PATH' => $directory . ':' . self::SYSTEM_PATH,
             'SUPERVISOR_STATUS' => $status,
@@ -217,20 +251,7 @@ SH;
             $environment['SUPERVISOR_CONFIG'] = $configOverride;
         }
 
-        $process = proc_open(
-            ['/bin/sh', $this->projectPath(self::WORKER_HEALTHCHECK_PATH)],
-            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-            $pipes,
-            null,
-            $environment
-        );
-
-        self::assertIsResource($process);
-        fclose($pipes[1]);
-        $this->lastHealthcheckError = (string) stream_get_contents($pipes[2]);
-        fclose($pipes[2]);
-
-        return proc_close($process);
+        return $environment;
     }
 
     private function supervisorStatus(string $state): string

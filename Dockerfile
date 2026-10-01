@@ -18,6 +18,14 @@ RUN apk add --no-cache \
     autoconf=~2.72 \
     cyrus-sasl-dev=~2.1
 
+# The web and worker targets run as this fixed non-root account. FrankenPHP drops
+# its privileged-port file capability, which a container without capabilities
+# cannot grant, so the production listener uses an unprivileged port.
+RUN set -eux; \
+    addgroup -S -g 10001 app; \
+    adduser -S -D -H -u 10001 -G app -h /nonexistent -s /sbin/nologin app; \
+    setcap -r /usr/local/bin/frankenphp
+
 # AWS documents this public global bundle for DocumentDB TLS connections.
 ARG DOCUMENTDB_CA_BUNDLE_URL=https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ARG DOCUMENTDB_CA_BUNDLE_SHA256=fe45bbebf92ad3e27a583bbb2ddd1553c521ed4d49af5514dc0a40372ea5395c
@@ -214,11 +222,28 @@ RUN set -eux; \
 
 RUN rm -Rf infrastructure/docker/
 
+# Only the declared volumes and the entrypoint's bundle and key directories are
+# writable by the application user; the application code stays root-owned.
+RUN set -eux; \
+    install -d -o 10001 -g 10001 -m 0755 \
+        /srv/app/var /srv/app/var/cache /srv/app/var/log /srv/app/var/run /srv/app/var/tmp \
+        /data /data/caddy /config /config/caddy \
+        /srv/app/public/bundles /srv/app/config/jwt; \
+    chown -R 10001:10001 /srv/app/var /data /config /srv/app/public/bundles /srv/app/config/jwt
+
+USER 10001:10001
+
+EXPOSE 8080
+
+HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 \
+    CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/api/health"]
+
+VOLUME ["/srv/app/var", "/data", "/config"]
+
 # Worker image
 FROM frankenphp_base AS app_workers
 
 RUN apk add --no-cache supervisor=~4.2
-RUN mkdir -p /run
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
@@ -226,6 +251,16 @@ COPY --link infrastructure/docker/php/conf.d/app.prod.ini $PHP_INI_DIR/conf.d/
 COPY --link infrastructure/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY --link --chmod=755 infrastructure/supervisor/worker-healthcheck /usr/local/bin/worker-healthcheck
 
+# Supervisor keeps its socket, pid file and log in the application var volume.
+RUN set -eux; \
+    install -d -o 10001 -g 10001 -m 0755 \
+        /srv/app/var /srv/app/var/cache /srv/app/var/log /srv/app/var/run /srv/app/var/tmp; \
+    chown -R 10001:10001 /srv/app/var
+
+USER 10001:10001
+
 HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 CMD ["/usr/local/bin/worker-healthcheck"]
+
+VOLUME ["/srv/app/var"]
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

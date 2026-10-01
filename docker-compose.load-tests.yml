@@ -10,6 +10,9 @@ services:
       database:
         condition: service_healthy
     restart: unless-stopped
+    # This harness bind-mounts the host checkout and installs dependencies, assets
+    # and keys into it, so it keeps the root user and the development listeners.
+    user: '0:0'
     command:
       - frankenphp
       - run
