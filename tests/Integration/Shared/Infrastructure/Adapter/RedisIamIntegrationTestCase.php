@@ -79,7 +79,8 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
                 $connectingUserId
             ),
             $this->clock,
-            $this->tlsStreamOptions()
+            $this->tlsStreamOptions(),
+            new Logger('redis-iam-test', [$this->logs])
         );
     }
 

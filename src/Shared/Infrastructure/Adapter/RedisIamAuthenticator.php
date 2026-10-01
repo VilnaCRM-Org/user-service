@@ -13,15 +13,22 @@ use RedisException;
 
 /**
  * Sends AUTH <user-id> <IAM token> with a freshly created token.
- * Any failure closes the connection, counts auth_failure{backend=redis}
- * and is rethrown: there is no unauthenticated fallback. The failure log
- * never contains the token; it contains the error message only for Redis
- * errors, because credential-provider errors can carry the ECS task
- * credentials endpoint path.
+ * Any failure closes the connection and is rethrown: there is no
+ * unauthenticated fallback. auth_failure{backend=redis} is counted only for
+ * authentication failures: the server rejecting the credentials (a
+ * WRONGPASS/NOAUTH/NOPERM reply or a non-true AUTH reply) and a token that
+ * cannot be created (signing or credential errors). Connection and transport
+ * errors during AUTH (timeouts, resets, a server that is loading) are logged
+ * as a distinct warning event and are not counted, so the metric matches the
+ * ElastiCache AuthenticationFailures count. The logs never contain the token;
+ * they contain the error message only for Redis errors, because
+ * credential-provider errors can carry the ECS task credentials endpoint path.
  */
 final readonly class RedisIamAuthenticator implements RedisIamAuthenticatorInterface
 {
     private const BACKEND = 'redis';
+    private const REJECTION_PATTERN =
+        '/^(?:WRONGPASS|NOAUTH|NOPERM)\b|^ERR\b.*\bAUTH\b|^AUTH failed|invalid username-password/';
 
     public function __construct(
         private RedisIamAuthTokenFactoryInterface $tokenFactory,
@@ -36,27 +43,69 @@ final readonly class RedisIamAuthenticator implements RedisIamAuthenticatorInter
     public function authenticate(Redis $client): int
     {
         try {
-            return $this->sendAuth($client);
+            $token = $this->tokenFactory->create();
         } catch (\Throwable $exception) {
-            $client->close();
-            $this->reportFailure($exception);
+            $this->closeQuietly($client);
+            $this->reportAuthenticationFailure($exception);
 
             throw $exception;
         }
+
+        return $this->sendAuth($client, $token);
     }
 
-    private function sendAuth(Redis $client): int
+    private function sendAuth(Redis $client, RedisIamAuthToken $token): int
     {
-        $token = $this->tokenFactory->create();
+        try {
+            $accepted = $client->auth([$this->userId, $token->value()]);
+        } catch (\Throwable $exception) {
+            $this->closeQuietly($client);
+            $this->reportAuthError($exception);
 
-        if ($client->auth([$this->userId, $token->value()]) !== true) {
-            throw new RedisException('Redis rejected the IAM authentication request.');
+            throw $exception;
+        }
+
+        if ($accepted !== true) {
+            $this->closeQuietly($client);
+            $exception = new RedisException('Redis rejected the IAM authentication request.');
+            $this->reportAuthenticationFailure($exception);
+
+            throw $exception;
         }
 
         return $token->validUntil();
     }
 
-    private function reportFailure(\Throwable $exception): void
+    private function reportAuthError(\Throwable $exception): void
+    {
+        if ($this->isRejection($exception)) {
+            $this->reportAuthenticationFailure($exception);
+
+            return;
+        }
+
+        $this->logger->warning(
+            'Redis IAM connection error during authentication.',
+            $this->failureContext($exception)
+        );
+    }
+
+    private function isRejection(\Throwable $exception): bool
+    {
+        return $exception instanceof RedisException
+            && preg_match(self::REJECTION_PATTERN, $exception->getMessage()) === 1;
+    }
+
+    private function closeQuietly(Redis $client): void
+    {
+        try {
+            $client->close();
+        } catch (\Throwable) {
+            // The original failure is what matters; a failing close must not mask it.
+        }
+    }
+
+    private function reportAuthenticationFailure(\Throwable $exception): void
     {
         $this->metricsEmitter->emit($this->authFailureMetricFactory->create(self::BACKEND));
         $this->logger->error('Redis IAM authentication failed.', $this->failureContext($exception));

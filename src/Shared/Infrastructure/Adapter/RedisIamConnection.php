@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Adapter;
 
 use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
+use Psr\Log\LoggerInterface;
 use Redis;
 use RedisException;
 
@@ -22,6 +23,9 @@ use RedisException;
  * connection at a safe point at or after validUntil. A used connection is
  * therefore re-authenticated long before the ElastiCache 12-hour limit (and
  * the 11-hour cap of AD-02).
+ *
+ * Connection errors (an unreachable endpoint) are logged as a warning and
+ * are not counted as authentication failures; see RedisIamAuthenticator.
  *
  * Connect and read timeouts are 2 seconds: ElastiCache answers in
  * milliseconds inside the VPC, the app sends no blocking commands over these
@@ -48,7 +52,8 @@ final class RedisIamConnection
         private readonly int $port,
         private readonly array $tlsStreamOptions,
         private readonly RedisIamAuthenticatorInterface $authenticator,
-        private readonly CurrentTimestampProviderInterface $timestampProvider
+        private readonly CurrentTimestampProviderInterface $timestampProvider,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -83,6 +88,23 @@ final class RedisIamConnection
     }
 
     private function connect(): void
+    {
+        try {
+            $this->tryConnect();
+        } catch (RedisException $exception) {
+            $this->logger->warning('Redis IAM connection failed.', [
+                'backend' => 'redis',
+                'host' => $this->host,
+                'port' => $this->port,
+                'exception_class' => $exception::class,
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
+
+    private function tryConnect(): void
     {
         $connected = $this->client->connect(
             'tls://' . $this->host,

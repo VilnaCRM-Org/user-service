@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Adapter\RedisIamConnection;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 
 final class RedisIamConnectionTest extends UnitTestCase
 {
@@ -19,6 +20,7 @@ final class RedisIamConnectionTest extends UnitTestCase
 
     private \Redis&MockObject $client;
     private RedisIamAuthenticatorInterface&MockObject $authenticator;
+    private LoggerInterface&MockObject $logger;
     private string $host;
     private int $port;
     private int $now;
@@ -33,6 +35,7 @@ final class RedisIamConnectionTest extends UnitTestCase
 
         $this->client = $this->createMock(\Redis::class);
         $this->authenticator = $this->createMock(RedisIamAuthenticatorInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
         $this->host = $this->faker->domainName();
         $this->port = $this->faker->numberBetween(1024, 65535);
         $this->now = $this->faker->numberBetween(1_700_000_000, 1_900_000_000);
@@ -59,6 +62,48 @@ final class RedisIamConnectionTest extends UnitTestCase
         $this->expectExceptionMessage(
             sprintf('Redis IAM connection to %s:%d failed.', $this->host, $this->port)
         );
+
+        $this->connection()->open();
+    }
+
+    public function testConnectFailureIsLoggedWithoutCountingAnAuthenticationFailure(): void
+    {
+        $this->client->method('connect')->willReturn(false);
+        $this->authenticator->expects(self::never())->method('authenticate');
+        $this->logger->expects(self::never())->method('error');
+        $this->logger->expects(self::once())->method('warning')->with(
+            'Redis IAM connection failed.',
+            [
+                'backend' => 'redis',
+                'host' => $this->host,
+                'port' => $this->port,
+                'exception_class' => \RedisException::class,
+                'error' => sprintf('Redis IAM connection to %s:%d failed.', $this->host, $this->port),
+            ]
+        );
+
+        $this->expectException(\RedisException::class);
+
+        $this->connection()->open();
+    }
+
+    public function testConnectExceptionIsLoggedAndRethrown(): void
+    {
+        $exception = new \RedisException('Connection timed out');
+        $this->client->method('connect')->willThrowException($exception);
+        $this->authenticator->expects(self::never())->method('authenticate');
+        $this->logger->expects(self::once())->method('warning')->with(
+            'Redis IAM connection failed.',
+            [
+                'backend' => 'redis',
+                'host' => $this->host,
+                'port' => $this->port,
+                'exception_class' => \RedisException::class,
+                'error' => 'Connection timed out',
+            ]
+        );
+
+        $this->expectExceptionObject($exception);
 
         $this->connection()->open();
     }
@@ -212,7 +257,8 @@ final class RedisIamConnectionTest extends UnitTestCase
             $this->port,
             [],
             $this->authenticator,
-            $this->timestampProvider()
+            $this->timestampProvider(),
+            $this->logger
         );
         $connection->open();
 
@@ -303,7 +349,8 @@ final class RedisIamConnectionTest extends UnitTestCase
             $this->port,
             $tlsStreamOptions,
             $this->authenticator,
-            $this->timestampProvider()
+            $this->timestampProvider(),
+            $this->logger
         );
     }
 

@@ -128,6 +128,57 @@ final class RedisIamConnectionRenewalTest extends RedisIamIntegrationTestCase
         self::assertSame(1, $this->authCallsSince($authCalls));
     }
 
+    public function testRejectedReauthenticationIsCountedAsAuthFailure(): void
+    {
+        $factory = $this->connectionFactory();
+        $this->openConnection($factory);
+        $this->clock->advance(RedisIamConnection::REAUTHENTICATE_AFTER_SECONDS);
+        $this->acceptOnlyTokens($this->faker->sha256());
+
+        try {
+            $this->renew($factory);
+            self::fail('The rejected re-authentication was not rethrown.');
+        } catch (\RedisException $exception) {
+            self::assertStringContainsString('WRONGPASS', $exception->getMessage());
+        }
+
+        self::assertSame(1, $this->metricsEmitter->count());
+        self::assertTrue($this->logs->hasErrorThatContains('Redis IAM authentication failed.'));
+    }
+
+    public function testConnectionErrorDuringReauthenticationIsLoggedButNotCounted(): void
+    {
+        $factory = $this->connectionFactory();
+        $this->openConnection($factory);
+        $this->clock->advance(RedisIamConnection::REAUTHENTICATE_AFTER_SECONDS);
+        $this->acceptOnlyTokens($this->currentToken());
+        $this->admin->rawCommand('CLIENT', 'PAUSE', '4000', 'ALL');
+
+        try {
+            $this->renew($factory);
+            self::fail('The connection error was not rethrown.');
+        } catch (\RedisException) {
+        }
+
+        self::assertSame(0, $this->metricsEmitter->count());
+        self::assertFalse($this->logs->hasErrorThatContains('Redis IAM authentication failed.'));
+        self::assertTrue(
+            $this->logs->hasWarningThatContains('Redis IAM connection error during authentication.')
+        );
+    }
+
+    public function testUnreachableEndpointIsLoggedButNotCounted(): void
+    {
+        try {
+            $this->connectionFactory()->create('rediss://127.0.0.1:1');
+            self::fail('The unreachable endpoint was not reported.');
+        } catch (\RedisException) {
+        }
+
+        self::assertSame(0, $this->metricsEmitter->count());
+        self::assertTrue($this->logs->hasWarningThatContains('Redis IAM connection failed.'));
+    }
+
     private function workerEventDispatcher(
         RedisIamConnectionFactory $factory,
         \Redis $redis

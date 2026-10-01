@@ -10,6 +10,7 @@ use App\Shared\Infrastructure\Factory\RedisIamAuthTokenFactoryInterface;
 use App\Shared\Infrastructure\Observability\Factory\AuthFailureMetricFactory;
 use App\Tests\Unit\Shared\Infrastructure\Observability\BusinessMetricsEmitterSpy;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -52,11 +53,10 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
         self::assertSame(0, $this->metricsEmitter->count());
     }
 
-    public function testRejectedAuthClosesConnectionCountsFailureAndThrows(): void
+    #[DataProvider('authenticationRejectionProvider')]
+    public function testRejectedAuthClosesConnectionCountsFailureAndThrows(string $reply): void
     {
-        $exception = new \RedisException(
-            'WRONGPASS invalid username-password pair or user is disabled.'
-        );
+        $exception = new \RedisException($reply);
         $this->tokenFactory->method('create')->willReturn($this->authToken());
         $client = $this->createMock(\Redis::class);
         $client->method('auth')->willThrowException($exception);
@@ -64,6 +64,107 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
         $this->expectFailureLog($exception, $exception->getMessage());
 
         $this->assertAuthenticationFails($client, $exception);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function authenticationRejectionProvider(): iterable
+    {
+        yield 'WRONGPASS' => ['WRONGPASS invalid username-password pair or user is disabled.'];
+        yield 'NOAUTH' => ['NOAUTH Authentication required.'];
+        yield 'NOPERM' => ['NOPERM User user-service has no permissions to run the auth command'];
+        yield 'AUTH without password' => [
+            'ERR AUTH <password> called without any password configured for the default user.',
+        ];
+        yield 'phpredis replay rejected' => ['AUTH failed while reconnecting'];
+        yield 'invalid pair text' => ['invalid username-password pair'];
+    }
+
+    #[DataProvider('transportErrorProvider')]
+    public function testTransportErrorDuringAuthIsLoggedButNotCounted(string $message): void
+    {
+        $exception = new \RedisException($message);
+        $this->tokenFactory->method('create')->willReturn($this->authToken());
+        $client = $this->createMock(\Redis::class);
+        $client->method('auth')->willThrowException($exception);
+        $client->expects(self::once())->method('close');
+        $this->logger->expects(self::never())->method('error');
+        $this->logger->expects(self::once())->method('warning')->with(
+            'Redis IAM connection error during authentication.',
+            [
+                'backend' => 'redis',
+                'user_id' => $this->userId,
+                'exception_class' => \RedisException::class,
+                'error' => $message,
+            ]
+        );
+
+        try {
+            $this->authenticator()->authenticate($client);
+            self::fail('Connection error was not rethrown.');
+        } catch (\RedisException $actual) {
+            self::assertSame($exception, $actual);
+        }
+
+        self::assertSame(0, $this->metricsEmitter->count());
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function transportErrorProvider(): iterable
+    {
+        yield 'read error' => ['read error on connection to valkey-iam:6379'];
+        yield 'went away' => ['Redis server tls://valkey-iam:6379 went away'];
+        yield 'connection closed' => ['Connection closed'];
+        yield 'loading' => ['LOADING Redis is loading the dataset in memory'];
+        yield 'generic server error' => ['ERR max number of clients reached'];
+    }
+
+    public function testFailingCloseDoesNotMaskTheOriginalConnectionError(): void
+    {
+        $exception = new \RedisException('read error on connection to valkey-iam:6379');
+        $this->tokenFactory->method('create')->willReturn($this->authToken());
+        $client = $this->createMock(\Redis::class);
+        $client->method('auth')->willThrowException($exception);
+        $client->expects(self::once())->method('close')
+            ->willThrowException(new \RedisException('close failed'));
+        $this->logger->expects(self::once())->method('warning')
+            ->with('Redis IAM connection error during authentication.');
+
+        $this->expectExceptionObject($exception);
+
+        try {
+            $this->authenticator()->authenticate($client);
+        } finally {
+            self::assertSame(0, $this->metricsEmitter->count());
+        }
+    }
+
+    public function testNonRedisErrorDuringAuthIsLoggedWithoutMessageAndNotCounted(): void
+    {
+        $exception = new \RuntimeException($this->faker->sentence());
+        $this->tokenFactory->method('create')->willReturn($this->authToken());
+        $client = $this->createMock(\Redis::class);
+        $client->method('auth')->willThrowException($exception);
+        $client->expects(self::once())->method('close');
+        $this->logger->expects(self::once())->method('warning')->with(
+            'Redis IAM connection error during authentication.',
+            [
+                'backend' => 'redis',
+                'user_id' => $this->userId,
+                'exception_class' => \RuntimeException::class,
+            ]
+        );
+
+        $this->expectExceptionObject($exception);
+
+        try {
+            $this->authenticator()->authenticate($client);
+        } finally {
+            self::assertSame(0, $this->metricsEmitter->count());
+        }
     }
 
     public function testFalseAuthReplyIsTreatedAsFailure(): void

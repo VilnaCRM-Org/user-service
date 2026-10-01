@@ -11,6 +11,7 @@ use App\Shared\Infrastructure\Factory\RedisIamConnectionFactory;
 use App\Tests\Unit\UnitTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
 final class RedisIamConnectionFactoryTest extends UnitTestCase
@@ -18,6 +19,7 @@ final class RedisIamConnectionFactoryTest extends UnitTestCase
     private \Redis&MockObject $client;
     private RedisClientFactoryInterface&MockObject $clientFactory;
     private RedisIamAuthenticatorInterface&MockObject $authenticator;
+    private LoggerInterface&MockObject $logger;
 
     #[\Override]
     protected function setUp(): void
@@ -28,6 +30,7 @@ final class RedisIamConnectionFactoryTest extends UnitTestCase
         $this->clientFactory = $this->createMock(RedisClientFactoryInterface::class);
         $this->clientFactory->method('create')->willReturn($this->client);
         $this->authenticator = $this->createMock(RedisIamAuthenticatorInterface::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
     }
 
     public function testOpensAuthenticatedTlsConnectionForRedissDsn(): void
@@ -46,6 +49,17 @@ final class RedisIamConnectionFactoryTest extends UnitTestCase
         self::assertSame($this->client, $connection);
         self::assertCount(1, $factory->connections());
         self::assertSame($this->client, $factory->connections()[0]->client());
+    }
+
+    public function testConnectionsLogConnectFailuresThroughTheInjectedLogger(): void
+    {
+        $this->client->method('connect')->willReturn(false);
+        $this->logger->expects(self::once())->method('warning')
+            ->with('Redis IAM connection failed.');
+
+        $this->expectException(\RedisException::class);
+
+        $this->factory()->create(sprintf('rediss://%s:6379', $this->faker->domainName()));
     }
 
     public function testAcceptsTrailingSlashAndDefaultsToPort6379(): void
@@ -113,7 +127,8 @@ final class RedisIamConnectionFactoryTest extends UnitTestCase
             $this->clientFactory,
             $this->authenticator,
             $this->createMock(CurrentTimestampProviderInterface::class),
-            $tlsStreamOptions
+            $tlsStreamOptions,
+            $this->logger
         );
     }
 }
