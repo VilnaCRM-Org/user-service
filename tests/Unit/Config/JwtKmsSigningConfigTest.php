@@ -144,6 +144,13 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
         self::assertStringContainsString('--key-spec RSA_4096', $script);
     }
 
+    public function testComposerScriptsGenerateNoLocalKeyPair(): void
+    {
+        $composer = (string) file_get_contents($this->path('composer.json'));
+
+        self::assertStringNotContainsString('generate-keypair', $composer);
+    }
+
     public function testJwksRouteIsPublishedUnderTheWellKnownPath(): void
     {
         $route = $this->yaml('config/routes.yaml')['jwks'];

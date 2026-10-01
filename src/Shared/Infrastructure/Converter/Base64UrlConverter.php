@@ -16,7 +16,7 @@ final readonly class Base64UrlConverter
 
     public function decode(string $value): ?string
     {
-        if (preg_match('/^[A-Za-z0-9_-]+$/', $value) !== 1) {
+        if (preg_match('/^[A-Za-z0-9_-]+$/D', $value) !== 1) {
             return null;
         }
 

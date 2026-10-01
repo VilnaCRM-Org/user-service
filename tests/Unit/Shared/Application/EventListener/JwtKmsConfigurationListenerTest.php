@@ -78,6 +78,7 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         yield 'bare key id' => ['0b1c2d3e-aaaa-4bbb'];
         yield 'prefixed' => ['x' . self::KEY_ARN];
         yield 'suffixed' => [self::KEY_ARN . ' '];
+        yield 'trailing newline' => [self::KEY_ARN . "\n"];
         yield 'other service' => ['arn:aws:sqs:eu-central-1:123456789012:key/abc'];
     }
 

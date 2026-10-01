@@ -27,3 +27,6 @@ tests/Load/config.json
 .env.local
 .env.local.php
 .env.test
+
+# Local JWT key files from before S5.11 (KMS signing); never ship them.
+config/jwt/

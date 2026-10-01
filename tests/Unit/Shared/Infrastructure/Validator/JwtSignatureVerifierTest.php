@@ -111,6 +111,7 @@ final class JwtSignatureVerifierTest extends UnitTestCase
         yield 'missing alg' => [['kid' => 'kid']];
         yield 'missing kid' => [['alg' => 'RS256']];
         yield 'non-string kid' => [['alg' => 'RS256', 'kid' => 7]];
+        yield 'critical extension' => [['alg' => 'RS256', 'kid' => 'kid', 'crit' => ['exp']]];
     }
 
     public function testRejectsRs384HeaderEvenWithAValidKidAndSignature(): void

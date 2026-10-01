@@ -17,9 +17,9 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 final readonly class JwtKmsConfigurationListener
 {
     private const KEY_ARN_PATTERN
-        = '#^arn:aws[a-z-]*:kms:[a-z0-9-]+:[0-9]{12}:(key|alias)/[A-Za-z0-9/_-]+$#';
+        = '#^arn:aws[a-z-]*:kms:[a-z0-9-]+:[0-9]{12}:(key|alias)/[A-Za-z0-9/_-]+$#D';
     private const KMS_ENDPOINT_PATTERN
-        = '#^https://kms(-fips)?\.[a-z0-9-]+\.amazonaws\.com$#';
+        = '#^https://kms(-fips)?\.[a-z0-9-]+\.amazonaws\.com$#D';
 
     public function __construct(
         private string $appEnv,

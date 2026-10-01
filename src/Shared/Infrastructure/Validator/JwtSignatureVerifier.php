@@ -14,7 +14,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * Verifies an RS256 JWS locally with the KMS public key its "kid" names.
  *
- * Fails closed: any other "alg", a missing or unknown "kid", a malformed
+ * Fails closed: any other "alg", a missing or unknown "kid", a "crit"
+ * header (no extension is understood, RFC 7515 section 4.1.11), a malformed
  * segment or a bad signature returns null. Key lookup errors propagate.
  */
 final readonly class JwtSignatureVerifier
@@ -73,7 +74,11 @@ final readonly class JwtSignatureVerifier
     private function resolveKey(array $header): ?JwtVerificationKey
     {
         $kid = $header['kid'] ?? null;
-        if (($header['alg'] ?? null) !== self::ALGORITHM || !is_string($kid)) {
+        if (
+            ($header['alg'] ?? null) !== self::ALGORITHM
+            || !is_string($kid)
+            || array_key_exists('crit', $header)
+        ) {
             return null;
         }
 

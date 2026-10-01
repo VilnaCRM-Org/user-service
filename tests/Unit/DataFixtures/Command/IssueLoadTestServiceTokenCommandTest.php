@@ -52,16 +52,51 @@ final class IssueLoadTestServiceTokenCommandTest extends UnitTestCase
         self::assertSame('kms.signed.jwt', $tester->getDisplay());
     }
 
-    public function testRefusesToMintTokensInProduction(): void
+    /**
+     * @dataProvider nonLocalEnvironments
+     */
+    public function testRefusesToMintTokensOutsideLocalEnvironments(string $environment): void
     {
         $this->accessTokenFactory->expects($this->never())->method('create');
-        $tester = new CommandTester($this->command('prod'));
+        $tester = new CommandTester($this->command($environment));
 
         self::assertSame(Command::FAILURE, $tester->execute([]));
         self::assertStringContainsString(
-            'Load-test tokens are never issued in production.',
+            'Load-test tokens are issued only in local environments.',
             $tester->getDisplay()
         );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function nonLocalEnvironments(): iterable
+    {
+        yield 'prod' => ['prod'];
+        yield 'staging' => ['staging'];
+    }
+
+    /**
+     * @dataProvider localEnvironments
+     */
+    public function testMintsTokensInEveryLocalEnvironment(string $environment): void
+    {
+        $this->accessTokenFactory->method('create')->willReturn('kms.signed.jwt');
+
+        self::assertSame(
+            Command::SUCCESS,
+            (new CommandTester($this->command($environment)))->execute([])
+        );
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function localEnvironments(): iterable
+    {
+        foreach (['dev', 'test', 'load_test', 'schemathesis'] as $environment) {
+            yield $environment => [$environment];
+        }
     }
 
     private function command(string $environment): IssueLoadTestServiceTokenCommand

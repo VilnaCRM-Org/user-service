@@ -87,6 +87,16 @@ final class KmsJwtKeyProviderTest extends UnitTestCase
         self::assertNotSame($current->kid(), $previous->kid());
     }
 
+    public function testCurrentKeyTokensVerifyEvenIfThePreviousKeyIsUnavailable(): void
+    {
+        $currentKid = $this->provider()->current()->kid();
+        $this->kms->removeKey(self::PREVIOUS);
+
+        $found = $this->provider(self::PREVIOUS)->findByKid($currentKid);
+
+        self::assertSame(self::CURRENT, $found?->keyId());
+    }
+
     public function testUnknownKidIsNotFound(): void
     {
         self::assertNull($this->provider(self::PREVIOUS)->findByKid('unknown-kid'));

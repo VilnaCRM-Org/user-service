@@ -46,5 +46,6 @@ final class Base64UrlConverterTest extends UnitTestCase
         yield 'leading invalid character' => ['.-_8'];
         yield 'trailing invalid character' => ['-_8.'];
         yield 'impossible length' => ['A'];
+        yield 'trailing newline' => ["-_8\n"];
     }
 }

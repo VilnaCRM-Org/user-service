@@ -31,6 +31,7 @@ final class IssueLoadTestServiceTokenCommand extends Command
     private const JWT_ISSUER = 'vilnacrm-user-service';
     private const JWT_AUDIENCE = 'vilnacrm-api';
     private const ACCESS_TOKEN_TTL_SECONDS = 900;
+    private const LOCAL_ENVIRONMENTS = ['dev', 'test', 'load_test', 'schemathesis'];
 
     public function __construct(
         private readonly AccessTokenFactoryInterface $accessTokenFactory,
@@ -46,8 +47,8 @@ final class IssueLoadTestServiceTokenCommand extends Command
     #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ($this->environment === 'prod') {
-            $output->writeln('Load-test tokens are never issued in production.');
+        if (!in_array($this->environment, self::LOCAL_ENVIRONMENTS, true)) {
+            $output->writeln('Load-test tokens are issued only in local environments.');
 
             return Command::FAILURE;
         }

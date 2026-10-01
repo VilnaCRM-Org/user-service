@@ -55,16 +55,25 @@ final class KmsJwtKeyProvider implements JwtVerificationKeyProviderInterface
         return $keys;
     }
 
+    /**
+     * Resolves the previous key only when the kid is not the current key's, so
+     * current-key tokens keep verifying even if the previous key is unavailable.
+     */
     #[\Override]
     public function findByKid(string $kid): ?JwtVerificationKey
     {
-        foreach ($this->verificationKeys() as $key) {
-            if ($key->kid() === $kid) {
-                return $key;
-            }
+        $current = $this->current();
+        if ($current->kid() === $kid) {
+            return $current;
         }
 
-        return null;
+        if ($this->previousKeyId === '') {
+            return null;
+        }
+
+        $previous = $this->resolve($this->previousKeyId);
+
+        return $previous->kid() === $kid ? $previous : null;
     }
 
     private function resolve(string $keyId): JwtVerificationKey

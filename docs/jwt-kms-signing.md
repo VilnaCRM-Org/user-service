@@ -85,7 +85,8 @@ On every main request and console command in `APP_ENV=prod`,
   as `alias/user-service-jwt` is refused);
 - `JWT_KMS_PREVIOUS_KEY_ID` is set and is not a KMS key ARN or alias ARN;
 - any static `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` is
-  set;
+  set (the guard checks these environment variables; the production image ships no
+  shared credentials or config file);
 - the KMS client endpoint is not the regional AWS endpoint
   (`https://kms.<region>.amazonaws.com` or its FIPS variant), which refuses a
   LocalStack or any other local signer.
@@ -94,38 +95,54 @@ On every main request and console command in `APP_ENV=prod`,
 
 The plan's acceptance requires a manual asymmetric key change with a dual-key window
 (FR-06). The old key stays in KMS during the window; verification reads the public
-halves of both keys through GetPublicKey (D-17, USI plan). The steps:
+halves of both keys through GetPublicKey (D-17, USI plan). Change keys by changing
+the key ARNs in the environment, not by repointing an alias: an alias repoint
+changes the signing key without any window, and tasks disagree on the kid until
+their GetPublicKey cache expires.
 
 1. **Create** the new KMS key (`RSA_4096`, `SIGN_VERIFY`) in the infrastructure.
 2. **Grant** the ECS task role `kms:Sign` and `kms:GetPublicKey` on the new key, and
    keep `kms:GetPublicKey` on the old key.
-3. **Deploy** with `JWT_KMS_KEY_ID` = the new key and `JWT_KMS_PREVIOUS_KEY_ID` = the
-   old key. New tokens carry the new `kid`; tokens signed by the old key still
-   verify, and the JWK set lists both keys.
-4. **Wait** at least the longest token lifetime: `JWT_TOKEN_TTL` (lexik access
+3. **Pre-publish** the new key: deploy with `JWT_KMS_KEY_ID` = the old key and
+   `JWT_KMS_PREVIOUS_KEY_ID` = the new key. The new key only verifies and appears in
+   the JWK set. Wait until the rollout has replaced every task.
+4. **Switch** signing: deploy with `JWT_KMS_KEY_ID` = the new key and
+   `JWT_KMS_PREVIOUS_KEY_ID` = the old key. Because every task already trusts both
+   keys, tokens from tasks of either deployment verify during the rolling update.
+5. **Wait** at least the longest token lifetime: `JWT_TOKEN_TTL` (lexik access
    tokens) and `ACCESS_TOKEN_TTL` (league access tokens), plus
    `JWT_KMS_PUBLIC_KEY_CACHE_TTL`.
-5. **Clear** `JWT_KMS_PREVIOUS_KEY_ID` and redeploy. Tokens of the old key are now
+6. **Clear** `JWT_KMS_PREVIOUS_KEY_ID` and redeploy. Tokens of the old key are now
    rejected (unknown `kid`).
-6. **Revoke** the task role grants on the old key and schedule its deletion.
+7. **Revoke** the task role grants on the old key and schedule its deletion.
+
+Step 3 is a safety step on top of the plan's six steps (create, grant, deploy with
+the window, wait, clear, revoke): without it, tasks still on the previous
+deployment reject tokens that the new tasks sign until the rollout finishes.
 
 Refresh tokens are opaque values, not JWTs, so a key change does not affect them.
+
+**First KMS deployment.** Access tokens signed by the retired PEM key carry no
+`kid` and are rejected after the first deployment of this change. Clients recover
+with their refresh token or by signing in again.
 
 ## Failure modes
 
 All failures are fail-closed. No path falls back to a local private key.
 
-| Failure                                                   | Effect                                                    |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| KMS `Sign` error (throttling, AccessDenied, key disabled) | token issuance fails (sign-in, refresh, OAuth token: 5xx) |
-| KMS `GetPublicKey` error                                  | verification fails: the request is unauthenticated (401)  |
-| GetPublicKey returns a non-`SIGN_VERIFY` key or no RS256  | signing and verification fail                             |
-| Token `alg` is not `RS256` (for example `none`, `HS256`)  | rejected (401)                                            |
-| Token `kid` missing or not the current/previous key       | rejected (401)                                            |
-| Tampered header, payload or signature                     | rejected (401)                                            |
-| Previous key removed from configuration                   | its tokens are rejected (401)                             |
-| JWK set request while KMS is unavailable                  | 500                                                       |
-| Misconfigured production (see the guard above)            | every request and console command fails                   |
+| Failure                                                                 | Effect                                                    |
+| ----------------------------------------------------------------------- | --------------------------------------------------------- |
+| KMS `Sign` error (throttling, AccessDenied, key disabled)               | token issuance fails (sign-in, refresh, OAuth token: 5xx) |
+| KMS `GetPublicKey` error for the current key                            | verification fails: the request is unauthenticated (401)  |
+| KMS `GetPublicKey` error for the previous key                           | previous-key tokens rejected (401); JWK set returns 500   |
+| `GetPublicKey` error on the league resource-server path                 | 500 (no firewall uses that path today)                    |
+| GetPublicKey returns a non-`SIGN_VERIFY` key or no RS256                | signing and verification fail                             |
+| Token `alg` is not `RS256` (for example `none`, `HS256`)                | rejected (401)                                            |
+| Token `kid` missing or not the current/previous key, or a `crit` header | rejected (401)                                            |
+| Tampered header, payload or signature                                   | rejected (401)                                            |
+| Previous key removed from configuration                                 | its tokens are rejected (401)                             |
+| JWK set request while KMS is unavailable                                | 500                                                       |
+| Misconfigured production (see the guard above)                          | every request and console command fails                   |
 
 The live checks (a TEST login, JWT verification against the published key and a
 CloudTrail `kms:Sign` event) run in the TEST campaign (USI S4.6 step 7), not in this
