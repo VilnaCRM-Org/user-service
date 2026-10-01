@@ -132,7 +132,8 @@ services:
   App\Shared\Application\EventListener\TwoFactorEncryptionKeyConfigurationListener:
     arguments:
       $appEnv: '%kernel.environment%'
-      $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
+      $twoFactorKmsKeyId: '%env(default::TWO_FACTOR_KMS_KEY_ID)%'
+      $awsRegion: '%env(default::AWS_REGION)%'
     tags:
       - {
           name: kernel.event_listener,
@@ -340,9 +341,12 @@ services:
     arguments:
       $lockoutRedis: '@app.account_lockout_redis_connection'
 
-  App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor:
+  # 2FA TOTP secrets (S5.12, FR-06): KMS Encrypt/Decrypt with the 2FA key and
+  # the encryption context {user_id: <id>}. TWO_FACTOR_KMS_KEY_ID is the key
+  # ARN that the infrastructure passes as a plain environment value.
+  App\User\Infrastructure\Adapter\KmsTwoFactorSecretEncryptor:
     arguments:
-      $twoFactorEncryptionKey: '%env(default::TWO_FACTOR_ENCRYPTION_KEY)%'
+      $keyId: '%env(TWO_FACTOR_KMS_KEY_ID)%'
 
   App\User\Application\Factory\AuthTokenFactoryInterface: '@App\User\Application\Factory\AuthTokenFactory'
   App\User\Application\Factory\AuthCookieFactoryInterface: '@App\User\Application\Factory\AuthCookieFactory'
@@ -411,7 +415,7 @@ services:
   App\User\Application\Provider\AccountLockoutProviderInterface: '@App\User\Infrastructure\Provider\RedisAccountLockoutProvider'
   App\User\Application\Factory\AccessTokenFactoryInterface: '@App\User\Infrastructure\Factory\LexikAccessTokenFactory'
   App\User\Application\Validator\TOTPValidatorInterface: '@App\User\Infrastructure\Validator\TOTPValidator'
-  App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Adapter\TwoFactorSecretEncryptor'
+  App\User\Domain\Contract\TwoFactorSecretEncryptorInterface: '@App\User\Infrastructure\Adapter\KmsTwoFactorSecretEncryptor'
   App\User\Application\Factory\TOTPSecretFactoryInterface: '@App\User\Infrastructure\Factory\TOTPSecretFactory'
   App\User\Application\Factory\EventIdFactoryInterface: '@App\User\Application\Factory\EventIdFactory'
   App\User\Application\Factory\IdFactoryInterface: '@App\User\Infrastructure\Factory\UlidIdFactory'

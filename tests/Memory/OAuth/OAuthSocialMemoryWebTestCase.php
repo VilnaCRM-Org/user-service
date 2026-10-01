@@ -7,6 +7,7 @@ namespace App\Tests\Memory\OAuth;
 use App\OAuth\Domain\Repository\SocialIdentityRepositoryInterface;
 use App\Shared\Infrastructure\Transformer\UuidTransformer;
 use App\Tests\Memory\Support\BrowserReuseMemoryWebTestCase;
+use App\Tests\Memory\Support\EncryptedTwoFactorSecretFixture;
 use App\Tests\Shared\OAuth\Support\RecordingOAuthPublisher;
 use App\User\Domain\Entity\User;
 use App\User\Domain\Factory\UserFactoryInterface;
@@ -170,7 +171,7 @@ abstract class OAuthSocialMemoryWebTestCase extends BrowserReuseMemoryWebTestCas
         $user->setConfirmed($confirmed);
         $user->setTwoFactorEnabled($twoFactorEnabled);
         $user->setTwoFactorSecret(
-            $twoFactorEnabled ? $this->faker->regexify('[A-Z2-7]{16}') : null,
+            (new EncryptedTwoFactorSecretFixture($this->container))->secretFor($user),
         );
         $this->userRepository->save($user);
 

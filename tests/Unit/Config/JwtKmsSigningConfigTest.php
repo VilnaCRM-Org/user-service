@@ -151,6 +151,16 @@ final class JwtKmsSigningConfigTest extends UnitTestCase
         self::assertStringNotContainsString('generate-keypair', $composer);
     }
 
+    public function testLocalStackHealthcheckWaitsForTheJwtKeyAlias(): void
+    {
+        $script = (string) file_get_contents(
+            $this->path('infrastructure/docker/php/localstack-healthcheck.sh')
+        );
+
+        self::assertStringContainsString('alias/user-service-jwt', $script);
+        self::assertStringContainsString('awslocal kms describe-key --key-id "$alias"', $script);
+    }
+
     public function testJwksRouteIsPublishedUnderTheWellKnownPath(): void
     {
         $route = $this->yaml('config/routes.yaml')['jwks'];

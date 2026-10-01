@@ -106,7 +106,7 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
         }
 
         $timestep = $this->totpVerifier->resolveAcceptedTimestep(
-            $this->decryptSecret($secret),
+            $this->encryptor->decrypt($secret, $user->getId()),
             $code
         );
         if ($timestep === null || $user->isTotpTimestepReplay($timestep)) {
@@ -132,7 +132,7 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
         }
 
         return $this->totpVerifier->resolveAcceptedTimestep(
-            $this->decryptSecret($secret),
+            $this->encryptor->decrypt($secret, $user->getId()),
             $code
         ) !== null;
     }
@@ -168,17 +168,6 @@ final readonly class TwoFactorCodeValidator implements TwoFactorCodeValidatorInt
         }
 
         return false;
-    }
-
-    private function decryptSecret(string $storedSecret): string
-    {
-        try {
-            return $this->encryptor->decrypt($storedSecret);
-        } catch (\Exception) {
-            // Fallback for plain-text secrets stored before encryption was introduced.
-            // Narrow catch intentionally excludes \Error (programming errors should propagate).
-            return $storedSecret;
-        }
     }
 
     private function isTotpCode(string $code): bool

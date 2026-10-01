@@ -53,12 +53,16 @@ final class TwoFactorCodeSetupVerificationTest extends UnitTestCase
         $decryptedSecret = $this->faker->sha256();
         $code = '123456';
 
+        $userId = $this->faker->uuid();
         $user = $this->createMock(User::class);
         $user->method('getTwoFactorSecret')->willReturn($secret);
+        $user->method('getId')->willReturn($userId);
         $user->expects($this->never())->method('isTotpTimestepReplay');
         $user->expects($this->never())->method('recordAcceptedTotpTimestep');
 
-        $this->encryptor->method('decrypt')->with($secret)->willReturn($decryptedSecret);
+        $this->encryptor->method('decrypt')
+            ->with($secret, $userId)
+            ->willReturn($decryptedSecret);
         $this->totpVerifier->method('resolveAcceptedTimestep')
             ->with($decryptedSecret, $code)
             ->willReturn(self::ACCEPTED_TIMESTEP);

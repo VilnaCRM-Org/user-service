@@ -17,6 +17,11 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 {
+    private const KEY_ARN = 'arn:aws:kms:eu-central-1:123456789012:key/two-factor';
+    private const REGION = 'eu-central-1';
+    private const REGION_MESSAGE =
+        'Set AWS_REGION in production to the region of the two-factor KMS key.';
+
     public function testAllowsEmptyKeyOutsideProduction(): void
     {
         $listener = new TwoFactorEncryptionKeyConfigurationListener('dev', null);
@@ -35,7 +40,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', null);
@@ -53,7 +58,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', '   ');
@@ -69,7 +74,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testIgnoresSubRequest(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = $this->configuredProductionListener();
         $request = Request::create('/');
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -97,7 +102,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testValidatesMainRequestInProduction(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = $this->configuredProductionListener();
         $request = Request::create('/');
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -111,7 +116,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testIgnoresConsoleEventWithoutCommand(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = $this->configuredProductionListener();
         $event = new ConsoleCommandEvent(null, new ArrayInput([]), new BufferedOutput());
 
         $listener->onConsoleCommand($event);
@@ -129,7 +134,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testValidatesConsoleCommandInProduction(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = $this->configuredProductionListener();
         $command = new Command('test');
         $event = new ConsoleCommandEvent($command, new ArrayInput([]), new BufferedOutput());
 
@@ -141,7 +146,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', null);
@@ -149,5 +154,65 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
         $event = new ConsoleCommandEvent($command, new ArrayInput([]), new BufferedOutput());
 
         $listener->onConsoleCommand($event);
+    }
+
+    public function testThrowsWhenRegionIsMissingInProduction(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(self::REGION_MESSAGE);
+
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN, null);
+        $listener->onKernelRequest($this->mainRequestEvent());
+    }
+
+    public function testThrowsWhenRegionIsBlankInProduction(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(self::REGION_MESSAGE);
+
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN, ' ');
+        $listener->onKernelRequest($this->mainRequestEvent());
+    }
+
+    public function testRegionDefaultsToMissingInProduction(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(self::REGION_MESSAGE);
+
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN);
+        $listener->onKernelRequest($this->mainRequestEvent());
+    }
+
+    public function testConsoleCommandThrowsWhenRegionIsMissingInProduction(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(self::REGION_MESSAGE);
+
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN, null);
+        $listener->onConsoleCommand(
+            new ConsoleCommandEvent(new Command('test'), new ArrayInput([]), new BufferedOutput())
+        );
+    }
+
+    public function testAllowsMissingRegionOutsideProduction(): void
+    {
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('test', null, null);
+
+        $listener->onKernelRequest($this->mainRequestEvent());
+        $this->addToAssertionCount(1);
+    }
+
+    private function configuredProductionListener(): TwoFactorEncryptionKeyConfigurationListener
+    {
+        return new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN, self::REGION);
+    }
+
+    private function mainRequestEvent(): RequestEvent
+    {
+        return new RequestEvent(
+            $this->createMock(HttpKernelInterface::class),
+            Request::create('/'),
+            HttpKernelInterface::MAIN_REQUEST
+        );
     }
 }

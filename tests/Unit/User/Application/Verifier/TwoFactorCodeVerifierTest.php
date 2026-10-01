@@ -53,7 +53,9 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
 
         $user = $this->createUserMock($secret);
 
-        $this->encryptor->method('decrypt')->with($secret)->willReturn($decryptedSecret);
+        $this->encryptor->method('decrypt')
+            ->with($secret, $user->getId())
+            ->willReturn($decryptedSecret);
         $this->totpVerifier->method('resolveAcceptedTimestep')
             ->with($decryptedSecret, $code)
             ->willReturn(self::ACCEPTED_TIMESTEP);
@@ -345,22 +347,39 @@ final class TwoFactorCodeVerifierTest extends UnitTestCase
         $this->assertSame(0, $this->verifier->countRemainingCodes($userId));
     }
 
-    public function testDecryptFallsBackToPlainTextOnException(): void
+    public function testDecryptFailureFailsClosedWithoutUsingStoredValueAsSecret(): void
     {
-        $plainSecret = $this->faker->sha256();
-        $code = '123456';
+        $storedSecret = $this->faker->sha256();
+        $failure = new \RuntimeException('Failed to decrypt two-factor secret.');
 
-        $user = $this->createUserMock($plainSecret);
+        $user = $this->createUserMock($storedSecret);
 
         $this->encryptor->method('decrypt')
-            ->willThrowException(new \RuntimeException('Decryption failed'));
-        $this->totpVerifier->expects($this->once())
-            ->method('resolveAcceptedTimestep')
-            ->with($plainSecret, $code)
-            ->willReturn(self::ACCEPTED_TIMESTEP);
+            ->with($storedSecret, $user->getId())
+            ->willThrowException($failure);
+        $this->totpVerifier->expects($this->never())
+            ->method('resolveAcceptedTimestep');
+        $this->userRepository->expects($this->never())->method('save');
 
-        $this->verifier->verifyTotpOrFail($user, $code);
-        $this->addToAssertionCount(1);
+        $this->expectExceptionObject($failure);
+
+        $this->verifier->verifyTotpOrFail($user, '123456');
+    }
+
+    public function testSetupVerificationDecryptFailureFailsClosed(): void
+    {
+        $storedSecret = $this->faker->sha256();
+        $failure = new \RuntimeException('Failed to decrypt two-factor secret.');
+
+        $user = $this->createUserMock($storedSecret);
+
+        $this->encryptor->method('decrypt')->willThrowException($failure);
+        $this->totpVerifier->expects($this->never())
+            ->method('resolveAcceptedTimestep');
+
+        $this->expectExceptionObject($failure);
+
+        $this->verifier->verifyTotpForSetupOrFail($user, '123456');
     }
 
     public function testVerifyAndConsumeOrFailSkipsUsedRecoveryCodes(): void

@@ -43,6 +43,12 @@ We regularly update project dependencies to mitigate vulnerabilities in third-pa
 - Non-production environments must define the key in environment-specific files.
 - Production must define `OAUTH_ENCRYPTION_KEY` via deployment secrets; runtime validation fails fast when it is empty.
 
+### Two-Factor Secret Encryption
+
+- TOTP secrets are encrypted with the AWS KMS 2FA key under the encryption context `user_id`; there is no static encryption key.
+- A ciphertext decrypts only for its own user. Any decryption or KMS failure fails closed with HTTP 500: the code is not evaluated and there is no plain-text fallback.
+- Production must set `TWO_FACTOR_KMS_KEY_ID` (the key ARN) and `AWS_REGION`, and uses the ECS task role; runtime validation fails fast when either is empty. See [two-factor secret encryption](advanced-configuration.md#two-factor-secret-encryption-aws-kms).
+
 ### JWT Signing Key Policy
 
 - Every JWT is signed by an AWS KMS asymmetric key (`RSA_4096`, RS256 via `kms:Sign`); the private key never leaves KMS and no PEM key or passphrase exists in the application.
