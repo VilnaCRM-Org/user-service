@@ -8,6 +8,7 @@ services:
       - ./infrastructure/docker/php/conf.d/app.dev.ini:/usr/local/etc/php/conf.d/app.dev.ini:ro
       - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
+      - valkey_iam_tls:/run/valkey-iam-tls:ro
       # If you develop on Mac or Windows you can remove the vendor/ directory
       #  from the bind-mount for better performance by enabling the next line:
       #- /srv/app/vendor
@@ -62,6 +63,31 @@ services:
     networks:
       - user-service
 
+  # Test-only TLS + ACL Valkey 7.2 for the Redis IAM token provider (S5.13).
+  valkey-iam:
+    image: valkey/valkey:7.2.14-alpine@sha256:c6c2f0020be34bbf684a53a0ef716ab16ff70295186d4d9f2518435beb7afbff
+    entrypoint: ['/bin/sh', '/usr/local/bin/valkey-iam-entrypoint.sh']
+    volumes:
+      - ./infrastructure/docker/valkey-iam/entrypoint.sh:/usr/local/bin/valkey-iam-entrypoint.sh:ro
+      - valkey_iam_tls:/tls
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'valkey-cli',
+          '-h',
+          '127.0.0.1',
+          '--tls',
+          '--cacert',
+          '/tls/ca.crt',
+          'ping',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - user-service
+
   localstack:
     image: localstack/localstack:3.4.0
     ports:
@@ -89,3 +115,4 @@ networks:
 
 volumes:
   localstack_data:
+  valkey_iam_tls:

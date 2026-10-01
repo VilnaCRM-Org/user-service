@@ -26,6 +26,12 @@ load balancer. The development override publishes HTTPS and HTTP/3 on port 443.
 #### Redis
 
 - `REDIS_URL`: The URL for connecting to the Redis server (e.g., `redis://redis:6379/0`).
+- `REDIS_LOCKOUT_URL`: The URL of the Redis server used by the sign-in lockout counter (defaults to `REDIS_URL`).
+- `REDIS_IAM_USER_ID`: Empty by default. When set, every Redis connection (cache pools, OAuth state and lockout) authenticates to ElastiCache with IAM: the app opens `rediss://` (TLS) connections and sends `AUTH <user-id> <token>`, where the token is a SigV4 presigned `connect` request for the service `elasticache` signed with the task-role credentials (valid for 15 minutes). The user id must equal the ElastiCache user name. `REDIS_URL` and `REDIS_LOCKOUT_URL` must then be `rediss://<host>:<port>` without credentials, options or a database path. A missing or rejected token fails closed and is counted by the `auth_failure{backend=redis}` log metric; there is no fallback to an unauthenticated connection.
+- `REDIS_REPLICATION_GROUP_ID`: The ElastiCache replication-group id signed into the IAM token (lower case). Required when `REDIS_IAM_USER_ID` is set.
+- `AWS_REGION`: The region of the replication group. Required when `REDIS_IAM_USER_ID` is set.
+
+IAM connections are re-authenticated at safe points only, before a request or a worker message and never inside `MULTI`/`EXEC`, a pipeline or a Lua script: a fresh token is sent with `AUTH` on the open connection after 10 minutes, and a new connection is opened once the stored token may have expired (15 minutes). This keeps the token that phpredis replays on a transparent reconnect valid and renews the connection long before the ElastiCache 12-hour limit. The local stack keeps `redis://redis:6379/0` without IAM; the `valkey-iam` compose service (Valkey 7.2 with TLS and ACL users) is used only by the integration tests.
 
 #### AWS SQS / LocalStack
 

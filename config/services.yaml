@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
   api_url_prefix: '%env(API_PREFIX)%'
+  env(AWS_REGION): ''
   social_oauth_enabled_default: true
   social_oauth_enabled: '%env(bool:default:social_oauth_enabled_default:SOCIAL_OAUTH_ENABLED)%'
 
@@ -408,16 +409,66 @@ services:
       - version: '%env(AWS_SQS_VERSION)%'
         region: '%env(AWS_SQS_REGION)%'
 
+  # Redis connections (S5.13, D-1). A non-empty REDIS_IAM_USER_ID selects
+  # ElastiCache IAM authentication (TLS, AUTH <user-id> <SigV4 token>);
+  # an empty one keeps the plain Symfony RedisAdapter DSN handling.
+  App\Shared\Infrastructure\Factory\RedisConnectionFactory:
+    arguments:
+      $iamUserId: '%env(REDIS_IAM_USER_ID)%'
+      $standardConnectionFactory: '@App\Shared\Infrastructure\Factory\StandardRedisConnectionFactory'
+      $iamConnectionFactory: '@App\Shared\Infrastructure\Factory\RedisIamConnectionFactory'
+
+  App\Shared\Infrastructure\Factory\StandardRedisConnectionFactory:
+    arguments:
+      $symfonyConnectionFactory: '@app.symfony_redis_connection_factory'
+
+  app.symfony_redis_connection_factory:
+    class: Closure
+    factory: ['Closure', 'fromCallable']
+    arguments:
+      - ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+
+  App\Shared\Infrastructure\Factory\RedisIamConnectionFactory:
+    arguments:
+      $tlsStreamOptions:
+        verify_peer: true
+        verify_peer_name: true
+
+  App\Shared\Infrastructure\Adapter\RedisIamAuthenticator:
+    arguments:
+      $tokenFactory: '@App\Shared\Infrastructure\Factory\RedisIamAuthTokenFactory'
+      $userId: '%env(REDIS_IAM_USER_ID)%'
+
+  App\Shared\Infrastructure\Factory\RedisIamAuthTokenFactory:
+    arguments:
+      $requestFactory: '@psr18.http_client'
+      $credentialProvider: '@app.redis_iam_aws_credential_provider'
+      $replicationGroupId: '%env(REDIS_REPLICATION_GROUP_ID)%'
+      $userId: '%env(REDIS_IAM_USER_ID)%'
+      $region: '%env(AWS_REGION)%'
+
+  # Default AWS credential chain (ECS task role in AWS), memoized and
+  # refreshed by the SDK before the credentials expire.
+  app.redis_iam_aws_credential_provider:
+    class: Closure
+    factory: ['Aws\Credentials\CredentialProvider', 'defaultProvider']
+
+  app.redis_connection:
+    class: \Redis
+    factory: ['@App\Shared\Infrastructure\Factory\RedisConnectionFactory', 'create']
+    arguments:
+      - '%env(resolve:REDIS_URL)%'
+
   # OAuth Social Sign-In
   oauth.redis_connection:
     class: \Redis
-    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+    factory: ['@App\Shared\Infrastructure\Factory\RedisConnectionFactory', 'create']
     arguments:
-      - '%env(REDIS_URL)%'
+      - '%env(resolve:REDIS_URL)%'
 
   app.account_lockout_redis_connection:
     class: \Redis
-    factory: ['Symfony\Component\Cache\Adapter\RedisAdapter', 'createConnection']
+    factory: ['@App\Shared\Infrastructure\Factory\RedisConnectionFactory', 'create']
     arguments:
       - '%env(resolve:REDIS_LOCKOUT_URL)%'
 
