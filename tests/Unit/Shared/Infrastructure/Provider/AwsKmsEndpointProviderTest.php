@@ -28,6 +28,8 @@ final class AwsKmsEndpointProviderTest extends UnitTestCase
             'endpoint' => 'http://localstack:4566',
         ]);
 
-        self::assertSame('http://localstack:4566', (new AwsKmsEndpointProvider($client))->endpoint());
+        $provider = new AwsKmsEndpointProvider($client);
+
+        self::assertSame('http://localstack:4566', $provider->endpoint());
     }
 }

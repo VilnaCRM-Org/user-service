@@ -106,10 +106,13 @@ final readonly class JwtKmsConfigurationListener
         $webIdentity = array_intersect_key($set, array_flip(self::WEB_IDENTITY_VARIABLES));
 
         if ($refused !== [] || count($webIdentity) === count(self::WEB_IDENTITY_VARIABLES)) {
-            throw new RuntimeException(
-                'Only the ECS task role may sign JWTs in production; unset the static,'
-                . ' profile, web-identity and full-URI AWS credential variables.'
-            );
+            throw new RuntimeException(sprintf(
+                'Only the ECS task role may sign JWTs in production; unset %s.',
+                implode(
+                    ', ',
+                    [...self::REFUSED_CREDENTIAL_VARIABLES, ...self::WEB_IDENTITY_VARIABLES]
+                )
+            ));
         }
     }
 

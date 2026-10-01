@@ -24,9 +24,6 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
     private const KEY_MESSAGE = 'Set JWT_KMS_KEY_ID to the KMS key ARN or alias ARN in production.';
     private const PREVIOUS_MESSAGE
         = 'JWT_KMS_PREVIOUS_KEY_ID must be empty or a KMS key ARN or alias ARN in production.';
-    private const CREDENTIALS_MESSAGE
-        = 'Only the ECS task role may sign JWTs in production; unset the static,'
-        . ' profile, web-identity and full-URI AWS credential variables.';
     private const ENDPOINT_MESSAGE
         = 'JWT signing must use the regional AWS KMS endpoint in production.';
     private const CREDENTIAL_VARIABLES = [
@@ -111,7 +108,10 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
     public function testRejectsNonTaskRoleAwsCredentialsInProduction(array $credentials): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(self::CREDENTIALS_MESSAGE);
+        $this->expectExceptionMessage(sprintf(
+            'Only the ECS task role may sign JWTs in production; unset %s.',
+            implode(', ', self::CREDENTIAL_VARIABLES)
+        ));
 
         $this->listener(credentials: $credentials)
             ->onKernelRequest($this->requestEvent(HttpKernelInterface::MAIN_REQUEST));
@@ -130,10 +130,12 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
         yield 'full container credentials URI' => [
             ['AWS_CONTAINER_CREDENTIALS_FULL_URI' => 'http://192.0.2.10/creds'],
         ];
-        yield 'web identity pair' => [[
-            'AWS_WEB_IDENTITY_TOKEN_FILE' => '/token',
-            'AWS_ROLE_ARN' => 'arn:aws:iam::123456789012:role/other',
-        ]];
+        yield 'web identity pair' => [
+            [
+                'AWS_WEB_IDENTITY_TOKEN_FILE' => '/token',
+                'AWS_ROLE_ARN' => 'arn:aws:iam::123456789012:role/other',
+            ],
+        ];
     }
 
     /**
@@ -156,6 +158,12 @@ final class JwtKmsConfigurationListenerTest extends UnitTestCase
     {
         yield 'token file only' => [['AWS_WEB_IDENTITY_TOKEN_FILE' => '/token']];
         yield 'role ARN only' => [['AWS_ROLE_ARN' => 'arn:aws:iam::123456789012:role/other']];
+        yield 'token file next to the task-role relative URI' => [
+            [
+                'AWS_WEB_IDENTITY_TOKEN_FILE' => '/token',
+                'AWS_CONTAINER_CREDENTIALS_RELATIVE_URI' => '/v2/credentials/task',
+            ],
+        ];
     }
 
     /**
