@@ -18,10 +18,6 @@ use ReflectionExtension;
  */
 final class DocumentDbIamDsnTest extends UnitTestCase
 {
-    private const DOCUMENTDB_QUERY = 'tls=true&tlsCAFile=%s&replicaSet=rs0'
-        . '&readPreference=secondaryPreferred&retryWrites=false'
-        . '&authSource=%%24external&authMechanism=MONGODB-AWS';
-
     private const CA_FILE = '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem';
 
     public function testBundledLibmongocHasTheTlsAndCryptoMongodbAwsNeeds(): void
@@ -38,7 +34,7 @@ final class DocumentDbIamDsnTest extends UnitTestCase
 
     public function testCredentialFreeIamDsnIsAcceptedWithTheDocumentDbTlsOptions(): void
     {
-        $dsn = $this->iamDsn(sprintf(self::DOCUMENTDB_QUERY, rawurlencode(self::CA_FILE)));
+        $dsn = $this->iamDsn($this->documentDbQuery());
 
         self::assertInstanceOf(Manager::class, new Manager($dsn));
     }
@@ -83,6 +79,19 @@ final class DocumentDbIamDsnTest extends UnitTestCase
             Manager::class,
             new Manager($this->iamDsn('authMechanism=MONGODB-AWS', $userinfo))
         );
+    }
+
+    private function documentDbQuery(): string
+    {
+        return implode('&', [
+            'tls=true',
+            'tlsCAFile=' . rawurlencode(self::CA_FILE),
+            'replicaSet=rs0',
+            'readPreference=secondaryPreferred',
+            'retryWrites=false',
+            'authSource=%24external',
+            'authMechanism=MONGODB-AWS',
+        ]);
     }
 
     private function iamDsn(string $query, string $userinfo = ''): string
