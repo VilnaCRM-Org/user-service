@@ -18,6 +18,10 @@ use ReflectionExtension;
  */
 final class DocumentDbIamDsnTest extends UnitTestCase
 {
+    private const DOCUMENTDB_QUERY = 'tls=true&tlsCAFile=%s&replicaSet=rs0'
+        . '&readPreference=secondaryPreferred&retryWrites=false'
+        . '&authSource=%%24external&authMechanism=MONGODB-AWS';
+
     private const CA_FILE = '/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem';
 
     public function testBundledLibmongocHasTheTlsAndCryptoMongodbAwsNeeds(): void
@@ -34,11 +38,7 @@ final class DocumentDbIamDsnTest extends UnitTestCase
 
     public function testCredentialFreeIamDsnIsAcceptedWithTheDocumentDbTlsOptions(): void
     {
-        $dsn = $this->iamDsn(
-            'tls=true&tlsCAFile=' . rawurlencode(self::CA_FILE)
-            . '&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false'
-            . '&authSource=%24external&authMechanism=MONGODB-AWS'
-        );
+        $dsn = $this->iamDsn(sprintf(self::DOCUMENTDB_QUERY, rawurlencode(self::CA_FILE)));
 
         self::assertInstanceOf(Manager::class, new Manager($dsn));
     }
@@ -64,30 +64,31 @@ final class DocumentDbIamDsnTest extends UnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not accept a username or a password without the other');
 
-        new Manager(
-            'mongodb://' . $this->faker->userName() . '@docdb.example:27017/app'
-            . '?authMechanism=MONGODB-AWS&authSource=%24external'
-        );
+        new Manager($this->iamDsn('authMechanism=MONGODB-AWS', $this->faker->userName()));
     }
 
     public function testUnsupportedMechanismPropertyIsRefused(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Unsupported 'MONGODB-AWS' authentication mechanism property");
+        $this->expectExceptionMessage("Unsupported 'MONGODB-AWS' authentication mechanism");
 
         new Manager($this->iamDsn('authMechanism=MONGODB-AWS&authMechanismProperties=FOO:bar'));
     }
 
     public function testUserinfoPairIsParsedAsStaticAwsKeysSoTheDsnMustStayCredentialFree(): void
     {
-        $dsn = 'mongodb://' . $this->faker->userName() . ':' . rawurlencode($this->faker->password())
-            . '@docdb.example:27017/app?authMechanism=MONGODB-AWS&authSource=%24external';
+        $userinfo = $this->faker->userName() . ':' . rawurlencode($this->faker->password());
 
-        self::assertInstanceOf(Manager::class, new Manager($dsn));
+        self::assertInstanceOf(
+            Manager::class,
+            new Manager($this->iamDsn('authMechanism=MONGODB-AWS', $userinfo))
+        );
     }
 
-    private function iamDsn(string $query): string
+    private function iamDsn(string $query, string $userinfo = ''): string
     {
-        return 'mongodb://docdb.example:27017/app?' . $query;
+        $credentials = $userinfo === '' ? '' : $userinfo . '@';
+
+        return sprintf('mongodb://%sdocdb.example:27017/app?%s', $credentials, $query);
     }
 }

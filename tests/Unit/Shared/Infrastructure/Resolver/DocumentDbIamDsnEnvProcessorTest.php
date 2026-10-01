@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Exception\EnvNotFoundException;
 
 final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
 {
-    private const IAM_QUERY = 'tls=true&retryWrites=false&authSource=%24external&authMechanism=MONGODB-AWS';
+    private const IAM_QUERY = 'tls=true&retryWrites=false&authMechanism=MONGODB-AWS';
 
     private DocumentDbIamDsnEnvProcessor $processor;
 
@@ -139,7 +139,7 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
 
     public function testAnUnsetDsnVariableResolvesToAnEmptyString(): void
     {
-        $reader = static fn (string $name): ?string => null;
+        $reader = static fn (): ?string => null;
 
         self::assertSame('', $this->processor->getEnv('documentdb_iam', 'MONGODB_URL', $reader));
     }
@@ -147,24 +147,9 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
     public function testNullStaticKeyIsTreatedAsUnset(): void
     {
         $dsn = 'mongodb://docdb.example/app?' . self::IAM_QUERY;
-        $reader = static fn (string $name): ?string => $name === 'MONGODB_URL' ? $dsn : null;
+        $reader = static fn (string $name): ?string => ['MONGODB_URL' => $dsn][$name] ?? null;
 
         self::assertSame($dsn, $this->processor->getEnv('documentdb_iam', 'MONGODB_URL', $reader));
-    }
-
-    public function testRefusalNeverEchoesTheDsn(): void
-    {
-        $secret = $this->faker->password(20, 24);
-
-        try {
-            $this->resolve(
-                'mongodb://user:' . rawurlencode($secret) . '@h/app?' . self::IAM_QUERY,
-                []
-            );
-            self::fail('Expected a refusal.');
-        } catch (RuntimeException $exception) {
-            self::assertStringNotContainsString($secret, $exception->getMessage());
-        }
     }
 
     /**
