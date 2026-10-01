@@ -407,12 +407,15 @@ seeded_world_writable_file_is_reported() {
 check_negative_fixtures() {
     local fixture="${WEB_IMAGE%%:*}:world-writable-fixture-${RUN_ID}"
 
-    docker build -q -t "$fixture" - >/dev/null <<DOCKERFILE
+    if ! docker build -q -t "$fixture" - >/dev/null <<DOCKERFILE; then
 FROM ${WEB_IMAGE}
 USER 0:0
 RUN touch /srv/app/src/world-writable-fixture && chmod o+w /srv/app/src/world-writable-fixture
 USER 10001:10001
 DOCKERFILE
+        fail "negative fixture: the world-writable fixture image cannot be built from ${WEB_IMAGE}"
+        return
+    fi
     check "negative fixture: a seeded world-writable application file fails the ownership check" \
         seeded_world_writable_file_is_reported "$fixture"
     docker image rm "$fixture" >/dev/null
