@@ -74,10 +74,7 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
     public function testIamDsnWithUserinfoIsRefused(string $dsn): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(
-            'A MONGODB-AWS MONGODB_URL must not carry a username or password; '
-            . 'the ECS task role is the only credential.'
-        );
+        $this->expectExceptionMessage('A MONGODB-AWS MONGODB_URL must not carry userinfo.');
 
         $this->resolve($dsn, []);
     }
@@ -95,6 +92,7 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
             'multiple hosts' => ['mongodb://u:p@a.example:27017,b.example:27017/app' . $query],
             'no path' => ['mongodb://u:p@docdb.example:27017' . $query],
             'srv' => ['mongodb+srv://u:p@docdb.example/app' . $query],
+            'upper-case scheme' => ['MONGODB://u:p@docdb.example/app' . $query],
         ];
     }
 
@@ -112,8 +110,7 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'MONGODB_URL uses MONGODB-AWS, but ' . $variable
-            . ' is set; libmongoc would sign with it instead of the ECS task role.'
+            'MONGODB_URL uses MONGODB-AWS, but ' . $variable . ' is set.'
         );
 
         $this->resolve('mongodb://docdb.example/app?' . self::IAM_QUERY, [$variable => 'x']);
@@ -138,6 +135,21 @@ final class DocumentDbIamDsnEnvProcessorTest extends UnitTestCase
             'AWS_ACCESS_KEY_ID' => '',
             'AWS_SECRET_ACCESS_KEY' => '',
         ]));
+    }
+
+    public function testAnUnsetDsnVariableResolvesToAnEmptyString(): void
+    {
+        $reader = static fn (string $name): ?string => null;
+
+        self::assertSame('', $this->processor->getEnv('documentdb_iam', 'MONGODB_URL', $reader));
+    }
+
+    public function testNullStaticKeyIsTreatedAsUnset(): void
+    {
+        $dsn = 'mongodb://docdb.example/app?' . self::IAM_QUERY;
+        $reader = static fn (string $name): ?string => $name === 'MONGODB_URL' ? $dsn : null;
+
+        self::assertSame($dsn, $this->processor->getEnv('documentdb_iam', 'MONGODB_URL', $reader));
     }
 
     public function testRefusalNeverEchoesTheDsn(): void

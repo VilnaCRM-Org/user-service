@@ -33,19 +33,14 @@ final class DocumentDbIamDsnEnvProcessor implements EnvVarProcessorInterface
         }
 
         if (preg_match('#^mongodb(?:\+srv)?://[^/?]*@#i', $dsn) === 1) {
-            throw new RuntimeException(
-                'A MONGODB-AWS MONGODB_URL must not carry a username or password; '
-                . 'the ECS task role is the only credential.'
-            );
+            throw new RuntimeException('A MONGODB-AWS MONGODB_URL must not carry userinfo.');
         }
 
         foreach (self::STATIC_KEY_VARIABLES as $variable) {
             if ($this->isSet($getEnv, $variable)) {
-                throw new RuntimeException(sprintf(
-                    'MONGODB_URL uses MONGODB-AWS, but %s is set; '
-                    . 'libmongoc would sign with it instead of the ECS task role.',
-                    $variable
-                ));
+                throw new RuntimeException(
+                    sprintf('MONGODB_URL uses MONGODB-AWS, but %s is set.', $variable)
+                );
             }
         }
 
