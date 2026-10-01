@@ -36,7 +36,7 @@ final class RedisIamConnectionFactoryTest extends UnitTestCase
         $port = $this->faker->numberBetween(1024, 65535);
         $options = ['verify_peer' => true, 'verify_peer_name' => true];
         $this->client->expects(self::once())->method('connect')
-            ->with('tls://' . $host, $port, 0.0, null, 0, 0.0, ['stream' => $options])
+            ->with('tls://' . $host, $port, 2.0, null, 0, 2.0, ['stream' => $options])
             ->willReturn(true);
         $this->authenticator->expects(self::once())->method('authenticate')->with($this->client);
         $factory = $this->factory($options);

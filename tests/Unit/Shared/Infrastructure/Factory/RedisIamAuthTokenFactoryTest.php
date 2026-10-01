@@ -34,7 +34,7 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
 
     public function testCreatesPresignedConnectTokenForReplicationGroupAndUser(): void
     {
-        $token = $this->factory([$this->sessionCredentials()])->create();
+        $token = $this->factory([$this->sessionCredentials()])->create()->value();
 
         [$host, $query] = $this->verifier->split($token);
         $parameters = $this->verifier->parameters($query);
@@ -51,7 +51,7 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
     {
         $credentials = $this->sessionCredentials();
 
-        $token = $this->factory([$credentials])->create();
+        $token = $this->factory([$credentials])->create()->value();
 
         $parameters = $this->verifier->parameters($this->verifier->split($token)[1]);
         self::assertSame(gmdate('Ymd\THis\Z', $this->issuedAt), $parameters['X-Amz-Date']);
@@ -71,7 +71,7 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
     {
         $credentials = $this->sessionCredentials();
 
-        $token = $this->factory([$credentials])->create();
+        $token = $this->factory([$credentials])->create()->value();
 
         $parameters = $this->verifier->parameters($this->verifier->split($token)[1]);
         self::assertSame(
@@ -87,7 +87,7 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
             $this->faker->sha256()
         );
 
-        $token = $this->factory([$credentials])->create();
+        $token = $this->factory([$credentials])->create()->value();
 
         self::assertArrayNotHasKey(
             'X-Amz-Security-Token',
@@ -107,7 +107,7 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
             $this->region
         );
 
-        self::assertStringStartsWith($this->replicationGroupId . '/?', $factory->create());
+        self::assertStringStartsWith($this->replicationGroupId . '/?', $factory->create()->value());
     }
 
     public function testRegeneratesTokenFromRotatedCredentials(): void
@@ -116,8 +116,8 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
         $rotated = $this->sessionCredentials();
         $factory = $this->factory([$first, $rotated]);
 
-        $firstToken = $factory->create();
-        $rotatedToken = $factory->create();
+        $firstToken = $factory->create()->value();
+        $rotatedToken = $factory->create()->value();
 
         self::assertNotSame($firstToken, $rotatedToken);
         self::assertStringContainsString(
@@ -132,6 +132,40 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
             ),
             $this->verifier->parameters($this->verifier->split($rotatedToken)[1])['X-Amz-Signature']
         );
+    }
+
+    public function testTokenFromCredentialsWithoutExpiryIsValidForFifteenMinutes(): void
+    {
+        $credentials = new Credentials(
+            $this->faker->bothify('AKIA############'),
+            $this->faker->sha256()
+        );
+
+        $token = $this->factory([$credentials])->create();
+
+        self::assertSame($this->issuedAt + 900, $token->validUntil());
+    }
+
+    public function testTokenValidityEndsWhenTheSigningCredentialsExpire(): void
+    {
+        $credentials = $this->sessionCredentials($this->issuedAt + 120);
+
+        $token = $this->factory([$credentials])->create();
+
+        self::assertSame($this->issuedAt + 120, $token->validUntil());
+        self::assertSame(
+            '900',
+            $this->verifier->parameters($this->verifier->split($token->value())[1])['X-Amz-Expires']
+        );
+    }
+
+    public function testTokenValidityIsCappedAtFifteenMinutesForLongerLivedCredentials(): void
+    {
+        $credentials = $this->sessionCredentials($this->issuedAt + 3600);
+
+        $token = $this->factory([$credentials])->create();
+
+        self::assertSame($this->issuedAt + 900, $token->validUntil());
     }
 
     public function testRejectsMissingReplicationGroupId(): void
@@ -240,12 +274,13 @@ final class RedisIamAuthTokenFactoryTest extends UnitTestCase
         return $timestampProvider;
     }
 
-    private function sessionCredentials(): Credentials
+    private function sessionCredentials(?int $expiration = null): Credentials
     {
         return new Credentials(
             $this->faker->bothify('ASIA############'),
             $this->faker->sha256(),
-            $this->faker->sha256() . $this->faker->sha1()
+            $this->faker->sha256() . $this->faker->sha1(),
+            $expiration ?? $this->issuedAt + 3600
         );
     }
 }

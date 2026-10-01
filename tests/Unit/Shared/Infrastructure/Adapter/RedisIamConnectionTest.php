@@ -8,11 +8,14 @@ use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
 use App\Shared\Infrastructure\Adapter\RedisIamAuthenticatorInterface;
 use App\Shared\Infrastructure\Adapter\RedisIamConnection;
 use App\Tests\Unit\UnitTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 final class RedisIamConnectionTest extends UnitTestCase
 {
     private const ELEVEN_HOURS = 39_600;
+    private const TOKEN_LIFETIME = 900;
+    private const SHORT_LIVED_CREDENTIALS = 120;
 
     private \Redis&MockObject $client;
     private RedisIamAuthenticatorInterface&MockObject $authenticator;
@@ -21,6 +24,7 @@ final class RedisIamConnectionTest extends UnitTestCase
     private int $now;
     private int $connects = 0;
     private int $authentications = 0;
+    private int $tokenValidity = self::TOKEN_LIFETIME;
 
     #[\Override]
     protected function setUp(): void
@@ -35,11 +39,11 @@ final class RedisIamConnectionTest extends UnitTestCase
         $this->client->method('getMode')->willReturn(\Redis::ATOMIC);
     }
 
-    public function testOpenConnectsOverTlsAndAuthenticates(): void
+    public function testOpenConnectsOverTlsWithTwoSecondTimeoutsAndAuthenticates(): void
     {
         $options = ['verify_peer' => true, 'cafile' => $this->faker->filePath()];
         $this->client->expects(self::once())->method('connect')
-            ->with('tls://' . $this->host, $this->port, 0.0, null, 0, 0.0, ['stream' => $options])
+            ->with('tls://' . $this->host, $this->port, 2.0, null, 0, 2.0, ['stream' => $options])
             ->willReturn(true);
         $this->authenticator->expects(self::once())->method('authenticate')->with($this->client);
 
@@ -126,11 +130,70 @@ final class RedisIamConnectionTest extends UnitTestCase
         self::assertSame([2, 2], [$this->connects, $this->authentications]);
     }
 
-    public function testNeverReauthenticatesInsideTransactionOrPipeline(): void
+    public function testKeepsConnectionUntilOneMinuteBeforeShortLivedTokenExpires(): void
+    {
+        $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
+        $connection = $this->openedConnection();
+
+        $this->now += self::SHORT_LIVED_CREDENTIALS - 61;
+        $connection->renewIfDue();
+
+        self::assertSame([1, 1], [$this->connects, $this->authentications]);
+    }
+
+    public function testReauthenticatesOneMinuteBeforeShortLivedTokenExpires(): void
+    {
+        $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
+        $connection = $this->openedConnection();
+
+        $this->now += self::SHORT_LIVED_CREDENTIALS - 60;
+        $connection->renewIfDue();
+
+        self::assertSame([1, 2], [$this->connects, $this->authentications]);
+    }
+
+    public function testReauthenticatesUpToShortLivedTokenExpiry(): void
+    {
+        $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
+        $connection = $this->openedConnection();
+
+        $this->now += self::SHORT_LIVED_CREDENTIALS - 1;
+        $connection->renewIfDue();
+
+        self::assertSame([1, 2], [$this->connects, $this->authentications]);
+    }
+
+    public function testReconnectsWhenShortLivedTokenExpires(): void
+    {
+        $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
+        $connection = $this->openedConnection();
+
+        $this->now += self::SHORT_LIVED_CREDENTIALS;
+        $connection->renewIfDue();
+
+        self::assertSame([2, 2], [$this->connects, $this->authentications]);
+    }
+
+    public function testRenewalScheduleFollowsTheLatestTokenValidity(): void
+    {
+        $this->tokenValidity = self::SHORT_LIVED_CREDENTIALS;
+        $connection = $this->openedConnection();
+        $this->now += self::SHORT_LIVED_CREDENTIALS - 60;
+        $this->tokenValidity = self::TOKEN_LIFETIME;
+        $connection->renewIfDue();
+
+        $this->now += RedisIamConnection::REAUTHENTICATE_AFTER_SECONDS - 1;
+        $connection->renewIfDue();
+
+        self::assertSame([1, 2], [$this->connects, $this->authentications]);
+    }
+
+    #[DataProvider('nonAtomicModeProvider')]
+    public function testNeverReauthenticatesInsideTransactionOrPipeline(int $mode): void
     {
         $client = $this->createMock(\Redis::class);
         $client->method('connect')->willReturn(true);
-        $client->method('getMode')->willReturn(\Redis::MULTI);
+        $client->method('getMode')->willReturn($mode);
         $this->authenticator->expects(self::once())->method('authenticate');
         $connection = new RedisIamConnection(
             $client,
@@ -144,6 +207,15 @@ final class RedisIamConnectionTest extends UnitTestCase
 
         $this->now += self::ELEVEN_HOURS;
         $connection->renewIfDue();
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function nonAtomicModeProvider(): iterable
+    {
+        yield 'MULTI' => [\Redis::MULTI];
+        yield 'PIPELINE' => [\Redis::PIPELINE];
     }
 
     public function testFailedReauthenticationForcesNewConnectionAtNextSafePoint(): void
@@ -196,11 +268,13 @@ final class RedisIamConnectionTest extends UnitTestCase
             return true;
         });
         $this->authenticator->method('authenticate')->willReturnCallback(
-            function () use ($failOnAuthentication): void {
+            function () use ($failOnAuthentication): int {
                 ++$this->authentications;
                 if ($this->authentications === $failOnAuthentication) {
                     throw new \RedisException('WRONGPASS');
                 }
+
+                return $this->now + $this->tokenValidity;
             }
         );
 

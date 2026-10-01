@@ -6,5 +6,8 @@ namespace App\Shared\Infrastructure\Adapter;
 
 interface RedisIamAuthenticatorInterface
 {
-    public function authenticate(\Redis $client): void;
+    /**
+     * @return int Unix time until which the token sent with AUTH is valid
+     */
+    public function authenticate(\Redis $client): int;
 }

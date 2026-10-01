@@ -84,7 +84,7 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
 
     protected function currentToken(?string $userId = null): string
     {
-        return $this->tokenFactory($userId ?? $this->userId)->create();
+        return $this->tokenFactory($userId ?? $this->userId)->create()->value();
     }
 
     protected function acceptOnlyTokens(string ...$tokens): void
@@ -105,12 +105,13 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
         return (int) $connection->rawCommand('CLIENT', 'ID');
     }
 
-    protected function newCredentials(): Credentials
+    protected function newCredentials(?int $expiresIn = null): Credentials
     {
         return new Credentials(
             $this->faker->bothify('ASIA############'),
             $this->faker->sha256(),
-            $this->faker->sha256()
+            $this->faker->sha256(),
+            $expiresIn === null ? null : $this->clock->currentTimestamp() + $expiresIn
         );
     }
 

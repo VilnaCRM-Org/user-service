@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Factory;
 
 use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
+use App\Shared\Infrastructure\Adapter\RedisIamAuthToken;
+use Aws\Credentials\CredentialsInterface;
 use Aws\Signature\SignatureV4;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\HttpClient\Psr18Client;
@@ -16,7 +18,10 @@ use Symfony\Component\HttpClient\Psr18Client;
  * The PSR-7 URI lower-cases the host, so the replication-group id is signed
  * in lower case as ElastiCache requires.
  * Credentials are resolved for every token so rotated task-role credentials
- * are always used.
+ * are always used. A token stops being accepted when the credentials that
+ * signed it expire, so its validity is the shorter of 900 seconds and the
+ * credentials' expiry (the AWS SDK refreshes cached credentials only within
+ * 60 seconds of their expiry).
  */
 final readonly class RedisIamAuthTokenFactory implements RedisIamAuthTokenFactoryInterface
 {
@@ -36,19 +41,35 @@ final readonly class RedisIamAuthTokenFactory implements RedisIamAuthTokenFactor
     }
 
     #[\Override]
-    public function create(): string
+    public function create(): RedisIamAuthToken
     {
         $this->assertConfigured();
         $issuedAt = $this->timestampProvider->currentTimestamp();
+        $credentials = ($this->credentialProvider)()->wait();
         $signer = new SignatureV4(self::SIGNING_SERVICE, $this->region);
         $presignedRequest = $signer->presign(
             $this->requestFactory->createRequest('GET', $this->connectUrl()),
-            ($this->credentialProvider)()->wait(),
+            $credentials,
             $issuedAt + self::TOKEN_LIFETIME_SECONDS,
             ['start_time' => $issuedAt]
         );
 
-        return substr((string) $presignedRequest->getUri(), strlen(self::REQUEST_SCHEME));
+        return new RedisIamAuthToken(
+            substr((string) $presignedRequest->getUri(), strlen(self::REQUEST_SCHEME)),
+            $this->validUntil($issuedAt, $credentials)
+        );
+    }
+
+    private function validUntil(int $issuedAt, CredentialsInterface $credentials): int
+    {
+        $tokenExpiry = $issuedAt + self::TOKEN_LIFETIME_SECONDS;
+        $credentialsExpiry = $credentials->getExpiration();
+
+        if ($credentialsExpiry === null) {
+            return $tokenExpiry;
+        }
+
+        return min($tokenExpiry, $credentialsExpiry);
     }
 
     private function connectUrl(): string

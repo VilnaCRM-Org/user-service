@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Shared\Infrastructure\Adapter;
 
 use App\Shared\Application\Provider\CurrentTimestampProviderInterface;
-use App\Shared\Infrastructure\Factory\RedisIamAuthTokenFactory;
 use Redis;
 use RedisException;
 
@@ -14,16 +13,31 @@ use RedisException;
  *
  * phpredis keeps the last AUTH arguments and replays them when it reconnects
  * transparently, so the stored token is renewed at safe points (outside
- * MULTI/EXEC, pipelines and Lua) before it expires: re-AUTH on the open
- * connection after 10 minutes, a new connection once the stored token may be
- * expired. A used connection is therefore re-authenticated long before the
- * ElastiCache 12-hour limit (and the 11-hour cap of AD-02).
+ * MULTI/EXEC, pipelines and Lua; see RedisIamConnectionRenewalSubscriber)
+ * before it expires. The token is valid until the shorter of 15 minutes and
+ * the expiry of the signing credentials (validUntil). The connection is
+ * re-authenticated with a fresh token on the open connection at
+ * min(authenticatedAt + 10 minutes, validUntil - 60 seconds), the 60 seconds
+ * matching the AWS SDK credential refresh window, and replaced by a new
+ * connection at a safe point at or after validUntil. A used connection is
+ * therefore re-authenticated long before the ElastiCache 12-hour limit (and
+ * the 11-hour cap of AD-02).
+ *
+ * Connect and read timeouts are 2 seconds: ElastiCache answers in
+ * milliseconds inside the VPC, the app sends no blocking commands over these
+ * connections, and a renewal that cannot reach Redis must fail the request
+ * (HTTP 500) quickly instead of holding it for the 60-second PHP default.
  */
 final class RedisIamConnection
 {
     public const REAUTHENTICATE_AFTER_SECONDS = 600;
+    public const REAUTHENTICATE_BEFORE_EXPIRY_SECONDS = 60;
 
-    private ?int $authenticatedAt = null;
+    private const CONNECT_TIMEOUT_SECONDS = 2.0;
+    private const READ_TIMEOUT_SECONDS = 2.0;
+
+    private ?int $tokenValidUntil = null;
+    private int $reauthenticateAt = PHP_INT_MAX;
 
     /**
      * @param array<string, bool|string> $tlsStreamOptions
@@ -55,25 +69,17 @@ final class RedisIamConnection
             return;
         }
 
-        $authenticationAge = $this->authenticationAge();
+        $now = $this->timestampProvider->currentTimestamp();
 
-        if (
-            $this->authenticatedAt === null
-            || $authenticationAge >= RedisIamAuthTokenFactory::TOKEN_LIFETIME_SECONDS
-        ) {
+        if ($this->tokenValidUntil === null || $now >= $this->tokenValidUntil) {
             $this->open();
 
             return;
         }
 
-        if ($authenticationAge >= self::REAUTHENTICATE_AFTER_SECONDS) {
+        if ($now >= $this->reauthenticateAt) {
             $this->authenticate();
         }
-    }
-
-    private function authenticationAge(): int
-    {
-        return $this->timestampProvider->currentTimestamp() - $this->authenticatedAt;
     }
 
     private function connect(): void
@@ -81,10 +87,10 @@ final class RedisIamConnection
         $connected = $this->client->connect(
             'tls://' . $this->host,
             $this->port,
-            0.0,
+            self::CONNECT_TIMEOUT_SECONDS,
             null,
             0,
-            0.0,
+            self::READ_TIMEOUT_SECONDS,
             ['stream' => $this->tlsStreamOptions]
         );
 
@@ -97,8 +103,12 @@ final class RedisIamConnection
 
     private function authenticate(): void
     {
-        $this->authenticatedAt = null;
-        $this->authenticator->authenticate($this->client);
-        $this->authenticatedAt = $this->timestampProvider->currentTimestamp();
+        $this->tokenValidUntil = null;
+        $tokenValidUntil = $this->authenticator->authenticate($this->client);
+        $this->reauthenticateAt = min(
+            $this->timestampProvider->currentTimestamp() + self::REAUTHENTICATE_AFTER_SECONDS,
+            $tokenValidUntil - self::REAUTHENTICATE_BEFORE_EXPIRY_SECONDS
+        );
+        $this->tokenValidUntil = $tokenValidUntil;
     }
 }

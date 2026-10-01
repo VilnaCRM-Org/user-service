@@ -69,6 +69,28 @@ final class RedisIamConnectionRenewalTest extends RedisIamIntegrationTestCase
         $this->assertStoredTokenIsFresh($redis);
     }
 
+    public function testReauthenticatesOneMinuteBeforeSigningCredentialsExpire(): void
+    {
+        $this->credentials = $this->newCredentials(120);
+        $factory = $this->connectionFactory();
+        $redis = $this->openConnection($factory);
+        $clientId = $this->clientId($redis);
+
+        $this->clock->advance(59);
+        $authCalls = $this->authCalls();
+        $this->renew($factory);
+        self::assertSame(0, $this->authCallsSince($authCalls));
+
+        $this->clock->advance(1);
+        $this->credentials = $this->newCredentials(3600);
+        $this->acceptOnlyTokens($this->currentToken());
+        $this->renew($factory);
+
+        self::assertSame(1, $this->authCallsSince($authCalls));
+        self::assertSame($clientId, $this->clientId($redis));
+        $this->assertStoredTokenIsFresh($redis);
+    }
+
     public function testNeverReauthenticatesInsideMulti(): void
     {
         $factory = $this->connectionFactory();
