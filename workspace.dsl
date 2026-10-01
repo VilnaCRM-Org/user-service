@@ -100,6 +100,14 @@ workspace {
                     tags "Item"
                 }
 
+                jwtSigner = component "KmsJwtFactory" "Signs JWT and OAuth access tokens (RS256) and verifies them by kid" "Factory" {
+                    tags "Item"
+                }
+
+                kms = component "AWS KMS" "JWT signing key (RSA_4096, SIGN_VERIFY) used through the task role" "AWS KMS" {
+                    tags "Item"
+                }
+
                 registerUserProcessor -> registerUserCommandHandler "dispatches RegisterUserCommand"
                 registerUserResolver -> registerUserCommandHandler "dispatches RegisterUserCommand"
                 confirmUserProcessor -> confirmUserCommandHandler "dispatches ConfirmUserCommand"
@@ -126,6 +134,7 @@ workspace {
                 tokenRepository -> cache "accesses data"
                 messenger -> sqs "publishes and consumes queued messages"
                 mailer -> ses "sends email when SES API transport is configured" "HTTPS API"
+                jwtSigner -> kms "signs tokens (kms:Sign) and reads public keys (kms:GetPublicKey)" "HTTPS API"
             }
         }
     }

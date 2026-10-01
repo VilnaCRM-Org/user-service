@@ -43,6 +43,14 @@ We regularly update project dependencies to mitigate vulnerabilities in third-pa
 - Non-production environments must define the key in environment-specific files.
 - Production must define `OAUTH_ENCRYPTION_KEY` via deployment secrets; runtime validation fails fast when it is empty.
 
+### JWT Signing Key Policy
+
+- Every JWT is signed by an AWS KMS asymmetric key (`RSA_4096`, RS256 via `kms:Sign`); the private key never leaves KMS and no PEM key or passphrase exists in the application.
+- Tokens are verified locally with the `kms:GetPublicKey` public key that their `kid` names; only `RS256` and the configured current or previous key are accepted, and any KMS error fails closed.
+- The public keys are published at `GET /api/.well-known/jwks.json`.
+- Production refuses a local or LocalStack KMS endpoint, static AWS credentials and non-ARN key ids at runtime.
+- See [JWT signing with AWS KMS](jwt-kms-signing.md) for the key-change procedure with a dual-key window.
+
 ### GitHub CI Security Checks
 
 Our CI pipeline incorporates security checks to ensure the ongoing security of the application:

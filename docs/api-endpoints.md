@@ -39,6 +39,13 @@ state validation; invalid or mismatched state returns its validation error. Neit
 endpoint resolves provider credentials. Local
 registration, password sign-in, and token flows remain available.
 
+### JWT verification keys (JWK set)
+
+`GET /api/.well-known/jwks.json` is public and returns the RS256 public keys that
+verify the service's JWTs, as an RFC 7517 JWK set. Each key's `kid` is its RFC 7638
+thumbprint and matches the `kid` header of the tokens it signed. During a key change
+the set holds the current key and the previous key. See [JWT signing with AWS KMS](jwt-kms-signing.md).
+
 ## GraphQL specification
 
 You can go [here](https://github.com/VilnaCRM-Org/user-service/blob/main/.github/graphql-spec/spec), to get our GraphQL specification and then use [GraphQL Playground](https://graphql-kit.com/graphql-voyager/) to browse it.
