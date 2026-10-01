@@ -61,6 +61,7 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
         $client = $this->createMock(\Redis::class);
         $client->method('auth')->willThrowException($exception);
         $client->expects(self::once())->method('close');
+        $this->logger->expects(self::never())->method('warning');
         $this->expectFailureLog($exception, $exception->getMessage());
 
         $this->assertAuthenticationFails($client, $exception);
