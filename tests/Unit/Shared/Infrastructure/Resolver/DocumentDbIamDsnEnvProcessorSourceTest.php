@@ -54,7 +54,9 @@ final class DocumentDbIamDsnEnvProcessorSourceTest extends DocumentDbIamDsnEnvPr
             'MONGODB_URL uses MONGODB-AWS, but AWS_SESSION_TOKEN is set.'
         );
 
-        $this->resolve('mongodb://docdb.example/app?' . self::IAM_QUERY, ['AWS_SESSION_TOKEN' => 'x']);
+        $dsn = 'mongodb://docdb.example/app?' . self::IAM_QUERY;
+
+        $this->resolve($dsn, ['AWS_SESSION_TOKEN' => 'x']);
     }
 
     /**
