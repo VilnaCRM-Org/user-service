@@ -301,7 +301,9 @@ How libmongoc 2.4.0 finds the credentials (`mongoc-cluster-aws.c`, in the
 
 - Order: the process-wide cache, then URI username and password, then
   `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN`, then web
-  identity, then the ECS endpoint, then EC2 metadata. A static key therefore
+  identity (`AWS_WEB_IDENTITY_TOKEN_FILE` with `AWS_ROLE_ARN`, which calls STS),
+  then the ECS endpoint, then EC2 metadata. `AWS_PROFILE` and
+  `AWS_SHARED_CREDENTIALS_FILE` are never read. A static key therefore
   silently overrides the task role, and a password in the DSN is signed as an
   AWS secret key.
 - ECS: only `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`, fetched from
@@ -317,22 +319,43 @@ Failure modes, all of which surface as a failed connection and a red
 
 - the task role is not mapped to a `$external` user (wrong role): DocumentDB
   rejects the signed identity with an authentication error;
-- the ECS endpoint is unreachable or returns no credentials: libmongoc falls
-  through to EC2 metadata and fails with `failed to contact EC2 link local
-  server`;
+- the ECS endpoint is unreachable: the connection fails with `failed to
+  contact ECS link local server`, and a non-JSON reply fails with `invalid JSON
+  in ECS response`. Only a JSON reply that carries no keys falls through to EC2
+  metadata, which on Fargate cannot reach an instance role and fails with
+  `failed to contact EC2 link local server`;
 - `authSource` other than `$external`, a username without a password, or an
-  unknown `authMechanismProperties` entry: the driver refuses the URI at start.
+  unknown `authMechanismProperties` entry: the driver refuses the URI at the
+  first connection build.
 
 If libmongoc cannot obtain ECS credentials on a live task (V-1), the plan
 requires a new decision for a password-based application user, not a silent
 fallback.
 
 The connection is guarded in `DocumentDbIamDsnEnvProcessor`
-(`%env(documentdb_iam:MONGODB_URL)%` in `doctrine_mongodb.yaml`). When the URI
-uses `MONGODB-AWS`, building the connection throws if the URI carries a
-username or password, or if `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` is
-set and non-empty. URIs with any other mechanism, such as the local password
-URI, are not affected, so LocalStack keys in development are unaffected.
+(`%env(documentdb_iam:MONGODB_URL)%` in `doctrine_mongodb.yaml`). The query is
+read as libmongoc reads it: option names are case-insensitive, names and values
+are percent-decoded, and any `authMechanism` pair naming `MONGODB-AWS` counts.
+When the URI uses `MONGODB-AWS`, building the connection throws if:
+
+- the URI carries a username or password;
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` is set and
+  non-empty;
+- `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN` are both non-empty.
+
+A URI that mentions `MONGODB-AWS` but cannot be parsed is refused too. URIs with
+any other mechanism, such as the local password URI, are not affected, so
+LocalStack keys in development are unaffected. Refusal messages never include
+the URI or a credential value.
+
+Failure timing: the guard runs when `MONGODB_URL` is first resolved, that is,
+at the first connection build, not at container start. In the web container the
+entrypoint waits for MongoDB by running `doctrine:mongodb:mapping:info` with its
+output discarded, so a refused DSN makes it retry for 60 seconds and exit with
+"MongoDB is not up or not reachable", which hides the real cause. Run
+`bin/console doctrine:mongodb:mapping:info` in the container to see the
+guard's message. In the worker, supervisord starts normally and each message
+that needs the database fails with the guard's error.
 
 Evidence: `DocumentDbIamDsnTest` pins what the bundled URI parser accepts, and
 `DocumentDbIamDsnEnvProcessorTest` covers the guard. A throwaway harness that
