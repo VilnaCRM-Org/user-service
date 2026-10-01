@@ -1,0 +1,32 @@
+name: Production image runtime testing
+
+on:
+  pull_request:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-runtime-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image-runtime-tests:
+    name: Non-root image runtime checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Dependabot skip
+        if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
+        run: echo "Skipping image runtime checks for Dependabot PR"
+
+      - name: Checkout Repository
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build images and verify the non-root runtime contract
+        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
+        run: make image-runtime-tests
