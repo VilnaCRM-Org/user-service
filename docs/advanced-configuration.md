@@ -326,9 +326,12 @@ Notes on the contract:
 Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
 default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
 application ownership of every writable path, no world-writable application
-files, and passing health checks with the
+files, no capabilities on PID 1, no setuid, setgid or file-capability binaries,
+and passing health checks with the
 image defaults and with the ECS task shape (read-only root filesystem, every
-capability dropped, the bootstrap command override). The checks run on an
+capability dropped, the bootstrap command override; like Fargate, without
+`no-new-privileges`). Seeded negative fixtures prove the ownership checks fail
+closed. The checks run on an
 internal Docker network with MongoDB, Redis and LocalStack, generate throwaway
 production secrets per run, and restore the kernel default for privileged ports
 (`net.ipv4.ip_unprivileged_port_start=1024`), which Docker otherwise lowers to 0.
