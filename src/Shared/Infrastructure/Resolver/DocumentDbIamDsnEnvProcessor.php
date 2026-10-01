@@ -25,6 +25,8 @@ final class DocumentDbIamDsnEnvProcessor implements EnvVarProcessorInterface
 {
     private const MECHANISM = 'MONGODB-AWS';
 
+    private const MECHANISM_PAIR = 'authMechanism=' . self::MECHANISM;
+
     private const STATIC_VARIABLES = [
         'AWS_ACCESS_KEY_ID',
         'AWS_SECRET_ACCESS_KEY',
@@ -73,12 +75,7 @@ final class DocumentDbIamDsnEnvProcessor implements EnvVarProcessorInterface
     private function usesIamMechanism(string $dsn): bool
     {
         foreach (explode('&', (string) substr((string) strstr($dsn, '?'), 1)) as $pair) {
-            [$key, $value] = explode('=', $pair, 2) + [1 => ''];
-
-            if (
-                strtolower(rawurldecode($key)) === 'authmechanism'
-                && strcasecmp(rawurldecode($value), self::MECHANISM) === 0
-            ) {
+            if (strcasecmp(rawurldecode($pair), self::MECHANISM_PAIR) === 0) {
                 return true;
             }
         }
