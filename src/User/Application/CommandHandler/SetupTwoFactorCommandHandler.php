@@ -37,7 +37,7 @@ final readonly class SetupTwoFactorCommandHandler implements CommandHandlerInter
         $secret = $totpData['secret'];
 
         $user->setTwoFactorSecret(
-            $this->twoFactorSecretEncryptor->encrypt($secret)
+            $this->twoFactorSecretEncryptor->encrypt($secret, $user->getId())
         );
         $this->userRepository->save($user);
 

@@ -80,7 +80,7 @@ services:
   localstack:
     image: localstack/localstack:3.4.0
     environment:
-      - SERVICES=sqs
+      - SERVICES=sqs,kms
       - DEBUG=1
     volumes:
       - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh

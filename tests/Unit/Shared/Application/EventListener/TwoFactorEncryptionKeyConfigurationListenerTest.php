@@ -17,6 +17,8 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 {
+    private const KEY_ARN = 'arn:aws:kms:eu-central-1:123456789012:key/two-factor';
+
     public function testAllowsEmptyKeyOutsideProduction(): void
     {
         $listener = new TwoFactorEncryptionKeyConfigurationListener('dev', null);
@@ -35,7 +37,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', null);
@@ -53,7 +55,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', '   ');
@@ -69,7 +71,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testIgnoresSubRequest(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN);
         $request = Request::create('/');
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -97,7 +99,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testValidatesMainRequestInProduction(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN);
         $request = Request::create('/');
         $event = new RequestEvent(
             $this->createMock(HttpKernelInterface::class),
@@ -111,7 +113,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testIgnoresConsoleEventWithoutCommand(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN);
         $event = new ConsoleCommandEvent(null, new ArrayInput([]), new BufferedOutput());
 
         $listener->onConsoleCommand($event);
@@ -129,7 +131,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
 
     public function testValidatesConsoleCommandInProduction(): void
     {
-        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', 'non-empty-key');
+        $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', self::KEY_ARN);
         $command = new Command('test');
         $event = new ConsoleCommandEvent($command, new ArrayInput([]), new BufferedOutput());
 
@@ -141,7 +143,7 @@ final class TwoFactorEncryptionKeyConfigurationListenerTest extends UnitTestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage(
-            'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+            'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
         );
 
         $listener = new TwoFactorEncryptionKeyConfigurationListener('prod', null);

@@ -8,11 +8,15 @@ use RuntimeException;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
+/**
+ * Fails fast in production when the 2FA KMS key id (TWO_FACTOR_KMS_KEY_ID,
+ * S5.12) is not configured.
+ */
 final readonly class TwoFactorEncryptionKeyConfigurationListener
 {
     public function __construct(
         private string $appEnv,
-        private ?string $twoFactorEncryptionKey = null
+        private ?string $twoFactorKmsKeyId = null
     ) {
     }
 
@@ -41,11 +45,11 @@ final readonly class TwoFactorEncryptionKeyConfigurationListener
         }
 
         if (
-            $this->twoFactorEncryptionKey === null
-            || trim($this->twoFactorEncryptionKey) === ''
+            $this->twoFactorKmsKeyId === null
+            || trim($this->twoFactorKmsKeyId) === ''
         ) {
             throw new RuntimeException(
-                'Set TWO_FACTOR_ENCRYPTION_KEY in production via deployment secrets.'
+                'Set TWO_FACTOR_KMS_KEY_ID in production to the two-factor KMS key ARN.'
             );
         }
     }

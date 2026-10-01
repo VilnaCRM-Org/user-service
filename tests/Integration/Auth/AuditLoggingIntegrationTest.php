@@ -283,7 +283,9 @@ final class AuditLoggingIntegrationTest extends AuthIntegrationTestCase
     private function enableTwoFactor(\App\User\Domain\Entity\UserInterface $user): string
     {
         $secret = TOTP::generate()->getSecret();
-        $user->setTwoFactorSecret($this->twoFactorSecretEncryptor->encrypt($secret));
+        $user->setTwoFactorSecret(
+            $this->twoFactorSecretEncryptor->encrypt($secret, $user->getId())
+        );
         $user->enableTwoFactor();
         $this->userRepository->save($user);
 

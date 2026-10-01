@@ -48,7 +48,7 @@ final class SignInSecurityContext implements Context
         $user->setTwoFactorEnabled(true);
         $user->setTwoFactorSecret(
             $this->auth->twoFactorSecretEncryptor
-                ->encrypt(self::DEFAULT_TOTP_SECRET)
+                ->encrypt(self::DEFAULT_TOTP_SECRET, $user->getId())
         );
 
         $this->userManagement->userRepository->save($user);
@@ -72,7 +72,7 @@ final class SignInSecurityContext implements Context
         $user->setTwoFactorEnabled(true);
         $user->setTwoFactorSecret(
             $this->auth->twoFactorSecretEncryptor
-                ->encrypt($secret)
+                ->encrypt($secret, $user->getId())
         );
 
         $this->userManagement->userRepository->save($user);
