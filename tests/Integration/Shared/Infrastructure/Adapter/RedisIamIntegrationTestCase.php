@@ -18,13 +18,16 @@ use Monolog\Logger;
 use Symfony\Component\HttpClient\Psr18Client;
 
 /**
- * Runs against the local TLS + ACL Valkey 7.2 service "valkey-iam". The app
- * user gets the reviewed AD-02 access string and, as its only password, the
- * SigV4 token that ElastiCache would accept at the current (simulated) time.
+ * Runs against the local TLS + ACL Valkey 7.2 service "valkey-iam". As AD-02
+ * requires, its "default" user is off; the tests set up users through the
+ * separate local "admin" ACL user. The app user gets the reviewed AD-02
+ * access string and, as its only password, the SigV4 token that ElastiCache
+ * would accept at the current (simulated) time.
  */
 abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
 {
     protected const AD02_ACCESS_STRING = ['on', '~*', '+@all', '-@dangerous'];
+    private const ADMIN_USER = 'admin';
 
     protected \Redis $admin;
     protected MutableCurrentTimestampProvider $clock;
@@ -42,10 +45,8 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
         parent::setUp();
 
         $this->dsn = (string) getenv('VALKEY_IAM_TEST_DSN');
-        $this->admin = new \Redis();
-        $this->admin->connect('tls://' . $this->host(), $this->port(), 2.0, null, 0, 2.0, [
-            'stream' => $this->tlsStreamOptions(),
-        ]);
+        $this->admin = $this->unauthenticatedConnection();
+        $this->admin->auth([self::ADMIN_USER, $this->adminPassword()]);
         $this->clock = new MutableCurrentTimestampProvider(time());
         $this->metricsEmitter = new BusinessMetricsEmitterSpy();
         $this->logs = new TestHandler();
@@ -100,6 +101,16 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
         );
     }
 
+    protected function unauthenticatedConnection(): \Redis
+    {
+        $connection = new \Redis();
+        $connection->connect('tls://' . $this->host(), $this->port(), 2.0, null, 0, 2.0, [
+            'stream' => $this->tlsStreamOptions(),
+        ]);
+
+        return $connection;
+    }
+
     protected function clientId(\Redis $connection): int
     {
         return (int) $connection->rawCommand('CLIENT', 'ID');
@@ -137,6 +148,13 @@ abstract class RedisIamIntegrationTestCase extends SharedIntegrationTestCase
             $userId,
             $this->region
         );
+    }
+
+    private function adminPassword(): string
+    {
+        return trim((string) file_get_contents(
+            (string) getenv('VALKEY_IAM_TEST_ADMIN_PASSWORD_FILE')
+        ));
     }
 
     private function host(): string

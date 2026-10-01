@@ -41,6 +41,22 @@ final class RedisIamAuthenticationTest extends RedisIamIntegrationTestCase
         $this->assertConnectionIsRejected($wrongUserId);
     }
 
+    public function testDefaultUserIsOff(): void
+    {
+        $connection = $this->unauthenticatedConnection();
+
+        try {
+            $connection->ping();
+            self::fail('The Valkey default user accepted an unauthenticated command.');
+        } catch (\RedisException $exception) {
+            self::assertStringContainsString('NOAUTH', $exception->getMessage());
+        } finally {
+            $connection->close();
+        }
+
+        self::assertContains('off', $this->admin->rawCommand('ACL', 'GETUSER', 'default')[1]);
+    }
+
     public function testPlainTcpDsnIsRefusedBeforeConnecting(): void
     {
         $this->acceptOnlyTokens($this->currentToken());
