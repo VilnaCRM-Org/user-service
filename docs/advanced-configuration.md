@@ -90,8 +90,8 @@ Local registration, password sign-in, and token flows remain unchanged.
 
 - `JWT_TOKEN_TTL`: The TTL for JWT tokens in seconds.
 - `JWT_KMS_KEY_ID`: The KMS key ARN or alias ARN of the current JWT signing key. Every JWT (first-party and OAuth 2.0 access tokens) is signed with `kms:Sign` (RS256). Empty in the root `.env`; production must set it, and local environments use the LocalStack alias ARN `arn:aws:kms:us-east-1:000000000000:alias/user-service-jwt`.
-- `JWT_KMS_PREVIOUS_KEY_ID`: The previous JWT KMS key, set only during a key-change window. It verifies tokens it signed earlier and never signs. Empty means no window.
-- `JWT_KMS_PUBLIC_KEY_CACHE_TTL`: Seconds a `kms:GetPublicKey` result is cached in process memory (default: `300`).
+- `JWT_KMS_PREVIOUS_KEY_ID`: An additional verify-only JWT KMS key, set only during a key-change window (the new key while it is pre-published, then the old key). It never signs. Empty means no window.
+- `JWT_KMS_PUBLIC_KEY_CACHE_TTL`: Seconds a `kms:GetPublicKey` result is cached in process memory, from `1` to `3600` (default: `300`).
 - `AWS_KMS_LOCAL_ENDPOINT`, `AWS_KMS_LOCAL_REGION`, `AWS_KMS_LOCAL_KEY`, `AWS_KMS_LOCAL_SECRET`: LocalStack KMS settings for the dev, test, load_test and schemathesis environments only. Production uses the ECS task role and the regional endpoint.
 
 No PEM key, key file or passphrase exists; `OAUTH_PRIVATE_KEY`, `OAUTH_PUBLIC_KEY` and `OAUTH_PASSPHRASE` are retired. See [JWT signing with AWS KMS](jwt-kms-signing.md) for the JWK set, the key-change procedure and the failure modes.

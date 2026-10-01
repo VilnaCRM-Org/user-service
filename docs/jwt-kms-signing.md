@@ -16,9 +16,11 @@ image or its configuration.
   an alias at another key changes the kid.
 - **Verification.** Tokens are verified locally with the public key from
   `kms:GetPublicKey`. The verifier picks the key by `kid`: the current key, or the
-  previous key (`JWT_KMS_PREVIOUS_KEY_ID`) during a key-change window. Each
-  GetPublicKey result is cached in process memory for
-  `JWT_KMS_PUBLIC_KEY_CACHE_TTL` seconds. Signing uses the key ARN from the same
+  additional verify-only key (`JWT_KMS_PREVIOUS_KEY_ID`) during a key-change window.
+  The slot holds the old key after the signing switch, and the new key while it is
+  pre-published. Each GetPublicKey result is cached in process memory for
+  `JWT_KMS_PUBLIC_KEY_CACHE_TTL` seconds (1 to 3600; any other value fails at
+  startup). Signing uses the key ARN from the same
   cached GetPublicKey result, so the `kid` always matches the signing key.
 - **JWK set.** `GET /api/.well-known/jwks.json` publishes the verification keys as
   an RFC 7517 JWK set (`kty`, `use=sig`, `alg=RS256`, `kid`, `n`, `e`): the current
@@ -39,14 +41,15 @@ image or its configuration.
 | `Shared\Infrastructure\DependencyInjection\KmsJwtSigningCompilerPass` | removes league's PEM `CryptKey`                          |
 | `OAuth\Application\Controller\JsonWebKeySetController`                | `GET /api/.well-known/jwks.json`                         |
 | `Shared\Application\EventListener\JwtKmsConfigurationListener`        | production guard                                         |
+| `Shared\Infrastructure\Provider\AwsKmsEndpointProvider`               | the KMS client endpoint the guard inspects               |
 
 ## Environment variables
 
 | Variable                       | Production                                         | Local (dev, test, load_test, schemathesis) |
 | ------------------------------ | -------------------------------------------------- | ------------------------------------------ |
 | `JWT_KMS_KEY_ID`               | KMS key ARN or alias ARN of the current JWT key    | LocalStack `alias/user-service-jwt` ARN    |
-| `JWT_KMS_PREVIOUS_KEY_ID`      | empty, or the previous key ARN during a key change | empty                                      |
-| `JWT_KMS_PUBLIC_KEY_CACHE_TTL` | seconds a GetPublicKey result is cached (300)      | 300                                        |
+| `JWT_KMS_PREVIOUS_KEY_ID`      | empty, or the additional verify-only key ARN       | empty                                      |
+| `JWT_KMS_PUBLIC_KEY_CACHE_TTL` | GetPublicKey cache seconds, 1 to 3600 (300)        | 300                                        |
 | `AWS_REGION`                   | the task region (set by the infrastructure)        | not used                                   |
 | `AWS_KMS_LOCAL_ENDPOINT`       | not used                                           | `http://localstack:4566`                   |
 | `AWS_KMS_LOCAL_REGION`         | not used                                           | `us-east-1`                                |
@@ -86,9 +89,11 @@ On every main request and console command in `APP_ENV=prod`,
 - `JWT_KMS_KEY_ID` is not a KMS key ARN or alias ARN (a LocalStack alias name such
   as `alias/user-service-jwt` is refused);
 - `JWT_KMS_PREVIOUS_KEY_ID` is set and is not a KMS key ARN or alias ARN;
-- any static `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` or `AWS_SESSION_TOKEN` is
-  set (the guard checks these environment variables; the production image ships no
-  shared credentials or config file);
+- any AWS credential source other than the ECS task role is configured: a set
+  `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_PROFILE`,
+  `AWS_SHARED_CREDENTIALS_FILE` or `AWS_CONTAINER_CREDENTIALS_FULL_URI`, or both
+  `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_ARN` (the task role itself comes
+  through `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`, which stays allowed);
 - the KMS client endpoint is not the regional AWS endpoint
   (`https://kms.<region>.amazonaws.com` or its FIPS variant), which refuses a
   LocalStack or any other local signer.
@@ -105,15 +110,18 @@ their GetPublicKey cache expires.
 1. **Create** the new KMS key (`RSA_4096`, `SIGN_VERIFY`) in the infrastructure.
 2. **Grant** the ECS task role `kms:Sign` and `kms:GetPublicKey` on the new key, and
    keep `kms:GetPublicKey` on the old key.
-3. **Pre-publish** the new key: deploy with `JWT_KMS_KEY_ID` = the old key and
-   `JWT_KMS_PREVIOUS_KEY_ID` = the new key. The new key only verifies and appears in
-   the JWK set. Wait until the rollout has replaced every task.
+3. **Pre-publish** the new key: deploy with `JWT_KMS_KEY_ID` = the old key and the
+   additional verify-only key `JWT_KMS_PREVIOUS_KEY_ID` = the new key. The new key
+   only verifies and appears in the JWK set. Wait until the rollout has replaced
+   every task.
 4. **Switch** signing: deploy with `JWT_KMS_KEY_ID` = the new key and
    `JWT_KMS_PREVIOUS_KEY_ID` = the old key. Because every task already trusts both
    keys, tokens from tasks of either deployment verify during the rolling update.
-5. **Wait** at least the longest token lifetime: `JWT_TOKEN_TTL` (lexik access
-   tokens) and `ACCESS_TOKEN_TTL` (league access tokens), plus
-   `JWT_KMS_PUBLIC_KEY_CACHE_TTL`.
+5. **Wait**, starting once the step-4 rollout has replaced every task, at least the
+   longest token lifetime: `AUTH_ACCESS_TOKEN_TTL_SECONDS` (the `exp` of the
+   first-party access tokens issued by sign-in and refresh), `JWT_TOKEN_TTL` (the
+   lexik default when a payload has no `exp`) and `ACCESS_TOKEN_TTL` (league OAuth
+   access tokens), plus `JWT_KMS_PUBLIC_KEY_CACHE_TTL`.
 6. **Clear** `JWT_KMS_PREVIOUS_KEY_ID` and redeploy. Tokens of the old key are now
    rejected (unknown `kid`).
 7. **Revoke** the task role grants on the old key and schedule its deletion.
