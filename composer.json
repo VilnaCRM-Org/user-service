@@ -45,6 +45,7 @@
     "symfony/expression-language": "8.1.*",
     "symfony/flex": "^2.7",
     "symfony/framework-bundle": "7.4.*",
+    "symfony/http-client": "7.4.*",
     "symfony/mailer": "8.1.*",
     "symfony/messenger": "7.4.*",
     "symfony/monolog-bundle": "^4.0",

@@ -22,6 +22,8 @@ use Symfony\Component\HttpClient\Psr18Client;
  * signed it expire, so its validity is the shorter of 900 seconds and the
  * credentials' expiry (the AWS SDK refreshes cached credentials only within
  * 60 seconds of their expiry).
+ * The request is built with Symfony's Psr18Client (a PSR-17 request factory),
+ * so symfony/http-client is a direct requirement in composer.json.
  */
 final readonly class RedisIamAuthTokenFactory implements RedisIamAuthTokenFactoryInterface
 {
