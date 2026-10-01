@@ -328,7 +328,7 @@ requires a new decision for a password-based application user, not a silent
 fallback.
 
 Evidence in this repository: `DocumentDbIamDsnTest` pins what the bundled URI
-parser accepts. `scripts/documentdb-iam-harness/run.sh` runs the real client
+parser accepts. `tests/CLI/bats/php/documentdb-iam-harness/run.sh` runs the real client
 against local mock ECS and mongod endpoints and checks the credential source,
 precedence, cache refresh, wrong-role and ECS-failure behaviour (command in the
 script header). It cannot show that DocumentDB accepts the role: that needs a

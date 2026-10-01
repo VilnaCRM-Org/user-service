@@ -5,7 +5,7 @@
 # ECS credentials address 169.254.170.2. From the repository root:
 #
 #   docker compose run --rm --no-deps --cap-add NET_ADMIN --entrypoint sh php \
-#     scripts/documentdb-iam-harness/run.sh
+#     tests/CLI/bats/php/documentdb-iam-harness/run.sh
 #
 # This proves how the client behaves. It does not prove that DocumentDB
 # accepts the role; only the live TEST check can.
