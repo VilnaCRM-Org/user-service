@@ -37,7 +37,8 @@ final class RedisIamAuthenticatorTest extends UnitTestCase
 
     public function testSendsAuthWithUserIdAndFreshTokenAndReturnsTokenValidity(): void
     {
-        $this->tokenFactory->expects(self::once())->method('create')->willReturn($this->authToken());
+        $this->tokenFactory->expects(self::once())->method('create')
+            ->willReturn($this->authToken());
         $client = $this->createMock(\Redis::class);
         $client->expects(self::once())->method('auth')
             ->with([$this->userId, $this->token])

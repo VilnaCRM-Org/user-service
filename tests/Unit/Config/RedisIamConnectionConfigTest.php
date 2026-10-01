@@ -27,7 +27,8 @@ final class RedisIamConnectionConfigTest extends UnitTestCase
 
     public function testIamConnectionsVerifyTheServerCertificate(): void
     {
-        $options = $this->service(RedisIamConnectionFactory::class)['arguments']['$tlsStreamOptions'];
+        $arguments = $this->service(RedisIamConnectionFactory::class)['arguments'];
+        $options = $arguments['$tlsStreamOptions'];
 
         self::assertSame(['verify_peer' => true, 'verify_peer_name' => true], $options);
         self::assertArrayNotHasKey('allow_self_signed', $options);
@@ -39,9 +40,15 @@ final class RedisIamConnectionConfigTest extends UnitTestCase
         $arguments = $this->service(RedisIamAuthTokenFactory::class)['arguments'];
 
         self::assertSame('Closure', $provider['class']);
-        self::assertSame(['Aws\Credentials\CredentialProvider', 'defaultProvider'], $provider['factory']);
+        self::assertSame(
+            ['Aws\Credentials\CredentialProvider', 'defaultProvider'],
+            $provider['factory']
+        );
         self::assertArrayNotHasKey('arguments', $provider);
-        self::assertSame('@app.redis_iam_aws_credential_provider', $arguments['$credentialProvider']);
+        self::assertSame(
+            '@app.redis_iam_aws_credential_provider',
+            $arguments['$credentialProvider']
+        );
         self::assertSame('@psr18.http_client', $arguments['$requestFactory']);
     }
 
@@ -71,7 +78,10 @@ final class RedisIamConnectionConfigTest extends UnitTestCase
             '@' . StandardRedisConnectionFactory::class,
             $arguments['$standardConnectionFactory']
         );
-        self::assertSame('@' . RedisIamConnectionFactory::class, $arguments['$iamConnectionFactory']);
+        self::assertSame(
+            '@' . RedisIamConnectionFactory::class,
+            $arguments['$iamConnectionFactory']
+        );
     }
 
     public function testEveryRedisConnectionIsCreatedByTheConnectionFactory(): void
@@ -105,7 +115,8 @@ final class RedisIamConnectionConfigTest extends UnitTestCase
 
     public function testCachePoolsUseTheAppRedisConnection(): void
     {
-        $cache = Yaml::parseFile(dirname(__DIR__, 3) . '/config/packages/cache.yaml')['framework']['cache'];
+        $config = Yaml::parseFile(dirname(__DIR__, 3) . '/config/packages/cache.yaml');
+        $cache = $config['framework']['cache'];
 
         self::assertSame('app.redis_connection', $cache['default_redis_provider']);
         self::assertSame('app.redis_connection', $cache['pools']['app']['provider']);
