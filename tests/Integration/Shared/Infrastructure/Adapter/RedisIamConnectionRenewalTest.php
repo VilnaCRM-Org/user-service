@@ -7,10 +7,18 @@ namespace App\Tests\Integration\Shared\Infrastructure\Adapter;
 use App\Shared\Infrastructure\Adapter\RedisIamConnection;
 use App\Shared\Infrastructure\EventSubscriber\RedisIamConnectionRenewalSubscriber;
 use App\Shared\Infrastructure\Factory\RedisIamConnectionFactory;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\Messenger\Event\WorkerRunningEvent;
+use Symfony\Component\Messenger\Event\WorkerStartedEvent;
+use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
+use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Worker;
 
 final class RedisIamConnectionRenewalTest extends RedisIamIntegrationTestCase
 {
     private const ELEVEN_HOURS = 39_600;
+    private const SIXTEEN_MINUTES = 960;
 
     public function testReauthenticatesOpenConnectionWithFreshTokenAfterTenMinutes(): void
     {
@@ -77,6 +85,38 @@ final class RedisIamConnectionRenewalTest extends RedisIamIntegrationTestCase
         self::assertSame(0, $this->authCallsSince($authCalls));
         $this->renew($factory);
         self::assertSame(1, $this->authCallsSince($authCalls));
+    }
+
+    public function testIdleWorkerTickRenewsConnectionBeforeRestartSignalCheck(): void
+    {
+        $factory = $this->connectionFactory();
+        $redis = $this->openConnection($factory);
+        $dispatcher = $this->workerEventDispatcher($factory, $redis);
+        $worker = new Worker([], $this->createMock(MessageBusInterface::class), $dispatcher);
+        $dispatcher->dispatch(new WorkerStartedEvent($worker));
+
+        $this->clock->advance(self::SIXTEEN_MINUTES);
+        $this->acceptOnlyTokens($this->currentToken());
+        $this->admin->rawCommand('CLIENT', 'KILL', 'ID', (string) $this->clientId($redis));
+        $authCalls = $this->authCalls();
+        $dispatcher->dispatch(new WorkerRunningEvent($worker, true));
+
+        self::assertSame($this->userId, $redis->rawCommand('ACL', 'WHOAMI'));
+        self::assertSame(0, $this->metricsEmitter->count());
+        self::assertSame(1, $this->authCallsSince($authCalls));
+    }
+
+    private function workerEventDispatcher(
+        RedisIamConnectionFactory $factory,
+        \Redis $redis
+    ): EventDispatcher {
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addSubscriber(new RedisIamConnectionRenewalSubscriber($factory));
+        $dispatcher->addSubscriber(new StopWorkerOnRestartSignalListener(
+            new RedisAdapter($redis, $this->faker->lexify('it????'))
+        ));
+
+        return $dispatcher;
     }
 
     private function openConnection(RedisIamConnectionFactory $factory): \Redis
