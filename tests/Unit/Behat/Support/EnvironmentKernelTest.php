@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Behat\Support;
 
+use App\Shared\Infrastructure\Factory\KmsJwtFactory;
+use App\Shared\Infrastructure\Provider\KmsJwtKeyProvider;
 use App\Tests\Behat\Support\EnvironmentKernel;
 use App\Tests\Unit\UnitTestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\ParameterBag\EnvPlaceholderParameterBag;
+use Symfony\Component\DependencyInjection\Reference;
 
 final class EnvironmentKernelTest extends UnitTestCase
 {
@@ -49,6 +52,22 @@ final class EnvironmentKernelTest extends UnitTestCase
         self::assertSame(1, $container->getEnvCounters()['MONGODB_URL']);
     }
 
+    public function testJwtServicesUseTheLocalStackKmsClient(): void
+    {
+        $container = $this->mongoContainer();
+
+        (new EnvironmentKernel('prod', false, dirname(__DIR__, 4), 'mongodb://localhost'))
+            ->process($container);
+
+        $local = new Reference(EnvironmentKernel::LOCAL_KMS_CLIENT);
+        foreach ([KmsJwtKeyProvider::class, KmsJwtFactory::class] as $serviceId) {
+            $definition = $container->getDefinition($serviceId);
+            self::assertEquals($local, $definition->getArgument('$kmsClient'));
+        }
+        $client = $container->getDefinition(EnvironmentKernel::LOCAL_KMS_CLIENT);
+        self::assertSame('%env(AWS_KMS_LOCAL_ENDPOINT)%', $client->getArgument(0)['endpoint']);
+    }
+
     private function mongoContainer(): ContainerBuilder
     {
         $options = ['tls' => true, 'tlsCAFile' => '/ca.pem', 'retryWrites' => false];
@@ -62,6 +81,10 @@ final class EnvironmentKernelTest extends UnitTestCase
                 [$server, $options, $driverOptions]
             )
         );
+
+        foreach ([KmsJwtKeyProvider::class, KmsJwtFactory::class] as $serviceId) {
+            $container->setDefinition($serviceId, new Definition($serviceId));
+        }
 
         return $container;
     }
