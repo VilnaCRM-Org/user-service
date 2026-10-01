@@ -17,7 +17,7 @@ The User Service utilizes environment variables for configuration to ensure that
 #### Database
 
 - `DATABASE_URL`: The URL for connecting to the MariaDB/MySQL database, including credentials, host, port, and database name (e.g., `mysql://root:root@database:3306/db?serverVersion=11.4`).
-- `MONGODB_URL`: The MongoDB or DocumentDB connection URI. DocumentDB deployments must include `tls=true`, `tlsCAFile=/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem`, and `retryWrites=false` in the URI. The application image supplies the verified CA bundle. Local MongoDB uses its own URI without TLS.
+- `MONGODB_URL`: The MongoDB or DocumentDB connection URI. DocumentDB deployments must include `tls=true`, `tlsCAFile=/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem`, and `retryWrites=false` in the URI. The application image supplies the verified CA bundle. Local MongoDB uses its own URI without TLS. For IAM authentication use the credential-free `MONGODB-AWS` URI in [DocumentDB IAM authentication](#documentdb-iam-authentication-mongodb-aws).
 - `USER_INSERT_BATCH_SIZE`: The size of a batch for bulk user inserts to the database.
 
 The base Compose production image listens on HTTP port 80 for a TLS-terminating
@@ -279,6 +279,60 @@ to standard output and standard error for collection by the container platform.
 The container health check requires all ten expected consumers to be running;
 a missing, stopped, or unexpected process makes the check fail. This process
 check does not prove message delivery or downstream service availability.
+
+### DocumentDB IAM authentication (MONGODB-AWS)
+
+Hardened ECS deployments authenticate to DocumentDB as the ECS task role. The
+infrastructure supplies `MONGODB_URL` as a plain environment value with no
+userinfo:
+
+```
+mongodb://<endpoint>:<port>/<db>?tls=true&tlsCAFile=/usr/local/share/ca-certificates/aws-documentdb-global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false&authSource=%24external&authMechanism=MONGODB-AWS
+```
+
+No application change is needed: `config/packages/doctrine_mongodb.yaml` passes
+the URI to `mongodb/mongodb` unchanged, and the `ext-mongodb` 2.4.1 image
+bundles libmongoc 2.4.0 with TLS and crypto enabled, which `MONGODB-AWS`
+requires. Do not set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, or a
+username and password in the URI.
+
+How libmongoc 2.4.0 finds the credentials (`mongoc-cluster-aws.c`, in the
+`ext-mongodb` 2.4.1 package):
+
+- Order: the process-wide cache, then URI username and password, then
+  `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN`, then web
+  identity, then the ECS endpoint, then EC2 metadata. A static key therefore
+  silently overrides the task role, and a password in the DSN is signed as an
+  AWS secret key.
+- ECS: only `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI`, fetched from
+  `169.254.170.2:80`. `AWS_CONTAINER_CREDENTIALS_FULL_URI` and the container
+  authorization token are not read. ECS tasks set the relative URI themselves.
+- Refresh: credentials that report an `Expiration` are cached for the process
+  and treated as expired five minutes early. A connection that authenticates
+  after that refetches them. A failed authentication clears the cache. Open
+  connections stay authenticated; only new connections sign again.
+
+Failure modes, all of which surface as a failed connection and a red
+`/api/health` database check, never as a fallback:
+
+- the task role is not mapped to a `$external` user (wrong role): DocumentDB
+  rejects the signed identity with an authentication error;
+- the ECS endpoint is unreachable or returns no credentials: libmongoc falls
+  through to EC2 metadata and fails with `failed to contact EC2 link local
+  server`;
+- `authSource` other than `$external`, a username without a password, or an
+  unknown `authMechanismProperties` entry: the driver refuses the URI at start.
+
+If libmongoc cannot obtain ECS credentials on a live task (V-1), the plan
+requires a new decision for a password-based application user, not a silent
+fallback.
+
+Evidence in this repository: `DocumentDbIamDsnTest` pins what the bundled URI
+parser accepts. `scripts/documentdb-iam-harness/run.sh` runs the real client
+against local mock ECS and mongod endpoints and checks the credential source,
+precedence, cache refresh, wrong-role and ECS-failure behaviour (command in the
+script header). It cannot show that DocumentDB accepts the role: that needs a
+real STS and is the live TEST check.
 
 ### SES delivery with task credentials
 
