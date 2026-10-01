@@ -1,11 +1,9 @@
 league_oauth2_server:
   authorization_server: # Required
-    # Full path to the private key file.
-    # How to generate a private key: https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys
-    private_key: '%env(resolve:OAUTH_PRIVATE_KEY)%' # Required, Example: /var/oauth/private.key
-
-    # Passphrase of the private key, if any
-    private_key_passphrase: '%env(resolve:OAUTH_PASSPHRASE)%'
+    # S5.11 (FR-06): access tokens are signed by AWS KMS, so no private key file
+    # exists. The bundle requires a value; KmsJwtSigningCompilerPass replaces the
+    # CryptKey built from it with a key-less KmsCryptKey.
+    private_key: 'aws-kms'
 
     # The plain string or the ascii safe string used to create a Defuse\Crypto\Key to be used as an encryption key.
     # How to generate an encryption key: https://oauth2.thephpleague.com/installation/#string-password
@@ -48,9 +46,9 @@ league_oauth2_server:
     persist_access_token: '%env(bool:OAUTH_PERSIST_ACCESS_TOKEN)%'
 
   resource_server: # Required
-    # Full path to the public key file
-    # How to generate a public key: https://oauth2.thephpleague.com/installation/#generating-public-and-private-keys
-    public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%' # Required, Example: /var/oauth/public.key
+    # S5.11 (FR-06): bearer tokens are verified with the KMS public keys
+    # (KmsBearerTokenValidator); KmsJwtSigningCompilerPass replaces this value.
+    public_key: 'aws-kms'
 
   scopes:
     # Scopes that you wish to utilize in your application.

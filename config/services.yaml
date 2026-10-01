@@ -148,6 +148,39 @@ services:
           priority: 200,
         }
 
+  # S5.11 (FR-06): production guard for KMS JWT signing. Refuses a local or dev
+  # KMS endpoint, any AWS credential source but the task role and non-ARN JWT
+  # key ids in prod.
+  App\Shared\Application\Provider\KmsEndpointProviderInterface: '@App\Shared\Infrastructure\Provider\AwsKmsEndpointProvider'
+
+  App\Shared\Application\EventListener\JwtKmsConfigurationListener:
+    arguments:
+      $appEnv: '%kernel.environment%'
+      $currentKeyId: '%env(JWT_KMS_KEY_ID)%'
+      $previousKeyId: '%env(JWT_KMS_PREVIOUS_KEY_ID)%'
+      $credentialEnvironment:
+        AWS_ACCESS_KEY_ID: '%env(string:default::AWS_ACCESS_KEY_ID)%'
+        AWS_SECRET_ACCESS_KEY: '%env(string:default::AWS_SECRET_ACCESS_KEY)%'
+        AWS_SESSION_TOKEN: '%env(string:default::AWS_SESSION_TOKEN)%'
+        AWS_PROFILE: '%env(string:default::AWS_PROFILE)%'
+        AWS_SHARED_CREDENTIALS_FILE: '%env(string:default::AWS_SHARED_CREDENTIALS_FILE)%'
+        AWS_CONTAINER_CREDENTIALS_FULL_URI: '%env(string:default::AWS_CONTAINER_CREDENTIALS_FULL_URI)%'
+        AWS_WEB_IDENTITY_TOKEN_FILE: '%env(string:default::AWS_WEB_IDENTITY_TOKEN_FILE)%'
+        AWS_ROLE_ARN: '%env(string:default::AWS_ROLE_ARN)%'
+    tags:
+      - {
+          name: kernel.event_listener,
+          event: kernel.request,
+          method: onKernelRequest,
+          priority: 200,
+        }
+      - {
+          name: kernel.event_listener,
+          event: console.command,
+          method: onConsoleCommand,
+          priority: 200,
+        }
+
   App\Shared\Application\Resolver\RateLimit\ApiRateLimitClientIdentityResolver:
     arguments:
       $jwtIssuer: '%env(string:JWT_ISSUER)%'
@@ -418,6 +451,33 @@ services:
     arguments:
       - version: 'latest'
         region: '%env(AWS_REGION)%'
+
+  # JWT and OAuth signing (S5.11, FR-06): kms:Sign with the JWT key
+  # (JWT_KMS_KEY_ID); local verification with GetPublicKey keys, cached for
+  # JWT_KMS_PUBLIC_KEY_CACHE_TTL seconds. JWT_KMS_PREVIOUS_KEY_ID is set only
+  # during a key-change window (D-17, USI plan) and only verifies.
+  App\Shared\Infrastructure\Provider\KmsJwtKeyProvider:
+    arguments:
+      $currentKeyId: '%env(JWT_KMS_KEY_ID)%'
+      $previousKeyId: '%env(JWT_KMS_PREVIOUS_KEY_ID)%'
+      $cacheTtlSeconds: '%env(int:JWT_KMS_PUBLIC_KEY_CACHE_TTL)%'
+
+  App\Shared\Application\Provider\JwtVerificationKeyProviderInterface: '@App\Shared\Infrastructure\Provider\KmsJwtKeyProvider'
+
+  App\Shared\Infrastructure\Adapter\KmsJwsProvider:
+    arguments:
+      $ttl: '%env(int:JWT_TOKEN_TTL)%'
+
+  # lexik_jwt_authentication.encoder.service
+  app.jwt.kms_encoder:
+    class: Lexik\Bundle\JWTAuthenticationBundle\Encoder\LcobucciJWTEncoder
+    arguments: ['@App\Shared\Infrastructure\Adapter\KmsJwsProvider']
+
+  # Every league access token is a KMS-signed JWT; persistence stays in the bundle.
+  App\OAuth\Infrastructure\Repository\KmsAccessTokenRepository:
+    decorates: league.oauth2_server.repository.access_token
+    arguments:
+      $inner: '@.inner'
 
   # OAuth Social Sign-In
   oauth.redis_connection:

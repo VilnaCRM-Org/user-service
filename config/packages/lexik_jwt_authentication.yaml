@@ -1,5 +1,9 @@
 lexik_jwt_authentication:
-  secret_key: '%env(resolve:OAUTH_PRIVATE_KEY)%' # required for token creation
-  public_key: '%env(resolve:OAUTH_PUBLIC_KEY)%' # required for token verification
-  pass_phrase: '%env(OAUTH_PASSPHRASE)%' # required for token creation
+  # S5.11 (FR-06): tokens are signed by AWS KMS (kms:Sign, RS256) and verified
+  # with the KMS public keys (GetPublicKey) through app.jwt.kms_encoder. No PEM
+  # key or passphrase exists. The bundle requires a public_key or secret_key
+  # value; this placeholder only feeds lexik's unused key loader.
+  public_key: 'aws-kms'
+  encoder:
+    service: app.jwt.kms_encoder
   token_ttl: '%env(resolve:JWT_TOKEN_TTL)%' # in seconds, default is 3600

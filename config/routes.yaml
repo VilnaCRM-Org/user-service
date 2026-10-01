@@ -12,3 +12,9 @@ oauth_social_callback:
   path: /api/auth/social/{provider}/callback
   controller: App\OAuth\Application\Controller\OAuthCallbackController
   methods: [GET]
+
+# S5.11 (FR-06): public JWT keys from KMS GetPublicKey, kid = RFC 7638 thumbprint
+jwks:
+  path: /api/.well-known/jwks.json
+  controller: App\OAuth\Application\Controller\JsonWebKeySetController
+  methods: [GET]

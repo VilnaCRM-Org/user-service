@@ -49,6 +49,14 @@ We regularly update project dependencies to mitigate vulnerabilities in third-pa
 - A ciphertext decrypts only for its own user. Any decryption or KMS failure fails closed with HTTP 500: the code is not evaluated and there is no plain-text fallback.
 - Production must set `TWO_FACTOR_KMS_KEY_ID` (the key ARN) and `AWS_REGION`, and uses the ECS task role; runtime validation fails fast when either is empty. See [two-factor secret encryption](advanced-configuration.md#two-factor-secret-encryption-aws-kms).
 
+### JWT Signing Key Policy
+
+- Every JWT is signed by an AWS KMS asymmetric key (`RSA_4096`, RS256 via `kms:Sign`); the private key never leaves KMS and no PEM key or passphrase exists in the application.
+- Tokens are verified locally with the `kms:GetPublicKey` public key that their `kid` names; only `RS256` and the configured current or previous key are accepted, and any KMS error fails closed.
+- The public keys are published at `GET /api/.well-known/jwks.json`.
+- Production refuses a local or LocalStack KMS endpoint, any AWS credential source other than the ECS task role (static keys, profiles, shared credential files, web identity, full-URI container credentials) and non-ARN key ids at runtime.
+- See [JWT signing with AWS KMS](jwt-kms-signing.md) for the key-change procedure with a dual-key window.
+
 ### GitHub CI Security Checks
 
 Our CI pipeline incorporates security checks to ensure the ongoing security of the application:

@@ -161,22 +161,6 @@ check-requirements: ## Checks requirements for running Symfony and gives useful 
 check-security: ## Checks security issues in project dependencies. Without arguments, it looks for a "composer.lock" file in the current directory. Pass it explicitly to check a specific "composer.lock" file.
 	$(EXEC_ENV) $(SYMFONY_BIN) security:check
 
-check-jwt-key-permissions: ## Verify JWT key permissions are correct (AC: NFR-61, RC-03 fix)
-	@echo "🔐 Checking JWT key permissions..."
-	@PRIVATE_PERMS=$$(stat -c %a config/jwt/private.pem 2>/dev/null || stat -f %A config/jwt/private.pem 2>/dev/null || echo "ERROR"); \
-	PUBLIC_PERMS=$$(stat -c %a config/jwt/public.pem 2>/dev/null || stat -f %A config/jwt/public.pem 2>/dev/null || echo "ERROR"); \
-	if [ "$$PRIVATE_PERMS" != "600" ]; then \
-		echo "❌ CRITICAL: private.pem has permissions $$PRIVATE_PERMS (expected 600)"; \
-		echo "   Run: chmod 600 config/jwt/private.pem"; \
-		exit 1; \
-	fi; \
-	if [ "$$PUBLIC_PERMS" != "644" ]; then \
-		echo "❌ ERROR: public.pem has permissions $$PUBLIC_PERMS (expected 644)"; \
-		echo "   Run: chmod 644 config/jwt/public.pem"; \
-		exit 1; \
-	fi; \
-	echo "✅ JWT key permissions are correct (private: 600, public: 644)"
-
 psalm: ## A static analysis tool for finding errors in PHP applications
 	$(EXEC_ENV) $(PSALM)
 
@@ -260,8 +244,6 @@ setup-test-db: ## Create database for testing purposes
 	@echo "Recreating MongoDB schema for testing..."
 	@$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_TEST_ENV) doctrine:mongodb:schema:create
-	@echo "Ensuring JWT keypair exists for test environment..."
-	$(SYMFONY_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Test database ready"
@@ -278,8 +260,6 @@ setup-load-test-db: ## Create database for load testing purposes
 	@echo "Recreating MongoDB schema for load testing..."
 	@$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:drop 2>&1 || true
 	$(SYMFONY_LOAD_TEST_ENV) doctrine:mongodb:schema:create
-	@echo "Ensuring JWT keypair exists for load-test environment..."
-	$(SYMFONY_LOAD_TEST_ENV) lexik:jwt:generate-keypair --skip-if-exists
 	@echo "Seeding test OAuth client..."
 	$(SYMFONY_LOAD_TEST_ENV) app:seed-test-oauth-client
 	@echo "✅ Load-test database ready"
@@ -498,7 +478,6 @@ ci-static-analysis:
 	@$(MAKE) check-requirements
 	@$(MAKE) check-security
 	@$(MAKE) validate-configuration
-	@$(MAKE) check-jwt-key-permissions
 	@$(MAKE) psalm
 	@$(MAKE) psalm-security
 

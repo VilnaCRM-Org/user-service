@@ -219,3 +219,20 @@ Feature: JWT Token Validation
     And the JWT should contain claim "jti"
     And the JWT should contain claim "sid"
     And the JWT should contain claim "roles"
+
+  # S5.11 (FR-06): JWTs are signed by the KMS JWT key, published as a JWK set
+
+  Scenario: JWKS publishes the KMS signing key
+    When GET request is send to "/api/.well-known/jwks.json"
+    Then the response status code should be 200
+    And the response should have header "Cache-Control" containing "no-store"
+    And the JWKS should publish RS256 signing keys
+
+  Scenario: Signed-in access token names a key published in the JWKS
+    Given user with email "jwks-kid@test.com" and password "passWORD1" exists
+    And signing in with email "jwks-kid@test.com" and password "passWORD1"
+    And POST request is send to "/api/signin"
+    And I store the access token kid
+    When GET request is send to "/api/.well-known/jwks.json"
+    Then the response status code should be 200
+    And the JWKS should publish the stored access token kid

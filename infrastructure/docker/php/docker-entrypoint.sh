@@ -45,11 +45,6 @@ if [ "$1" = 'frankenphp' ] || [ "$1" = 'php' ] || [ "$1" = 'bin/console' ]; then
 	fi
 
 	composer run-script auto-scripts --no-interaction
-	php bin/console lexik:jwt:generate-keypair --skip-if-exists
-	if [ -f config/jwt/private.pem ] && [ -f config/jwt/public.pem ]; then
-		chmod 600 config/jwt/private.pem
-		chmod 644 config/jwt/public.pem
-	fi
 
 fi
 exec docker-php-entrypoint "$@"

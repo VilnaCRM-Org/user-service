@@ -110,8 +110,7 @@
       "assets:install %PUBLIC_DIR%": "symfony-cmd"
     },
     "post-install-cmd": [
-      "@auto-scripts",
-      "php bin/console lexik:jwt:generate-keypair --skip-if-exists"
+      "@auto-scripts"
     ],
     "post-update-cmd": [
       "@auto-scripts"
