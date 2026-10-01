@@ -65,5 +65,4 @@ abstract class DocumentDbIamDsnEnvProcessorTestCase extends UnitTestCase
             return $values[$name];
         };
     }
-
 }

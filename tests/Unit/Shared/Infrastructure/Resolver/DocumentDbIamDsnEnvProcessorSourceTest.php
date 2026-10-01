@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Shared\Infrastructure\Resolver;
 
 use RuntimeException;
 
-final class DocumentDbIamDsnEnvProcessorCredentialSourceTest extends DocumentDbIamDsnEnvProcessorTestCase
+final class DocumentDbIamDsnEnvProcessorSourceTest extends DocumentDbIamDsnEnvProcessorTestCase
 {
     public function testWebIdentityCredentialsAreRefused(): void
     {
@@ -50,7 +50,9 @@ final class DocumentDbIamDsnEnvProcessorCredentialSourceTest extends DocumentDbI
     public function testLoneSessionTokenIsRefused(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('MONGODB_URL uses MONGODB-AWS, but AWS_SESSION_TOKEN is set.');
+        $this->expectExceptionMessage(
+            'MONGODB_URL uses MONGODB-AWS, but AWS_SESSION_TOKEN is set.'
+        );
 
         $this->resolve('mongodb://docdb.example/app?' . self::IAM_QUERY, ['AWS_SESSION_TOKEN' => 'x']);
     }
