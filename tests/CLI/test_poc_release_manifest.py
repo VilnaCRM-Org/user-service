@@ -62,18 +62,49 @@ class ReleaseManifestTests(unittest.TestCase):
         manifest["provenance"]["artifact_id"] = 99
         self.assertEqual(self.artifact["artifact_id"], 41)
 
-    def test_both_platforms_and_opaque_utf8_version(self):
-        for platform in ("linux/amd64", "linux/arm64"):
-            self.arguments["platform"] = platform
-            for kind in codec.TARGETS:
-                self.arguments[kind] = dataclasses.replace(
-                    self.arguments[kind], platform=platform
-                )
-            self.arguments["registry"] = dataclasses.replace(
-                self.registry, registry_checkpoint_version="é" * 1024
+    def test_single_amd64_platform_and_opaque_utf8_version(self):
+        self.arguments["registry"] = dataclasses.replace(
+            self.registry, registry_checkpoint_version="é" * 1024
+        )
+        raw = self.encoded()
+        manifest = codec.validate_release_manifest(
+            raw, registry=self.arguments["registry"]
+        )
+        self.assertEqual(manifest["platform"], "linux/amd64")
+
+    def test_arm64_is_refused_under_d18(self):
+        """D-18: one image architecture, linux/amd64, for every environment."""
+        self.arguments["platform"] = "linux/arm64"
+        for kind in codec.TARGETS:
+            self.arguments[kind] = dataclasses.replace(
+                self.arguments[kind], platform="linux/arm64"
             )
-            raw = self.encoded()
-            codec.validate_release_manifest(raw, registry=self.arguments["registry"])
+        with self.assertRaisesRegex(codec.ReleaseManifestError, "^platform$"):
+            self.encoded()
+
+    def test_arm64_manifest_is_refused_on_decode(self):
+        original = json.loads(self.encoded())
+        raw = json.dumps(dict(original, platform="linux/arm64")).encode()
+        with self.assertRaisesRegex(codec.ReleaseManifestError, "^platform$"):
+            codec.validate_release_manifest(raw, registry=self.registry)
+
+    def test_arm64_release_evidence_is_refused(self):
+        builds = {
+            kind: dataclasses.replace(self.arguments[kind], platform="linux/arm64")
+            for kind in codec.TARGETS
+        }
+        with self.assertRaisesRegex(codec.ReleaseManifestError, "^platform$"):
+            codec.build_release_evidence(
+                source_sha="d" * 40,
+                publisher_run_id=53,
+                platform="linux/arm64",
+                registry=self.registry,
+                workflow_sha="f" * 40,
+                quality_job_id=51,
+                build_job_id=52,
+                build_artifact=self.artifact,
+                **builds,
+            )
 
     def test_invalid_registry_references(self):
         cases = {
@@ -114,15 +145,15 @@ class ReleaseManifestTests(unittest.TestCase):
                 )
 
     def test_invalid_build_context(self):
-        for field, values in {
-            "source_sha": ("main", "D" * 40, None),
-            "publisher_run_id": (True, 0, 1.0, "53"),
-            "platform": ("linux/386", None),
-        }.items():
+        for field, values, reason in (
+            ("source_sha", ("main", "D" * 40, None), "source-sha"),
+            ("publisher_run_id", (True, 0, 1.0, "53"), "publisher-run"),
+            ("platform", ("linux/386", "linux/arm64", None), "platform"),
+        ):
             for value in values:
                 with (
-                    self.subTest(field=field),
-                    self.assertRaises(codec.ReleaseManifestError),
+                    self.subTest(field=field, value=value),
+                    self.assertRaisesRegex(codec.ReleaseManifestError, f"^{reason}$"),
                 ):
                     codec.build_release_manifest(
                         **dict(self.arguments, **{field: value})

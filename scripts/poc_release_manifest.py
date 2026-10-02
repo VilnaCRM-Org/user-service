@@ -19,6 +19,8 @@ PUBLISHER_ROLE_ARN = "arn:aws:iam::891377212104:role/user-service-test-ImagePubl
 PUBLISHER_ENVIRONMENT = "poc-test-images"
 REGISTRY = "891377212104.dkr.ecr.eu-central-1.amazonaws.com"
 TARGETS = {"web": "frankenphp_prod", "worker": "app_workers"}
+# D-18: one image architecture, linux/amd64 (ECS X86_64), for every environment.
+PLATFORM = "linux/amd64"
 MAX_MANIFEST_BYTES = 16384
 
 
@@ -129,7 +131,7 @@ def build_release_manifest(
     registry.validate()
     _require(_hex(source_sha, 40), "source-sha")
     _require(_positive(publisher_run_id), "publisher-run")
-    _require(platform in ("linux/amd64", "linux/arm64"), "platform")
+    _require(platform == PLATFORM, "platform")
     manifest = {
         "schema_version": "poc-release-v1",
         "repository": REPOSITORY,
@@ -232,7 +234,7 @@ def build_release_evidence(
         all(_positive(v) for v in (publisher_run_id, quality_job_id, build_job_id)),
         "evidence-id",
     )
-    _require(platform in ("linux/amd64", "linux/arm64"), "platform")
+    _require(platform == PLATFORM, "platform")
     common = {
         "repository": REPOSITORY,
         "source_sha": source_sha,

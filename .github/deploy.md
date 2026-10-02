@@ -33,6 +33,22 @@ The publisher uses `aws-actions/configure-aws-credentials` with GitHub OIDC,
 checks the TEST account, and logs in to ECR only in the protected publish job.
 Quality and image builds run without AWS credentials. The exact main source
 commit must pass `make ci`; the build uses that same commit and AMD64 targets.
+Per D-18 every environment uses one architecture, `linux/amd64`: images are
+single-platform, single-manifest pushes, never an image index. Builds pass
+`--provenance=false --sbom=false` because BuildKit attestations would wrap the
+image in an index. The publisher refuses a saved archive that is not exactly one
+image manifest (`publisher-archive-not-single`), a saved image whose config is
+not `linux/amd64` (`publisher-platform`), and an ECR readback that is not a
+single-image manifest (`publisher-manifest-not-single`).
+A builder without both attestation flags stops the build
+(`publisher-attestation-flags`), and the release-manifest codec refuses any
+platform other than `linux/amd64` (`platform`). A failed step prints one line,
+`Image publishing failed: <reason>`, where `<reason>` is a code from the
+publisher's closed `REFUSAL_REASONS` set. An unknown mode prints
+`publisher-usage`; any other Python `Exception`, including an unexpected
+programming error, prints `publisher-unclassified`. Exception text, tracebacks,
+paths, tokens and AWS or GitHub output are never printed; only interrupts
+(`KeyboardInterrupt`, `SystemExit`) are left to the runner.
 
 ## Release evidence
 
