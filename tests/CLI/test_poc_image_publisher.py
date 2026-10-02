@@ -87,6 +87,8 @@ DOCKER_LIST = "application/vnd.docker.distribution.manifest.list.v2+json"
 DOCKER_MANIFEST = "application/vnd.docker.distribution.manifest.v2+json"
 DOCKER_CONFIG = "application/vnd.docker.container.image.v1+json"
 IN_TOTO = "application/vnd.in-toto+json"
+OCI_EMPTY = "application/vnd.oci.empty.v1+json"
+DOCKER_ATTESTATION = "application/vnd.docker.attestation.manifest.v1+json"
 
 
 def image_archive(
@@ -101,7 +103,10 @@ def image_archive(
 
     `attestation` mirrors the BuildKit default on the containerd image store
     (an index of the image plus an attestation manifest, observed locally with
-    Docker 29.8.1); `--provenance=false --sbom=false` yields `single`.
+    Docker 29.8.1); `--provenance=false --sbom=false` yields `single`. The
+    attestation manifest has the observed shape: `artifactType` Docker
+    attestation, an OCI empty config, one in-toto layer and the image as its
+    `subject`. `attestation-only` saves that attestation manifest by itself.
     """
     blobs = {}
 
@@ -143,8 +148,10 @@ def image_archive(
                 {
                     "schemaVersion": 2,
                     "mediaType": OCI_MANIFEST,
-                    "config": {"mediaType": IN_TOTO, **statement},
-                    "layers": [],
+                    "artifactType": DOCKER_ATTESTATION,
+                    "config": {"mediaType": OCI_EMPTY, **blob(b"{}")},
+                    "layers": [{"mediaType": IN_TOTO, **statement}],
+                    "subject": image,
                 }
             ).encode()
         ),
@@ -168,6 +175,8 @@ def image_archive(
         ]
     elif layout == "two-manifests":
         entries = [image, attestation]
+    elif layout == "attestation-only":
+        entries = [attestation]
     members = {
         "oci-layout": b'{"imageLayoutVersion":"1.0.0"}',
         "index.json": json.dumps(
@@ -744,6 +753,7 @@ class PublisherBuildTests(unittest.TestCase):
         rejected = (
             ({"layout": "attestation"}, "publisher-archive-not-single"),
             ({"layout": "two-manifests"}, "publisher-archive-not-single"),
+            ({"layout": "attestation-only"}, "publisher-archive-not-single"),
             ({"manifest_type": OCI_INDEX}, "publisher-archive-not-single"),
             ({"manifest_type": DOCKER_LIST}, "publisher-archive-not-single"),
             ({"config_type": IN_TOTO}, "publisher-archive-not-single"),
@@ -931,6 +941,20 @@ class PublisherRoundtripTests(unittest.TestCase):
                 "attestation-manifest",
                 {"imageManifestMediaType": OCI_MANIFEST, "artifactMediaType": IN_TOTO},
             ),
+            (
+                "docker-attestation-artifact",
+                {
+                    "imageManifestMediaType": OCI_MANIFEST,
+                    "artifactMediaType": DOCKER_ATTESTATION,
+                },
+            ),
+            (
+                "oci-empty-config",
+                {
+                    "imageManifestMediaType": OCI_MANIFEST,
+                    "artifactMediaType": OCI_EMPTY,
+                },
+            ),
             ("artifact-type-missing", {"artifactMediaType": None}),
             ("referrer", {"subjectManifestDigest": "sha256:" + "e" * 64}),
         ):
@@ -959,14 +983,14 @@ class PublisherRoundtripTests(unittest.TestCase):
                     codec.ReleaseManifestError, "^publisher-manifest-not-single$"
                 ):
                     publisher.publish(self.request, 31, "c" * 40, self.root)
-            pushes = [
-                args
-                for kind, args in self.calls
-                if kind == "docker" and args[0] == "push"
-            ]
-            self.assertEqual(len(pushes), 1)
-            self.assertFalse((self.root / "provenance.json").exists())
-            self.assertFalse((self.root / "published.json").exists())
+                pushes = [
+                    args
+                    for kind, args in self.calls
+                    if kind == "docker" and args[0] == "push"
+                ]
+                self.assertEqual(len(pushes), 1)
+                self.assertFalse((self.root / "provenance.json").exists())
+                self.assertFalse((self.root / "published.json").exists())
 
     def test_bound_attestation_archive_fails_before_credentials_or_push(self):
         (self.root / "worker.tar").write_bytes(
