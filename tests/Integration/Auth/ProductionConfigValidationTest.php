@@ -71,7 +71,6 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
     public function testProductionTlsListenerUsesOnlyTheRuntimeInternalCa(): void
     {
         $config = $this->adapt();
-        $tlsServer = $config['apps']['http']['servers']['srv1'];
 
         self::assertSame([
             [
@@ -82,12 +81,19 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
         ], $config['apps']['tls']['automation']['policies']);
         self::assertSame(self::TEN_MINUTES, $config['apps']['tls']['automation']['renew_interval']);
         self::assertSame(
-            ['module' => 'file_system', 'root' => '/srv/app/var/caddy'],
-            $config['storage']
-        );
-        self::assertSame(
             ['local' => ['install_trust' => false]],
             $config['apps']['pki']['certificate_authorities']
+        );
+    }
+
+    public function testProductionTlsListenerStoresItsCaInTheAppVolumeAndServesEveryClient(): void
+    {
+        $config = $this->adapt();
+        $tlsServer = $config['apps']['http']['servers']['srv1'];
+
+        self::assertSame(
+            ['module' => 'file_system', 'root' => '/srv/app/var/caddy'],
+            $config['storage']
         );
         self::assertSame(['h1', 'h2'], $tlsServer['protocols']);
         self::assertSame(
