@@ -18,8 +18,6 @@ final class InContainerTlsContractTest extends UnitTestCase
 
     private const STORAGE = '/srv/app/var/caddy';
 
-    private const APPLICATION_VOLUME = '/srv/app/var';
-
     private const IMPORT = 'import application';
 
     private const TRUSTED_PROXIES = [
@@ -54,16 +52,13 @@ final class InContainerTlsContractTest extends UnitTestCase
     public function testCertificateStorageIsCreatedAtRuntimeInTheApplicationVolume(): void
     {
         $dockerfile = $this->projectFile('Dockerfile');
+        self::assertSame(
+            1,
+            preg_match('/^\tstorage file_system (\S+)$/m', $this->globalOptions(), $storage)
+        );
 
-        self::assertStringContainsString(
-            sprintf("\tstorage file_system %s\n", self::STORAGE),
-            $this->globalOptions()
-        );
-        self::assertStringStartsWith(self::APPLICATION_VOLUME . '/', self::STORAGE);
-        self::assertStringContainsString(
-            sprintf('VOLUME ["%s",', self::APPLICATION_VOLUME),
-            $this->webStage()
-        );
+        self::assertSame(self::STORAGE, $storage[1]);
+        self::assertContains(dirname($storage[1]), $this->declaredWebVolumes());
         self::assertStringNotContainsString(self::STORAGE, $dockerfile);
         self::assertDoesNotMatchRegularExpression('/caddy trust|\.key\b/', $dockerfile);
     }
@@ -157,6 +152,19 @@ final class InContainerTlsContractTest extends UnitTestCase
         self::assertSame(1, preg_match('/\A\{\n(.*?\n)\}$/ms', $this->caddyfile(), $match));
 
         return $match[1];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function declaredWebVolumes(): array
+    {
+        self::assertSame(1, preg_match('/^VOLUME \[(.*)\]$/m', $this->webStage(), $match));
+
+        return array_map(
+            static fn (string $path): string => trim($path, ' "'),
+            explode(',', $match[1])
+        );
     }
 
     private function webStage(): string

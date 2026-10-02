@@ -19,10 +19,10 @@ readonly CADDY_STORAGE=/srv/app/var/caddy
 readonly CADDY_ROOT_CERTIFICATE="${CADDY_STORAGE}/pki/authorities/local/root.crt"
 readonly CADDY_LEAF_DIRECTORY="${CADDY_STORAGE}/certificates/local/${TLS_SERVER_NAME}"
 # The renewal check shortens the internal certificate lifetime and the renewal
-# check interval; Caddy renews in the last third of the lifetime. Caddy's internal
-# CA backdates certificates by a minute, so the lifetime must exceed one minute.
-readonly RENEWAL_CERT_LIFETIME=${IMAGE_CHECK_RENEWAL_CERT_LIFETIME:-90s}
-readonly RENEWAL_CHECK_INTERVAL=${IMAGE_CHECK_RENEWAL_CHECK_INTERVAL:-5s}
+# check interval (both in seconds); Caddy renews in the last third of the
+# lifetime. Caddy's internal CA rejects a lifetime of one minute or less.
+readonly RENEWAL_CERT_LIFETIME_SECONDS=${IMAGE_CHECK_RENEWAL_CERT_LIFETIME_SECONDS:-90}
+readonly RENEWAL_CHECK_INTERVAL_SECONDS=${IMAGE_CHECK_RENEWAL_CHECK_INTERVAL_SECONDS:-5}
 readonly RENEWAL_TIMEOUT_SECONDS=${IMAGE_CHECK_RENEWAL_TIMEOUT_SECONDS:-240}
 readonly SUPERVISOR_SOCKET=/srv/app/var/run/supervisor.sock
 readonly WEB_IMAGE_REF=${IMAGE_CHECK_WEB_IMAGE:-user-service-web:non-root-check}
@@ -690,15 +690,20 @@ tls_material_is_private_to_the_application_user() {
         tls-material "$CADDY_STORAGE" "$CADDY_LEAF_DIRECTORY" "$TLS_SERVER_NAME"
 }
 
-# Prints "<serial>|<expiry>" of the certificate the server presents.
+# Prints "<serial>|<not before>|<not after>" (epoch seconds) of the certificate
+# the server presents.
 served_certificate() {
-    local certificate
+    local certificate fields serial start expiry
 
     certificate=$(docker exec "${PREFIX}-$1" curl -sS -k -o /dev/null -w '%{certs}' \
         "https://127.0.0.1:${TLS_PORT}/") || return 1
-    awk '/^Serial Number:/ && !serial {serial = substr($0, 15)}
+    fields=$(awk '/^Serial Number:/ && !serial {serial = substr($0, 15)}
+        /^Start date:/ && !start {start = substr($0, 12)}
         /^Expire date:/ && !expiry {expiry = substr($0, 13)}
-        END {if (serial == "" || expiry == "") exit 1; print serial "|" expiry}' <<<"$certificate"
+        END {if (serial == "" || start == "" || expiry == "") exit 1; print serial "|" start "|" expiry}' \
+        <<<"$certificate") || return 1
+    IFS='|' read -r serial start expiry <<<"$fields"
+    echo "${serial}|$(date -d "$start" +%s)|$(date -d "$expiry" +%s)"
 }
 
 stored_certificate_serial() {
@@ -707,17 +712,18 @@ stored_certificate_serial() {
         "${CADDY_LEAF_DIRECTORY}/${TLS_SERVER_NAME}.crt"
 }
 
-# Caddy's certificate maintenance replaces the served certificate before it
-# expires and writes the new one to its storage on the read-only root filesystem.
+# Caddy's certificate maintenance replaces the served certificate in the last third
+# of its configured lifetime, before it expires, and writes the new one to its
+# storage on the read-only root filesystem.
 certificate_renews_before_expiry() {
     local name=$1
-    local first serial expires_at current served renewed_at
-    local deadline=$((SECONDS + RENEWAL_TIMEOUT_SECONDS))
+    local serial issued_at expires_at current next_serial next_issued_at next_expires_at
+    local renewed_at window_opens served deadline=$((SECONDS + RENEWAL_TIMEOUT_SECONDS))
 
-    first=$(served_certificate "$name") || return 1
-    serial=${first%%|*}
-    expires_at=$(date -d "${first#*|}" +%s) || return 1
-    echo "${PREFIX}-${name} serves serial ${serial}, expiring ${first#*|}"
+    IFS='|' read -r serial issued_at expires_at <<<"$(served_certificate "$name")"
+    [ -n "$expires_at" ] || return 1
+    echo "${PREFIX}-${name} serves serial ${serial}, valid $((expires_at - issued_at))s until $(date -u -d "@${expires_at}" +%T)"
+    [ "$((expires_at - issued_at))" -eq "$RENEWAL_CERT_LIFETIME_SECONDS" ] || return 1
     while current=$(served_certificate "$name") && [ "${current%%|*}" = "$serial" ]; do
         if [ "$SECONDS" -ge "$deadline" ]; then
             echo "${PREFIX}-${name} still serves serial ${serial}" >&2
@@ -725,18 +731,48 @@ certificate_renews_before_expiry() {
         fi
         sleep 2
     done
-    [ -n "$current" ] || return 1
     renewed_at=$(date +%s)
-    echo "${PREFIX}-${name} serves serial ${current%%|*}, expiring ${current#*|}, $((expires_at - renewed_at))s before the old expiry"
+    IFS='|' read -r next_serial next_issued_at next_expires_at <<<"$current"
+    [ -n "$next_expires_at" ] || return 1
+    # Observed within one poll (plus one maintenance tick) of the actual renewal.
+    window_opens=$((issued_at + RENEWAL_CERT_LIFETIME_SECONDS * 2 / 3 - RENEWAL_CHECK_INTERVAL_SECONDS))
+    echo "${PREFIX}-${name} serves serial ${next_serial} from $((renewed_at - issued_at))s after issue, $((expires_at - renewed_at))s before the old expiry"
+    [ "$renewed_at" -ge "$window_opens" ] || { echo 'renewed before the last third of the lifetime' >&2; return 1; }
     [ "$renewed_at" -lt "$expires_at" ] || { echo 'renewed only after the old certificate expired' >&2; return 1; }
-    [ "$(date -d "${current#*|}" +%s)" -gt "$expires_at" ] || return 1
-    served=${current%%|*}
-    served=${served,,}
+    [ "$next_issued_at" -le "$renewed_at" ] && [ "$next_expires_at" -gt "$expires_at" ] || return 1
+    served=${next_serial,,}
     served=${served#"${served%%[!0]*}"}
     [ "$(stored_certificate_serial "$name")" = "$served" ] \
         || { echo 'the stored certificate is not the served one' >&2; return 1; }
     docker logs "${PREFIX}-${name}" 2>&1 | grep 'certificate renewed successfully' \
         | grep -q "\"identifier\":\"${TLS_SERVER_NAME}\""
+}
+
+# A client that sends SNI for another name gets the internal certificate too
+# (fallback_sni) and the catch-all site serves the application.
+https_with_another_sni_returns_no_content() {
+    local output
+
+    output=$(docker exec "${PREFIX}-$1" curl -sS -k -o /dev/null -w '%{http_code} %{certs}' \
+        --resolve "other.invalid:${TLS_PORT}:127.0.0.1" "https://other.invalid:${TLS_PORT}/api/health") \
+        || return 1
+    echo "${PREFIX}-$1 GET https://other.invalid:${TLS_PORT}/api/health -> ${output%% *}"
+    [ "${output%% *}" = '204' ] && grep -q "Subject Alternative Name:DNS:${TLS_SERVER_NAME}" <<<"$output"
+}
+
+# The TLS server offers HTTP/1.1 and HTTP/2 only: no Alt-Svc advertisement and no
+# UDP (HTTP/3) listener on the port.
+tls_port_serves_no_http3() {
+    local headers udp port_hex
+
+    headers=$(docker exec "${PREFIX}-$1" curl -sS -k -D - -o /dev/null --http2 \
+        "https://127.0.0.1:${TLS_PORT}/api/health") || return 1
+    printf -v port_hex '%04X' "$TLS_PORT"
+    udp=$(docker exec "${PREFIX}-$1" cat /proc/net/udp /proc/net/udp6) || return 1
+    echo "${PREFIX}-$1 :${TLS_PORT} $(head -n 1 <<<"$headers" | tr -d '\r')"
+    [[ "$(head -n 1 <<<"$headers")" == 'HTTP/2 204'* ]] \
+        && ! grep -qi '^alt-svc:' <<<"$headers" \
+        && ! awk '{print $2}' <<<"$udp" | grep -q ":${port_hex}$"
 }
 
 check_tls_runtime() {
@@ -746,6 +782,10 @@ check_tls_runtime() {
         https_health_endpoint_returns_no_content "$name"
     check "${name} serves HTTPS on :${TLS_PORT} by address without SNI" \
         https_by_address_without_sni_returns_no_content "$name"
+    check "${name} serves HTTPS on :${TLS_PORT} to a client sending another SNI" \
+        https_with_another_sni_returns_no_content "$name"
+    check "${name} serves HTTP/2 on :${TLS_PORT} with no HTTP/3 advertisement or UDP listener" \
+        tls_port_serves_no_http3 "$name"
     check "${name} refuses plain HTTP on :${TLS_PORT} without a redirect" \
         plain_http_on_tls_port_is_refused "$name"
     check "${name} keeps the internal CA and certificate in ${CADDY_STORAGE}, private to the application user" \
@@ -776,7 +816,7 @@ check_certificate_renewal() {
         return
     fi
     pass "${name} becomes healthy through the image HEALTHCHECK"
-    check "${name} renews its ${RENEWAL_CERT_LIFETIME} internal certificate before expiry into ${CADDY_STORAGE}" \
+    check "${name} renews its ${RENEWAL_CERT_LIFETIME_SECONDS}s certificate in its last third, before expiry, into ${CADDY_STORAGE}" \
         certificate_renews_before_expiry "$name"
     check "${name} serves /api/health over HTTPS with the renewed certificate" \
         https_health_endpoint_returns_no_content "$name"
@@ -934,8 +974,8 @@ check_runtime() {
     start_runtime_container web-ecs "$WEB_IMAGE" "${ECS_TASK_SHAPE[@]}" \
         -e TMPDIR=/srv/app/var/tmp -- /bin/sh -ec "$WEB_RUNTIME_COMMAND"
     start_runtime_container web-tls-renewal "$WEB_IMAGE" "${ECS_TASK_SHAPE[@]}" \
-        -e TMPDIR=/srv/app/var/tmp -e CADDY_INTERNAL_CERT_LIFETIME="$RENEWAL_CERT_LIFETIME" \
-        -e CADDY_RENEW_INTERVAL="$RENEWAL_CHECK_INTERVAL" -- /bin/sh -ec "$WEB_RUNTIME_COMMAND"
+        -e TMPDIR=/srv/app/var/tmp -e CADDY_INTERNAL_CERT_LIFETIME="${RENEWAL_CERT_LIFETIME_SECONDS}s" \
+        -e CADDY_RENEW_INTERVAL="${RENEWAL_CHECK_INTERVAL_SECONDS}s" -- /bin/sh -ec "$WEB_RUNTIME_COMMAND"
     start_runtime_container worker-default "$WORKER_IMAGE"
     start_runtime_container worker-ecs "$WORKER_IMAGE" "${ECS_TASK_SHAPE[@]}" \
         -e TMPDIR=/srv/app/var/tmp -- /bin/sh -ec "$WORKER_RUNTIME_COMMAND"

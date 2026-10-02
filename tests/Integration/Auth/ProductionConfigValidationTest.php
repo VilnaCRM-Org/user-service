@@ -12,6 +12,12 @@ use Symfony\Component\Serializer\Encoder\JsonDecode;
 
 final class ProductionConfigValidationTest extends AuthIntegrationTestCase
 {
+    private const TLS_SERVER_NAME = 'user-service.internal';
+
+    private const TWELVE_HOURS = 43_200_000_000_000;
+
+    private const TEN_MINUTES = 600_000_000_000;
+
     /**
      * AC: NFR-17 - MongoDB production DSN must enable TLS
      */
@@ -52,13 +58,75 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
         ]);
         $servers = $config['apps']['http']['servers'];
 
-        self::assertCount(1, $servers);
-        self::assertSame([':8080'], $servers['srv0']['listen']);
-        self::assertTrue($servers['srv0']['automatic_https']['disable']);
+        self::assertSame([[':8080'], [':8443']], array_column($servers, 'listen'));
+        self::assertSame(
+            [['disable_redirects' => true], ['disable_redirects' => true]],
+            array_column($servers, 'automatic_https')
+        );
         self::assertSame('localhost:2019', $config['admin']['listen']);
-        self::assertArrayNotHasKey('tls', $config['apps']);
         self::assertSame('prod', $config['apps']['frankenphp']['workers'][0]['env']['APP_ENV']);
         self::assertSame('0', $config['apps']['frankenphp']['workers'][0]['env']['APP_DEBUG']);
+    }
+
+    public function testProductionTlsListenerUsesOnlyTheRuntimeInternalCa(): void
+    {
+        $config = $this->adapt();
+        $tlsServer = $config['apps']['http']['servers']['srv1'];
+
+        self::assertSame([
+            [
+                'subjects' => [self::TLS_SERVER_NAME],
+                'issuers' => [['lifetime' => self::TWELVE_HOURS, 'module' => 'internal']],
+            ],
+            ['issuers' => [['module' => 'internal']]],
+        ], $config['apps']['tls']['automation']['policies']);
+        self::assertSame(self::TEN_MINUTES, $config['apps']['tls']['automation']['renew_interval']);
+        self::assertSame(
+            ['module' => 'file_system', 'root' => '/srv/app/var/caddy'],
+            $config['storage']
+        );
+        self::assertSame(
+            ['local' => ['install_trust' => false]],
+            $config['apps']['pki']['certificate_authorities']
+        );
+        self::assertSame(['h1', 'h2'], $tlsServer['protocols']);
+        self::assertSame(
+            ['default_sni' => self::TLS_SERVER_NAME, 'fallback_sni' => self::TLS_SERVER_NAME],
+            end($tlsServer['tls_connection_policies'])
+        );
+    }
+
+    public function testProductionTlsListenerKeepsProxyTrustAndProductionHandler(): void
+    {
+        $servers = $this->adapt()['apps']['http']['servers'];
+        $subroutes = array_merge(...array_map(
+            static fn (array $route): array => $route['handle'][0]['routes'],
+            $servers['srv1']['routes']
+        ));
+        $php = array_values(array_filter(
+            array_merge(...array_column($subroutes, 'handle')),
+            static fn (array $handler): bool => $handler['handler'] === 'php'
+        ));
+
+        self::assertSame($servers['srv0']['trusted_proxies'], $servers['srv1']['trusted_proxies']);
+        self::assertSame(1, $servers['srv1']['trusted_proxies_strict']);
+        self::assertSame(
+            [['APP_DEBUG' => '0', 'APP_ENV' => 'prod'], ['APP_DEBUG' => '0', 'APP_ENV' => 'prod']],
+            array_column($php, 'env')
+        );
+    }
+
+    public function testEveryProductionListenerRedactsOAuthParametersInItsAccessLog(): void
+    {
+        $config = $this->adapt();
+        $logs = array_diff_key($config['logging']['logs'], ['default' => true]);
+
+        self::assertCount(3, $logs);
+        self::assertSame(
+            array_fill(0, 3, $config['logging']['logs']['log0']['encoder']),
+            array_values(array_column($logs, 'encoder'))
+        );
+        $this->assertAccessLogRedactsOAuthParameters($config);
     }
 
     public function testProductionWorkerKeepsProductionSettings(): void
