@@ -41,7 +41,7 @@ MAX_ARCHIVE = 7 * 1024**3
 MAX_EVENT = 1024 * 1024
 MAX_ARCHIVE_JSON = 1024 * 1024
 # D-18: one image architecture for every environment; never an image index.
-PLATFORM = "linux/amd64"
+PLATFORM = codec.PLATFORM
 NO_ATTESTATIONS = ("--provenance=false", "--sbom=false")
 SINGLE_IMAGE_MANIFESTS = frozenset(
     {
