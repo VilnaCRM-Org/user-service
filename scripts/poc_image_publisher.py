@@ -56,8 +56,10 @@ IMAGE_CONFIGS = frozenset(
     }
 )
 # F3: the only text main() prints on failure is one code from this closed set.
-# Every literal refusal category raised here or by the codec is listed; anything
-# else (exception text, paths, tokens, AWS or GitHub output) maps to UNCLASSIFIED.
+# Every literal refusal category raised here or by the codec is listed. A bad
+# command line is publisher-usage; any other Exception (its text, paths, tokens,
+# AWS or GitHub output included) maps to UNCLASSIFIED. Only BaseException
+# interrupts such as KeyboardInterrupt and SystemExit are not caught.
 UNCLASSIFIED = "publisher-unclassified"
 REFUSAL_REASONS = frozenset(
     {
@@ -131,6 +133,7 @@ REFUSAL_REASONS = frozenset(
         "publisher-manifest-not-single",
         "publisher-platform",
         "publisher-run",
+        "publisher-usage",
         "registry-contract",
         "registry-receipt",
         "registry-version",
@@ -879,13 +882,20 @@ def manifest(document, run_id, workflow_sha, directory):
     (directory / "release-manifest.json").write_bytes(raw)
 
 
+class ArgumentParser(argparse.ArgumentParser):
+    """Refuse a bad command line without printing usage or the bad value."""
+
+    def error(self, message):
+        raise codec.ReleaseManifestError("publisher-usage")
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument(
         "mode", choices=("admit", "build", "prepare", "publish", "manifest", "readback")
     )
-    args = parser.parse_args(argv)
     try:
+        args = parser.parse_args(argv)
         os.umask(0o077)
         document, run_id, workflow_sha = admit()
         if args.mode in ("prepare", "publish", "manifest", "readback"):
@@ -912,15 +922,7 @@ def main(argv=None):
             )
         print(f"PASS: image publisher {args.mode}")
         return 0
-    except (
-        OSError,
-        ValueError,
-        KeyError,
-        TypeError,
-        subprocess.SubprocessError,
-        zipfile.BadZipFile,
-        EOFError,
-    ) as error:
+    except Exception as error:  # every non-interrupt failure prints one code
         print(f"Image publishing failed: {refusal_reason(error)}", file=sys.stderr)
         return 1
 

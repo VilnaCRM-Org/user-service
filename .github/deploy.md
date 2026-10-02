@@ -44,9 +44,11 @@ A builder without both attestation flags stops the build
 (`publisher-attestation-flags`), and the release-manifest codec refuses any
 platform other than `linux/amd64` (`platform`). A failed step prints one line,
 `Image publishing failed: <reason>`, where `<reason>` is a code from the
-publisher's closed `REFUSAL_REASONS` set; any other failure prints
-`publisher-unclassified`. Exception text, paths, tokens and AWS or GitHub output
-are never printed.
+publisher's closed `REFUSAL_REASONS` set. An unknown mode prints
+`publisher-usage`; any other Python `Exception`, including an unexpected
+programming error, prints `publisher-unclassified`. Exception text, tracebacks,
+paths, tokens and AWS or GitHub output are never printed; only interrupts
+(`KeyboardInterrupt`, `SystemExit`) are left to the runner.
 
 ## Release evidence
 
