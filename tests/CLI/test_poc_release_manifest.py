@@ -145,15 +145,15 @@ class ReleaseManifestTests(unittest.TestCase):
                 )
 
     def test_invalid_build_context(self):
-        for field, values in {
-            "source_sha": ("main", "D" * 40, None),
-            "publisher_run_id": (True, 0, 1.0, "53"),
-            "platform": ("linux/386", "linux/arm64", None),
-        }.items():
+        for field, values, reason in (
+            ("source_sha", ("main", "D" * 40, None), "source-sha"),
+            ("publisher_run_id", (True, 0, 1.0, "53"), "publisher-run"),
+            ("platform", ("linux/386", "linux/arm64", None), "platform"),
+        ):
             for value in values:
                 with (
-                    self.subTest(field=field),
-                    self.assertRaises(codec.ReleaseManifestError),
+                    self.subTest(field=field, value=value),
+                    self.assertRaisesRegex(codec.ReleaseManifestError, f"^{reason}$"),
                 ):
                     codec.build_release_manifest(
                         **dict(self.arguments, **{field: value})

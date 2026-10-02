@@ -14,6 +14,7 @@ import tarfile
 import tempfile
 import unittest
 import zipfile
+import zlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -647,21 +648,57 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
             )
 
 
+REFUSAL_CALLS = {"ReleaseManifestError": 0, "require": 1, "_require": 1}
+# The only non-literal category allowed is the parameter forwarded by the
+# require helpers themselves; every other call must pass a positional literal.
+FORWARDING_HELPERS = frozenset({"require", "_require"})
+
+
+class RefusalCategoryScan(ast.NodeVisitor):
+    def __init__(self, filename):
+        self.filename, self.functions, self.found = filename, [], set()
+
+    def visit_FunctionDef(self, node):
+        self.functions.append(node.name)
+        self.generic_visit(node)
+        self.functions.pop()
+
+    def visit_Call(self, node):
+        function = node.func
+        name = getattr(function, "attr", getattr(function, "id", None))
+        if name in REFUSAL_CALLS:
+            self.check(node, REFUSAL_CALLS[name])
+        self.generic_visit(node)
+
+    def check(self, node, position):
+        where = f"{self.filename}:{node.lineno}"
+        if any(keyword.arg in ("category", None) for keyword in node.keywords):
+            raise AssertionError(f"keyword refusal category at {where}")
+        if len(node.args) <= position:
+            return
+        argument = node.args[position]
+        if isinstance(argument, ast.Constant) and type(argument.value) is str:
+            self.found.add(argument.value)
+            return
+        forwarding = self.functions and self.functions[-1] in FORWARDING_HELPERS
+        if not (
+            forwarding and isinstance(argument, ast.Name) and argument.id == "category"
+        ):
+            raise AssertionError(f"non-literal refusal category at {where}")
+
+
 def refusal_categories():
-    """Every literal refusal category raised by the publisher and the codec."""
+    """Every literal refusal category raised by the publisher and the codec.
+
+    Fails instead of skipping a call whose category is a keyword, a computed
+    value or a non-string literal, so the closed set cannot silently drift.
+    """
     found = {inspect.signature(publisher.require).parameters["category"].default}
     for module in (publisher, codec):
-        tree = ast.parse(Path(module.__file__).read_text(encoding="utf-8"))
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Call):
-                continue
-            function = node.func
-            name = getattr(function, "attr", getattr(function, "id", None))
-            position = {"ReleaseManifestError": 0, "require": 1, "_require": 1}
-            if name in position and len(node.args) > position[name]:
-                argument = node.args[position[name]]
-                if isinstance(argument, ast.Constant):
-                    found.add(argument.value)
+        path = Path(module.__file__)
+        scan = RefusalCategoryScan(path.name)
+        scan.visit(ast.parse(path.read_text(encoding="utf-8")))
+        found |= scan.found
     return found
 
 
@@ -749,6 +786,15 @@ class PublisherRefusalReasonTests(unittest.TestCase):
             zipfile.BadZipFile(secret),
             EOFError(secret),
             TypeError(secret),
+            AttributeError(secret),
+            RuntimeError(secret),
+            RecursionError(secret),
+            NotImplementedError(secret),
+            zlib.error(secret),
+            json.JSONDecodeError(secret, secret, 0),
+            UnicodeDecodeError("utf-8", secret.encode(), 0, 1, secret),
+            LookupError(secret),
+            Exception(secret),
         )
         for error in leaks:
             with self.subTest(error=type(error).__name__):
@@ -758,6 +804,42 @@ class PublisherRefusalReasonTests(unittest.TestCase):
                 )
                 for fragment in ("runner", "ghs_", "AKIA", "arn:", "SECRET"):
                     self.assertNotIn(fragment, output)
+
+    def test_every_mode_maps_unexpected_errors_to_one_line(self):
+        secret = "/runner/_temp/poc-images ghs_SECRETTOKEN"
+        for mode in ("admit", "build", "prepare", "publish", "manifest", "readback"):
+            with self.subTest(mode=mode):
+                self.assertEqual(
+                    self.failure_output(AttributeError(secret), mode=mode),
+                    "Image publishing failed: publisher-unclassified\n",
+                )
+
+    def test_usage_errors_print_only_the_usage_code(self):
+        secret = "/runner/_temp/poc-images ghs_SECRETTOKEN"
+        for argv in ([], [secret], ["build", secret], ["--" + secret], ["BUILD"]):
+            with self.subTest(argv=len(argv)):
+                stderr, stdout = io.StringIO(), io.StringIO()
+                with (
+                    patch.object(publisher, "admit") as admit,
+                    patch("sys.stderr", stderr),
+                    patch("sys.stdout", stdout),
+                ):
+                    self.assertEqual(publisher.main(argv), 1)
+                admit.assert_not_called()
+                self.assertEqual(stdout.getvalue(), "")
+                self.assertEqual(
+                    stderr.getvalue(), "Image publishing failed: publisher-usage\n"
+                )
+
+    def test_interrupts_are_not_swallowed(self):
+        for error in (KeyboardInterrupt(), SystemExit(3)):
+            with (
+                self.subTest(error=type(error).__name__),
+                patch.object(publisher, "admit", side_effect=error),
+                patch("sys.stderr", new_callable=io.StringIO),
+                self.assertRaises(type(error)),
+            ):
+                publisher.main(["build"])
 
 
 class PublisherBuildTests(unittest.TestCase):
