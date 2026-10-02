@@ -32,3 +32,6 @@ tests/Load/config.json
 config/jwt/
 # Symfony regenerates this IDE configuration reference locally; never ship it.
 config/reference.php
+# Tests, fixtures and the image check harness never ship in an image; every
+# container that runs them bind-mounts the checkout.
+tests/

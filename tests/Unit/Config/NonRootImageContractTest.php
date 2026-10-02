@@ -42,10 +42,18 @@ final class NonRootImageContractTest extends UnitTestCase
     private const APPLICATION_USER_COMMAND =
         'adduser -S -D -H -u %d -G app -h /nonexistent -s /sbin/nologin app';
 
+    private const EXCLUDED_BUILD_CONTEXT_ENTRIES = [
+        'config/jwt/',
+        'config/reference.php',
+        'tests/',
+    ];
+
     private const LOCAL_ONLY_PATHS = [
         'config/jwt',
         'config/jwt/private.pem',
         'config/reference.php',
+        'tests',
+        'tests/Image/check-non-root-images.sh',
     ];
 
     private const STRIP_WORLD_WRITE_COMMAND =
@@ -178,7 +186,7 @@ final class NonRootImageContractTest extends UnitTestCase
         );
     }
 
-    public function testBuildContextExcludesLocalKeysAndGeneratedConfigReference(): void
+    public function testBuildContextExcludesLocalKeysConfigReferenceAndTests(): void
     {
         $this->assertBuildContextExcludesLocalFiles($this->projectFile('.dockerignore'));
     }
@@ -205,6 +213,10 @@ final class NonRootImageContractTest extends UnitTestCase
         yield 'rooted key directory' => ['!/config/jwt/'];
         yield 'configuration reference' => ['!config/reference.php'];
         yield 'whole configuration tree' => ['!config/**'];
+        yield 'dot-prefixed key directory' => ['!./config/jwt'];
+        yield 'double-slash key directory' => ['!config//jwt'];
+        yield 'test tree' => ['!tests'];
+        yield 'image check script' => ['!tests/Image/check-non-root-images.sh'];
     }
 
     public function testProductionPhpPreloadsAsTheApplicationUser(): void
@@ -249,14 +261,25 @@ final class NonRootImageContractTest extends UnitTestCase
     {
         $lines = array_map('trim', explode("\n", $dockerignore));
 
-        self::assertContains('config/jwt/', $lines);
-        self::assertContains('config/reference.php', $lines);
+        foreach (self::EXCLUDED_BUILD_CONTEXT_ENTRIES as $entry) {
+            self::assertContains($entry, $lines);
+        }
 
         foreach ($lines as $line) {
             if (str_starts_with($line, '!')) {
-                $this->assertNegationKeepsLocalFilesOut(trim(substr($line, 1), '/'));
+                $this->assertNegationKeepsLocalFilesOut($this->cleanPattern(substr($line, 1)));
             }
         }
+    }
+
+    private function cleanPattern(string $pattern): string
+    {
+        $segments = array_filter(
+            explode('/', $pattern),
+            static fn (string $segment): bool => $segment !== '' && $segment !== '.'
+        );
+
+        return implode('/', $segments);
     }
 
     private function assertNegationKeepsLocalFilesOut(string $pattern): void
