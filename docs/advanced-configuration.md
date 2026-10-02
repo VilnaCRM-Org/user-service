@@ -267,8 +267,10 @@ See the [AWS SDK credential provider documentation](https://docs.aws.amazon.com/
 ### Production web and worker containers
 
 Build the web image from the `frankenphp_prod` target. Its production Caddy
-configuration serves HTTP on the unprivileged port 8080 behind the ALB HTTPS
-listener and forces `APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener.
+configuration serves HTTP on the unprivileged port 8080 and HTTPS on the
+unprivileged port 8443 (see [In-container TLS on 8443](#in-container-tls-on-8443))
+behind the ALB HTTPS listener, and forces `APP_ENV=prod` and `APP_DEBUG=0`. It
+exposes no test listener.
 The development Caddy configuration and its arbitrary listener/configuration
 overrides do not apply to this production target.
 
@@ -280,20 +282,63 @@ The container health check requires all ten expected consumers to be running;
 a missing, stopped, or unexpected process makes the check fail. This process
 check does not prove message delivery or downstream service availability.
 
+#### In-container TLS on 8443
+
+The web image serves the application over HTTPS on port 8443 for the PROD load
+balancer's HTTPS target group. Port 8080 keeps serving plain HTTP, unchanged. TEST
+keeps its HTTP target group on 8080 under a recorded risk acceptance, and the
+local development image (`frankenphp_dev`) uses its own Caddy configuration, so
+neither is affected. The 8443 listener is always on in the production web image;
+no flag enables it.
+
+- **Certificate.** Caddy's internal CA (`local_certs`) issues the certificate for
+  `user-service.internal`. Caddy presents it to every client, including one that
+  connects by IP address without SNI or with another server name
+  (`default_sni` and `fallback_sni`). The ALB does not validate target
+  certificates, so a certificate from a private CA is enough. Caddy contacts no
+  public CA and does not install its root into any trust store.
+- **Generated at runtime.** The image contains no private key or certificate.
+  On start, Caddy creates the root CA, the intermediate CA and the certificate in
+  `/srv/app/var/caddy`, inside the `/srv/app/var` volume that must already be
+  writable, so the ECS task needs no extra volume. The directories have mode
+  `0700` and the files `0600`, owned by `10001:10001`. Each task has its own CA.
+  The CA and the certificate last as long as the task's volume, and a new task
+  creates new ones.
+- **Renewal.** The certificate lifetime is 12 hours and Caddy checks every
+  10 minutes whether any certificate needs renewal (Caddy's defaults). It renews
+  in the last third of the lifetime, about four hours before expiry, and serves
+  the new certificate without a restart. Caddy also renews the intermediate CA
+  (7 days) before it expires; the root CA lasts 10 years, far beyond a task's life,
+  and the certificate never outlives its issuer. `CADDY_INTERNAL_CERT_LIFETIME` and
+  `CADDY_RENEW_INTERVAL` exist only so the image check can prove renewal in
+  seconds. Leave them unset in deployments.
+- **No plain HTTP on 8443.** The listener has no HTTP-to-HTTPS redirect and no
+  HTTP fallback. A plain HTTP request on 8443 gets
+  `400 Client sent an HTTP request to an HTTPS server.` and no application
+  response. Only HTTP/1.1 and HTTP/2 are enabled on 8443, so there is no UDP
+  (HTTP/3) listener.
+- **Proxies.** The 8443 server trusts the same `TRUSTED_PROXY_CIDRS` as 8080.
+- **Non-root.** Port 8443 is unprivileged, so the listener needs no capability
+  and runs under the same contract as 8080.
+
 #### Non-root runtime contract
 
 Both production images run as a fixed non-root account. The container platform
 configuration should match these values:
 
 - `USER`: `10001:10001` (`app`) in both images.
-- Web container port: `8080/tcp` (HTTP). The Caddy admin endpoint stays on
-  `localhost:2019`. The worker exposes no port.
+- Web container ports: `8080/tcp` (HTTP) and `8443/tcp` (HTTPS with a
+  certificate from Caddy's internal CA). Both are always on in the web image. The
+  Caddy admin endpoint stays on `localhost:2019`. The worker exposes no port.
 - Web health check: the image `HEALTHCHECK` runs
   `curl -fsS -o /dev/null http://127.0.0.1:8080/api/health`, which returns `204`.
-  Point the platform's target health check at the same port and path.
+  TEST points its HTTP target group health check at the same port and path. PROD
+  uses an HTTPS target group and an HTTPS health check on port 8443 with the same
+  `/api/health` path.
 - Worker health check: `/usr/local/bin/worker-healthcheck`.
 - Writable volumes (`VOLUME`): `/srv/app/var`, `/data` and `/config` for the web
-  image; `/srv/app/var` for the worker image.
+  image; `/srv/app/var` for the worker image. Caddy keeps its internal CA and
+  certificates in `/srv/app/var/caddy`.
 - Supervisor files: socket `/srv/app/var/run/supervisor.sock` (mode `0700`), pid
   file `/srv/app/var/run/supervisord.pid` and log
   `/srv/app/var/log/supervisord.log`.
@@ -324,15 +369,24 @@ Notes on the contract:
 
 `make image-runtime-tests` builds both images and verifies this contract with
 Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
-default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
+default capabilities and with `--cap-drop ALL`), successful binds on 8080 and 8443,
 application ownership of every writable path, no world-writable application
 files, no JWT key files, `config/reference.php` or `tests/` in the images, no capabilities
 on PID 1, no setuid, setgid or file-capability binaries, and passing health
 checks with the image defaults and with the ECS task shape (read-only root
 filesystem, every capability dropped, the bootstrap command override; like
-Fargate, without `no-new-privileges`). Seeded negative fixtures (a world-writable
-file, setuid, setgid and file-capability binaries, a stopped or missing container)
-prove the checks fail closed and name the offending paths.
+Fargate, without `no-new-privileges`). In both shapes it also checks the 8443
+listener: `/api/health` over HTTPS returns `204` with a certificate that chains to
+the root CA the container generated, and by address without SNI; plain HTTP on 8443
+gets `400` with no redirect; and the CA keys and certificate in `/srv/app/var/caddy`
+belong to the application user with no group or world access. The web image must
+declare 8080 and 8443 (the worker image neither) and ship no TLS key, certificate or
+Caddy certificate storage. A third web container in the ECS shape runs with a 90-second certificate
+lifetime and a 5-second renewal check interval, and must serve a renewed
+certificate before the first one expires, with the renewed certificate written to
+its storage. Seeded negative fixtures (a world-writable file, a baked-in private
+key, setuid, setgid and file-capability binaries, a stopped or missing container,
+a plain-HTTP listener) prove the checks fail closed and name the offending paths.
 
 The checks run on an internal Docker network (no egress, no default route) with
 MongoDB, Redis and LocalStack. Each run generates throwaway production secrets

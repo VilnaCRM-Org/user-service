@@ -100,3 +100,13 @@ health-check queue and never create infrastructure. Static LocalStack credential
 are restricted to development and test configurations. See
 [SQS deployment configuration](advanced-configuration.md#sqs-credentials-in-aws)
 for the coordinated migration and local setup requirements.
+
+### Load balancer to container TLS
+
+In PROD, the ALB reaches the web container over HTTPS on port 8443. The
+container presents a certificate from Caddy's internal CA. Caddy generates the CA
+and the certificate at runtime in `/srv/app/var/caddy` and renews the certificate
+before it expires. No key or certificate is committed or built into the image.
+Plain HTTP on 8443 is refused with `400` and is never redirected. TEST keeps plain
+HTTP on 8080 under a recorded risk acceptance. See
+[In-container TLS on 8443](advanced-configuration.md#in-container-tls-on-8443).
