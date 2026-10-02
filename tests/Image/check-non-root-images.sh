@@ -544,7 +544,7 @@ DOCKERFILE
         fails image_has_no_file_capabilities "$name"
 }
 
-check_negative_fixtures() {
+check_world_writable_fixture() {
     local fixture="${WEB_IMAGE%%:*}:world-writable-fixture-${RUN_ID}"
 
     if ! build_fixture_image "$fixture" <<DOCKERFILE; then
@@ -558,6 +558,10 @@ DOCKERFILE
     fi
     check "negative fixture: a seeded world-writable application file fails the ownership check" \
         seeded_world_writable_file_is_reported "$fixture"
+}
+
+check_negative_fixtures() {
+    check_world_writable_fixture
     check "negative fixture: an unreachable container fails the runtime ownership check" \
         fails runtime_writes_belong_to_the_application_user missing-container '/srv/app/var'
     check "negative fixture: an unreachable container fails the capability check" \
