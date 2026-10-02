@@ -1,7 +1,9 @@
 """Simulated native API/command evidence; no AWS or GitHub writes."""
 
+import ast
 import copy
 import hashlib
+import inspect
 import importlib.util
 import io
 import json
@@ -229,7 +231,9 @@ class PublisherAdmissionTests(unittest.TestCase):
             "status": "ahead",
         }
         api = MagicMock(side_effect=responses.__getitem__)
-        with self.assertRaisesRegex(codec.ReleaseManifestError, "^dispatch-source-sha$"):
+        with self.assertRaisesRegex(
+            codec.ReleaseManifestError, "^dispatch-source-sha$"
+        ):
             publisher.admit(api=api, env=env, event=event)
         self.assertEqual(
             [call.args[0] for call in api.call_args_list],
@@ -276,9 +280,18 @@ class PublisherAdmissionTests(unittest.TestCase):
                 patch("sys.stderr", new_callable=io.StringIO) as stderr,
             ):
                 self.assertEqual(publisher.main([mode]), 1)
-                self.assertEqual(stderr.getvalue(), "Image publishing failed.\n")
+                self.assertEqual(
+                    stderr.getvalue(),
+                    "Image publishing failed: dispatch-source-sha\n",
+                )
                 for operation in (
-                    protection, build, prepare, publish, manifest, reference, native
+                    protection,
+                    build,
+                    prepare,
+                    publish,
+                    manifest,
+                    reference,
+                    native,
                 ):
                     operation.assert_not_called()
                 self.assertEqual(list(Path(temporary.name).iterdir()), [])
@@ -373,7 +386,7 @@ class PublisherAdmissionTests(unittest.TestCase):
                 comparison = responses[f"{publisher.API}/compare/{'c' * 40}...main"]
                 comparison[
                     "status" if change == "not-main" else "merge_base_commit"
-                ] = "diverged" if change == "not-main" else {}
+                ] = ("diverged" if change == "not-main" else {})
             with (
                 self.subTest(change=change),
                 self.assertRaises(codec.ReleaseManifestError),
@@ -629,7 +642,122 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
                 patch("sys.stderr", stderr),
             ):
                 self.assertEqual(publisher.main(["prepare"]), 1)
-            self.assertEqual(stderr.getvalue(), "Image publishing failed.\n")
+            self.assertEqual(
+                stderr.getvalue(), "Image publishing failed: publisher-unclassified\n"
+            )
+
+
+def refusal_categories():
+    """Every literal refusal category raised by the publisher and the codec."""
+    found = {inspect.signature(publisher.require).parameters["category"].default}
+    for module in (publisher, codec):
+        tree = ast.parse(Path(module.__file__).read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            function = node.func
+            name = getattr(function, "attr", getattr(function, "id", None))
+            position = {"ReleaseManifestError": 0, "require": 1, "_require": 1}
+            if name in position and len(node.args) > position[name]:
+                argument = node.args[position[name]]
+                if isinstance(argument, ast.Constant):
+                    found.add(argument.value)
+    return found
+
+
+class PublisherRefusalReasonTests(unittest.TestCase):
+    """F3: an operator can tell refusals apart without any exception detail."""
+
+    NAMED = (
+        "publisher-manifest-not-single",
+        "publisher-attestation-flags",
+        "publisher-archive-not-single",
+        "publisher-platform",
+    )
+
+    def failure_output(self, error, mode="build"):
+        stderr, stdout = io.StringIO(), io.StringIO()
+        with (
+            patch.object(publisher, "admit", side_effect=error),
+            patch("sys.stderr", stderr),
+            patch("sys.stdout", stdout),
+        ):
+            self.assertEqual(publisher.main([mode]), 1)
+        self.assertEqual(stdout.getvalue(), "")
+        return stderr.getvalue()
+
+    def test_closed_reason_set_matches_every_raised_category(self):
+        self.assertEqual(
+            publisher.REFUSAL_REASONS,
+            frozenset(refusal_categories() | {publisher.UNCLASSIFIED}),
+        )
+        for reason in publisher.REFUSAL_REASONS:
+            self.assertRegex(reason, r"^[a-z][a-z0-9-]*$")
+
+    def test_named_refusals_print_their_stable_reason_code(self):
+        for reason in self.NAMED:
+            with self.subTest(reason=reason):
+                self.assertEqual(
+                    self.failure_output(codec.ReleaseManifestError(reason)),
+                    f"Image publishing failed: {reason}\n",
+                )
+
+    def test_every_closed_reason_prints_only_its_code(self):
+        for reason in sorted(publisher.REFUSAL_REASONS):
+            with self.subTest(reason=reason):
+                self.assertEqual(
+                    self.failure_output(codec.ReleaseManifestError(reason)),
+                    f"Image publishing failed: {reason}\n",
+                )
+
+    def test_admitted_arm64_request_prints_platform_reason(self):
+        request, env, _, responses, event = fixture()
+        event["inputs"]["request"] = json.dumps(dict(request, platform="linux/arm64"))
+        admit = publisher.admit
+        with (
+            patch.dict(os.environ, env, clear=True),
+            patch.object(
+                publisher,
+                "admit",
+                side_effect=lambda: admit(
+                    api=responses.__getitem__, env=env, event=event
+                ),
+            ),
+            patch.object(publisher, "build") as build,
+            patch.object(publisher, "run") as native,
+            patch("sys.stderr", new_callable=io.StringIO) as stderr,
+        ):
+            self.assertEqual(publisher.main(["build"]), 1)
+        self.assertEqual(
+            stderr.getvalue(), "Image publishing failed: publisher-platform\n"
+        )
+        build.assert_not_called()
+        native.assert_not_called()
+
+    def test_no_exception_detail_leaks(self):
+        secret = "/runner/_temp/poc-images ghs_SECRETTOKEN AKIAEXAMPLE arn:aws:iam::1"
+        leaks = (
+            codec.ReleaseManifestError(secret),
+            codec.ReleaseManifestError("publisher-platform", secret),
+            codec.ReleaseManifestError(["publisher-platform"]),
+            codec.ReleaseManifestError(),
+            ValueError("publisher-platform"),
+            KeyError("publisher-platform"),
+            OSError(13, secret, secret),
+            subprocess.CalledProcessError(1, secret, secret, secret),
+            subprocess.TimeoutExpired(secret, 1, secret, secret),
+            zipfile.BadZipFile(secret),
+            EOFError(secret),
+            TypeError(secret),
+        )
+        for error in leaks:
+            with self.subTest(error=type(error).__name__):
+                output = self.failure_output(error)
+                self.assertEqual(
+                    output, "Image publishing failed: publisher-unclassified\n"
+                )
+                for fragment in ("runner", "ghs_", "AKIA", "arn:", "SECRET"):
+                    self.assertNotIn(fragment, output)
 
 
 class PublisherBuildTests(unittest.TestCase):
@@ -832,20 +960,22 @@ class PublisherRoundtripTests(unittest.TestCase):
             tag = args[args.index("--image-ids") + 1].removeprefix("imageTag=")
             return publisher.canonical(
                 {
-                    "imageDetails": []
-                    if self.missing_image
-                    else [
-                        {
-                            "registryId": "891377212104",
-                            "repositoryName": repo,
-                            "imageTags": [tag],
-                            "imageDigest": "sha256:"
-                            + ("e" if repo.endswith("web") else "f") * 64,
-                            "imageManifestMediaType": DOCKER_MANIFEST,
-                            "artifactMediaType": DOCKER_CONFIG,
-                            **self.readback,
-                        }
-                    ]
+                    "imageDetails": (
+                        []
+                        if self.missing_image
+                        else [
+                            {
+                                "registryId": "891377212104",
+                                "repositoryName": repo,
+                                "imageTags": [tag],
+                                "imageDigest": "sha256:"
+                                + ("e" if repo.endswith("web") else "f") * 64,
+                                "imageManifestMediaType": DOCKER_MANIFEST,
+                                "artifactMediaType": DOCKER_CONFIG,
+                                **self.readback,
+                            }
+                        ]
+                    )
                 }
             )
         return b""
@@ -1045,7 +1175,8 @@ class PublisherEnvironmentTests(unittest.TestCase):
         }
         responses = {
             endpoint: environment,
-            endpoint + "/deployment-branch-policies?per_page=100": {
+            endpoint
+            + "/deployment-branch-policies?per_page=100": {
                 "total_count": 1,
                 "branch_policies": [{"name": "main", "type": "branch"}],
             },
