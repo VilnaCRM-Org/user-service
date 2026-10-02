@@ -8,6 +8,7 @@ import json
 import os
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 import zipfile
@@ -77,6 +78,119 @@ def fixture():
     }
     event = {"sender": copy.deepcopy(actor), "inputs": {"request": json.dumps(request)}}
     return request, env, native, responses, event
+
+
+OCI_INDEX = "application/vnd.oci.image.index.v1+json"
+OCI_MANIFEST = "application/vnd.oci.image.manifest.v1+json"
+OCI_CONFIG = "application/vnd.oci.image.config.v1+json"
+DOCKER_LIST = "application/vnd.docker.distribution.manifest.list.v2+json"
+DOCKER_MANIFEST = "application/vnd.docker.distribution.manifest.v2+json"
+DOCKER_CONFIG = "application/vnd.docker.container.image.v1+json"
+IN_TOTO = "application/vnd.in-toto+json"
+
+
+def image_archive(
+    label,
+    *,
+    layout="single",
+    manifest_type=OCI_MANIFEST,
+    config_type=OCI_CONFIG,
+    architecture="amd64",
+):
+    """Synthetic `docker save` OCI layout shaped like Docker 25+ output.
+
+    `attestation` mirrors the BuildKit default on the containerd image store
+    (an index of the image plus an attestation manifest, observed locally with
+    Docker 29.8.1); `--provenance=false --sbom=false` yields `single`.
+    """
+    blobs = {}
+
+    def blob(raw):
+        digest = hashlib.sha256(raw).hexdigest()
+        blobs[digest] = raw
+        return {"digest": "sha256:" + digest, "size": len(raw)}
+
+    layer = blob(label.encode())
+    config = blob(
+        json.dumps(
+            {
+                "architecture": architecture,
+                "os": "linux",
+                "rootfs": {"type": "layers", "diff_ids": [layer["digest"]]},
+            }
+        ).encode()
+    )
+    image = {
+        "mediaType": manifest_type,
+        **blob(
+            json.dumps(
+                {
+                    "schemaVersion": 2,
+                    "mediaType": manifest_type,
+                    "config": {"mediaType": config_type, **config},
+                    "layers": [
+                        {"mediaType": "application/vnd.oci.image.layer.v1.tar", **layer}
+                    ],
+                }
+            ).encode()
+        ),
+    }
+    statement = blob(b'{"_type":"https://in-toto.io/Statement/v0.1"}')
+    attestation = {
+        "mediaType": OCI_MANIFEST,
+        **blob(
+            json.dumps(
+                {
+                    "schemaVersion": 2,
+                    "mediaType": OCI_MANIFEST,
+                    "config": {"mediaType": IN_TOTO, **statement},
+                    "layers": [],
+                }
+            ).encode()
+        ),
+        "annotations": {"vnd.docker.reference.type": "attestation-manifest"},
+    }
+    entries = [image]
+    if layout == "attestation":
+        entries = [
+            {
+                "mediaType": OCI_INDEX,
+                **blob(
+                    json.dumps(
+                        {
+                            "schemaVersion": 2,
+                            "mediaType": OCI_INDEX,
+                            "manifests": [image, attestation],
+                        }
+                    ).encode()
+                ),
+            }
+        ]
+    elif layout == "two-manifests":
+        entries = [image, attestation]
+    members = {
+        "oci-layout": b'{"imageLayoutVersion":"1.0.0"}',
+        "index.json": json.dumps(
+            {"schemaVersion": 2, "mediaType": OCI_INDEX, "manifests": entries}
+        ).encode(),
+        "manifest.json": json.dumps(
+            [
+                {
+                    "Config": "blobs/sha256/" + config["digest"][7:],
+                    "RepoTags": [f"poc-{label}:{'c' * 40}"],
+                    "Layers": ["blobs/sha256/" + layer["digest"][7:]],
+                }
+            ]
+        ).encode(),
+        **{f"blobs/sha256/{digest}": raw for digest, raw in blobs.items()},
+    }
+    stream = io.BytesIO()
+    with tarfile.open(fileobj=stream, mode="w") as archive:
+        for name, raw in members.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(raw)
+            archive.addfile(info, io.BytesIO(raw))
+    return stream.getvalue()
 
 
 class PublisherAdmissionTests(unittest.TestCase):
@@ -300,13 +414,15 @@ class PublisherArtifactTests(unittest.TestCase):
             },
         }
 
-    def archive(self, *, extra=False, corrupt=False):
+    def archive(self, *, extra=False, corrupt=False, layout="single"):
         source = self.root / "input"
         source.mkdir()
         images = {}
         for kind in codec.TARGETS:
             images[kind] = source / f"{kind}.tar"
-            images[kind].write_bytes(kind.encode())
+            images[kind].write_bytes(
+                image_archive(kind, layout=layout if kind == "worker" else "single")
+            )
         metadata = publisher.metadata(self.request, 31, images)
         if corrupt:
             metadata["images"]["web"]["archive_sha256"] = "f" * 64
@@ -325,7 +441,14 @@ class PublisherArtifactTests(unittest.TestCase):
         path, target = self.archive()
         result = publisher.extract_build(path, target, self.request, 31)
         self.assertEqual(result["source_sha"], self.request["source_sha"])
-        self.assertEqual((target / "worker.tar").read_bytes(), b"worker")
+        self.assertEqual((target / "worker.tar").read_bytes(), image_archive("worker"))
+
+    def test_prepare_refuses_bound_attestation_index_before_credentials(self):
+        path, target = self.archive(layout="attestation")
+        with self.assertRaisesRegex(
+            codec.ReleaseManifestError, "^publisher-archive-not-single$"
+        ):
+            publisher.extract_build(path, target, self.request, 31)
 
     def test_extra_path_or_changed_image_hash_fails(self):
         for option in ("extra", "corrupt"):
@@ -500,6 +623,157 @@ class PublisherNativeBoundaryTests(unittest.TestCase):
             self.assertEqual(stderr.getvalue(), "Image publishing failed.\n")
 
 
+class PublisherBuildTests(unittest.TestCase):
+    """D-18: one linux/amd64 image per target, never an index or attestation."""
+
+    HELP = (
+        b"Usage:  docker buildx build [OPTIONS] PATH | URL | -\n"
+        b"      --platform stringArray      Set target platform for build\n"
+        b"      --provenance string         Shorthand for \"--attest=type=provenance\"\n"
+        b"      --sbom string               Shorthand for \"--attest=type=sbom\"\n"
+    )
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / ".source").mkdir()
+        self.output = self.root / "poc-images"
+        self.output.mkdir()
+        self.request, *_ = fixture()
+        self.calls = []
+        self.help = self.HELP
+        self.layout = "single"
+
+    def native(self, kind, *args, **kwargs):
+        self.calls.append((kind, args))
+        if args[:2] == ("build", "--help"):
+            return self.help
+        if args[0] == "save":
+            path = Path(args[args.index("--output") + 1])
+            label = path.stem
+            path.write_bytes(image_archive(label, layout=self.layout))
+        return b""
+
+    def git(self, arguments, **kwargs):
+        stdout = (
+            f"{self.request['source_sha']}\n".encode()
+            if "rev-parse" in arguments
+            else b""
+        )
+        return subprocess.CompletedProcess(arguments, 0, stdout, b"")
+
+    def build(self):
+        with (
+            patch.dict(os.environ, GITHUB_WORKSPACE=str(self.root)),
+            patch.object(publisher.subprocess, "run", side_effect=self.git),
+            patch.object(publisher, "run", side_effect=self.native),
+        ):
+            publisher.build(self.request, 31, self.output)
+
+    def builds(self):
+        return [
+            args
+            for kind, args in self.calls
+            if kind == "docker" and args[0] == "build" and "--help" not in args
+        ]
+
+    def test_build_disables_attestations_and_pins_single_platform(self):
+        self.build()
+        builds = self.builds()
+        self.assertEqual(len(builds), 2)
+        for args, target in zip(builds, codec.TARGETS.values()):
+            self.assertIn("--provenance=false", args)
+            self.assertIn("--sbom=false", args)
+            self.assertLess(args.index("--sbom=false"), args.index("--platform"))
+            self.assertEqual(args[args.index("--platform") + 1], "linux/amd64")
+            self.assertEqual(args.count("--platform"), 1)
+            self.assertEqual(args[args.index("--target") + 1], target)
+            self.assertFalse(
+                any(
+                    value.startswith(("--attest", "--output", "--push", "--load"))
+                    for value in args
+                )
+            )
+        self.assertEqual(
+            [args[0] for kind, args in self.calls],
+            ["build", "build", "save", "build", "save"],
+        )
+        self.assertTrue((self.output / "build.json").exists())
+
+    def test_builder_without_attestation_flags_fails_closed_before_build(self):
+        for missing in (b"--provenance", b"--sbom"):
+            self.calls.clear()
+            self.help = self.HELP.replace(missing, b"--unrelated")
+            with (
+                self.subTest(missing=missing),
+                self.assertRaisesRegex(
+                    codec.ReleaseManifestError, "^publisher-attestation-flags$"
+                ),
+            ):
+                self.build()
+            self.assertEqual(self.builds(), [])
+            self.assertFalse((self.output / "build.json").exists())
+
+    def test_saved_attestation_index_fails_before_transfer_metadata(self):
+        for layout in ("attestation", "two-manifests"):
+            self.calls.clear()
+            self.layout = layout
+            with (
+                self.subTest(layout=layout),
+                self.assertRaisesRegex(
+                    codec.ReleaseManifestError, "^publisher-archive-not-single$"
+                ),
+            ):
+                self.build()
+            self.assertEqual(len(self.builds()), 1)
+            self.assertFalse((self.output / "build.json").exists())
+            for path in self.output.iterdir():
+                path.unlink()
+
+    def test_single_image_archive_contract(self):
+        accepted = (
+            {},
+            {"manifest_type": DOCKER_MANIFEST, "config_type": DOCKER_CONFIG},
+        )
+        for options in accepted:
+            path = self.root / "accepted.tar"
+            path.write_bytes(image_archive("web", **options))
+            with self.subTest(accepted=options):
+                publisher.single_image(path)
+        rejected = (
+            ({"layout": "attestation"}, "publisher-archive-not-single"),
+            ({"layout": "two-manifests"}, "publisher-archive-not-single"),
+            ({"manifest_type": OCI_INDEX}, "publisher-archive-not-single"),
+            ({"manifest_type": DOCKER_LIST}, "publisher-archive-not-single"),
+            ({"config_type": IN_TOTO}, "publisher-archive-not-single"),
+            ({"architecture": "arm64"}, "publisher-platform"),
+        )
+        for options, category in rejected:
+            path = self.root / "rejected.tar"
+            path.write_bytes(image_archive("web", **options))
+            with (
+                self.subTest(rejected=options),
+                self.assertRaisesRegex(codec.ReleaseManifestError, f"^{category}$"),
+            ):
+                publisher.single_image(path)
+        raw = image_archive("web")
+        for name, value in (
+            ("not-a-tar", b"web"),
+            ("index-missing", raw.replace(b"index.json", b"index.jsom")),
+            ("blob-changed", raw.replace(b'"os": "linux"', b'"os": "linuy"')),
+        ):
+            path = self.root / f"{name}.tar"
+            path.write_bytes(value)
+            with (
+                self.subTest(corrupt=name),
+                self.assertRaisesRegex(
+                    codec.ReleaseManifestError, "^publisher-archive-not-single$"
+                ),
+            ):
+                publisher.single_image(path)
+
+
 class PublisherRoundtripTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -512,7 +786,7 @@ class PublisherRoundtripTests(unittest.TestCase):
         paths = {}
         for kind in codec.TARGETS:
             paths[kind] = self.root / f"{kind}.tar"
-            paths[kind].write_bytes(kind.encode())
+            paths[kind].write_bytes(image_archive(kind))
         (self.root / "build.json").write_bytes(
             publisher.canonical(publisher.metadata(self.request, 31, paths))
         )
@@ -530,6 +804,7 @@ class PublisherRoundtripTests(unittest.TestCase):
         self.calls = []
         self.wrong_identity = False
         self.missing_image = False
+        self.readback = {}
 
     def native(self, kind, *args, **kwargs):
         self.calls.append((kind, args))
@@ -556,6 +831,9 @@ class PublisherRoundtripTests(unittest.TestCase):
                             "imageTags": [tag],
                             "imageDigest": "sha256:"
                             + ("e" if repo.endswith("web") else "f") * 64,
+                            "imageManifestMediaType": DOCKER_MANIFEST,
+                            "artifactMediaType": DOCKER_CONFIG,
+                            **self.readback,
                         }
                     ]
                 }
@@ -629,6 +907,86 @@ class PublisherRoundtripTests(unittest.TestCase):
             patch.object(publisher, "run", side_effect=self.native),
         ):
             with self.assertRaises(codec.ReleaseManifestError):
+                publisher.publish(self.request, 31, "c" * 40, self.root)
+        self.assertEqual(self.calls, [])
+
+    def test_oci_single_image_readback_is_accepted(self):
+        self.readback = {
+            "imageManifestMediaType": OCI_MANIFEST,
+            "artifactMediaType": OCI_CONFIG,
+        }
+        with (
+            patch.object(publisher, "jobs", return_value=self.jobs),
+            patch.object(publisher, "run", side_effect=self.native),
+        ):
+            publisher.publish(self.request, 31, "c" * 40, self.root)
+        self.assertTrue((self.root / "published.json").exists())
+
+    def test_pushed_index_or_attestation_never_generates_release_evidence(self):
+        for name, readback in (
+            ("oci-index", {"imageManifestMediaType": OCI_INDEX}),
+            ("docker-manifest-list", {"imageManifestMediaType": DOCKER_LIST}),
+            ("manifest-type-missing", {"imageManifestMediaType": None}),
+            (
+                "attestation-manifest",
+                {"imageManifestMediaType": OCI_MANIFEST, "artifactMediaType": IN_TOTO},
+            ),
+            ("artifact-type-missing", {"artifactMediaType": None}),
+            ("referrer", {"subjectManifestDigest": "sha256:" + "e" * 64}),
+        ):
+            self.calls.clear()
+            self.readback = {
+                key: value for key, value in readback.items() if value is not None
+            }
+            removed = [key for key, value in readback.items() if value is None]
+            native = self.native
+
+            def observe(kind, *args, **kwargs):
+                raw = native(kind, *args, **kwargs)
+                if args[:2] != ("ecr", "describe-images"):
+                    return raw
+                document = json.loads(raw)
+                for key in removed:
+                    document["imageDetails"][0].pop(key)
+                return publisher.canonical(document)
+
+            with (
+                self.subTest(readback=name),
+                patch.object(publisher, "jobs", return_value=self.jobs),
+                patch.object(publisher, "run", side_effect=observe),
+            ):
+                with self.assertRaisesRegex(
+                    codec.ReleaseManifestError, "^publisher-manifest-not-single$"
+                ):
+                    publisher.publish(self.request, 31, "c" * 40, self.root)
+            pushes = [
+                args
+                for kind, args in self.calls
+                if kind == "docker" and args[0] == "push"
+            ]
+            self.assertEqual(len(pushes), 1)
+            self.assertFalse((self.root / "provenance.json").exists())
+            self.assertFalse((self.root / "published.json").exists())
+
+    def test_bound_attestation_archive_fails_before_credentials_or_push(self):
+        (self.root / "worker.tar").write_bytes(
+            image_archive("worker", layout="attestation")
+        )
+        paths = {kind: self.root / f"{kind}.tar" for kind in codec.TARGETS}
+        (self.root / "build.json").write_bytes(
+            publisher.canonical(publisher.metadata(self.request, 31, paths))
+        )
+        self.prepared["build_artifact"]["file_sha256"] = publisher.sha(
+            self.root / "build.json"
+        )
+        (self.root / "prepared.json").write_bytes(publisher.canonical(self.prepared))
+        with (
+            patch.object(publisher, "jobs", return_value=self.jobs),
+            patch.object(publisher, "run", side_effect=self.native),
+        ):
+            with self.assertRaisesRegex(
+                codec.ReleaseManifestError, "^publisher-archive-not-single$"
+            ):
                 publisher.publish(self.request, 31, "c" * 40, self.root)
         self.assertEqual(self.calls, [])
 
