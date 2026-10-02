@@ -55,11 +55,109 @@ IMAGE_CONFIGS = frozenset(
         "application/vnd.oci.image.config.v1+json",
     }
 )
+# F3: the only text main() prints on failure is one code from this closed set.
+# Every literal refusal category raised here or by the codec is listed; anything
+# else (exception text, paths, tokens, AWS or GitHub output) maps to UNCLASSIFIED.
+UNCLASSIFIED = "publisher-unclassified"
+REFUSAL_REASONS = frozenset(
+    {
+        "artifact",
+        "artifact-archive",
+        "artifact-bytes",
+        "artifact-digest",
+        "artifact-fields",
+        "artifact-file",
+        "artifact-id",
+        "artifact-name",
+        "artifact-run",
+        "artifacts",
+        "build-binding",
+        "build-checkout",
+        "build-member",
+        "build-members",
+        "build-platform",
+        "build-run",
+        "build-size",
+        "build-source",
+        "completed-job",
+        "credential-missing",
+        "dirty-build-source",
+        "dispatch-actor",
+        "dispatch-app",
+        "dispatch-event",
+        "dispatch-fields",
+        "dispatch-input",
+        "dispatch-source-sha",
+        "duplicate-key",
+        "environment-branches",
+        "environment-bypass",
+        "environment-reviewer",
+        "evidence-binding",
+        "evidence-fields",
+        "evidence-id",
+        "evidence-json",
+        "evidence-member",
+        "evidence-readback",
+        "evidence-sha",
+        "evidence-size",
+        "image-digest",
+        "image-fields",
+        "image-readback",
+        "image-repository",
+        "image-size",
+        "image-target",
+        "jobs",
+        "manifest-binding",
+        "manifest-fields",
+        "manifest-json",
+        "manifest-size",
+        "native-bound",
+        "native-command",
+        "native-input",
+        "native-output",
+        "native-timeout",
+        "nonfinite-json",
+        "owner-id",
+        "platform",
+        "prepared-build",
+        "prepared-images",
+        "prepared-jobs",
+        "prepared-request",
+        "publisher-archive-not-single",
+        "publisher-attempt",
+        "publisher-attestation-flags",
+        "publisher-binding",
+        "publisher-identity",
+        "publisher-manifest-not-single",
+        "publisher-platform",
+        "publisher-run",
+        "registry-contract",
+        "registry-receipt",
+        "registry-version",
+        "repository",
+        "repository-id",
+        "reviewed-main-source",
+        "run",
+        "run-id",
+        "source-sha",
+        "workflow",
+        UNCLASSIFIED,
+    }
+)
 REQUEST_FIELDS = {
     "source_sha",
     "platform",
     *codec.RegistryReleaseBinding.__dataclass_fields__,
 }
+
+
+def refusal_reason(error):
+    """Return a closed-set code; never the exception text or its arguments."""
+    if isinstance(error, codec.ReleaseManifestError) and len(error.args) == 1:
+        (category,) = error.args
+        if type(category) is str and category in REFUSAL_REASONS:
+            return category
+    return UNCLASSIFIED
 
 
 def require(value, category="publisher-binding"):
@@ -822,8 +920,8 @@ def main(argv=None):
         subprocess.SubprocessError,
         zipfile.BadZipFile,
         EOFError,
-    ):
-        print("Image publishing failed.", file=sys.stderr)
+    ) as error:
+        print(f"Image publishing failed: {refusal_reason(error)}", file=sys.stderr)
         return 1
 
 

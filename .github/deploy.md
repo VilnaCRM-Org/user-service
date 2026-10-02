@@ -40,6 +40,13 @@ image in an index. The publisher refuses a saved archive that is not exactly one
 image manifest (`publisher-archive-not-single`), a saved image whose config is
 not `linux/amd64` (`publisher-platform`), and an ECR readback that is not a
 single-image manifest (`publisher-manifest-not-single`).
+A builder without both attestation flags stops the build
+(`publisher-attestation-flags`), and the release-manifest codec refuses any
+platform other than `linux/amd64` (`platform`). A failed step prints one line,
+`Image publishing failed: <reason>`, where `<reason>` is a code from the
+publisher's closed `REFUSAL_REASONS` set; any other failure prints
+`publisher-unclassified`. Exception text, paths, tokens and AWS or GitHub output
+are never printed.
 
 ## Release evidence
 
