@@ -21,6 +21,8 @@ final class NonRootImageContractTest extends UnitTestCase
 
     private const WEB_PORT = 8080;
 
+    private const WEB_TLS_PORT = 8443;
+
     private const SUPERVISOR_RUN_DIRECTORY = '/srv/app/var/run';
 
     private const WEB_WRITABLE_PATHS = ['/srv/app/var', '/data', '/config'];
@@ -99,15 +101,26 @@ final class NonRootImageContractTest extends UnitTestCase
         );
     }
 
-    public function testProductionWebListensOnlyOnTheUnprivilegedPort(): void
+    public function testProductionWebListensOnlyOnUnprivilegedPorts(): void
     {
         $caddyfile = $this->projectFile('infrastructure/docker/caddy/Caddyfile.prod');
         $web = $this->dockerStage(self::WEB_STAGE);
 
         self::assertMatchesRegularExpression(sprintf('/^:%d \{$/m', self::WEB_PORT), $caddyfile);
-        self::assertDoesNotMatchRegularExpression('/^:80 \{$/m', $caddyfile);
+        self::assertMatchesRegularExpression(
+            sprintf('/^https:\/\/:%d \{$/m', self::WEB_TLS_PORT),
+            $caddyfile
+        );
+        preg_match_all('/^\S*:(\d+)(?:, \S+)* \{$/m', $caddyfile, $listeners);
+        self::assertSame([], array_diff(
+            array_map('intval', $listeners[1]),
+            [self::WEB_PORT, self::WEB_TLS_PORT]
+        ));
         self::assertStringContainsString('admin localhost:2019', $caddyfile);
-        self::assertMatchesRegularExpression(sprintf('/^EXPOSE %d$/m', self::WEB_PORT), $web);
+        self::assertMatchesRegularExpression(
+            sprintf('/^EXPOSE %d %d$/m', self::WEB_PORT, self::WEB_TLS_PORT),
+            $web
+        );
     }
 
     public function testProductionComposeServicesPublishTheUnprivilegedPort(): void

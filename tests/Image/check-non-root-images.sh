@@ -3,6 +3,9 @@
 # privileged port binding, application-owned writable paths, and passing health
 # checks both with the image defaults and with the ECS task shape (read-only
 # root filesystem, every Linux capability dropped, bootstrap command override).
+# The web image also serves HTTPS on :8443 with a certificate from Caddy's
+# internal CA, created at runtime in the application volume and renewed before
+# it expires.
 set -euo pipefail
 
 ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/../.." && pwd)
@@ -10,6 +13,17 @@ readonly ROOT_DIR
 
 readonly MINIMUM_UID=1000
 readonly WEB_PORT=8080
+readonly TLS_PORT=8443
+readonly TLS_SERVER_NAME=user-service.internal
+readonly CADDY_STORAGE=/srv/app/var/caddy
+readonly CADDY_ROOT_CERTIFICATE="${CADDY_STORAGE}/pki/authorities/local/root.crt"
+readonly CADDY_LEAF_DIRECTORY="${CADDY_STORAGE}/certificates/local/${TLS_SERVER_NAME}"
+# The renewal check shortens the internal certificate lifetime and the renewal
+# check interval; Caddy renews in the last third of the lifetime. Caddy's internal
+# CA backdates certificates by a minute, so the lifetime must exceed one minute.
+readonly RENEWAL_CERT_LIFETIME=${IMAGE_CHECK_RENEWAL_CERT_LIFETIME:-90s}
+readonly RENEWAL_CHECK_INTERVAL=${IMAGE_CHECK_RENEWAL_CHECK_INTERVAL:-5s}
+readonly RENEWAL_TIMEOUT_SECONDS=${IMAGE_CHECK_RENEWAL_TIMEOUT_SECONDS:-240}
 readonly SUPERVISOR_SOCKET=/srv/app/var/run/supervisor.sock
 readonly WEB_IMAGE_REF=${IMAGE_CHECK_WEB_IMAGE:-user-service-web:non-root-check}
 readonly WORKER_IMAGE_REF=${IMAGE_CHECK_WORKER_IMAGE:-user-service-worker:non-root-check}
@@ -155,7 +169,7 @@ checked_images_are_the_built_images() {
 
     [ "$(image_id_of "$WEB_IMAGE")" = "$WEB_IMAGE_ID" ] || { echo "${WEB_IMAGE} moved" >&2; return 1; }
     [ "$(image_id_of "$WORKER_IMAGE")" = "$WORKER_IMAGE_ID" ] || { echo "${WORKER_IMAGE} moved" >&2; return 1; }
-    for name in web-default web-ecs worker-default worker-ecs; do
+    for name in web-default web-ecs web-tls-renewal worker-default worker-ecs; do
         expected=$WEB_IMAGE_ID
         [[ "$name" != worker-* ]] || expected=$WORKER_IMAGE_ID
         if ! docker inspect "${PREFIX}-${name}" >/dev/null 2>&1; then
@@ -555,6 +569,38 @@ worker_healthcheck_passes() {
     docker exec "${PREFIX}-$1" /usr/local/bin/worker-healthcheck
 }
 
+exposed_ports_of() {
+    docker image inspect --format '{{range $port, $_ := .Config.ExposedPorts}}{{$port}} {{end}}' "$1"
+}
+
+# The base image's own EXPOSE entries (80, 443, 2019) are inherited and cannot be
+# removed; the production listeners are declared on the web image only.
+exposed_ports_are_the_web_listeners() {
+    local web worker port
+
+    web=$(exposed_ports_of "$WEB_IMAGE") || return 1
+    worker=$(exposed_ports_of "$WORKER_IMAGE") || return 1
+    echo "web exposes: ${web}; worker exposes: ${worker:-nothing}"
+    for port in "$WEB_PORT" "$TLS_PORT"; do
+        [[ " ${web}" == *" ${port}/tcp "* ]] || return 1
+        [[ " ${worker}" != *" ${port}/tcp "* ]] || return 1
+    done
+}
+
+# The internal CA and every certificate are generated at runtime: the image holds
+# no Caddy certificate storage and no private key or certificate in the writable
+# paths. The Composer public keys under /config/composer are not TLS material.
+image_ships_no_tls_material() {
+    docker run --rm --entrypoint sh "$1" -c '
+        [ ! -e "$1" ] || { echo "Caddy certificate storage is in the image: $1"; exit 1; }
+        named=$(find /srv/app/var /data /config -name pki -o -name certificates -o -name "*.key" \
+            -o -name "*.crt") || exit 1
+        pem=$(grep -r -l -E "PRIVATE KEY|BEGIN CERTIFICATE" /srv/app/var /data /config) || [ $? -eq 1 ] || exit 1
+        found=$(printf "%s\n%s" "$named" "$pem" | sed "/^$/d")
+        [ -z "$found" ] || { echo "TLS material in the image: $found"; exit 1; }' \
+        tls-material "$CADDY_STORAGE"
+}
+
 check_image_contract() {
     local image
 
@@ -570,6 +616,12 @@ check_image_contract() {
         privileged_bind_is_refused web_bind_probe 80 --cap-drop ALL
     check "web binds :${WEB_PORT} with every capability dropped" \
         web_bind_probe "$WEB_PORT" --cap-drop ALL
+    check "web binds :${TLS_PORT} with every capability dropped" \
+        web_bind_probe "$TLS_PORT" --cap-drop ALL
+    check "web image declares :${WEB_PORT} and :${TLS_PORT}; the worker image declares neither" \
+        exposed_ports_are_the_web_listeners
+    check "web image ships no TLS key, certificate or Caddy certificate storage" \
+        image_ships_no_tls_material "$WEB_IMAGE"
     check "worker binding :80 fails" \
         privileged_bind_is_refused bind_probe "$WORKER_IMAGE" php 80
     check "web writable paths belong to the application user; code is read-only" \
@@ -582,6 +634,124 @@ check_image_contract() {
     done
 }
 
+# The certificate chains to the internal root CA that this container generated in
+# its certificate storage, for the name the server presents.
+https_health_endpoint_returns_no_content() {
+    local code
+
+    code=$(docker exec "${PREFIX}-$1" curl -sS -o /dev/null -w '%{http_code}' \
+        --cacert "$CADDY_ROOT_CERTIFICATE" --resolve "${TLS_SERVER_NAME}:${TLS_PORT}:127.0.0.1" \
+        "https://${TLS_SERVER_NAME}:${TLS_PORT}/api/health") || return 1
+    echo "${PREFIX}-$1 GET https://${TLS_SERVER_NAME}:${TLS_PORT}/api/health (internal CA) -> ${code}"
+    [ "$code" = '204' ]
+}
+
+# A load balancer connects by IP address without SNI and does not validate the
+# certificate; the server still presents the internal certificate.
+https_by_address_without_sni_returns_no_content() {
+    local output
+
+    output=$(docker exec "${PREFIX}-$1" curl -sS -k -o /dev/null -w '%{http_code} %{certs}' \
+        "https://127.0.0.1:${TLS_PORT}/api/health") || return 1
+    echo "${PREFIX}-$1 GET https://127.0.0.1:${TLS_PORT}/api/health -> ${output%% *}"
+    [ "${output%% *}" = '204' ] \
+        && grep -q "Subject Alternative Name:DNS:${TLS_SERVER_NAME}" <<<"$output" \
+        && grep -q 'Issuer:CN = Caddy Local Authority' <<<"$output"
+}
+
+# Plain HTTP on the TLS port gets Go's fixed 400 reply: no application response,
+# no redirect and no plain-HTTP fallback.
+plain_http_on_tls_port_is_refused() {
+    local name=$1 port=${2:-$TLS_PORT}
+    local response status
+
+    response=$(docker exec "${PREFIX}-${name}" curl -sS -i --max-time 10 \
+        "http://127.0.0.1:${port}/api/health" 2>&1) || true
+    status=$(head -n 1 <<<"$response" | tr -d '\r')
+    echo "${PREFIX}-${name} plain GET :${port}/api/health -> ${status}"
+    [ "$status" = 'HTTP/1.0 400 Bad Request' ] \
+        && grep -q 'Client sent an HTTP request to an HTTPS server.' <<<"$response" \
+        && ! grep -qi '^location:' <<<"$response"
+}
+
+# The internal CA keys and the issued certificate live in the application volume,
+# readable only by the application user.
+tls_material_is_private_to_the_application_user() {
+    docker exec "${PREFIX}-$1" sh -c '
+        uid=$(id -u)
+        for path in "$1" "$1/pki/authorities/local/root.key" \
+            "$1/pki/authorities/local/intermediate.key" "$2/$3.key" "$2/$3.crt"; do
+            [ -e "$path" ] && [ "$(stat -c %u "$path")" = "$uid" ] \
+                || { echo "missing or not application-owned: $path"; exit 1; }
+        done
+        [ "$(stat -c %a "$1")" = 700 ] || { echo "$1 is not mode 0700"; exit 1; }
+        open=$(find "$1" -perm /077) || exit 1
+        [ -z "$open" ] || { echo "group or world access: $open"; exit 1; }' \
+        tls-material "$CADDY_STORAGE" "$CADDY_LEAF_DIRECTORY" "$TLS_SERVER_NAME"
+}
+
+# Prints "<serial>|<expiry>" of the certificate the server presents.
+served_certificate() {
+    local certificate
+
+    certificate=$(docker exec "${PREFIX}-$1" curl -sS -k -o /dev/null -w '%{certs}' \
+        "https://127.0.0.1:${TLS_PORT}/") || return 1
+    awk '/^Serial Number:/ && !serial {serial = substr($0, 15)}
+        /^Expire date:/ && !expiry {expiry = substr($0, 13)}
+        END {if (serial == "" || expiry == "") exit 1; print serial "|" expiry}' <<<"$certificate"
+}
+
+stored_certificate_serial() {
+    docker exec "${PREFIX}-$1" php -r \
+        'echo strtolower(ltrim(openssl_x509_parse(file_get_contents($argv[1]))["serialNumberHex"], "0"));' \
+        "${CADDY_LEAF_DIRECTORY}/${TLS_SERVER_NAME}.crt"
+}
+
+# Caddy's certificate maintenance replaces the served certificate before it
+# expires and writes the new one to its storage on the read-only root filesystem.
+certificate_renews_before_expiry() {
+    local name=$1
+    local first serial expires_at current served renewed_at
+    local deadline=$((SECONDS + RENEWAL_TIMEOUT_SECONDS))
+
+    first=$(served_certificate "$name") || return 1
+    serial=${first%%|*}
+    expires_at=$(date -d "${first#*|}" +%s) || return 1
+    echo "${PREFIX}-${name} serves serial ${serial}, expiring ${first#*|}"
+    while current=$(served_certificate "$name") && [ "${current%%|*}" = "$serial" ]; do
+        if [ "$SECONDS" -ge "$deadline" ]; then
+            echo "${PREFIX}-${name} still serves serial ${serial}" >&2
+            return 1
+        fi
+        sleep 2
+    done
+    [ -n "$current" ] || return 1
+    renewed_at=$(date +%s)
+    echo "${PREFIX}-${name} serves serial ${current%%|*}, expiring ${current#*|}, $((expires_at - renewed_at))s before the old expiry"
+    [ "$renewed_at" -lt "$expires_at" ] || { echo 'renewed only after the old certificate expired' >&2; return 1; }
+    [ "$(date -d "${current#*|}" +%s)" -gt "$expires_at" ] || return 1
+    served=${current%%|*}
+    served=${served,,}
+    served=${served#"${served%%[!0]*}"}
+    [ "$(stored_certificate_serial "$name")" = "$served" ] \
+        || { echo 'the stored certificate is not the served one' >&2; return 1; }
+    docker logs "${PREFIX}-${name}" 2>&1 | grep 'certificate renewed successfully' \
+        | grep -q "\"identifier\":\"${TLS_SERVER_NAME}\""
+}
+
+check_tls_runtime() {
+    local name=$1
+
+    check "${name} serves /api/health over HTTPS on :${TLS_PORT} with the internal CA certificate" \
+        https_health_endpoint_returns_no_content "$name"
+    check "${name} serves HTTPS on :${TLS_PORT} by address without SNI" \
+        https_by_address_without_sni_returns_no_content "$name"
+    check "${name} refuses plain HTTP on :${TLS_PORT} without a redirect" \
+        plain_http_on_tls_port_is_refused "$name"
+    check "${name} keeps the internal CA and certificate in ${CADDY_STORAGE}, private to the application user" \
+        tls_material_is_private_to_the_application_user "$name"
+}
+
 check_web_runtime() {
     local name=$1
 
@@ -591,10 +761,27 @@ check_web_runtime() {
     fi
     pass "${name} becomes healthy through the image HEALTHCHECK"
     check "${name} serves /api/health on :${WEB_PORT}" health_endpoint_returns_no_content "$name"
+    check_tls_runtime "$name"
     check "${name} PID 1 runs as UID >= ${MINIMUM_UID}" runs_as_non_root "$name"
     check "${name} wrote only application-owned files in its volumes" \
         runtime_writes_belong_to_the_application_user "$name" '/srv/app/var /data /config'
     check_privileges "$name"
+}
+
+check_certificate_renewal() {
+    local name=web-tls-renewal
+
+    if ! becomes_healthy "$name"; then
+        fail "${name} becomes healthy through the image HEALTHCHECK"
+        return
+    fi
+    pass "${name} becomes healthy through the image HEALTHCHECK"
+    check "${name} renews its ${RENEWAL_CERT_LIFETIME} internal certificate before expiry into ${CADDY_STORAGE}" \
+        certificate_renews_before_expiry "$name"
+    check "${name} serves /api/health over HTTPS with the renewed certificate" \
+        https_health_endpoint_returns_no_content "$name"
+    check "${name} wrote only application-owned files in its volumes" \
+        runtime_writes_belong_to_the_application_user "$name" '/srv/app/var /data /config'
 }
 
 check_worker_runtime() {
@@ -699,13 +886,39 @@ DOCKERFILE
         seeded_world_writable_file_is_reported "$fixture"
 }
 
+check_tls_material_fixture() {
+    local fixture="${WEB_IMAGE%%:*}:tls-material-fixture-${RUN_ID}"
+
+    if ! build_fixture_image "$fixture" <<DOCKERFILE; then
+FROM ${WEB_IMAGE}
+RUN mkdir -p /srv/app/var/cache/fixture \
+    && echo '-----BEGIN PRIVATE KEY-----' > /srv/app/var/cache/fixture/seeded
+DOCKERFILE
+        fail "negative fixture: the TLS material fixture image cannot be built from ${WEB_IMAGE}"
+        return
+    fi
+    check "negative fixture: a private key baked into the image fails the TLS material check" \
+        reports_exactly 'TLS material in the image: /srv/app/var/cache/fixture/seeded' \
+        image_ships_no_tls_material "$fixture"
+}
+
 check_negative_fixtures() {
     check_world_writable_fixture
+    check_tls_material_fixture
     check "negative fixture: an unreachable container fails the runtime ownership check" \
         fails runtime_writes_belong_to_the_application_user missing-container '/srv/app/var'
     check "negative fixture: an unreachable container fails the capability check" \
         fails pid_one_holds_no_capabilities missing-container
     check_privilege_fixture
+}
+
+# Against a healthy web container: a plain-HTTP listener fails the refusal check,
+# and an unreachable container fails the HTTPS check.
+check_tls_negative_fixtures() {
+    check "negative fixture: the plain-HTTP listener on :${WEB_PORT} fails the plain-HTTP refusal check" \
+        fails plain_http_on_tls_port_is_refused web-default "$WEB_PORT"
+    check "negative fixture: an unreachable container fails the HTTPS check" \
+        fails https_health_endpoint_returns_no_content missing-container
 }
 
 check_runtime() {
@@ -720,12 +933,17 @@ check_runtime() {
     start_runtime_container web-default "$WEB_IMAGE"
     start_runtime_container web-ecs "$WEB_IMAGE" "${ECS_TASK_SHAPE[@]}" \
         -e TMPDIR=/srv/app/var/tmp -- /bin/sh -ec "$WEB_RUNTIME_COMMAND"
+    start_runtime_container web-tls-renewal "$WEB_IMAGE" "${ECS_TASK_SHAPE[@]}" \
+        -e TMPDIR=/srv/app/var/tmp -e CADDY_INTERNAL_CERT_LIFETIME="$RENEWAL_CERT_LIFETIME" \
+        -e CADDY_RENEW_INTERVAL="$RENEWAL_CHECK_INTERVAL" -- /bin/sh -ec "$WEB_RUNTIME_COMMAND"
     start_runtime_container worker-default "$WORKER_IMAGE"
     start_runtime_container worker-ecs "$WORKER_IMAGE" "${ECS_TASK_SHAPE[@]}" \
         -e TMPDIR=/srv/app/var/tmp -- /bin/sh -ec "$WORKER_RUNTIME_COMMAND"
 
     check_web_runtime web-default
     check_web_runtime web-ecs
+    check_tls_negative_fixtures
+    check_certificate_renewal
     check_worker_runtime worker-default
     check_worker_runtime worker-ecs
     check "the check network is internal and web-ecs has no default route" network_has_no_egress web-ecs

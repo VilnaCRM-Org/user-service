@@ -1,9 +1,29 @@
 {
 	admin localhost:2019
-	auto_https off
+	# :8080 serves plain HTTP and :8443 serves only HTTPS. Automatic HTTPS manages
+	# the internal certificate but adds no HTTP-to-HTTPS redirect listener.
+	auto_https disable_redirects
+	# Caddy creates its internal CA, the CA keys and the issued certificate at
+	# runtime in the application var volume, which is writable on a read-only root
+	# filesystem. Nothing of it is in the image, and no trust store is modified.
+	# Every certificate comes from that internal CA; no public CA is contacted.
+	storage file_system /srv/app/var/caddy
+	skip_install_trust
+	local_certs
+	# A load balancer connects by address, without SNI or with another name, and
+	# does not validate the certificate: it gets the internal certificate.
+	default_sni user-service.internal
+	fallback_sni user-service.internal
+	# Caddy's defaults; the image runtime check shortens them to prove renewal.
+	renew_interval {$CADDY_RENEW_INTERVAL:10m}
 	servers {
 		trusted_proxies static {$TRUSTED_PROXY_CIDRS:127.0.0.1/32}
 		trusted_proxies_strict
+	}
+	servers :8443 {
+		trusted_proxies static {$TRUSTED_PROXY_CIDRS:127.0.0.1/32}
+		trusted_proxies_strict
+		protocols h1 h2
 	}
 	frankenphp {
 		worker {
@@ -15,7 +35,7 @@
 	}
 }
 
-:8080 {
+(application) {
 	log {
 		output stderr
 		format filter {
@@ -36,4 +56,24 @@
 		env APP_DEBUG 0
 	}
 	file_server
+}
+
+:8080 {
+	import application
+}
+
+# The named site makes Caddy issue and renew the certificate for this name from
+# its internal CA (12h lifetime by default, renewed in its last third).
+https://user-service.internal:8443 {
+	tls {
+		issuer internal {
+			lifetime {$CADDY_INTERNAL_CERT_LIFETIME:12h}
+		}
+	}
+	import application
+}
+
+# Requests for any other host name, such as load balancer health checks by address.
+https://:8443 {
+	import application
 }

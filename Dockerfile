@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 
 # The web and worker targets run as this fixed non-root account. FrankenPHP drops
 # its privileged-port file capability, which a container without capabilities
-# cannot grant, so the production listener uses an unprivileged port.
+# cannot grant, so the production listeners use unprivileged ports.
 RUN set -eux; \
     addgroup -S -g 10001 app; \
     adduser -S -D -H -u 10001 -G app -h /nonexistent -s /sbin/nologin app; \
@@ -235,7 +235,11 @@ RUN set -eux; \
 
 USER 10001:10001
 
-EXPOSE 8080
+# 8080 serves HTTP. 8443 serves HTTPS with a certificate from Caddy's internal CA,
+# which Caddy creates at runtime under /srv/app/var; the image holds no key or
+# certificate. The image health check stays on 8080, the listener every
+# environment uses.
+EXPOSE 8080 8443
 
 HEALTHCHECK --start-period=60s --interval=30s --timeout=5s --retries=3 \
     CMD ["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/api/health"]
