@@ -33,6 +33,11 @@ The publisher uses `aws-actions/configure-aws-credentials` with GitHub OIDC,
 checks the TEST account, and logs in to ECR only in the protected publish job.
 Quality and image builds run without AWS credentials. The exact main source
 commit must pass `make ci`; the build uses that same commit and AMD64 targets.
+Per D-18 every environment uses one architecture, `linux/amd64`: images are
+single-platform, single-manifest pushes, never an image index. Builds pass
+`--provenance=false --sbom=false` because BuildKit attestations would wrap the
+image in an index, and the publisher refuses any saved archive or ECR readback
+that is not a single-image manifest (`publisher-manifest-not-single`).
 
 ## Release evidence
 
