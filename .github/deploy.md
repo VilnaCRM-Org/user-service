@@ -36,8 +36,10 @@ commit must pass `make ci`; the build uses that same commit and AMD64 targets.
 Per D-18 every environment uses one architecture, `linux/amd64`: images are
 single-platform, single-manifest pushes, never an image index. Builds pass
 `--provenance=false --sbom=false` because BuildKit attestations would wrap the
-image in an index, and the publisher refuses any saved archive or ECR readback
-that is not a single-image manifest (`publisher-manifest-not-single`).
+image in an index. The publisher refuses a saved archive that is not exactly one
+image manifest (`publisher-archive-not-single`), a saved image whose config is
+not `linux/amd64` (`publisher-platform`), and an ECR readback that is not a
+single-image manifest (`publisher-manifest-not-single`).
 
 ## Release evidence
 
