@@ -629,8 +629,8 @@ class PublisherBuildTests(unittest.TestCase):
     HELP = (
         b"Usage:  docker buildx build [OPTIONS] PATH | URL | -\n"
         b"      --platform stringArray      Set target platform for build\n"
-        b"      --provenance string         Shorthand for \"--attest=type=provenance\"\n"
-        b"      --sbom string               Shorthand for \"--attest=type=sbom\"\n"
+        b'      --provenance string         Shorthand for "--attest=type=provenance"\n'
+        b'      --sbom string               Shorthand for "--attest=type=sbom"\n'
     )
 
     def setUp(self):

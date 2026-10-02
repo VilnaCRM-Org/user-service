@@ -18,6 +18,7 @@ import time
 import stat
 import subprocess
 import sys
+import tarfile
 import zipfile
 from dataclasses import asdict
 from pathlib import Path
@@ -38,6 +39,22 @@ JOBS = (
 MAX_IMAGE = 3 * 1024**3
 MAX_ARCHIVE = 7 * 1024**3
 MAX_EVENT = 1024 * 1024
+MAX_ARCHIVE_JSON = 1024 * 1024
+# D-18: one image architecture for every environment; never an image index.
+PLATFORM = "linux/amd64"
+NO_ATTESTATIONS = ("--provenance=false", "--sbom=false")
+SINGLE_IMAGE_MANIFESTS = frozenset(
+    {
+        "application/vnd.docker.distribution.manifest.v2+json",
+        "application/vnd.oci.image.manifest.v1+json",
+    }
+)
+IMAGE_CONFIGS = frozenset(
+    {
+        "application/vnd.docker.container.image.v1+json",
+        "application/vnd.oci.image.config.v1+json",
+    }
+)
 REQUEST_FIELDS = {
     "source_sha",
     "platform",
@@ -180,7 +197,7 @@ def request(raw):
     document = decode(raw)
     require(set(document) == REQUEST_FIELDS, "dispatch-fields")
     require(codec._hex(document["source_sha"], 40), "source-sha")
-    require(document["platform"] == "linux/amd64", "publisher-platform")
+    require(document["platform"] == PLATFORM, "publisher-platform")
     registry = codec.RegistryReleaseBinding(
         **{
             key: document[key]
@@ -400,6 +417,75 @@ def metadata(document, run_id, image_paths):
     }
 
 
+def _archive_json(archive, name):
+    member = archive.getmember(name)
+    require(
+        member.isfile() and 0 < member.size <= MAX_ARCHIVE_JSON,
+        "publisher-archive-not-single",
+    )
+    with archive.extractfile(member) as stream:
+        raw = stream.read(MAX_ARCHIVE_JSON + 1)
+    return raw, json.loads(
+        raw, object_pairs_hook=codec._pairs, parse_constant=codec._nonfinite
+    )
+
+
+def _archive_blob(archive, descriptor):
+    digest = descriptor.get("digest") if type(descriptor) is dict else None
+    require(
+        type(digest) is str
+        and re.fullmatch(r"sha256:[0-9a-f]{64}", digest) is not None,
+        "publisher-archive-not-single",
+    )
+    raw, document = _archive_json(archive, f"blobs/sha256/{digest[7:]}")
+    require(
+        hashlib.sha256(raw).hexdigest() == digest[7:] and type(document) is dict,
+        "publisher-archive-not-single",
+    )
+    return document
+
+
+def single_image(path):
+    """D-18: a saved image is one linux/amd64 image manifest, never an index."""
+    try:
+        with tarfile.open(path, "r:") as archive:
+            index = _archive_json(archive, "index.json")[1]
+            entries = index.get("manifests") if type(index) is dict else None
+            require(
+                type(entries) is list
+                and len(entries) == 1
+                and type(entries[0]) is dict
+                and entries[0].get("mediaType") in SINGLE_IMAGE_MANIFESTS,
+                "publisher-archive-not-single",
+            )
+            manifest = _archive_blob(archive, entries[0])
+            config = manifest.get("config")
+            require(
+                manifest.get("mediaType") == entries[0]["mediaType"]
+                and "manifests" not in manifest
+                and type(config) is dict
+                and config.get("mediaType") in IMAGE_CONFIGS,
+                "publisher-archive-not-single",
+            )
+            image = _archive_blob(archive, config)
+            saved = _archive_json(archive, "manifest.json")[1]
+            require(
+                type(saved) is list
+                and len(saved) == 1
+                and type(saved[0]) is dict
+                and saved[0].get("Config") == f"blobs/sha256/{config['digest'][7:]}",
+                "publisher-archive-not-single",
+            )
+    except codec.ReleaseManifestError:
+        raise
+    except (tarfile.TarError, KeyError, ValueError, TypeError, RecursionError):
+        raise codec.ReleaseManifestError("publisher-archive-not-single") from None
+    require(
+        f"{image.get('os')}/{image.get('architecture')}" == PLATFORM,
+        "publisher-platform",
+    )
+
+
 def extract_build(archive_path, directory, document, run_id):
     with zipfile.ZipFile(archive_path) as archive:
         entries = archive.infolist()
@@ -438,6 +524,8 @@ def extract_build(archive_path, directory, document, run_id):
         document, run_id, {kind: directory / f"{kind}.tar" for kind in codec.TARGETS}
     )
     require(canonical(actual) == canonical(expected), "build-binding")
+    for kind in codec.TARGETS:
+        single_image(directory / f"{kind}.tar")
     return actual
 
 
@@ -464,6 +552,13 @@ def build(document, run_id, directory):
         timeout=30,
     )
     require(clean.stdout == b"", "dirty-build-source")
+    # Attestations turn a BuildKit result into an image index; refuse a builder
+    # (such as the legacy builder) that cannot disable them instead of dropping them.
+    options = run("docker", "build", "--help")
+    require(
+        all(flag.split("=")[0].encode() in options for flag in NO_ATTESTATIONS),
+        "publisher-attestation-flags",
+    )
     images = {}
     for kind, target in codec.TARGETS.items():
         tag = f"poc-{kind}:{document['source_sha']}"
@@ -472,8 +567,9 @@ def build(document, run_id, directory):
             "build",
             "--quiet",
             "--pull",
+            *NO_ATTESTATIONS,
             "--platform",
-            document["platform"],
+            PLATFORM,
             "--target",
             target,
             "--tag",
@@ -485,6 +581,7 @@ def build(document, run_id, directory):
         )
         path = directory / f"{kind}.tar"
         run("docker", "save", "--output", str(path), tag, timeout=300)
+        single_image(path)
         images[kind] = path
     (directory / "build.json").write_bytes(
         canonical(metadata(document, run_id, images))
@@ -535,6 +632,8 @@ def publish(document, run_id, workflow_sha, directory):
         ),
         "prepared-images",
     )
+    for kind in codec.TARGETS:
+        single_image(directory / f"{kind}.tar")
     identity = json.loads(run("aws", "sts", "get-caller-identity", "--output", "json"))
     require(
         identity.get("Account") == "891377212104"
@@ -580,6 +679,12 @@ def publish(document, run_id, workflow_sha, directory):
             and details[0].get("registryId") == "891377212104"
             and details[0].get("repositoryName") == f"user-service-test-{kind}",
             "image-readback",
+        )
+        require(
+            details[0].get("imageManifestMediaType") in SINGLE_IMAGE_MANIFESTS
+            and details[0].get("artifactMediaType") in IMAGE_CONFIGS
+            and "subjectManifestDigest" not in details[0],
+            "publisher-manifest-not-single",
         )
         results[kind] = codec.BuildResult(
             document["source_sha"],
