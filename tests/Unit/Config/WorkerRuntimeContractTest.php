@@ -22,13 +22,24 @@ SUPERVISOR;
 messenger:consume send-email insert-user-batch domain-events --time-limit=3600 --env=prod --no-debug
 COMMAND;
 
+    private const DEFAULT_SUPERVISOR_CONFIG = '/etc/supervisor/supervisord.conf';
+
+    private const SUPERVISOR_SOCKET = '/srv/app/var/run/supervisor.sock';
+
     private const WORKER_HEALTHCHECK_PATH = 'infrastructure/supervisor/worker-healthcheck';
 
     private const SUPERVISORCTL_SCRIPT = <<<'SH'
 #!/bin/sh
+if [ "$#" -ne 4 ] || [ "$1" != "-c" ] || [ "$2" != "$SUPERVISORCTL_EXPECTED_CONFIG" ] \
+    || [ "$3" != "status" ] || [ "$4" != "messenger-consume:*" ]; then
+    printf 'unexpected supervisorctl arguments: %s\n' "$*" >&2
+    exit 64
+fi
 printf '%s\n' "$SUPERVISOR_STATUS"
 exit "${SUPERVISORCTL_EXIT_CODE:-0}"
 SH;
+
+    private string $lastHealthcheckError = '';
 
     public function testWorkerSupervisorStartsOnlyConfiguredProductionConsumers(): void
     {
@@ -36,7 +47,8 @@ SH;
 
         self::assertStringContainsString('[rpcinterface:supervisor]', $config);
         self::assertStringContainsString(self::SUPERVISOR_RPC_FACTORY, $config);
-        self::assertStringContainsString('serverurl = unix:///run/supervisor.sock', $config);
+        self::assertStringContainsString('file = ' . self::SUPERVISOR_SOCKET, $config);
+        self::assertStringContainsString('serverurl = unix://' . self::SUPERVISOR_SOCKET, $config);
         self::assertStringContainsString(
             self::WORKER_COMMAND,
             $config
@@ -56,7 +68,7 @@ SH;
     {
         $workerStage = $this->workerDockerStage();
 
-        self::assertStringContainsString('RUN mkdir -p /run', $workerStage);
+        self::assertStringNotContainsString('RUN mkdir -p /run', $workerStage);
         self::assertStringContainsString(
             $this->workerHealthcheckCopy(),
             $workerStage
@@ -71,6 +83,40 @@ SH;
     public function testWorkerHealthcheckPassesOnlyWhenEveryConsumerIsRunning(): void
     {
         self::assertSame(0, $this->runHealthcheck($this->supervisorStatus('RUNNING')));
+    }
+
+    public function testWorkerHealthcheckUsesRunningSupervisorConfig(): void
+    {
+        self::assertStringContainsString(
+            '["/usr/bin/supervisord", "-c", "' . self::DEFAULT_SUPERVISOR_CONFIG . '"]',
+            $this->workerDockerStage()
+        );
+    }
+
+    public function testWorkerHealthcheckHonorsSupervisorConfigOverride(): void
+    {
+        $config = '/custom/supervisord.conf';
+
+        self::assertSame(
+            0,
+            $this->runHealthcheck($this->supervisorStatus('RUNNING'), 0, $config, $config)
+        );
+    }
+
+    public function testWorkerHealthcheckFailsWhenSupervisorctlDoesNotReceiveExpectedConfig(): void
+    {
+        self::assertSame(
+            1,
+            $this->runHealthcheck(
+                $this->supervisorStatus('RUNNING'),
+                0,
+                self::DEFAULT_SUPERVISOR_CONFIG . '.other'
+            )
+        );
+        self::assertStringContainsString(
+            'unexpected supervisorctl arguments: -c ' . self::DEFAULT_SUPERVISOR_CONFIG . ' status',
+            $this->lastHealthcheckError
+        );
     }
 
     /**
@@ -118,15 +164,25 @@ SH;
         return $workerStage;
     }
 
-    private function runHealthcheck(string $status, int $supervisorctlExitCode = 0): int
-    {
+    private function runHealthcheck(
+        string $status,
+        int $supervisorctlExitCode = 0,
+        string $expectedConfig = self::DEFAULT_SUPERVISOR_CONFIG,
+        ?string $configOverride = null
+    ): int {
         $directory = sys_get_temp_dir() . '/worker-healthcheck-' . bin2hex(random_bytes(8));
         self::assertTrue(mkdir($directory));
 
         $supervisorctl = $this->createSupervisorctl($directory);
 
         try {
-            return $this->executeHealthcheck($directory, $status, $supervisorctlExitCode);
+            return $this->executeHealthcheck(
+                $directory,
+                $status,
+                $supervisorctlExitCode,
+                $expectedConfig,
+                $configOverride
+            );
         } finally {
             unlink($supervisorctl);
             rmdir($directory);
@@ -148,25 +204,54 @@ SH;
     private function executeHealthcheck(
         string $directory,
         string $status,
-        int $supervisorctlExitCode
+        int $supervisorctlExitCode,
+        string $expectedConfig,
+        ?string $configOverride
     ): int {
         $process = proc_open(
             ['/bin/sh', $this->projectPath(self::WORKER_HEALTHCHECK_PATH)],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
             null,
-            [
-                'PATH' => $directory . ':' . self::SYSTEM_PATH,
-                'SUPERVISOR_STATUS' => $status,
-                'SUPERVISORCTL_EXIT_CODE' => (string) $supervisorctlExitCode,
-            ]
+            $this->healthcheckEnvironment(
+                $directory,
+                $status,
+                $supervisorctlExitCode,
+                $expectedConfig,
+                $configOverride
+            )
         );
 
         self::assertIsResource($process);
         fclose($pipes[1]);
+        $this->lastHealthcheckError = (string) stream_get_contents($pipes[2]);
         fclose($pipes[2]);
 
         return proc_close($process);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function healthcheckEnvironment(
+        string $directory,
+        string $status,
+        int $supervisorctlExitCode,
+        string $expectedConfig,
+        ?string $configOverride
+    ): array {
+        $environment = [
+            'PATH' => $directory . ':' . self::SYSTEM_PATH,
+            'SUPERVISOR_STATUS' => $status,
+            'SUPERVISORCTL_EXIT_CODE' => (string) $supervisorctlExitCode,
+            'SUPERVISORCTL_EXPECTED_CONFIG' => $expectedConfig,
+        ];
+
+        if ($configOverride !== null) {
+            $environment['SUPERVISOR_CONFIG'] = $configOverride;
+        }
+
+        return $environment;
     }
 
     private function supervisorStatus(string $state): string

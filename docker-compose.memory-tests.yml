@@ -24,6 +24,11 @@ services:
       - ./infrastructure/docker/php/worker.Caddyfile:/etc/caddy/worker.Caddyfile:ro
     extra_hosts:
       - host.docker.internal:host-gateway
+    # The root development image keeps serving HTTP on port 80.
+    ports: !override
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
     healthcheck:
       test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/api/docs >/dev/null || exit 1']
       interval: 20s

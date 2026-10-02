@@ -2,12 +2,18 @@ services:
   php:
     build:
       target: frankenphp_prod
+    # This harness bind-mounts the host checkout and installs dependencies, assets
+    # and keys into it, so it keeps the root user and the development listeners.
+    user: '0:0'
     command:
       - frankenphp
       - run
       - --config
       - /etc/caddy/Caddyfile
-    ports:
+    ports: !override
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
       - target: 8081
         published: ${SCHEMATHESIS_API_PORT:-8081}
         protocol: tcp

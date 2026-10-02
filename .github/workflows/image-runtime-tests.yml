@@ -1,0 +1,26 @@
+name: Production image runtime testing
+
+on:
+  pull_request:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-runtime-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image-runtime-tests:
+    name: Non-root image runtime checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build images and verify the non-root runtime contract
+        run: make image-runtime-tests

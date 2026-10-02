@@ -267,10 +267,10 @@ See the [AWS SDK credential provider documentation](https://docs.aws.amazon.com/
 ### Production web and worker containers
 
 Build the web image from the `frankenphp_prod` target. Its production Caddy
-configuration serves HTTP on port 80 behind the ALB HTTPS listener and forces
-`APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener. The development
-Caddy configuration and its arbitrary listener/configuration overrides do not
-apply to this production target.
+configuration serves HTTP on the unprivileged port 8080 behind the ALB HTTPS
+listener and forces `APP_ENV=prod` and `APP_DEBUG=0`. It exposes no test listener.
+The development Caddy configuration and its arbitrary listener/configuration
+overrides do not apply to this production target.
 
 Build the worker image from the `app_workers` target. Supervisor runs ten
 production consumers for `send-email`, `insert-user-batch`, and `domain-events`.
@@ -279,6 +279,87 @@ to standard output and standard error for collection by the container platform.
 The container health check requires all ten expected consumers to be running;
 a missing, stopped, or unexpected process makes the check fail. This process
 check does not prove message delivery or downstream service availability.
+
+#### Non-root runtime contract
+
+Both production images run as a fixed non-root account. The container platform
+configuration should match these values:
+
+- `USER`: `10001:10001` (`app`) in both images.
+- Web container port: `8080/tcp` (HTTP). The Caddy admin endpoint stays on
+  `localhost:2019`. The worker exposes no port.
+- Web health check: the image `HEALTHCHECK` runs
+  `curl -fsS -o /dev/null http://127.0.0.1:8080/api/health`, which returns `204`.
+  Point the platform's target health check at the same port and path.
+- Worker health check: `/usr/local/bin/worker-healthcheck`.
+- Writable volumes (`VOLUME`): `/srv/app/var`, `/data` and `/config` for the web
+  image; `/srv/app/var` for the worker image.
+- Supervisor files: socket `/srv/app/var/run/supervisor.sock` (mode `0700`), pid
+  file `/srv/app/var/run/supervisord.pid` and log
+  `/srv/app/var/log/supervisord.log`.
+- Linux capabilities: neither container needs any, so both can drop `ALL`.
+
+Notes on the contract:
+
+- The application code, configuration and dependencies stay root-owned and
+  read-only for the application user; the build removes the world-writable bits
+  that some dependency archives carry. Only the declared volumes, plus
+  `/srv/app/public/bundles` and `/srv/app/config/jwt` that the image's own
+  entrypoint writes when it runs the default `frankenphp` command, belong to
+  `10001:10001`. The images pre-create `/srv/app/var/{cache,log,run,tmp}` with that
+  owner.
+- The `VOLUME` declarations matter on ECS: an ECS task volume copies the image's
+  data and ownership only when the image declares a `VOLUME` at the same path;
+  otherwise the volume is owned by `root` with mode `0755` and the application
+  user cannot write it. Mount the task's ephemeral volumes at exactly these paths
+  when the root filesystem is read-only. The worker no longer writes `/run`.
+- The FrankenPHP binary carries no `cap_net_bind_service` file capability, and the
+  PHP preload switch (`opcache.preload_user = app`) applies only when PHP starts
+  as `root`. Neither container needs `NET_BIND_SERVICE`, `SETUID` or `SETGID`, and
+  binding a port below 1024 fails.
+- The local development image (`frankenphp_dev`) keeps `root` and its port 80,
+  443 and 8081 listeners. The load-test and Schemathesis harnesses bind-mount the
+  host checkout and install dependencies, assets and keys into it, so they set
+  `user: '0:0'` and keep their development listeners.
+
+`make image-runtime-tests` builds both images and verifies this contract with
+Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
+default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
+application ownership of every writable path, no world-writable application
+files, no JWT key files, `config/reference.php` or `tests/` in the images, no capabilities
+on PID 1, no setuid, setgid or file-capability binaries, and passing health
+checks with the image defaults and with the ECS task shape (read-only root
+filesystem, every capability dropped, the bootstrap command override; like
+Fargate, without `no-new-privileges`). Seeded negative fixtures (a world-writable
+file, setuid, setgid and file-capability binaries, a stopped or missing container)
+prove the checks fail closed and name the offending paths.
+
+The checks run on an internal Docker network (no egress, no default route) with
+MongoDB, Redis and LocalStack. Each run generates throwaway production secrets
+and uses synthetic KMS key ARNs in the fake account `123456789012`. The
+containers get no static AWS credential variables, which the production guards
+refuse; like an ECS task, they read credentials from
+`AWS_CONTAINER_CREDENTIALS_RELATIVE_URI` at `169.254.170.2`, served by a stub on
+the internal network. The stub runs the LocalStack 3.4.0 image pinned by digest
+(the only digest-pinned reference in the check; the MongoDB, Redis and LocalStack
+dependencies use tags) and returns fake credentials. Only `AWS_ENDPOINT_URL_SQS`
+points the queue client at LocalStack. The run also restores the kernel default
+for privileged ports (`net.ipv4.ip_unprivileged_port_start=1024`), which Docker
+otherwise lowers to 0.
+
+Every run uses the fixed task-role subnet `169.254.170.0/24`, and default runs
+share the `user-service-web:non-root-check` and `user-service-worker:non-root-check`
+tags. Runs on one Docker host are therefore serialized with `flock` (util-linux;
+the run fails if it is missing) on `/tmp/user-service-image-check.lock` (override
+with `IMAGE_CHECK_LOCK_FILE`). The lock is taken before the images are built. A
+later run waits up to `IMAGE_CHECK_LOCK_TIMEOUT_SECONDS` (default 3600) and then
+fails. The run records the built image IDs, checks them through tags unique to
+the run, and before reporting success asserts that every runtime container and
+fixture used exactly those IDs. If any Docker network still uses an overlapping
+subnet, the run records a failure that names that network and skips the runtime
+stack.
+The build context excludes `tests/`, so the images ship no tests, fixtures or
+check harness; every container that runs tests bind-mounts the checkout.
 
 ### SES delivery with task credentials
 

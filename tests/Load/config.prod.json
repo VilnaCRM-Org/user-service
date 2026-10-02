@@ -1,6 +1,6 @@
 {
   "apiHost": "app-prod",
-  "apiPort": "80",
+  "apiPort": "8080",
   "mailCatcherPort": "1080",
   "batchSize": 5000,
   "delayBetweenScenarios": 30,

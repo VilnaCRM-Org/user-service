@@ -53,7 +53,7 @@ final class ProductionConfigValidationTest extends AuthIntegrationTestCase
         $servers = $config['apps']['http']['servers'];
 
         self::assertCount(1, $servers);
-        self::assertSame([':80'], $servers['srv0']['listen']);
+        self::assertSame([':8080'], $servers['srv0']['listen']);
         self::assertTrue($servers['srv0']['automatic_https']['disable']);
         self::assertSame('localhost:2019', $config['admin']['listen']);
         self::assertArrayNotHasKey('tls', $config['apps']);
