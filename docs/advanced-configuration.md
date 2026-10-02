@@ -377,15 +377,17 @@ checks with the image defaults and with the ECS task shape (read-only root
 filesystem, every capability dropped, the bootstrap command override; like
 Fargate, without `no-new-privileges`). In both shapes it also checks the 8443
 listener: `/api/health` over HTTPS returns `204` with a certificate that chains to
-the root CA the container generated, and by address without SNI; plain HTTP on 8443
-gets `400` with no redirect; and the CA keys and certificate in `/srv/app/var/caddy`
-belong to the application user with no group or world access. The web image must
-declare 8080 and 8443 (the worker image neither) and ship no TLS key, certificate or
-Caddy certificate storage. A third web container in the ECS shape runs with a 90-second certificate
-lifetime and a 5-second renewal check interval, and must serve a renewed
-certificate before the first one expires, with the renewed certificate written to
-its storage. Seeded negative fixtures (a world-writable file, a baked-in private
-key, setuid, setgid and file-capability binaries, a stopped or missing container,
+the root CA the container generated, by address without SNI and with another SNI;
+8443 offers HTTP/2 without an HTTP/3 advertisement or UDP listener; plain HTTP on
+8443 gets `400` with no redirect; and the CA keys and certificate in
+`/srv/app/var/caddy` belong to the application user with no group or world access.
+The web image must declare 8080 and 8443 (the worker image neither) and ship no TLS
+key, certificate or Caddy certificate storage. A third web container in the ECS
+shape runs with a 90-second certificate lifetime and a 5-second renewal check
+interval. It must serve a renewed certificate in the last third of the first one's
+lifetime, before it expires, with the renewed certificate written to its storage.
+Seeded negative fixtures (a world-writable file, a baked-in private key, setuid,
+setgid and file-capability binaries, a stopped or missing container,
 a plain-HTTP listener) prove the checks fail closed and name the offending paths.
 
 The checks run on an internal Docker network (no egress, no default route) with
