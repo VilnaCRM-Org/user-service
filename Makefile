@@ -373,7 +373,7 @@ purge: ## Purge cache and logs
 up: ## Start the docker hub (PHP, caddy)
 	$(DOCKER_COMPOSE) up --detach
 
-image-runtime-tests: ## Build the production web and worker images and verify they run non-root on :8080 with passing health checks
+image-runtime-tests: ## Build the production web and worker images and verify they run non-root on :8080 and :8443 (internal-CA HTTPS) with passing health checks
 	./tests/Image/check-non-root-images.sh
 
 build: ## Builds the images (PHP, caddy)
