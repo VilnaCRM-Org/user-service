@@ -11,8 +11,8 @@ readonly ROOT_DIR
 readonly MINIMUM_UID=1000
 readonly WEB_PORT=8080
 readonly SUPERVISOR_SOCKET=/srv/app/var/run/supervisor.sock
-readonly WEB_IMAGE=${IMAGE_CHECK_WEB_IMAGE:-user-service-web:non-root-check}
-readonly WORKER_IMAGE=${IMAGE_CHECK_WORKER_IMAGE:-user-service-worker:non-root-check}
+readonly WEB_IMAGE_REF=${IMAGE_CHECK_WEB_IMAGE:-user-service-web:non-root-check}
+readonly WORKER_IMAGE_REF=${IMAGE_CHECK_WORKER_IMAGE:-user-service-worker:non-root-check}
 readonly BUILD_IMAGES=${IMAGE_CHECK_BUILD:-true}
 readonly RUN_ID=${IMAGE_CHECK_RUN_ID:-$$}
 readonly PREFIX="user-service-image-check-${RUN_ID}"
@@ -62,9 +62,15 @@ readonly BIND_PROBE
 failures=0
 runtime_env_file=''
 fixture_images=()
+# The checked images: the IDs built (or resolved) under the host lock, tagged
+# with tags unique to this run so no other run can retag them mid-check.
+WEB_IMAGE=''
+WORKER_IMAGE=''
+WEB_IMAGE_ID=''
+WORKER_IMAGE_ID=''
 
 cleanup() {
-    local containers=()
+    local containers=() image
 
     mapfile -t containers < <(docker ps -aq --filter "name=^${PREFIX}-")
     if [ "${#containers[@]}" -gt 0 ]; then
@@ -74,6 +80,9 @@ cleanup() {
     if [ "${#fixture_images[@]}" -gt 0 ]; then
         docker image rm -f "${fixture_images[@]}" >/dev/null 2>&1 || true
     fi
+    for image in "$WEB_IMAGE" "$WORKER_IMAGE"; do
+        [ -z "$image" ] || docker image rm "$image" >/dev/null 2>&1 || true
+    done
     [ -z "$runtime_env_file" ] || rm -f "$runtime_env_file"
 }
 
@@ -99,13 +108,78 @@ check() {
     fi
 }
 
-build_images() {
+build_image() {
+    local target=$1
+    local reference=$2
+    local iidfile id
+
     if [ "$BUILD_IMAGES" != 'true' ]; then
+        docker image inspect --format '{{.Id}}' "$reference"
         return
     fi
+    iidfile=$(mktemp)
+    docker build --target "$target" --iidfile "$iidfile" -t "$reference" "$ROOT_DIR" >&2
+    id=$(cat "$iidfile")
+    rm -f "$iidfile"
+    echo "$id"
+}
 
-    docker build --target frankenphp_prod -t "$WEB_IMAGE" "$ROOT_DIR"
-    docker build --target app_workers -t "$WORKER_IMAGE" "$ROOT_DIR"
+build_images() {
+    WEB_IMAGE_ID=$(build_image frankenphp_prod "$WEB_IMAGE_REF")
+    WORKER_IMAGE_ID=$(build_image app_workers "$WORKER_IMAGE_REF")
+    WEB_IMAGE="${WEB_IMAGE_REF%%:*}:image-check-${RUN_ID}"
+    WORKER_IMAGE="${WORKER_IMAGE_REF%%:*}:image-check-${RUN_ID}"
+    docker tag "$WEB_IMAGE_ID" "$WEB_IMAGE"
+    docker tag "$WORKER_IMAGE_ID" "$WORKER_IMAGE"
+    echo "built web image ${WEB_IMAGE_REF}: ${WEB_IMAGE_ID} (checked as ${WEB_IMAGE})"
+    echo "built worker image ${WORKER_IMAGE_REF}: ${WORKER_IMAGE_ID} (checked as ${WORKER_IMAGE})"
+}
+
+image_id_of() {
+    docker image inspect --format '{{.Id}}' "$1"
+}
+
+container_image_id() {
+    docker inspect --format '{{.Image}}' "${PREFIX}-$1"
+}
+
+layers_of() {
+    docker image inspect --format '{{range .RootFS.Layers}}{{.}} {{end}}' "$1"
+}
+
+# Every check ran the images built under the lock: the run tags still resolve
+# to the recorded IDs, each runtime container ran them, and each fixture image
+# was built on top of the web image.
+checked_images_are_the_built_images() {
+    local name expected actual fixture web_layers
+
+    [ "$(image_id_of "$WEB_IMAGE")" = "$WEB_IMAGE_ID" ] || { echo "${WEB_IMAGE} moved" >&2; return 1; }
+    [ "$(image_id_of "$WORKER_IMAGE")" = "$WORKER_IMAGE_ID" ] || { echo "${WORKER_IMAGE} moved" >&2; return 1; }
+    for name in web-default web-ecs worker-default worker-ecs; do
+        expected=$WEB_IMAGE_ID
+        [[ "$name" != worker-* ]] || expected=$WORKER_IMAGE_ID
+        if ! docker inspect "${PREFIX}-${name}" >/dev/null 2>&1; then
+            continue
+        fi
+        actual=$(container_image_id "$name") || return 1
+        echo "checked ${name} image: ${actual}"
+        [ "$actual" = "$expected" ] || { echo "${name} ran ${actual}, built ${expected}" >&2; return 1; }
+    done
+    web_layers=$(layers_of "$WEB_IMAGE_ID") || return 1
+    for fixture in "${fixture_images[@]}"; do
+        if ! docker image inspect "$fixture" >/dev/null 2>&1; then
+            continue
+        fi
+        [[ "$(layers_of "$fixture")" == "${web_layers}"* ]] \
+            || { echo "${fixture} is not built on ${WEB_IMAGE_ID}" >&2; return 1; }
+        echo "checked ${fixture}: built on ${WEB_IMAGE_ID}"
+    done
+    if docker inspect "${PREFIX}-privilege-fixture" >/dev/null 2>&1; then
+        actual=$(container_image_id privilege-fixture) || return 1
+        expected=$(image_id_of "${WEB_IMAGE%%:*}:privilege-fixture-${RUN_ID}") || return 1
+        [ "$actual" = "$expected" ] || { echo "privilege-fixture ran ${actual}" >&2; return 1; }
+    fi
+    echo "checked web image ID: ${WEB_IMAGE_ID}; checked worker image ID: ${WORKER_IMAGE_ID}"
 }
 
 image_user_is_numeric_non_root() {
@@ -236,6 +310,11 @@ start_credentials_stub() {
 }
 
 acquire_host_lock() {
+    if ! command -v flock >/dev/null; then
+        echo 'FAIL: flock (util-linux) is required to serialize image checks on this Docker host.' >&2
+        echo '1 non-root image check(s) failed.' >&2
+        exit 1
+    fi
     exec 9>"$LOCK_FILE"
     if ! flock -n 9; then
         echo "Waiting for another image check on this Docker host to release ${LOCK_FILE}"
@@ -506,9 +585,11 @@ check_image_contract() {
 check_web_runtime() {
     local name=$1
 
-    if ! check "${name} becomes healthy through the image HEALTHCHECK" becomes_healthy "$name"; then
+    if ! becomes_healthy "$name"; then
+        fail "${name} becomes healthy through the image HEALTHCHECK"
         return
     fi
+    pass "${name} becomes healthy through the image HEALTHCHECK"
     check "${name} serves /api/health on :${WEB_PORT}" health_endpoint_returns_no_content "$name"
     check "${name} PID 1 runs as UID >= ${MINIMUM_UID}" runs_as_non_root "$name"
     check "${name} wrote only application-owned files in its volumes" \
@@ -519,9 +600,11 @@ check_web_runtime() {
 check_worker_runtime() {
     local name=$1
 
-    if ! check "${name} becomes healthy through worker-healthcheck" becomes_healthy "$name"; then
+    if ! becomes_healthy "$name"; then
+        fail "${name} becomes healthy through worker-healthcheck"
         return
     fi
+    pass "${name} becomes healthy through worker-healthcheck"
     check "${name} worker-healthcheck passes" worker_healthcheck_passes "$name"
     check "${name} PID 1 runs as UID >= ${MINIMUM_UID}" runs_as_non_root "$name"
     check "${name} supervisor socket is ${SUPERVISOR_SOCKET} and application-owned" \
@@ -626,9 +709,11 @@ check_negative_fixtures() {
 }
 
 check_runtime() {
-    if ! check "the task-role subnet ${TASK_ROLE_SUBNET} is free on this Docker host" task_role_subnet_is_free; then
+    if ! task_role_subnet_is_free; then
+        fail "the task-role subnet ${TASK_ROLE_SUBNET} is free on this Docker host"
         return
     fi
+    pass "the task-role subnet ${TASK_ROLE_SUBNET} is free on this Docker host"
     write_runtime_secrets
     start_dependencies
 
@@ -648,11 +733,12 @@ check_runtime() {
         task_role_credentials_were_served
 }
 
-build_images
 acquire_host_lock
+build_images
 check_image_contract
 check_negative_fixtures
 check_runtime
+check "every check ran the image IDs built under the host lock" checked_images_are_the_built_images
 
 if [ "$failures" -ne 0 ]; then
     echo "${failures} non-root image check(s) failed." >&2

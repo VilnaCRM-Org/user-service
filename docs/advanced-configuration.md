@@ -347,11 +347,17 @@ points the queue client at LocalStack. The run also restores the kernel default
 for privileged ports (`net.ipv4.ip_unprivileged_port_start=1024`), which Docker
 otherwise lowers to 0.
 
-Every run uses the fixed task-role subnet `169.254.170.0/24`, so runs on one
-Docker host are serialized with `flock` on `/tmp/user-service-image-check.lock`
-(override with `IMAGE_CHECK_LOCK_FILE`). A later run waits up to
-`IMAGE_CHECK_LOCK_TIMEOUT_SECONDS` (default 3600) and then fails. If any Docker
-network still uses an overlapping subnet, the run fails and names that network.
+Every run uses the fixed task-role subnet `169.254.170.0/24`, and default runs
+share the `user-service-web:non-root-check` and `user-service-worker:non-root-check`
+tags. Runs on one Docker host are therefore serialized with `flock` (util-linux;
+the run fails if it is missing) on `/tmp/user-service-image-check.lock` (override
+with `IMAGE_CHECK_LOCK_FILE`). The lock is taken before the images are built. A
+later run waits up to `IMAGE_CHECK_LOCK_TIMEOUT_SECONDS` (default 3600) and then
+fails. The run records the built image IDs, checks them through tags unique to
+the run, and before reporting success asserts that every runtime container and
+fixture used exactly those IDs. If any Docker network still uses an overlapping
+subnet, the run records a failure that names that network and skips the runtime
+stack.
 The build context excludes `tests/`, so the images ship no tests, fixtures or
 check harness; every container that runs tests bind-mounts the checkout.
 
