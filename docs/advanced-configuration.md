@@ -326,7 +326,7 @@ Notes on the contract:
 Docker: the numeric `USER` and process UID, a refused bind on port 80 (with the
 default capabilities and with `--cap-drop ALL`), a successful bind on 8080,
 application ownership of every writable path, no world-writable application
-files, no JWT key files or `config/reference.php` in the images, no capabilities
+files, no JWT key files, `config/reference.php` or `tests/` in the images, no capabilities
 on PID 1, no setuid, setgid or file-capability binaries, and passing health
 checks with the image defaults and with the ECS task shape (read-only root
 filesystem, every capability dropped, the bootstrap command override; like
@@ -340,10 +340,20 @@ and uses synthetic KMS key ARNs in the fake account `123456789012`. The
 containers get no static AWS credential variables, which the production guards
 refuse; like an ECS task, they read credentials from
 `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI` at `169.254.170.2`, served by a stub on
-the internal network. The stub reuses the digest-pinned LocalStack image and
-returns fake credentials. Only `AWS_ENDPOINT_URL_SQS` points the queue client at
-LocalStack. The run also restores the kernel default for privileged ports
-(`net.ipv4.ip_unprivileged_port_start=1024`), which Docker otherwise lowers to 0.
+the internal network. The stub runs the LocalStack 3.4.0 image pinned by digest
+(the only digest-pinned reference in the check; the MongoDB, Redis and LocalStack
+dependencies use tags) and returns fake credentials. Only `AWS_ENDPOINT_URL_SQS`
+points the queue client at LocalStack. The run also restores the kernel default
+for privileged ports (`net.ipv4.ip_unprivileged_port_start=1024`), which Docker
+otherwise lowers to 0.
+
+Every run uses the fixed task-role subnet `169.254.170.0/24`, so runs on one
+Docker host are serialized with `flock` on `/tmp/user-service-image-check.lock`
+(override with `IMAGE_CHECK_LOCK_FILE`). A later run waits up to
+`IMAGE_CHECK_LOCK_TIMEOUT_SECONDS` (default 3600) and then fails. If any Docker
+network still uses an overlapping subnet, the run fails and names that network.
+The build context excludes `tests/`, so the images ship no tests, fixtures or
+check harness; every container that runs tests bind-mounts the checkout.
 
 ### SES delivery with task credentials
 

@@ -29,6 +29,10 @@ readonly TASK_ROLE_RELATIVE_URI=/v2/credentials/image-runtime-check
 # The stub reuses the pinned LocalStack image for its Python HTTP server.
 readonly CREDENTIALS_STUB_IMAGE='localstack/localstack:3.4.0@sha256:54fcf172f6ff70909e1e26652c3bb4587282890aff0d02c20aa7695469476ac0'
 readonly FAKE_KMS_KEY_ARN_PREFIX='arn:aws:kms:eu-central-1:123456789012:key'
+# Runs share the fixed task-role subnet, so one run at a time per Docker host:
+# a later run waits for this lock, then fails if the subnet is still taken.
+readonly LOCK_FILE=${IMAGE_CHECK_LOCK_FILE:-/tmp/user-service-image-check.lock}
+readonly LOCK_TIMEOUT_SECONDS=${IMAGE_CHECK_LOCK_TIMEOUT_SECONDS:-3600}
 readonly MONGODB_USER=${MONGODB_USER:-root}
 readonly MONGODB_PASSWORD=${MONGODB_PASSWORD:-secret}
 
@@ -231,6 +235,51 @@ start_credentials_stub() {
         >/dev/null
 }
 
+acquire_host_lock() {
+    exec 9>"$LOCK_FILE"
+    if ! flock -n 9; then
+        echo "Waiting for another image check on this Docker host to release ${LOCK_FILE}"
+        if ! flock -w "$LOCK_TIMEOUT_SECONDS" 9; then
+            echo "Another image check on this Docker host still holds ${LOCK_FILE} after ${LOCK_TIMEOUT_SECONDS}s." >&2
+            exit 1
+        fi
+    fi
+    echo "Holding ${LOCK_FILE} since $(date -Is)"
+}
+
+ipv4_to_integer() {
+    local a b c d
+    IFS=. read -r a b c d <<<"$1"
+    echo $(((a << 24) | (b << 16) | (c << 8) | d))
+}
+
+cidr_overlaps_task_role_subnet() {
+    local address=${1%/*} bits=${1#*/}
+    local own_address=${TASK_ROLE_SUBNET%/*} own_bits=${TASK_ROLE_SUBNET#*/}
+    local shortest=$((bits < own_bits ? bits : own_bits))
+    local mask=$(((0xFFFFFFFF << (32 - shortest)) & 0xFFFFFFFF))
+
+    [[ "$1" =~ ^[0-9]+(\.[0-9]+){3}/[0-9]+$ ]] || return 1
+    [ $(($(ipv4_to_integer "$address") & mask)) -eq $(($(ipv4_to_integer "$own_address") & mask)) ]
+}
+
+task_role_subnet_is_free() {
+    local network subnet taken=''
+
+    while read -r network subnet; do
+        [ -n "$subnet" ] || continue
+        if cidr_overlaps_task_role_subnet "$subnet"; then
+            taken="${taken} ${network} (${subnet})"
+        fi
+    done < <(docker network ls -q | xargs -r docker network inspect \
+        --format '{{.Name}}{{range .IPAM.Config}} {{.Subnet}}{{end}}' | awk '{for (i = 2; i <= NF; i++) print $1, $i}')
+
+    [ -z "$taken" ] && return 0
+    echo "The task-role subnet ${TASK_ROLE_SUBNET} is already used by Docker network(s):${taken}." >&2
+    echo "Remove the network or wait for the image check that owns it." >&2
+    return 1
+}
+
 # The internal network has no egress, so no request can leave for a real AWS endpoint.
 start_dependencies() {
     docker network create --internal --subnet "$TASK_ROLE_SUBNET" "$NETWORK" >/dev/null
@@ -397,13 +446,14 @@ supervisor_socket_belongs_to_the_application_user() {
         "[ -S ${SUPERVISOR_SOCKET} ] && [ \"\$(stat -c %u ${SUPERVISOR_SOCKET})\" = \"\$(id -u)\" ]"
 }
 
-image_ships_no_local_keys_or_config_reference() {
+image_ships_no_local_or_test_files() {
     docker run --rm --entrypoint sh "$1" -c '
         if [ -d /srv/app/config/jwt ]; then
             keys=$(find /srv/app/config/jwt -type f) || exit 1
             [ -z "$keys" ] || { echo "key files in the image: $keys"; exit 1; }
         fi
-        [ ! -e /srv/app/config/reference.php ] || { echo "config/reference.php is in the image"; exit 1; }'
+        [ ! -e /srv/app/config/reference.php ] || { echo "config/reference.php is in the image"; exit 1; }
+        [ ! -e /srv/app/tests ] || { echo "/srv/app/tests is in the image"; exit 1; }'
 }
 
 network_has_no_egress() {
@@ -448,8 +498,8 @@ check_image_contract() {
     check "worker writable paths belong to the application user; code is read-only" \
         writable_paths_belong_to_the_application_user "$WORKER_IMAGE" "$WORKER_WRITABLE_PATHS"
     for image in "$WEB_IMAGE" "$WORKER_IMAGE"; do
-        check "${image} ships no JWT key files and no config/reference.php" \
-            image_ships_no_local_keys_or_config_reference "$image"
+        check "${image} ships no JWT key files, config/reference.php or tests/" \
+            image_ships_no_local_or_test_files "$image"
     done
 }
 
@@ -531,7 +581,10 @@ DOCKERFILE
         fail "negative fixture: the privilege fixture image cannot be built from ${WEB_IMAGE}"
         return
     fi
-    docker run -d --name "${PREFIX}-${name}" --network none --entrypoint sleep "$fixture" 600 >/dev/null
+    if ! docker run -d --name "${PREFIX}-${name}" --network none --entrypoint sleep "$fixture" 600 >/dev/null; then
+        fail "negative fixture: the privilege fixture container cannot be started"
+        return
+    fi
     check "negative fixture: a setuid file fails the setuid/setgid scan and is named" \
         reports_exactly '/usr/local/bin/setuid-fixture' image_has_no_setuid_or_setgid_files "$name"
     check "negative fixture: a setgid file fails the setuid/setgid scan and is named" \
@@ -539,7 +592,10 @@ DOCKERFILE
     check "negative fixture: a non-FrankenPHP file capability fails the scan and is named" \
         reports_exactly '/usr/local/bin/file-capability-fixture cap_net_raw=ep' \
         image_has_no_file_capabilities "$name"
-    docker stop -t 0 "${PREFIX}-${name}" >/dev/null
+    if ! docker stop -t 0 "${PREFIX}-${name}" >/dev/null; then
+        fail "negative fixture: the privilege fixture container cannot be stopped"
+        return
+    fi
     check "negative fixture: a stopped container fails the file capability check" \
         fails image_has_no_file_capabilities "$name"
 }
@@ -570,6 +626,9 @@ check_negative_fixtures() {
 }
 
 check_runtime() {
+    if ! check "the task-role subnet ${TASK_ROLE_SUBNET} is free on this Docker host" task_role_subnet_is_free; then
+        return
+    fi
     write_runtime_secrets
     start_dependencies
 
@@ -590,6 +649,7 @@ check_runtime() {
 }
 
 build_images
+acquire_host_lock
 check_image_contract
 check_negative_fixtures
 check_runtime
