@@ -6,37 +6,61 @@ namespace App\Tests\Behat\HealthCheckContext;
 
 use Aws\Sqs\SqsClient;
 use Behat\Behat\Context\Context;
-use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Doctrine\ODM\MongoDB\DocumentManager;
-use Faker\Factory;
-use Faker\Generator;
-use MongoDB\Client;
-use MongoDB\Database;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\Cache\Adapter\TraceableAdapter;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Doctrine\Common\EventManager;
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver;
+use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Exception\CacheException;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
-use TwentytwoLabs\BehatOpenApiExtension\Context\RestContext;
+use Symfony\Contracts\Cache\CacheInterface;
 
-final class HealthCheckContext implements Context
+final class HealthCheckContext extends KernelTestCase implements Context
 {
-    private bool $kernelDirty = false;
-    private RestContext $restContext;
-    private Generator $faker;
+    private KernelInterface $kernelInterface;
+    private Response $response;
 
     public function __construct(
-        private readonly KernelInterface $kernel,
+        KernelInterface $kernel
     ) {
-        $this->faker = Factory::create();
+        parent::__construct();
+        $this->kernelInterface = $kernel;
     }
 
     /**
-     * @BeforeScenario
+     * @When :method request is sent to :path
      */
-    public function gatherContexts(BeforeScenarioScope $scope): void
+    public function sendRequestTo(string $method, string $path): void
     {
-        $environment = $scope->getEnvironment();
-        $this->restContext = $environment->getContext(RestContext::class);
+        $this->response = $this->kernelInterface->handle(Request::create(
+            $path,
+            $method,
+        ));
+    }
+
+    /**
+     * @Then the response status code should be :statusCode
+     */
+    public function theResponseStatusCodeShouldBe(string $statusCode): void
+    {
+        Assert::assertEquals($statusCode, $this->response->getStatusCode());
+    }
+
+    /**
+     * @Then the response body should contain :text
+     */
+    public function theResponseBodyShouldContain(string $text): void
+    {
+        $responseContent = $this->response->getContent();
+        Assert::assertStringContainsString(
+            $text,
+            $responseContent,
+            "The response body does not contain the expected text: '{$text}'."
+        );
     }
 
     /**
@@ -44,22 +68,14 @@ final class HealthCheckContext implements Context
      */
     public function theCacheIsNotWorking(): void
     {
-        $failingPool = new class() extends ArrayAdapter {
-            /**
-             * @return never
-             */
-            #[\Override]
-            public function get(
-                string $key,
-                callable $callback,
-                ?float $beta = null,
-                ?array &$metadata = null
-            ): array|bool|float|int|object|string|null {
-                throw new \RuntimeException('Cache is not working');
-            }
-        };
+        /** @var CacheInterface|MockObject $cacheMock */
+        $cacheMock = $this->createMock(CacheInterface::class);
 
-        $this->replaceService('cache.app', new TraceableAdapter($failingPool));
+        $cacheMock->method('get')
+            ->willThrowException(new CacheException('Cache is not working'));
+
+        $container = $this->kernelInterface->getContainer();
+        $container->set(CacheInterface::class, $cacheMock);
     }
 
     /**
@@ -67,22 +83,25 @@ final class HealthCheckContext implements Context
      */
     public function theDatabaseIsNotAvailable(): void
     {
-        $this->rebootKernelIfNeeded();
-        $documentManager = $this->getDocumentManager();
+        $driverMock = $this->createMock(Driver::class);
 
-        $failingClient = new class(sprintf('mongodb://%s', $this->faker->ipv4())) extends Client {
-            /**
-             * @return never
-             */
-            #[\Override]
-            public function selectDatabase(string $databaseName, array $options = []): Database
-            {
-                throw new \RuntimeException('Database is not available');
-            }
-        };
+        $connectionMock = $this->getMockBuilder(Connection::class)
+            ->setConstructorArgs([
+                [],
+                $driverMock,
+                new Configuration(),
+                new EventManager(),
+            ])
+            ->onlyMethods(['executeQuery'])
+            ->getMock();
 
-        $reflection = new \ReflectionProperty($documentManager, 'client');
-        $reflection->setValue($documentManager, $failingClient);
+        $connectionMock->method('executeQuery')
+            ->willThrowException(new \Exception('Database is not available'));
+
+        $container = $this->kernelInterface
+            ->getContainer()
+            ->get('test.service_container');
+        $container->set(Connection::class, $connectionMock);
     }
 
     /**
@@ -90,94 +109,18 @@ final class HealthCheckContext implements Context
      */
     public function theMessageBrokerIsNotAvailable(): void
     {
-        $this->replaceService(SqsClient::class, $this->createFailingSqsClient());
-    }
+        $sqsClientMock = $this->createMock(SqsClient::class);
 
-    /**
-     * @Then print last response
-     */
-    public function printLastResponse(): void
-    {
-        echo 'Response content: ' . $this->getResponseContent() . "\n";
-    }
+        $sqsClientMock->method('__call')
+            ->willThrowException(
+                new \Exception(
+                    'Message broker is not available'
+                )
+            );
 
-    /**
-     * @AfterScenario
-     */
-    public function restoreMockedServices(): void
-    {
-        if ($this->kernelDirty === false) {
-            return;
-        }
-
-        $this->kernel->reboot(null);
-        $this->kernelDirty = false;
-    }
-
-    private function getResponseContent(): string
-    {
-        return $this->restContext
-            ->getMink()
-            ->getSession()
-            ->getPage()
-            ->getContent();
-    }
-
-    private function createFailingSqsClient(): SqsClient
-    {
-        return new class() extends SqsClient {
-            public function __construct()
-            {
-                parent::__construct([
-                    'service' => 'sqs',
-                    'version' => 'latest',
-                    'region' => 'us-east-1',
-                    'credentials' => ['key' => 'invalid', 'secret' => 'invalid'],
-                ]);
-            }
-
-            #[\Override]
-            public function __call($name, array $args): never
-            {
-                throw new \RuntimeException('Message broker is not available');
-            }
-        };
-    }
-
-    private function replaceService(string $serviceId, object $service): void
-    {
-        $this->rebootKernelIfNeeded();
-        $this->container()->set($serviceId, $service);
-    }
-
-    private function rebootKernelIfNeeded(): void
-    {
-        if ($this->kernelDirty) {
-            return;
-        }
-
-        $this->kernel->reboot(null);
-        $this->kernelDirty = true;
-    }
-
-    private function getDocumentManager(): DocumentManager
-    {
-        $documentManager = $this->container()->get(DocumentManager::class);
-        if (!$documentManager instanceof DocumentManager) {
-            throw new \RuntimeException('Document manager is not available');
-        }
-
-        return $documentManager;
-    }
-
-    private function container(): ContainerInterface
-    {
-        $container = $this->kernel->getContainer()->get('test.service_container');
-
-        if (!$container instanceof ContainerInterface) {
-            throw new \RuntimeException('Test container is not available');
-        }
-
-        return $container;
+        $container = $this->kernelInterface
+            ->getContainer()
+            ->get('test.service_container');
+        $container->set(SqsClient::class, $sqsClientMock);
     }
 }
