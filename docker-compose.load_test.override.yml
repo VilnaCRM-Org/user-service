@@ -1,0 +1,74 @@
+# Production environment override
+services:
+  php:
+    build:
+      context: .
+      target: frankenphp_prod
+      args:
+        SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+        STABILITY: ${STABILITY:-stable}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 180s
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8081/ping || exit 1']
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost}
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: https://${SERVER_NAME}/.well-known/mercure
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      DB_URL: postgresql://${DB_USER}:${DB_PASSWORD}@database:5432/${DB_NAME}?serverVersion=${DB_VERSION}
+    ports:
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      - target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
+      - target: 8081
+        published: ${APP_HTTP_TEST_PORT:-8081}
+        protocol: tcp
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+  database:
+    image: postgres:${DB_VERSION}-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      interval: 10s
+      retries: 10
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}']
+
+  localstack:
+    image: localstack/localstack:3.4.0
+    ports:
+      - '${LOCALSTACK_PORT}:4566'
+    environment:
+      - SERVICES=sqs
+      - DEBUG=0
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./infrastructure/docker/php/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh
+
+volumes:
+  caddy_data:
+  caddy_config:
+  db_data:
+  localstack_data:
