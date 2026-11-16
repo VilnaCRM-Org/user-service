@@ -6,30 +6,14 @@ on:
 
 jobs:
   phpinsights:
-    name: PHP Insights checks
     runs-on: ubuntu-latest
+    name: PHP Insights checks
     steps:
-      - name: Dependabot skip
-        if: github.event.pull_request.user.login == 'dependabot[bot]'
-        run: echo "Skipping PHP Insights for Dependabot PR"
-
-      - name: Checkout code
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        with:
-          php-version: ${{ vars.PHP_VERSION }}
-
-      - name: Install Dependencies
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      - name: Checkout Repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Start Application
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make start
 
       - name: Run PHPInsights
-        if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' }}
         run: make phpinsights
