@@ -10,36 +10,43 @@
 }
 
 {$SERVER_NAME} {
-    log {
-        output stderr
-        format json
-    }
+    log
     {$CADDY_EXTRA_CONFIG}
+
+    handle /ping {
+        respond "pong" 200
+    }
 
     root * /srv/app/public
     encode zstd gzip
-    header -Server
+
+    mercure {
+        transport_url {$MERCURE_TRANSPORT_URL:bolt:///data/mercure.db}
+        publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
+        subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
+        anonymous
+        subscriptions
+        {$MERCURE_EXTRA_DIRECTIVES}
+    }
 
     vulcain
-
     php_server
     file_server
 }
 
 :8081 {
-    log {
-        output stderr
-        format json
+    log
+
+    handle /ping {
+        respond "pong" 200
     }
 
     root * /srv/app/public
-    header -Server
+    encode zstd gzip
 
     vulcain
     php_server {
-        env APP_ENV {$CADDY_PHP_APP_ENV:test}
-        env APP_DEBUG {$CADDY_PHP_APP_DEBUG:0}
+        env APP_ENV {$APP_RUNTIME_HTTP_ENV:test}
     }
-    encode zstd gzip
     file_server
 }
